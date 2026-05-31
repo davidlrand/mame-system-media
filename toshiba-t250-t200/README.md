@@ -69,8 +69,9 @@ of the link to the same rate (the on-disk `SET.COM` changes it).
 
 - T-200 product coverage — *Your Computer*, June 1982, p. 24:
   <https://archive.org/details/1982.06-your-computer-june-1982/page/24/mode/2up>
-- Toshiba T-250 Functional Specification (1981) — hardware reference; not
-  re-hosted here.
+- Toshiba T-250 Functional Specification (September 1981) — full hardware
+  reference, scanned (on the Internet Archive and bitsavers):
+  <https://archive.org/details/bitsavers_toshibaT25nalSpecification198109_6869581>
 
 ## Deeper archive
 
