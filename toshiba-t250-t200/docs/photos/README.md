@@ -11,3 +11,5 @@ has been stripped.
 | [`t250-first-boot.jpg`](t250-first-boot.jpg) | First boot of the restored T-250 system (CP/M 2.2 V2.32) |
 | [`t250-crt-board-front.jpg`](t250-crt-board-front.jpg) | T-250 CRT board, front |
 | [`t250-crt-board-back.jpg`](t250-crt-board-back.jpg) | T-250 CRT board, back |
+| [`t250-main-top.jpg`](t250-main-top.jpg) | T-250 main board, top |
+| [`t250-main-bottom.jpg`](t250-main-bottom.jpg) | T-250 main board, bottom |
