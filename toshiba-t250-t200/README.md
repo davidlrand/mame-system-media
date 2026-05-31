@@ -51,6 +51,7 @@ are catalogued in [`docs/disk-formats.md`](docs/disk-formats.md).
 | [`disks/T-250/`](disks/T-250/) | 6 boot disks: original v2.20, 2.14g, 2.12a demo, 1024-byte font disk, `newboot`/`newbios` source pair |
 | [`disks/T-200/`](disks/T-200/) | v2.21 stock (+ ser-10133), v2.30a (512/1024-byte sectors), Trianex v3.0 |
 | [`docs/`](docs/) | MAME usage guide + 16-format disk reference |
+| [`docs/photos/`](docs/photos/) | Historical hardware photos (T-250 CRT board, front & back) |
 
 Each disk ships as `.mfi` (MAME read/write) plus `.hfe` (GOTEK/FlashFloppy) or
 `.imd` (cpmtools/libdsk), all gzipped. See [`disks/README.md`](disks/README.md)
