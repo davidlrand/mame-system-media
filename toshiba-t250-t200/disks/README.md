@@ -1,6 +1,6 @@
 # Sample disk images
 
-Bootable CP/M 2.2 disk images.  Files are gzip-compressed for repo size; uncompress before use.
+Bootable CP/M 2.2 disk images, uncompressed and ready to mount in MAME.
 
 ## Contents
 
@@ -8,21 +8,21 @@ Bootable CP/M 2.2 disk images.  Files are gzip-compressed for repo size; uncompr
 
 | File | Description |
 |------|-------------|
-| [`T-250/Toshiba-original-v2.20.mfi.gz`](T-250/Toshiba-original-v2.20.mfi.gz) / [`.hfe.gz`](T-250/Toshiba-original-v2.20.hfe.gz) | Original Toshiba-shipped CP/M 2.20 boot disk |
-| [`T-250/boot-2.14g.mfi.gz`](T-250/boot-2.14g.mfi.gz) / [`.hfe.gz`](T-250/boot-2.14g.hfe.gz) | Earlier BIOS revision 2.14g, with a substantial collection of CP/M utility programs |
-| [`T-250/Toshiba-T250-demo.mfi.gz`](T-250/Toshiba-T250-demo.mfi.gz) / [`.hfe.gz`](T-250/Toshiba-T250-demo.hfe.gz) | Older BIOS revision 2.12a with a simple text-mode demo program that exercises the T-250's graphics capabilities |
-| [`T-250/boot1024-font.mfi.gz`](T-250/boot1024-font.mfi.gz) / [`.hfe.gz`](T-250/boot1024-font.hfe.gz) | Modern BIOS revision 2.32, **1024-byte sector** format.  Includes a collection of font-loading programs (HP41, a sideways font, and others) plus `char.com`, the font editor that demonstrates real-time VPG static-RAM updates on the T-250 video hardware. |
-| [`T-250/newboot.mfi.gz`](T-250/newboot.mfi.gz) / [`.hfe.gz`](T-250/newboot.hfe.gz) | Modern BIOS 2.32 boot disk with modified CCP (path search + archive integration).  Pair with `newbios` in `-flop2`.  See [Boot+BIOS pair](#bootbios-pair-newboot--newbios) below. |
-| [`T-250/newbios.mfi.gz`](T-250/newbios.mfi.gz) / [`.hfe.gz`](T-250/newbios.hfe.gz) | BIOS 2.32 source disk, configured for the 32 MB CDC Finch hard drive.  Sources live in user-area 5 (`B5:`).  See [Boot+BIOS pair](#bootbios-pair-newboot--newbios) below. |
+| [`T-250/Toshiba-original-v2.20.mfi`](T-250/Toshiba-original-v2.20.mfi) / [`.hfe`](T-250/Toshiba-original-v2.20.hfe) | Original Toshiba-shipped CP/M 2.20 boot disk |
+| [`T-250/boot-2.14g.mfi`](T-250/boot-2.14g.mfi) / [`.hfe`](T-250/boot-2.14g.hfe) | Earlier BIOS revision 2.14g, with a substantial collection of CP/M utility programs |
+| [`T-250/Toshiba-T250-demo.mfi`](T-250/Toshiba-T250-demo.mfi) / [`.hfe`](T-250/Toshiba-T250-demo.hfe) | Older BIOS revision 2.12a with a simple text-mode demo program that exercises the T-250's graphics capabilities |
+| [`T-250/boot1024-font.mfi`](T-250/boot1024-font.mfi) / [`.hfe`](T-250/boot1024-font.hfe) | Modern BIOS revision 2.32, **1024-byte sector** format.  Includes a collection of font-loading programs (HP41, a sideways font, and others) plus `char.com`, the font editor that demonstrates real-time VPG static-RAM updates on the T-250 video hardware. |
+| [`T-250/newboot.mfi`](T-250/newboot.mfi) / [`.hfe`](T-250/newboot.hfe) | Modern BIOS 2.32 boot disk with modified CCP (path search + archive integration).  Pair with `newbios` in `-flop2`.  See [Boot+BIOS pair](#bootbios-pair-newboot--newbios) below. |
+| [`T-250/newbios.mfi`](T-250/newbios.mfi) / [`.hfe`](T-250/newbios.hfe) | BIOS 2.32 source disk, configured for the 32 MB CDC Finch hard drive.  Sources live in user-area 5 (`B5:`).  See [Boot+BIOS pair](#bootbios-pair-newboot--newbios) below. |
 
 ### T-200 (5.25" DSDD, 35-track)
 
 | File | Description |
 |------|-------------|
-| [`T-200/t200-boot-v2.21.mfi.gz`](T-200/t200-boot-v2.21.mfi.gz) / [`.hfe.gz`](T-200/t200-boot-v2.21.hfe.gz) | Stock Toshiba-shipped CP/M BIOS V2.21 boot disk |
-| [`T-200/toshiba-v2.21-original-ser-10133.mfi.gz`](T-200/toshiba-v2.21-original-ser-10133.mfi.gz) / [`.imd.gz`](T-200/toshiba-v2.21-original-ser-10133.imd.gz) | Second V2.21 distribution disk, serial 10133.  Same BIOS revision as the entry above with minor content differences. |
-| [`T-200/boot-v2.30a-1024.mfi.gz`](T-200/boot-v2.30a-1024.mfi.gz) / [`.imd.gz`](T-200/boot-v2.30a-1024.imd.gz) | BIOS **V2.30a** boot disk — adds 1024-byte and 512-byte sector support beyond V2.21's 256-byte limit, giving higher-capacity disks (T-200 type 4-7 in the format table). |
-| [`T-200/trianex-boot-v3.0.mfi.gz`](T-200/trianex-boot-v3.0.mfi.gz) / [`.hfe.gz`](T-200/trianex-boot-v3.0.hfe.gz) | Trianex V3.0 BIOS boot disk.  Trianex was a Canadian reseller of the Toshiba line; their BIOS added hard-drive support via their own interface and protocol (different from the SASI/ACB-4000 path used by other T-200 systems).  Boots cleanly under MAME; the HD formatter does not run because the Trianex disk-controller hardware is not yet emulated.  Trianex ceased operations around August 1985. |
+| [`T-200/t200-boot-v2.21.mfi`](T-200/t200-boot-v2.21.mfi) / [`.hfe`](T-200/t200-boot-v2.21.hfe) | Stock Toshiba-shipped CP/M BIOS V2.21 boot disk |
+| [`T-200/toshiba-v2.21-original-ser-10133.mfi`](T-200/toshiba-v2.21-original-ser-10133.mfi) / [`.imd`](T-200/toshiba-v2.21-original-ser-10133.imd) | Second V2.21 distribution disk, serial 10133.  Same BIOS revision as the entry above with minor content differences. |
+| [`T-200/boot-v2.30a-1024.mfi`](T-200/boot-v2.30a-1024.mfi) / [`.imd`](T-200/boot-v2.30a-1024.imd) | BIOS **V2.30a** boot disk — adds 1024-byte and 512-byte sector support beyond V2.21's 256-byte limit, giving higher-capacity disks (T-200 type 4-7 in the format table). |
+| [`T-200/trianex-boot-v3.0.mfi`](T-200/trianex-boot-v3.0.mfi) / [`.hfe`](T-200/trianex-boot-v3.0.hfe) | Trianex V3.0 BIOS boot disk.  Trianex was a Canadian reseller of the Toshiba line; their BIOS added hard-drive support via their own interface and protocol (different from the SASI/ACB-4000 path used by other T-200 systems).  Boots cleanly under MAME; the HD formatter does not run because the Trianex disk-controller hardware is not yet emulated.  Trianex ceased operations around August 1985. |
 
 Two formats per disk:
 - **`.mfi`** — MAME Floppy Image.  Read AND write inside MAME; suitable for adding files, formatting, etc.
@@ -114,16 +114,13 @@ Once the CHD is built, attach it as shown in the Launch command above.  CP/M wil
 
 ## Quick start
 
-Uncompress and launch in MAME:
+Launch in MAME:
 
 ```sh
-gunzip -k T-250/Toshiba-original-v2.20.mfi.gz
 mame t250 -window -flop1 T-250/Toshiba-original-v2.20.mfi
 ```
 
-(`gunzip -k` keeps the `.gz` alongside the uncompressed file.)
-
-For real hardware via GOTEK/FlashFloppy, copy the uncompressed `.hfe` to the USB stick.
+For real hardware via GOTEK/FlashFloppy, copy the `.hfe` to the USB stick.
 
 ## Format coverage
 
@@ -132,7 +129,6 @@ The MAME driver accepts a number of standard floppy formats: `.imd` (read-only),
 `.imd` (Dave Dunfield's ImageDisk format) is widely supported by vintage CP/M tools.  MAME's `floptool` cannot write IMD; if you need it, convert via [Greaseweazle](https://github.com/keirf/greaseweazle):
 
 ```sh
-gunzip -k T-250/Toshiba-original-v2.20.hfe.gz
 gw convert T-250/Toshiba-original-v2.20.hfe T-250/Toshiba-original-v2.20.imd
 ```
 

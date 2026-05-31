@@ -29,12 +29,8 @@ mkdir -p roms/t250 roms/t200
 cp rom/t250boot.bin roms/t250/
 cp rom/t200boot.bin roms/t200/
 
-# disks are gzipped to save space — uncompress one, then boot
-gunzip -k disks/T-250/Toshiba-original-v2.20.mfi.gz
+# boot a disk
 mame t250 -window -flop1 disks/T-250/Toshiba-original-v2.20.mfi
-
-# T-200:
-gunzip -k disks/T-200/t200-boot-v2.21.mfi.gz
 mame t200 -window -flop1 disks/T-200/t200-boot-v2.21.mfi
 ```
 
@@ -54,7 +50,7 @@ are catalogued in [`docs/disk-formats.md`](docs/disk-formats.md).
 | [`docs/photos/`](docs/photos/) | Historical hardware photos (T-250 CRT board, front & back) |
 
 Each disk ships as `.mfi` (MAME read/write) plus `.hfe` (GOTEK/FlashFloppy) or
-`.imd` (cpmtools/libdsk), all gzipped. See [`disks/README.md`](disks/README.md)
+`.imd` (cpmtools/libdsk), uncompressed. See [`disks/README.md`](disks/README.md)
 for the per-disk rundown.
 
 ## Serial baud note
