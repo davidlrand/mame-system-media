@@ -1,0 +1,55 @@
+mame-system-media — licensing and preservation notice
+=======================================================
+
+This repository contains two kinds of material with different rights. Please
+read both sections before reusing anything.
+
+
+1. Original work by Dave Rand
+-----------------------------
+
+The documentation (all README files), the CP/M CBIOS I authored, the bootable
+disk images I formatted and curated, my own disk-recovery images, and the
+photographs of my own hardware are:
+
+    Copyright (c) 2026 David L. Rand
+
+    Licensed under the Creative Commons Attribution 4.0 International License
+    (CC BY 4.0). You are free to share and adapt this material for any purpose,
+    provided you give appropriate credit.
+
+    Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
+    SPDX-License-Identifier: CC-BY-4.0
+
+Suggested attribution:
+
+    "Dave Rand — github.com/davidlrand/mame-system-media"
+
+
+2. Third-party material preserved for emulation and research
+------------------------------------------------------------
+
+Some files are the intellectual property of Colonial Data Services Corp.
+(Hamden, Connecticut) or of its customers, and are NOT mine to license. The
+SB-80 product line was discontinued in the 1980s. These items include:
+
+    - colonial-sb80/bootrom.bin
+          Colonial Data Services boot ROM (1982).
+
+    - the Colonial Data CP/M 2.2 (02.15) CBIOS contained in
+      colonial-sb80/disks/sb80-1k.td0
+
+    - the customer application and data files (TMS) contained in
+      colonial-sb80/disks/sb80-1k.td0
+
+They are included in good faith for historical preservation, research, and use
+with the MAME emulator, on the basis that the original product is decades out of
+production and otherwise unavailable. No copyright claim is made over them, and
+their inclusion does not transfer any rights.
+
+If you hold rights to any of this material and wish it removed, please open an
+issue or contact me, and I will take it down promptly.
+
+Underlying CP/M is the work of Digital Research, Inc.; no Digital Research
+material is redistributed here beyond what was customarily present on a working
+system disk of the period.
