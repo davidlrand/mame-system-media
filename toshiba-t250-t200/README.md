@@ -72,6 +72,9 @@ of the link to the same rate (the on-disk `SET.COM` changes it).
 - Toshiba T-250 Functional Specification (September 1981) — full hardware
   reference, scanned (on the Internet Archive and bitsavers):
   <https://archive.org/details/bitsavers_toshibaT25nalSpecification198109_6869581>
+- Toshiba T-250 User's Manual (1982) — scanned (on the Internet Archive and
+  bitsavers):
+  <https://archive.org/details/bitsavers_toshibaT25rsManual1982_12255177>
 
 ## Deeper archive
 
