@@ -13,4 +13,5 @@ has been stripped.
 | [`t250-crt-board-back.jpg`](t250-crt-board-back.jpg) | T-250 CRT board, back |
 | [`t250-main-top.jpg`](t250-main-top.jpg) | T-250 main board, top |
 | [`t250-main-bottom.jpg`](t250-main-bottom.jpg) | T-250 main board, bottom |
-| [`t250-fdc-board.jpg`](t250-fdc-board.jpg) | T-250 FDC board (VFDC, NEC D765AC) |
+| [`t250-fdc-board.jpg`](t250-fdc-board.jpg) | T-250 FDC board, front (VFDC, NEC D765AC) |
+| [`t250-fdc-board-back.jpg`](t250-fdc-board-back.jpg) | T-250 FDC board, back |
