@@ -29,9 +29,9 @@ Suggested attribution:
 2. Third-party material preserved for emulation and research
 ------------------------------------------------------------
 
-Some files are the intellectual property of Colonial Data Services Corp.
-(Hamden, Connecticut) or of its customers, and are NOT mine to license. The
-SB-80 product line was discontinued in the 1980s. These items include:
+Some files are the intellectual property of their original manufacturers or of
+those manufacturers' customers, and are NOT mine to license. The products
+involved were all discontinued decades ago. These items include:
 
     - colonial-sb80/bootrom.bin
           Colonial Data Services boot ROM (1982).
@@ -41,6 +41,12 @@ SB-80 product line was discontinued in the 1980s. These items include:
 
     - the customer application and data files (TMS) contained in
       colonial-sb80/disks/sb80-1k.td0
+
+    - Toshiba Corporation's stock CP/M BIOS, as contained in the disk images
+      toshiba-t250-t200/disks/T-250/Toshiba-original-v2.20.* and
+      toshiba-t250-t200/disks/T-200/t200-boot-v2.21.* (and the ser-10133
+      variant). (My own replacement boot ROMs and BIOS in this folder are
+      covered by section 1 above.)
 
 They are included in good faith for historical preservation, research, and use
 with the MAME emulator, on the basis that the original product is decades out of

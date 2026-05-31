@@ -14,6 +14,7 @@ archive — not here.
 | Folder | System | MAME driver |
 |---|---|---|
 | [`colonial-sb80/`](colonial-sb80/) | Colonial Data Services SB-80 (Z80 CP/M 2.2) | [mamedev/mame#15417](https://github.com/mamedev/mame/pull/15417) |
+| [`toshiba-t250-t200/`](toshiba-t250-t200/) | Toshiba T-250 (8") / T-200 (5.25") CP/M (8085) | [mamedev/mame#15372](https://github.com/mamedev/mame/pull/15372) |
 
 More machines will be added as their drivers land.
 
