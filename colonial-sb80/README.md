@@ -81,13 +81,12 @@ the firmware's 300-baud cold-boot rate.)
 
 ## Contemporary reviews
 
-- **BYTE, November 1982, p. 324** — not re-hosted here; read it at the Internet
-  Archive: <https://archive.org/details/byte-magazine-1982-11/page/324/mode/2up>.
+- **BYTE, November 1982, p. 324** — read it at the Internet Archive:
+  <https://archive.org/details/byte-magazine-1982-11/page/324/mode/2up>.
 - **"Everything You Need On a Single Board"** by Terry Kepner, *Microcomputing*,
-  September 1982, pp. 58–61 — a four-page SB-80 review. This issue is **not** on
-  the Internet Archive, so the SB-80 article is preserved here as
+  September 1982, pp. 58–61 — a four-page SB-80 review. Read it on the Internet
+  Archive (the issue is filed under the magazine's earlier *Kilobaud* name):
+  <https://archive.org/details/kilobaudmagazine-1982-09/page/n59/mode/2up>. A
+  local excerpt of just the SB-80 article is included here for convenience as
   [`docs/microcomputing-1982-09-sb80-review.pdf`](docs/microcomputing-1982-09-sb80-review.pdf)
-  (also on the Internet Archive at
-  <https://archive.org/details/microcomputing-1982-09-sb80-review>). The complete
-  issue lives at [The Computer Archive](https://thecomputerarchive.com/archivemain/Magazines/Kilobaud%20Microcomputing/Microcomputing%201982-09.pdf).
-  See LICENSE §2 for the preserved-material terms.
+  (see LICENSE §2 for the preserved-material terms).
