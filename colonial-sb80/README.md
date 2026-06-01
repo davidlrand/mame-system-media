@@ -79,6 +79,15 @@ the firmware's 300-baud cold-boot rate.)
 - **Photos** — my own hardware: production unit S/N 1692, and S/N 1693 with the
   256 KB DRAM bank-switching modification I designed.
 
-The contemporary product review (BYTE, November 1982, p. 324) is **not**
-re-hosted here — read it at the Internet Archive:
-<https://archive.org/details/byte-magazine-1982-11/page/324/mode/2up>.
+## Contemporary reviews
+
+- **BYTE, November 1982, p. 324** — not re-hosted here; read it at the Internet
+  Archive: <https://archive.org/details/byte-magazine-1982-11/page/324/mode/2up>.
+- **"Everything You Need On a Single Board"** by Terry Kepner, *Microcomputing*,
+  September 1982, pp. 58–61 — a four-page SB-80 review. This issue is **not** on
+  the Internet Archive, so the SB-80 article is preserved here as
+  [`docs/microcomputing-1982-09-sb80-review.pdf`](docs/microcomputing-1982-09-sb80-review.pdf)
+  (also on the Internet Archive at
+  <https://archive.org/details/microcomputing-1982-09-sb80-review>). The complete
+  issue lives at [The Computer Archive](https://thecomputerarchive.com/archivemain/Magazines/Kilobaud%20Microcomputing/Microcomputing%201982-09.pdf).
+  See LICENSE §2 for the preserved-material terms.
