@@ -54,6 +54,13 @@ involved were all discontinued decades ago. These items include:
           Published by 1001001, Inc. / Wayne Green Inc.; the magazine ceased in
           1984 and the publisher is long defunct.
 
+    - third-party CP/M utilities (an ARC archiver suite, an assembler, BASIC,
+      etc.) contained in trs80-model3-cpm/disks/mycpm-model3.imd. (My own CP/M
+      BIOS and the disks I built/curated are covered by section 1 above; the
+      Model III ROMs are not redistributed here -- they load from MAME's stock
+      trs80m3 romset, and the "CP/M Cheap" circuit modification is the work of
+      Bill Brewer, 80 Microcomputing, March 1983.)
+
 They are included in good faith for historical preservation, research, and use
 with the MAME emulator, on the basis that the original product is decades out of
 production and otherwise unavailable. No copyright claim is made over them, and

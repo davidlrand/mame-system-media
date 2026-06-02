@@ -1,0 +1,206 @@
+diff --git a/src/mame/trs/trs80m3.cpp b/src/mame/trs/trs80m3.cpp
+index 0f41544052e..a732e97559e 100644
+--- a/src/mame/trs/trs80m3.cpp
++++ b/src/mame/trs/trs80m3.cpp
+@@ -97,6 +97,34 @@ void trs80m3_state::m3_mem(address_map &map)
+ 	map(0x4000, 0xffff).ram();
+ }
+ 
++// "CP/M Cheap" hardware mod (Bill Brewer, 80 Microcomputing, March 1983, p112).
++// A replacement address decoder watches bit 0 of the spare output latch at port
++// 0xEC.  REMAP=0 (power-on default, view 0) leaves the stock Model III map;
++// REMAP=1 (view 1) maps RAM over 0x0000-0xF7FF and relocates the keyboard to
++// 0xF800 and video to 0xFC00, giving CP/M a full low-memory TPA.  The bootstrap
++// does OUT (0ECH),9 to enter CP/M mode and OUT (0ECH),8 to return.
++//
++// memory_view is used (rather than address_map_bank_device) so the switchable
++// regions stay in the CPU's own address space: the Model III paces FDC data
++// transfers with the Z80 WAIT line, and the indirect access of a bank device
++// breaks that cycle-tight timing (cf. the 4P's "floppy not working").
++void trs80m3_state::m3cpm_mem(address_map &map)
++{
++	map(0x0000, 0x3fff).view(m_vlow);
++	m_vlow[0](0x0000, 0x37ff).rom().region("maincpu", 0);                                   // REMAP=0: ROM
++	m_vlow[0](0x37e8, 0x37e9).rw(FUNC(trs80m3_state::printer_r), FUNC(trs80m3_state::printer_w));
++	m_vlow[0](0x3800, 0x3bff).r(FUNC(trs80m3_state::keyboard_r));
++	m_vlow[0](0x3c00, 0x3fff).ram().share(m_p_videoram);
++	m_vlow[1](0x0000, 0x3fff).ram().share("lowram");                                        // REMAP=1: RAM
++
++	map(0x4000, 0xf7ff).ram().share("mainram");                                             // RAM in both modes (coherent)
++
++	map(0xf800, 0xffff).view(m_vhigh);
++	m_vhigh[0](0xf800, 0xffff).ram().share("topram");                                       // REMAP=0: RAM
++	m_vhigh[1](0xf800, 0xfbff).r(FUNC(trs80m3_state::keyboard_r));                           // REMAP=1: keyboard
++	m_vhigh[1](0xfc00, 0xffff).ram().share(m_p_videoram);                                    //          video (same RAM)
++}
++
+ void trs80m3_state::m3_io(address_map &map)
+ {
+ 	map.global_mask(0xff);
+@@ -420,6 +448,13 @@ void trs80m3_state::model3(machine_config &config)
+ 	SOFTWARE_LIST(config, "flop_list").set_original("trs80_flop").set_filter("3");
+ }
+ 
++void trs80m3_state::model3cpm(machine_config &config)
++{
++	model3(config);
++	m_maincpu->set_addrmap(AS_PROGRAM, &trs80m3_state::m3cpm_mem);
++	// REMAP banking is done with memory_views defined in m3cpm_mem; no bank device.
++}
++
+ void trs80m3_state::model4(machine_config &config)
+ {
+ 	model3(config);
+@@ -518,6 +553,23 @@ Note: Be careful when dumping rom C: if dumped on the trs-80 m3 with software, b
+ 	ROM_LOAD("8044316a.u36", 0x0000, 0x0800, CRC(444c8b60) SHA1(c52ee41439bd5e57c3b113ebfd61c951e2af4446)) // Label: "Tandy (C) 81 // 8044316A // 8206" (rev A)
+ ROM_END
+ 
++// "CP/M Cheap" hardware mod (80 Microcomputing, March 1983): same ROMs as trs80m3.
++ROM_START(trs80m3cpm)
++	ROM_REGION(0x3800, "maincpu",0)
++	ROM_SYSTEM_BIOS(0, "trs80m3_revc", "Level 2 bios, RomC Rev C")
++	ROMX_LOAD("8041364.u104", 0x0000, 0x2000, CRC(ec0c6daa) SHA1(257cea6b9b46912d4681251019ec2b84f1b95fc8), ROM_BIOS(0))
++	ROMX_LOAD("8040332.u105", 0x2000, 0x1000, CRC(ed4ee921) SHA1(ec0a19d4b72f71e51965de63250009c3c4e4cab3), ROM_BIOS(0))
++	ROMX_LOAD("8040316c.u106", 0x3000, 0x0800, CRC(c8f79433) SHA1(6f395bba822d39d3cd2b73c8ea25aab4c4c26da7), ROM_BIOS(0))
++	ROM_SYSTEM_BIOS(1, "trs80m3_revb", "Level 2 bios, RomC Rev B")
++	ROMX_LOAD("8041364.u104", 0x0000, 0x2000, CRC(ec0c6daa) SHA1(257cea6b9b46912d4681251019ec2b84f1b95fc8), ROM_BIOS(1))
++	ROMX_LOAD("8040332.u105", 0x2000, 0x1000, CRC(ed4ee921) SHA1(ec0a19d4b72f71e51965de63250009c3c4e4cab3), ROM_BIOS(1))
++	ROMX_LOAD("8040316b.u106", 0x3000, 0x0800, CRC(84a5702d) SHA1(297dca756a9d3c6fd13e0fa6f93d172ff795b520), ROM_BIOS(1))
++
++	ROM_REGION(0x0800, "chargen",0)
++	ROM_LOAD("8044316.u36", 0x0000, 0x0800, NO_DUMP)
++	ROM_LOAD("8044316a.u36", 0x0000, 0x0800, CRC(444c8b60) SHA1(c52ee41439bd5e57c3b113ebfd61c951e2af4446))
++ROM_END
++
+ // for model 4 and 4p info, see http://vt100.net/mirror/harte/Radio%20Shack/TRS-80%20Model%204_4P%20Soft%20Tech%20Ref.pdf
+ ROM_START(trs80m4)
+ 	ROM_REGION(0x3800, "maincpu",0)
+@@ -554,6 +606,12 @@ void trs80m3_state::init_trs80m3()
+ 	m_model4 = 0;
+ }
+ 
++void trs80m3_state::init_trs80m3cpm()
++{
++	m_model4 = 0;
++	m_cpm_mod = true;   // enable the CP/M Cheap REMAP latch in port_ec_w / machine_reset
++}
++
+ void trs80m3_state::init_trs80m4()
+ {
+ 	m_model4 = 2;
+@@ -567,6 +625,7 @@ void trs80m3_state::init_trs80m4p()
+ 
+ //    YEAR  NAME         PARENT    COMPAT    MACHINE   INPUT     CLASS          INIT             COMPANY               FULLNAME                FLAGS
+ COMP( 1980, trs80m3,     0,        trs80l2,  model3,   trs80m3,  trs80m3_state, init_trs80m3,  "Tandy Radio Shack", "TRS-80 Model III",        MACHINE_NOT_WORKING | MACHINE_SUPPORTS_SAVE )
++COMP( 1983, trs80m3cpm,  trs80m3,  0,        model3cpm,trs80m3,  trs80m3_state, init_trs80m3cpm, "Tandy Radio Shack / Bill Brewer", "TRS-80 Model III (CP/M Cheap mod)", MACHINE_NOT_WORKING | MACHINE_SUPPORTS_SAVE )
+ COMP( 1980, trs80m4,     trs80m3,  0,        model4,   trs80m3,  trs80m3_state, init_trs80m4,  "Tandy Radio Shack", "TRS-80 Model 4",          MACHINE_NOT_WORKING | MACHINE_SUPPORTS_SAVE )
+ COMP( 1983, trs80m4p,    trs80m3,  0,        model4p,  trs80m4p, trs80m3_state, init_trs80m4p, "Tandy Radio Shack", "TRS-80 Model 4P",         MACHINE_NOT_WORKING | MACHINE_SUPPORTS_SAVE)
+ COMP( 1982, cp500,       trs80m3,  0,        cp500,    trs80m3,  trs80m3_state, init_trs80m3,  "Prológica",         "CP-500 (PVIII REV.3)",    MACHINE_NOT_WORKING | MACHINE_SUPPORTS_SAVE )
+diff --git a/src/mame/trs/trs80m3.h b/src/mame/trs/trs80m3.h
+index 6348f2010c2..eba0f463d07 100644
+--- a/src/mame/trs/trs80m3.h
++++ b/src/mame/trs/trs80m3.h
+@@ -51,14 +51,18 @@ public:
+ 		, m_32kbanks(*this, "bank%u", 0U)
+ 		, m_16kbank(*this, "16kbank")
+ 		, m_vidbank(*this, "vidbank")
++		, m_vlow(*this, "vlow")
++		, m_vhigh(*this, "vhigh")
+ 	{ }
+ 
+ 	void model4p(machine_config &config);
+ 	void model3(machine_config &config);
++	void model3cpm(machine_config &config);
+ 	void cp500(machine_config &config);
+ 	void model4(machine_config &config);
+ 
+ 	void init_trs80m3();
++	void init_trs80m3cpm();
+ 	void init_trs80m4();
+ 	void init_trs80m4p();
+ 
+@@ -107,7 +111,9 @@ private:
+ 	void m4p_io(address_map &map) ATTR_COLD;
+ 	void m4_banked_mem(address_map &map) ATTR_COLD;
+ 	void m4p_banked_mem(address_map &map) ATTR_COLD;
++	void m3cpm_mem(address_map &map) ATTR_COLD;
+ 
++	bool m_cpm_mod = false;   // "CP/M Cheap" REMAP banking active (trs80m3cpm only)
+ 	uint8_t m_model4 = 0U;
+ 	uint8_t m_mode = 0U;
+ 	uint8_t m_irq = 0U;
+@@ -150,6 +156,8 @@ private:
+ 	optional_memory_bank_array<2>               m_32kbanks;
+ 	optional_memory_bank                        m_16kbank;
+ 	optional_memory_bank                        m_vidbank;
++	memory_view                                 m_vlow;   // CP/M Cheap: 0x0000-0x3FFF ROM/IO vs RAM
++	memory_view                                 m_vhigh;  // CP/M Cheap: 0xF800-0xFFFF RAM vs kbd/video
+ };
+ 
+ #endif // MAME_TRS_TRS80M3_H
+diff --git a/src/mame/trs/trs80m3_m.cpp b/src/mame/trs/trs80m3_m.cpp
+index 8636f3f8d7d..9f4f9cb552c 100644
+--- a/src/mame/trs/trs80m3_m.cpp
++++ b/src/mame/trs/trs80m3_m.cpp
+@@ -88,7 +88,19 @@ uint8_t trs80m3_state::port_e4_r()
+ 
+ 	u8 data = m_nmi_data;
+ 	m_nmi_data = 0;
+-	return ~(m_nmi_mask & data);
++	u8 status = ~(m_nmi_mask & data);
++	// The "CP/M Cheap" BIOS NMI handler reads port 0xE4 (RDNMISTATUS) and tests
++	// for exactly 0x7E on a good FDC-INTRQ NMI -- i.e. it requires bit 7 (Disk
++	// INTRQ, active low) AND bit 0 to read 0.  Bit 0 is undefined on a stock
++	// Model III (tech ref), but a local hardware mod on the author's machine
++	// drove it to 0; the BIOS depends on that.  MAME returns it as 1, so without
++	// this the handler falls to its error path (FORCEINT) and disk I/O never
++	// completes.  Gated to trs80m3cpm because it reflects that machine's mod,
++	// not stock hardware (a faithful stock port_e4_r -- bit 6 is really Disk DRQ,
++	// idle reads 0x3F per trs80gp -- is a separate matter).
++	if (m_cpm_mod)
++		status &= 0xfe;
++	return status;
+ }
+ 
+ uint8_t trs80m3_state::port_e8_r()
+@@ -360,6 +372,12 @@ void trs80m3_state::port_ec_w(uint8_t data)
+ 		m_cassette->change_state(( data & 2 ) ? CASSETTE_MOTOR_ENABLED : CASSETTE_MOTOR_DISABLED, CASSETTE_MASK_MOTOR );
+ 
+ 	m_port_ec = data & 0x7e;
++
++	if (m_cpm_mod)   // "CP/M Cheap" mod: bit 0 = REMAP (1=RAM at 0x0000, 0=ROM at 0x0000)
++	{
++		m_vlow.select(BIT(data, 0));
++		m_vhigh.select(BIT(data, 0));
++	}
+ }
+ 
+ /* Selection of drive and parameters - d6..d5 not emulated.
+@@ -510,7 +528,14 @@ void trs80m3_state::drq_w(int state)
+ uint8_t trs80m3_state::wd179x_r()
+ {
+ 	uint8_t data = 0xff;
+-	if (BIT(m_io_config->read(), 7))
++	// The FDC is an add-on; a stock Model III is a cassette/ROM-BASIC machine.
++	// On real hardware the floppy boot is skipped by holding BREAK at power-on,
++	// which has no practical headless equivalent.  So treat an image mounted in
++	// the first drive (-flop1) as "FDC fitted".  Only -flop1 counts: a disk in
++	// -flop2 etc. alone must not enable the controller.  The CONFIG switch stays
++	// available as a manual override.
++	const bool flop1_mounted = m_floppy[0] && m_floppy[0]->get_device() && m_floppy[0]->get_device()->exists();
++	if (flop1_mounted || BIT(m_io_config->read(), 7))
+ 		data = m_fdc->status_r();
+ 
+ 	return data;
+@@ -637,5 +662,11 @@ void trs80m3_state::machine_reset()
+ 	if (m_model4 & 6)
+ 		port_84_w(0);    // 4 & 4P - switch in devices
+ 
++	if (m_cpm_mod)   // "CP/M Cheap" mod: power on in ROM mode (view 0)
++	{
++		m_vlow.select(0);
++		m_vhigh.select(0);
++	}
++
+ 	m_fdd = nullptr;
+ }
