@@ -1,5 +1,9 @@
 # TRS-80 Model III — CP/M ("CP/M Cheap" mod)
 
+![Alpha One CP/M 2.2 booted on the CP/M Cheap-modified TRS-80 Model III, running ARCDIR](docs/photos/alpha-one-cpm.png)
+
+*Alpha One CP/M 2.2 56K v1.15 on the modified Model III, listing my ARC utility suite with `ARCDIR`.*
+
 A stock **TRS-80 Model III** (Tandy/Radio Shack, 1980) is a cassette/ROM-BASIC
 machine; its 14 KB of ROM sits at `0x0000–0x37FF`, leaving no contiguous low RAM
 for CP/M. The **"CP/M Cheap"** hardware modification (Bill Brewer, *80
