@@ -1,0 +1,196 @@
+	Titlå	Colä anä Warí Starô Module
+
+;»	Copyrighô 1981¬ Balconeó Computeò Corporation.
+;
+
+	.z80
+
+bdosln	equ	0e00h		;Length of CP/M v 2.2 BDOS
+ccplen	equ	0800h		;Length of CP/M v 2.2 CCP
+cdisk	equ	4		;Current user/disk
+nsects	equ	(ccplen+bdosln)/128	;number of sectors for ccp + bdos
+
+confg	equ	0f03ch		;Configuration Status
+osboot	equ	0ffcch		;O/S identification byte
+
+os.cpm	equ	8ch		;CP/M id byte
+
+;;	Configuration Status Byte Bit Definitions.
+;
+c.keym	equ	7		;Keyboard upper bit is passed
+;
+;	bits 6,5 are for rigid disk configurations
+;
+c.rgd	equ	01100000b	;Configuration Mask for Rigid Disks
+c.sasi	equ	01000000b	;Configuration Mask for 8" 8 Mbyte Rigid Disk
+				;Shugart SA-1403D Disk Controller present
+				; (this is a mask value not a bit position)
+c.rgd5	equ	00100000b	;Configuration Mask for 5.25" 10 Mbyte Rigid Disk
+c.five	equ	4		;Five inch micro floppies
+c.lpkb	equ	3		;Low Profile Keyboard present
+c.eb2	equ	2		;Expansion Box II present
+
+rev	equ	'C'
+
+;;	Wboot - Warm Start CP/M.
+;
+wbt5:	ld	a,0c3h		;plant jumps
+	ld	hl,bios##-bdosln+6
+	cp	(hl)
+	jr	nz,wbterr	;if no jump to bdos
+	ld	(0),a
+	ld	(5),a
+	ld	(6),hl		;set address of jump to bdos
+	ld	hl,bwboot##	;set warm boot address
+	ld	(1),hl
+	ld	bc,(cdisk)	;set current disk / user
+	ld	hl,bios##-bdosln-ccplen ;Enter CCP
+wbtcom	equ	$-2		;patch to "03" to disable warm boot command
+	ld	a,3
+	ld	(wbtcom),a
+	jp	(hl)
+
+wbterr:	call	pmsg		;display error message
+	db	13,10,'Boot Err',0
+	call	bconin##	;wait for key
+wboot::	ld	sp,100h		;use external stack
+	call	dboot##		;inform deblocker
+	ld	c,a		;(zero) select A:
+	ld	a,nsects	;set number of sectors to read
+	ld	(seccnt),a	;set sector counter
+	push	bc		;** 5.0
+	push	de		;** 5.0
+	ld	hl,0		;** 5.0
+	call	confg		;** 5.0
+	bit	c.eb2,l		;** 5.0
+	pop	de		;** 5.0
+	pop	bc		;** 5.0
+	ld	hl,bios##-bdosln-ccplen-(128*8)	;** 5.0 set starting address
+						;** 5.0 for sector 0
+	jr	nz,wbt0		;** 5.0 if expansion box II
+	ld	hl,bios##-bdosln-ccplen-128
+wbt0:	ld	(dmabas),hl	;set base track dma address
+	call	bseld##		;select boot drive (A:)
+	ld	a,h
+	or	l
+	jr	z,wbterr
+	inc	hl		;point to high translate address
+	ld	a,(hl)
+	ld	(xlate),a
+	push	hl
+	ld	c,0		;translate sector zero
+	call	mls
+	ld	a,c
+	ld	(transz),a	;set sector zero translate value
+	pop	hl
+	ld	de,10-1		;offset to dpb
+	add	hl,de
+	ld	c,(hl)		;get dpb address
+	inc	hl
+	ld	b,(hl)
+	ld	a,(bc)		;get low sectors per track
+	ld	(spt),a
+	ld	hl,13
+	add	hl,bc
+	ld	c,(hl)		;get reserved tracks
+	inc	hl
+	ld	b,(hl)
+	dec	bc
+
+eb2wbt:	ld	e,8		;** 5.0 expansion box II system starts in sector 8
+	ld	a,(spt)		;** 5.0	
+	cp	26*2+1		;** 5.0 check for largest floppy disk
+				;** 5.0 spt capacity (8" DD)
+	jr	nc,wbt1		;** 5.0 if rigid disk
+				;** 5.0 (assume rigid disk
+				;** 5.0  if larger than largest floppy)
+				;** 5.0 (system track is already calculated)
+	ld	c,0		;** 5.0 floppy disks use track 0 for system
+wbt1:	push	bc		;save track
+	push	de		;save starting sector
+	call	bsett##		;position disk
+	pop	bc
+wbt2:	push	bc		;save sector
+	call	mls		;map logical sector
+	push	hl		;save address
+	call	bsets##		;set sector
+	pop	bc
+	ld	hl,bios##-2
+	sbc	hl,bc
+	jr	c,wbt3		;if within bios
+	call	bsetd##		;set dma address
+	call	read##		;read next sector
+	or	a
+	jp	nz,wbterr	;if load error
+	ld	a,0		;update sectors read counter
+seccnt	equ	$-1
+	dec	a
+	ld	(seccnt),a
+	jp	z,wbt5		;if end of load
+wbt3:	pop	bc		;advance sector
+	inc	c
+	ld	a,c
+	cp	-1
+spt	equ	$-1
+	jr	nz,wbt2		;if not end of track
+	ld	b,c
+	ld	hl,(dmabas)	;advance base dma address
+	ld	de,128
+wbt4:	add	hl,de		;by spt*128
+	djnz	wbt4
+	ld	(dmabas),hl
+	pop	bc		;advance track
+	inc	c
+	ld	e,b		;and restart on sector 0
+	jr	wbt1
+
+
+;;	Cold Start CP/M.
+;
+cboot::	ld	hl,osboot	;store O/S id byte - CP/M
+	ld	(hl),os.cpm
+	call	pmsg		;Announce CP/M size and version
+	db	26,'Xerox 60k CP/M vers 2.2',rev
+	db	' #2-294'
+	db	0
+
+;;	pmsg - print message at return address.
+;
+pmsg::	pop	hl		;print message after call
+	ld	a,(hl)
+	inc	hl
+	or	a
+	push	hl
+	ret	z		;if end of message
+	ld	c,a
+	call	bconot##	;display message at current console
+	jr	pmsg
+
+;;	mls - map logical sector.
+;
+mls:	ld	a,0		;set translate address
+xlate	equ	$-1
+	or	a
+	ld	a,c
+	jr	z,mls2		;if not single density
+	add	a,a		;read by half tracks
+	ld	hl,(spt)	;get sectors per track
+	cp	l
+	jr	c,mls1		;if not past end of track
+	sub	l		;offset back to beginning of track
+	inc	a
+mls1:	inc	a		;map sector 0->1
+	ld	c,a
+mls2:	sub	0		;offset by translate of sector zero
+transz	equ	$-1
+	rra
+	ld	h,a
+	ld	l,0
+	rr	l
+	ld	de,0		;set base dma for this track
+dmabas	equ	$-2
+	add	hl,de		;compute address for this sector
+	ret
+
+	end
+

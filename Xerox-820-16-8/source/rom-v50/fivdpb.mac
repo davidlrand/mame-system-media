@@ -1,0 +1,40 @@
+	title	Micro Floppy Disk Parameter Blocks
+
+;;	Copyright (C) 1981 by Balcones Computer Corporation
+;
+	.z80
+
+dpb5s::
+
+;	Single Density, Single Side
+
+	dw	18		;spt
+	db	3,7,0		;blkshf, blkmsk, nulmsk
+	dw	82,31,128,8,3	;dsw,dirm,alloc01,chksiz,trk off
+	db	0		;128 byte sectors
+
+;	Single Density, Double Side
+
+	dw	18		;spt
+	db	3,7,0		;blkshf, blkmsk, nulmsk
+	dw	172,31,128,8,3	;dsw,dirm,alloc01,chksiz,trk off
+	db	0		;128 byte sectors
+
+dpb5d::
+
+;	Double Density, Single Side
+
+	dw	17*2		;spt
+	db	3,7,0		;blkshf, blkmsk, nulmsk
+	dw	156,63,192,16,3	;dsw,dirm,alloc01,chksiz,trk off
+	db	81h		;256 byte sectors, track zero single density
+
+;	Double Density, Double Side
+
+	dw	17*2		;spt
+	db	4,15,1		;blkshf, blkmsk, nulmsk
+	dw	162,63,192,16,3	;dsw,dirm,alloc01,chksiz,trk off
+	db	81h		;256 byte sectors, track zero single density
+
+	end
+

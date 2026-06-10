@@ -1,0 +1,102 @@
+Rigid Partition Disk Parameter Blocks	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	title	Rigid Partition Disk Parameter Blocks
+                                
+                                	.z80
+                                
+                                ;;	Copyright (C) 1981 Balcones Computer Corporation.
+                                ;
+                                
+                                ;;	Rigid Partition Disk Parameter Blocks.
+                                ;
+                                ;	There are 16 4k Blocks per pseudo track.
+                                ;	Track Zero (2 Cylinders) are reserved for CP/M boot.
+                                ;
+  0040                          Nt4	equ	64		;Number of Tracks on Partition 0
+  0020                          Nt5	equ	32		;Number of Tracks on Partition 1
+  0010                          Nt6	equ	16		;Number of Tracks on Partition 2
+  0010                          Nt7	equ	16		;Number of Tracks on Partition 3
+                                
+  0000                          ..	aset	0		;First usable track
+                                
+                                	irpc	n,<4567>
+                                ..	aset	..+1		;reserve system track
+                                Dsm&n	equ	Nt&n*16-17
+                                Rtk&n	equ	..
+                                ..	aset	..+Nt&n-1
+                                Dpbrg&n::dw	512		;spt
+                                	db	5,31		;blkshf, blkmsk
+                                	db	3+2*(Dsm&n ge 256);exm
+                                	dw	Dsm&n		;dsm
+                                	dw	511		;dirmax
+                                	db	-1		;alloc0 (reserve additional dir space)
+                                	db	0		;alloc1
+                                	dw	0		;check size
+                                	dw	Rtk&n		;track offset
+                                	db	1		;256 byte sectors
+                                	endm
+  0000'   0200            +     Dpbrg&4::dw	512		;spt
+  0002'   05 1F           +     	db	5,31		;blkshf, blkmsk
+  0004'   01              +     	db	3+2*(Dsm&4 ge 256);exm
+  0005'   03EF            +     	dw	Dsm&4		;dsm
+  0007'   01FF            +     	dw	511		;dirmax
+  0009'   FF              +     	db	-1		;alloc0 (reserve additional dir space)
+  000A'   00              +     	db	0		;alloc1
+  000B'   0000            +     	dw	0		;check size
+  000D'   0001            +     	dw	Rtk&4		;track offset
+  000F'   01              +     	db	1		;256 byte sectors
+  0010'   0200            +     Dpbrg&5::dw	512		;spt
+  0012'   05 1F           +     	db	5,31		;blkshf, blkmsk
+  0014'   01              +     	db	3+2*(Dsm&5 ge 256);exm
+  0015'   01EF            +     	dw	Dsm&5		;dsm
+  0017'   01FF            +     	dw	511		;dirmax
+  0019'   FF              +     	db	-1		;alloc0 (reserve additional dir space)
+  001A'   00              +     	db	0		;alloc1
+  001B'   0000            +     	dw	0		;check size
+  001D'   0041            +     	dw	Rtk&5		;track offset
+  001F'   01              +     	db	1		;256 byte sectors
+  0020'   0200            +     Dpbrg&6::dw	512		;spt
+Rigid Partition Disk Parameter Blocks	MACRO-80 3.44	09-Dec-81	PAGE	1-1
+
+
+  0022'   05 1F           +     	db	5,31		;blkshf, blkmsk
+  0024'   03              +     	db	3+2*(Dsm&6 ge 256);exm
+  0025'   00EF            +     	dw	Dsm&6		;dsm
+  0027'   01FF            +     	dw	511		;dirmax
+  0029'   FF              +     	db	-1		;alloc0 (reserve additional dir space)
+  002A'   00              +     	db	0		;alloc1
+  002B'   0000            +     	dw	0		;check size
+  002D'   0061            +     	dw	Rtk&6		;track offset
+  002F'   01              +     	db	1		;256 byte sectors
+  0030'   0200            +     Dpbrg&7::dw	512		;spt
+  0032'   05 1F           +     	db	5,31		;blkshf, blkmsk
+  0034'   03              +     	db	3+2*(Dsm&7 ge 256);exm
+  0035'   00EF            +     	dw	Dsm&7		;dsm
+  0037'   01FF            +     	dw	511		;dirmax
+  0039'   FF              +     	db	-1		;alloc0 (reserve additional dir space)
+  003A'   00              +     	db	0		;alloc1
+  003B'   0000            +     	dw	0		;check size
+  003D'   0071            +     	dw	Rtk&7		;track offset
+  003F'   01              +     	db	1		;256 byte sectors
+                                
+                                	end
+Rigid Partition Disk Parameter Blocks	MACRO-80 3.44	09-Dec-81	PAGE	S
+
+
+Macros:
+
+Symbols:
+0080 	..              0000I'	DPBRG4          0010I'	DPBRG5          
+0020I'	DPBRG6          0030I'	DPBRG7          03EF 	DSM4            
+01EF 	DSM5            00EF 	DSM6            00EF 	DSM7            
+0040 	NT4             0020 	NT5             0010 	NT6             
+0010 	NT7             0001 	RTK4            0041 	RTK5            
+0061 	RTK6            0071 	RTK7            
+
+
+
+No Fatal error(s)
+
+
+id Part

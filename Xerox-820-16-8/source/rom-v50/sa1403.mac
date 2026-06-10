@@ -1,0 +1,713 @@
+	title	SA1403 - Shugart / DTC SASI Driver			
+
+;;;	SA-1403D SASI driver.
+;
+;	Copyright (C) 1981 by Balcones Computer Corporation
+;
+	.z80
+
+;;	Monitor Entry Points.
+;
+fastcrt	equ	0f00fh		;crt driver
+daytim	equ	0f039h		;get address of timer data
+idle	equ	0f066h		;idle cpu
+soft	equ	0f069h		;record soft error
+rgdbuf	equ	0ee00h		;rigid parameter load buffer
+xebec	equ	0
+
+	extrn	Dpbase		;Disk Parameter Headers
+	extrn	Dpbrg4		;Disk Parameter Blocks (rigid)
+	extrn	Dpb8s		;Disk Parameter Blocks (floppy)
+	extrn	Trn6		;Single density translate table
+
+;;	Sasi Pio Port Addresses.
+;
+pioAs	equ	11h		;Pio A Status
+pioAd	equ	pioAs xor 01b
+pioBs	equ	pioAs xor 10b
+pioBd	equ	pioAs xor 11b
+
+Sasid	equ	pioAd		;bus data
+Sasic	equ	pioBd		;bus control
+Sasis	equ	pioBd		;bus status
+
+syspio	equ	1ch		;system configuration port
+
+;;	Sasi controller status bit definitions.
+;
+b.bsy	equ	00		;(in)  controller busy status
+b.msg	equ	01		;(in)  status byte completion status
+b.cd	equ	02		;(in)  control byte or data byte transfer
+b.req	equ	03		;(in)  controller request for data/command
+b.io	equ	04		;(in)  data transfer direction
+b.sel	equ	05		;(out) controller select
+b.par	equ	06		;(in)  buss parity error
+b.rst	equ	07		;(out) controller reset
+
+;;	Logical Unit Assignments.
+;
+faluî	eqõ	°		;Aº Lun
+fblun	equ	1		;B: Lun
+fclun	equ	0		;C: Lun
+fdlun	equ	2		;D: Lun
+rglun	equ	3		;E: Lun
+
+	subttl	Sasi Class Code Definitions
+	page	60
+;;	Class Command Codes for Prom Set AS31*
+;
+;	DTC Reference Manual Dated February 4, 1981.
+;
+;;	class  0 commands.
+;
+c.trdy	equ	00h		;test ready status
+c.recal	equ	01h		;recalibrate drive
+c.rsyn	equ	02h		;request syndrome
+c.rqsn	equ	03h		;request sense after error
+c.fmat	equ	04h		;format drive
+c.vtrk	equ	05h		;verify track format
+c.ftrk	equ	06h		;format single track
+c.flaw	equ	07h		;format track with flaw
+c.read	equ	08h		;read data
+c.wrpr	equ	09h		;write protect sector
+c.writ	equ	0ah		;write data
+c.seek	equ	0bh		;initiate seek
+c.init	equ	0ch		;inititialize drive
+
+;;	Class 6 commands.
+;
+c.flpy	equ	0c0h		;define floppy disk format
+
+;;	Floppy Format Codes.
+;
+fm.ds	equ	0		;double side bit
+fm.dd	equ	1		;double density bit
+fm.sz	equ	2		;sector size bit
+fm.wr	equ	3		;log2(fm.ddds+1)
+
+fm.sdss	equ	00h		;Single Density, Single Sided
+fm.sdds	equ	01h		;Single Density, Double Sided
+fm.ddss	equ	06h		;Double Density, Single Sided
+fm.ddds	equ	07h		;Double Density, Double Sided
+
+fm.hard	equ	80h		;Rigid
+
+;;	Class 7 commands.
+;
+c.tram	equ	0e0h		;test ram buffer
+
+;;	Message Macros.
+;
+pmsg	macro	n,msg
+	if1
+	.printx	+MSG N+
+	endif
+	endm
+
+phex	macro	n,m
+	.radix	16
+	pmsg	%(n),<m>
+	.radix	10
+	endm
+
+	subttl	Sasi Physical Driver.
+	page
+;;	Sa1403 - Sasi Physical Driver.
+;
+Dskdvr::
+sa1403:	ld	b,6		;set retry count
+sas0a:	ld	a,(hl)		;set driver operation
+	inc	hl		;point to unit
+	inc	a
+	jr	z,select	;if select DPH
+	push	hl
+	push	bc
+	dec	a
+	ld	a,c.writ	;preset write opcode
+	jr	z,sas0
+	ld	a,c.read	;assume read
+sas0:	ld	(opcode),a	;set Sasi opcode
+	ld	a,(hl)		;get driver unit
+	push	hl
+	call	mlu		;map to logical unit
+	pop	hl
+	inc	hl		;ignore cpm dsk
+	inc	hl		;track low
+	ld	d,(hl)		;set track
+	inc	hl
+	inc	hl
+	ld	e,(hl)		;set sector
+	call	cwp		;check write protect
+	jr	nz,sas2		;if write protected and track > 0
+	push	hl		;save request block address
+	call	mpa		;map physical address to logical address
+	ld	hl,opcode
+	call	icc		;issue controller command
+ 	pop	hl		;get pointer to low sector back
+	inc	hl		;ignore sector high
+	inc	hl		;dma low
+	ld	e,(hl)
+	inc	hl		;dma high
+	ld	d,(hl)
+	ex	de,hl		;set transfer address to HL
+	ld	b,0		;set sector length
+seclen	equ	$-1
+	ld	a,(opcode)
+	cp	c.writ
+	jr	z,sas1		;if write command
+	call	tdi		;transfer data in
+	jr	sas2
+sas1:	call	tdo		;transfer data out 
+sas2:	pop	bc
+	pop	hl
+	dec	hl
+	ret	z		;if no errors
+	call	soft		;report soft error
+	djnz	sas0a		;if more retries
+	ret			;return error
+
+	if	0
+	ld	hl,opcode
+	ld	(hl),c.rqsn	;request sense
+	call	icc		;issue controller command
+	ld	b,4		;read four status bytes
+	call	tdi		;transfer status bytes
+	ret
+	endif
+
+	subttl	Physical Driver Select
+	page
+;;	Select - Physical Driver Select.
+;
+select:	ld	a,(hl)		;set physical unit
+	cp	8		;verify in range
+numunt	equ	$-1
+	ccf
+	call	nc,smf		;set media format
+	ret	nc		;if media identified
+
+;;	selerr - Select Error Driver.
+;
+selerr: ld	hl,0		;Select Error Driver
+seler1:	or	-1
+	ret
+
+;;	Smf - Set Media Format.
+;
+;	entry:	A = Driver unit index
+;	Exit:	HL = DPH address, if no carry
+;
+smf:	call	first		;execute first time only routine
+	call	mlu		;map to logical unit
+	ex	de,hl		;get dph index to hl
+	ld	a,l		;and A
+	add	hl,hl		;index *16
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	ld	de,Dpbase	;set base of Disk Parameter Headers
+	add	hl,de
+	cp	4
+	ret	nc		;if rigid unit
+	push	hl		;save dph address
+	ld	a,80h		;disable error recovery
+	ld	(dctrl),a
+	ld	(lastfm+1),a
+	ld	a,(bc)		;always try double side first
+	or	1 shl fm.ds
+	ld	(bc),a
+	ld	a,8-1		;try each type two times
+smf1:	ld	(smfa),a	;set retry count
+	push	bc		;save define format table address
+	call	cdd		;check drive density
+	pop	bc
+	ld	h,b		;set format table address
+	ld	l,c
+	jr	z,smf2		;if diskette type identified
+	ld	a,0
+smfa	equ	$-1		;diskette type retry counter
+	sub	1
+	jr	c,smf4		;if media not identified
+	dec	(hl)		;advance disk type code
+	jp	p,smf1a		;if no wrap
+	ld	(hl),fm.ddds
+smf1a:	bit	fm.dd,(hl)	;test for double density
+	jr	nz,smf1		;if double density
+	res	fm.sz,(hl)	;set sector size = 128
+	jr	smf1		;try more diskette types
+smf2:	ld	d,a		;preset no translate
+	ld	e,d
+	bit	fm.dd,(hl)
+	jr	nz,smf3		;if diskette is double density
+	ld	de,trn6		;set single density translate
+smf3:	pop	hl		;get dph address
+	push	hl
+	ld	(hl),e		;store translate address
+	inc	hl
+	ld	(hl),d
+	ld	de,10-1
+	add	hl,de		;point to dpb address in dph
+	ld	a,(bc)		;get selected format
+	and	3
+	ex	de,hl
+	ld	l,a
+	add	hl,hl		;index by 16
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	ld	bc,dpb8s	;set dpb base
+	add	hl,bc		;set dpb address (clears carry)
+	ex	de,hl		;recover dpb pointer address in dph
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+smf4:	pop	hl		;get dph address
+	ld	a,0		;enable error recovery
+	ld	(dctrl),a
+	ret
+
+;;	cdd - check drive density.
+;
+cdd:	ld	a,(bc)		;get attempted side
+	and	1		;try side 1 on ds, 0 on ss
+	ld	de,2*256+1
+	jr	z,cdd0		;if single side
+	ld	d,77+2		;use back side
+cdd0:	call	mpa		;map physical address
+	ld	hl,opcode
+	ld	(hl),c.read
+	call	icc		;issue controller command
+	call	sim		;set input mode
+cdd1:	call	wfr		;wait for req
+	jr	nz,cdd2		;if timeout or status, not data requested
+	in	a,(c)		;eat sector
+	jr	cdd1
+cdd2:	call	wcc		;wait command complete
+	ret
+
+;;	p2l - Physical to Logical Mapping Table.
+;
+;	First byte is the SA1403 Logical Unit Number
+;	Second byte is extended drive format code
+;
+p2l:	db	falun shl 5,fm.sdss	;Floppy Drive 0
+	db	fblun shl 5,fm.sdds	;Floppy Drive 1
+	db	falun shl 5,fm.ddss	;Floppy Drive 0
+	db	fdlun shl 5,fm.ddds	;Floppy Drive 2
+	db	rglun shl 5,fm.hard	;Rigid Partition 0
+	db	rglun shl 5,fm.hard	;Rigid Partition 1
+	db	rglun shl 5,fm.hard	;Rigid Partition 2
+	db	rglun shl 5,fm.hard	;Rigid Partition 3
+
+;;	Mlu - Map Logical Unit.
+;
+;	Entry:	A  =  Physical Driver Unit from Deblocker
+;	Exit:	DE =  dph index
+;		BC = pointer to format code
+;		Sasi LUN stored in command block
+;
+mlu:	ld	hl,p2l		;set Rigid Physical to Logical map table
+	ld	d,0
+	ld	e,a
+	add	hl,de		;point to table entry
+	add	hl,de
+	ld	a,(hl)		;get Sasi LUN
+	ld	(lun),a		;store in read/write command
+	ld	(deflun),a	;store in define command
+	if	xebec
+	ld	(reclun),a	;store in recalibrate
+	endif
+	inc	hl		;point to format descriptor
+	ld	b,h
+	ld	c,l
+	ret
+
+;;	Mpa - Map Physical Address.
+;
+;	Entry:	BC = p2l format code address
+;		D  = Track
+;		E  = Sector
+;
+;	Exit:	Logical Address set in command block
+;		Seclen set for transfer
+;		Controller notified of floppy format
+;
+mpa:	ld	hl,seclen	;preset sector length
+	ld	(hl),0
+	ex	de,hl		;preset Laddr = Paddr for rigid
+	ld	a,(bc)		;get drive format code
+	cp	fm.hard
+	jr	z,mpa5		;if Rigid Partition
+	cp	fm.ddss
+	jr	c,mpa1		;if single density
+	inc	l		;advance sector from 0->25 to 1->26
+	ld	a,h
+	or	a
+	jr	nz,mpa2		;if not on track zero
+	dec	l
+mpa1:	ld	a,128		;set short sector
+	ld	(de),a
+mpa2:	ld	a,(bc)
+	bit	fm.ds,a
+	jr	z,mpa22		;if not double sided disk
+	ld	a,h		;map first 77 tracks to side zero
+	cp	77
+	jr	c,mpa21		;if side zero tracks
+	sub	77		;offset to back side
+mpa21:	ccf
+	adc	a,a
+	ld	h,a
+mpa22:	push	hl		;save track/sector
+	ld	a,(bc)		;get floppy format
+	ld	hl,(deflun)	;get new unit
+	ld	h,a
+	ld	de,-1		;get previously used format/lun
+lastfm	equ	$-2
+	ld	(lastfm),hl	;save this format/unit for next time
+	or	a
+	sbc	hl,de
+	jr	z,mpa3		;if unit and format same as last time
+	ld	(flpfrm),a
+	ld	hl,deflpy	;issue define floppy command
+	call	icc
+	call	wcc
+mpa3:	pop	hl		;recover track / sector
+	ld	b,h		;set track
+	ld	de,26		;compute sector-26-1+(Track+1)*26
+	ld	h,d		;clear upper track
+	scf
+	sbc	hl,de		;adjust sector
+	inc	b		;force one pass
+mpa4:	add	hl,de		;multiply track by sectors/track
+	djnz	mpa4		;if multiply incomplete
+mpa5:	ld	a,h		;swap H & L
+	ld	h,l
+	ld	l,a
+	ld	(addrh),hl	;Store address in command block
+	ret
+
+	subttl	Sasi Bus Control Interface
+	page
+;;	gca - get controller attention.
+;
+gca:	call	reset		;reset controller if required
+	ld	a,(hl)		;get command
+	cp	c.recal
+	ld	a,9+1		;set 9+ second time-out
+	jr	z,gca0		;if recalibrate, use long time-out
+	ld	a,2+1		;use short time-out
+gca0:	ld	(gcaa),a
+gcaa	equ	$-2	;*****=>;monitor one second timer address goes here
+	public	gcaa
+	call	som		;set output mode
+	ld	a,1		;Set sasi controller address
+	out	(Sasid),a
+	ld	a,1 shl b.sel	;assert Select Line
+	out	(Sasic),a
+gca1:	in	a,(Sasis)	;get sasi status
+	rrca			;get busy bit in C
+	jr	c,gca2		;if controller is ready
+	call	cft		;check for time-out
+	jp	p,gca1		;if not timed out
+gca2:	xor	a
+	out	(Sasic),a	;drop Select
+	ret
+
+;;	Icc  - issue Controller Command.
+;
+;	HL => Sasi command block
+;
+icc::	ld	a,(hl)		;peek at opcode
+	cp	c.fmat
+	ret	z		;do not allow format entire disk
+	call	gca		;get controller attention
+	ld	bc,Sasid+6*256	;set port / command block length
+icc1:	call	wfr		;wait for REQ
+	ret	z		;if data requested
+	outi			;send next byte
+	jr	nz,icc1
+	ret
+
+;;	tdo - transmit data out.
+;
+tdo::	call	wfr		;wait for req
+	jr	nz,wcc		;if not data requested
+
+	otir			;pitch sector out
+	if	xebec
+	dw	0
+	endif
+
+	jr	wcc
+
+;;	tdi - transmit data in.
+;
+tdi::	call	sim		;set input mode
+	call	wfr		;wait for req
+	jr	nz,wcc		;if status, not data requested
+
+	inir			;read sector
+	if	xebec
+	dw	0		;patch for 512 byte sectors
+	endif
+
+;;	wcc  - wait command complete.
+;
+wcc::	call	sim		;set input mode
+	call	wfr		;wait for REQ
+	jr	z,ecr		;if controller not providing status
+	in	a,(c)		;read completion status
+	and	3		;ignore unused bits
+	ld	b,a
+	call	wfr		;wait for REQ
+	jr	z,ecr		;if not status
+	in	a,(Sasis)	;recover status
+	bit	b.msg,a
+	jr	z,ecr		;if not message byte
+	in	a,(c)		;read message byte
+	jr	nz,ecr		;if last byte not zero
+	or	b		;set Sasi error status byte
+	ret
+
+;;	wfr - wait for REQ.
+;
+;	Exit:	A < 0	Timer Expired
+;		A = 0	Request is for data
+;		A > 0	Request is for control
+;
+wfr::	call	cft		;check for time-out
+	jp	m,wfr1		;if controller hung
+	in	a,(Sasis)	;read sasi status
+	bit	b.req,a
+	jr	z,wfr		;if request not asserted
+	bit	b.par,a		;check buss parity
+	jr	nz,wfr1		;if parity error
+wfra	equ	$-1
+	and	1 shl b.cd	;test control / data bit
+	ret
+wfr1:	pop	af		;pitch return address
+
+;;	ecr - Enable Controller Reset.
+;
+ecr::	xor	a		;enable controller reset next time
+	ld	(reset),a	;by placing NOP at reset entry point
+	or	-1		;return error status
+	ld	(lastfm),a	;force define floppy format
+	ret
+
+;;	Cft - Check for Time-out.
+;
+cft:	call	idle		;idle cpu
+	ld	a,(0)
+cfta	equ	$-2	;*****=>;This word gets the address of the timer
+	public	cfta
+	or	a
+	ret
+
+;;	Reset - Reset Controller.
+;
+;	This routine is called prior to every command that is
+;	issued to the controller, but disables itself after
+;	running.  When, and if the controller times-out, this
+;	routine is re-enabled.  Thus, the controller will be
+;	reset again before the next command is issued.
+;
+reset::	nop		;*****=>;Note RET gets put here after reset
+				;     NOP gets put there if time-out
+	ld	a,11001111b	;initialize pio in mode 3
+	out	(pioBs),a
+	ld	a,01011111b	;d7, d5 are outputs
+	out	(pioBs),a
+	ld	a,1 shl b.rst	;assert reset to controller
+	out	(Sasic),a
+	xor	a
+	out	(Sasic),a	;de-assert reset
+	ld	a,0c9h
+	ld	(reset),a	;disable reset until time-out
+	push	hl
+	if	xebec
+	in	a,(syspio)
+	bit	1,a
+	jr	nz,reset1	;if dtc
+	ld	hl,initdr	;init drive characteristics
+	call	icc
+	ld	b,8
+	call	tdo
+reset1:
+	endif
+
+	ld	hl,rgrecal
+	call	icc		;issue recursive rigid recalibrate
+	call	wcc
+	pop	hl
+	ret
+
+;;	Sim - Set Input Mode.
+;
+sim:	ld	a,01001111b	;set pio A input mode
+	jr	som1
+
+;;	Som - Set Output Mode.
+;
+som:	ld	a,00001111b	;set pio A output mode
+som1:	out	(pioAs),a
+	ret
+
+;;	cwp - check write protect.
+;
+cwp:	ld	a,(bc)		;get drive type
+	and	fm.hard
+	ret	z		;if not rigid disk access
+	ld	a,0		;get dirty parameter flag
+rdonly	equ	$-1
+	or	a
+	ret	z		;if not write protected
+	ld	a,d
+	or	a
+	ret	z		;if track zero request
+	ld	a,(opcode)
+	sub	c.read		;allow reads, but no writes to file system
+	ret
+
+	subttl	Sasi Command Blocks
+	page
+
+;;	Sasi Command Blocks.
+;
+	iæ	xebec
+initdrº	dâ	c.init
+	dâ	0
+	endif
+
+rgrecal:db	c.recal
+reclun:	db	3 shl 5
+
+	if	xebec
+	db	0,0,0
+	dw	1024
+nheads:	db	0
+	dw	100
+	dw	0
+	db	11
+	endif
+
+deflpy:	db	c.flpy		;define floppy format
+deflun:	db	0
+	db	0,0,0		
+flpfrm:	db	0
+
+opcode:	db	0		;Class code / Operation
+lun:	db	0		;Logical Unit & Logical Address 20-16
+addrh:	db	0		;		Logical Address 15-8
+addrl:	db	0		;		Logical Address  7-0
+nblk:	db	1		;Number of Blocks
+dctrl:	db	0		;Error Retry Disable Control word
+
+;status:	db	-1,-2,-3,-4	;error status
+
+	subttl	Overlayable Initialization Code
+	page
+;;	First - First time only.
+;
+first::	push	af
+	phex	$-dskdvr,<SASI Resident Length is>
+	ld	a,0c9h		;nuke self first time
+	ld	(first),a
+	ld	h,0		;indicate return register value
+	call	daytim		;get address of monitor timer
+	dec	hl
+	ld	(cfta),hl	;store address of timer for check routine
+	ld	(gcaa),hl	;and for command startup
+	if	xebec
+	in	a,(syspio)
+	bit	5,a
+	jr	nz,first1	;if jumper not installed
+	ld	c,a
+	and	110b		;isolate number of heads
+	add	a,2
+	ld	(nheads),a
+	ld	hl,p2l		;arrange physical to logical table
+	ld	a,4		;set number of partitions
+	ld	(numunt),a
+	bit	4,c
+	jr	nz,first0	;if not bufferred step
+;	ld	a,4
+	ld	(dctrl),a	;set buffered step
+
+first0:	ld	(hl),0		;set LUN 0
+	inc	hl
+	ld	(hl),fm.hard	;set rigid density
+	inc	hl
+	dec	a
+	jr	nz,first0
+	ld	(wfra),a	;disable parity check
+	endif
+
+first1:	ld	hl,cnfdpb	;point to physical driver read command
+	call	sa1403		;read partition parameters
+	or	a
+	call	z,cpb		;if no errors then check parameter blocks
+	jr	z,first2	;if parameters are loaded
+	ld	hl,cnfdpb+5	;try backup heads
+	ld	a,(hl)		;get logical sector
+	add	a,32		;advance to next head
+	ld	(hl),a
+	jr	nz,first1	;if 4 heads and 2 cylinders not attempted
+	cpl			;set tracks > 0 read only
+	ld	(rdonly),a
+first2:	pop	af
+	ret
+
+;;	cpb - check parameter blocks.
+;
+cpb:	ld	hl,rgdbuf	;point to dpb buffer
+	ld	a,(cnfdpb+5)	;get sector this dpb set came from
+	cp	32
+	jr	nz,cpb1		;if not primary set
+	ld	a,(hl)
+	cp	0e5h
+	ret	z		;use default dpbs if none configured
+cpb1:	ld	de,16-1		;set offset from high spt to deblock control
+	ld	b,4		;verify 4 dpbs
+cpb2:	ld	a,(hl)		;set low sectors / track
+	or	a
+	ret	nz		;if bummer sectors / track
+	add	hl,de		;advance to deblock control
+	ld	a,(hl)
+	and	87h
+	sra	a
+	sra	a
+	ret	nz		;if bad deblocking constant
+	inc	hl
+	djnz	cpb2
+	dec	hl
+	ld	de,Dpbrg4+16*4-1
+	ld	bc,16*4
+	lddr			;move dpbs into place
+	ld	bc,16		;set 16 bytes/dpx
+	ld	de,Dpbase+4*16+14 ;point at alloc vector pointer
+	ld	hl,Dpbrg4+13	;point at reserved tracks
+	ld	a,4		;count off 4 partitions
+cpb3:	push	af
+	ld	a,(hl)		;get reserved tracks for partition
+	dec	a		;just so nice numbers come out
+	add	a,a		;16 blks/track / 8 blks/byte = 2 bytes/track
+	ld	(de),a		;store low allocation vector address
+	add	hl,bc		;advance to next dpb
+	ex	de,hl
+	add	hl,bc		;advance to next dph
+	ex	de,hl
+	pop	af
+	dec	a
+	jr	nz,cpb3		;if more to allocate
+	ret	z		;return success
+
+cnfdpb:	db	01,4,0		;read partition 0
+	dw	0		;track zero
+	dw	32		;sector 32
+	dw	rgdbuf		;rigid parameter table buffer
+
+	phex	$-Dskdvr,<SASI Driver Length is >
+
+	end
+

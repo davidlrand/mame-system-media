@@ -1,0 +1,560 @@
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	title	Western Digital WD-1797-02 Floppy Disk Driver		
+                                
+                                	.z80
+                                
+                                ;;	Western Digital WD-1797-02 Floppy Disk Driver.
+                                ;
+                                ;	Copyright (c) 1981, Balcones Computer Corporation
+                                ;
+                                ;;	Standard Disk Driver Interface Definitions.
+                                ;
+                                ;	The main entry point (FLOPPY) is called with HL pointing
+                                ;	to a disk driver request block.  All information is passed
+                                ;	in this request as follows:
+                                ;
+                                ;	HL->	db	command	;1 = read, 0 = write, -1 = select dph
+                                ;		db	phunit	;physical unit for request (0-3)
+                                ;		db	cpunit	;CP/M logical drive for request (0-15)
+                                ;		dw	track	;CP/M track number (offset already applied)
+                                ;		dw	sector	;Phys sector number (after deblocking)
+                                ;		dw	address	;CP/M dma transfer address
+                                ;
+                                ;	The standard deblocker processes CP/M BIOS style select
+                                ;	requests.  If the selected drive is not logged in, the
+                                ;	deblocker issues a driver Select command.  The deblocker
+                                ;	remembers the address of the DPH returned by the driver in
+                                ;	order to quickly process successive BIOS select calls to a
+                                ;	drive that is already logged in, by returning this address
+                                ;	without assistance from the physical driver.
+                                ;
+                                ;	The Select command causes the media to be examined for its
+                                ;	density and drive type.  This information is maintained locally
+                                ;	by the driver for use in following read/write requests.  The
+                                ;	driver then returns the address of a CP/M disk parameter header
+                                ;	in register HL that coresponds to the unit and media format.
+                                ;	The media may not be changed without issuing another driver
+                                ;	Select command.  Note that a driver MUST NOT remember the unit
+                                ;	for later use since this Select command is issued only once
+                                ;	when the disk is logged in.  The Select command request block
+                                ;	will contain only the first three bytes. (-1, phunit, cpunit)
+                                ;
+                                ;	The Read and Write commands process physical sectors according
+                                ;	to the density determined by the previously issued Select command.
+                                ;	The request block contains the unit, track, sector, and transfer
+                                ;	address.  For double density diskettes, the transfer address will
+                                ;	point to one of the deblocker's host buffers, and 256 bytes must
+                                ;	be transfered to/from there.  However, for single density diskettes
+                                ;	the transfer address will point directly to the users dma buffer,
+                                ;	but only 128 bytes may be transfered.
+                                	subttl	Assembly Constants
+                                	page	60
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-1
+Assembly Constants
+
+                                
+                                ;;	Monitor Entry Points.
+                                ;
+  F039                          daytim	equ	0f039h		;get address of timer data
+  F066                          idle	equ	0f066h		;idle cpu
+  F069                          soft	equ	0f069h		;record soft error
+                                
+  0066                          NMI	equ	00066h		;address of non maskable interrupt
+                                
+                                ;;	WD 1797 I/O port addresses.
+                                ;
+  0010                          wdsr	equ	10h		;status
+  0010                          wdcr	equ	10h		;command
+  0011                          wdtr	equ	11h		;track
+  0012                          wdsn	equ	12h		;sector
+  0013                          wddt	equ	13h		;data
+                                
+  001C                          wdsl	equ	1ch		;drive select port
+  0030                          wdsd	equ	30h		;select single density
+  0031                          wddd	equ	31h		;select double density
+                                
+                                
+                                ;;	External Disk Parameter Tables.
+                                ;
+                                	extrn	Dpbase,Dpb8s,Trn6
+                                
+  0007                          fm.un	equ	7
+  0004                          fm.ds	equ	4
+  0005                          fm.dd	equ	5
+  0006                          fm.fv	equ	6
+  00A0                          fm.ddss	equ	(1 shl fm.dd) or (1 shl fm.un)
+                                
+  004D                          ntrk8	equ	77
+  0028                          ntrk5	equ	40
+                                
+  0004                          c.8in	equ	4
+  0005                          c.two	equ	5
+  0006                          timout	equ	6		;motor / select time out
+  000A                          dpbofs	equ	10		;offset in dph for dpb address
+                                
+                                	subttl	Floppy Disk Driver Proper
+                                	page
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-2
+Floppy Disk Driver Proper
+
+                                
+                                ;;	Western Digital Floppy Disk Driver.
+                                ;
+  0000'   CD 0197'              Dskdvr::call	rdc		;un hang busy controller
+  0003'   7E                    	ld	a,(hl)		;set command
+  0004'   23                    	inc	hl		;point to unit
+  0005'   32 0037'              	ld	(rdop),a
+  0008'   3C                    	inc	a
+  0009'   28 55                 	jr	z,select	;if select command
+  000B'   06 0A                 	ld	b,10		;set retry count
+  000D'   C5                    flop1:	push	bc		;save count
+  000E'   E5                    	push	hl		;save command
+  000F'   7E                    	ld	a,(hl)		;set unit select
+  0010'   CD 0094'              	call	selunt
+  0013'   FA 0056'              	jp	m,flop5		;if unit not ready
+  0016'   23                    	inc	hl
+  0017'   23                    	inc	hl
+  0018'   4E                    	ld	c,(hl)		;set track low
+  0019'   CD 00F3'              	call	seek		;position disk
+  001C'   4E                    	ld	c,(hl)		;retrieve track low
+  001D'   20 37                 	jr	nz,flop5	;if unrecoverable error
+  001F'   23                    	inc	hl		;track high
+  0020'   23                    	inc	hl
+  0021'   13                    	inc	de		;point to second byte of track table entry
+  0022'   1A                    	ld	a,(de)		;get diskette type
+  0023'   E6 18                 	and	18h
+  0025'   7E                    	ld	a,(hl)		;sector low
+  0026'   20 06                 	jr	nz,flop2	;if single density, cp/m skews
+  0028'   79                    	ld	a,c		;get current logical track
+  0029'   B7                    	or	a
+  002A'   7E                    	ld	a,(hl)		;set sector
+  002B'   28 01                 	jr	z,flop2		;if single density track zero
+  002D'   3C                    	inc	a		;translate for double density
+  002E'   D3 12                 flop2:	out	(wdsn),a	;set sector to read in 1791
+  0030'   23                    	inc	hl		;skip sector high
+  0031'   23                    	inc	hl		;dmal
+  0032'   5E                    	ld	e,(hl)		;set transfer address to HL
+  0033'   23                    	inc	hl		;dmah
+  0034'   56                    	ld	d,(hl)
+  0035'   EB                    	ex	de,hl
+  0036'   3E 00                 	ld	a,0		;set read/write switch
+  0037'                         rdop	equ	$-1
+  0038'   B7                    	or	a
+  0039'   0E A8                 	ld	c,0a8h		;preset write command
+  003B'   3E A3                 	ld	a,0a3h		;set second part of OUTI
+  003D'   28 03                 	jr	z,flop3		;if write
+  003F'   0E 88                 	ld	c,088h		;turn write command into read command
+  0041'   3D                    	dec	a		;turn OUTI into INI
+  0042'   32 004E'              flop3:	ld	(rdwra),a	;set up i/o direction
+  0045'   3E 00                 	ld	a,0
+  0046'                         rdwrs	equ	$-1		;set side compare flag
+  0047'   81                    	add	a,c
+  0048'   4F                    	ld	c,a
+  0049'   CD 016D'              	call	stc		;start transfer
+  004C'   76                    flop4:	halt			;wait for DRQ or INT
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-3
+Floppy Disk Driver Proper
+
+  004D'   ED A2                 		ini		;transfer next byte
+  004E'                         rdwra	equ	$-1
+  004F'   20 FB                 	jr	nz,flop4	;if transfer not complete
+  0051'   CD 0189'              	call	ttc		;terminate transfer command
+  0054'   E6 DF                 	and	0dfh		;set error bits
+  0056'   E1                    flop5:	pop	hl		;recover command pointer
+  0057'   C1                    	pop	bc
+  0058'   C8                    	ret	z		;if no errors
+  0059'   D8                    	ret	c		;if 5.25" not ready
+  005A'   CD F069               	call	soft
+  005D'   10 AE                 	djnz	flop1		;if retry not exceeded
+  005F'   C9                    	ret
+                                
+                                ;;	select - select dph for unit.
+                                ;
+  0060'   7E                    select:	ld	a,(hl)		;set unit
+  0061'   FE 04                 	cp	4
+  0063'   D2 0000*              	jp	nc,selerr##	;if bad unit select
+  0066'   26 00                 	ld	h,0
+  0068'   CD F039               	call	daytim		;set address of timers
+  006B'   2B                    	dec	hl		;point to motor timer
+  006C'   22 00A9'              	ld	(mtradr),hl
+  006F'   2B                    	dec	hl		;point to configurable step rate
+  0070'   22 01BE'              	ld	(stpadr),hl	;store address of step rate for media selector
+  0073'   26 00                 	ld	h,0
+  0075'   6F                    	ld	l,a
+  0076'   29                    	add	hl,hl		;multiply by 2**4
+  0077'   29                    	add	hl,hl
+  0078'   29                    	add	hl,hl
+  0079'   29                    	add	hl,hl
+  007A'   11 0000*              	ld	de,Dpbase	;set address of disk parameter headers
+  007D'   19                    	add	hl,de		;set dph address
+  007E'   E5                    	push	hl
+  007F'   CD 01AA'              	call	smf		;set media format
+  0082'   E1                    	pop	hl
+  0083'   CA 0000*              	jp	z,selerr##	;if no media
+  0086'   71                    	ld	(hl),c		;store translate table
+  0087'   23                    	inc	hl
+  0088'   70                    	ld	(hl),b
+  0089'   01 000A               	ld	bc,dpbofs
+  008C'   09                    	add	hl,bc		;point to dpb addr and clear carry
+  008D'   72                    	ld	(hl),d		;fill in dpb address
+  008E'   2B                    	dec	hl
+  008F'   73                    	ld	(hl),e
+  0090'   ED 42                 	sbc	hl,bc		;point back to dph
+  0092'   AF                    	xor	a
+  0093'   C9                    	ret
+                                
+                                ;;	select physical unit.
+                                ;
+  0094'   4F                    selunt:	ld	c,a		;save select
+  0095'   EB                    	ex	de,hl
+  0096'   21 0250'              	ld	hl,trktbl+1	;set track / density table address
+  0099'   06 00                 	ld	b,0
+  009B'   09                    	add	hl,bc
+  009C'   09                    	add	hl,bc
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-4
+Floppy Disk Driver Proper
+
+  009D'   22 0221'              	ld	(smfa),hl	;save address for media selector
+  00A0'   EB                    	ex	de,hl
+  00A1'   1A                    	ld	a,(de)		;get previous density switch
+  00A2'   1B                    	dec	de		;point to track word
+  00A3'   CD 00E8'              	call	selden		;select density
+  00A6'   3E 06                 	ld	a,timout	;start motor / select timer
+  00A8'   32 00A9'              	ld	(mtradr),a
+  00A9'                         mtradr	equ	$-2		;address filled in by once only routine
+  00AB'   FB                    	ei			;insure clock enabled
+  00AC'   CB 89                 	res	1,c		;map C->A, D->B
+  00AE'   DB 1C                 	in	a,(wdsl)	;read current select
+  00B0'   47                    	ld	b,a
+  00B1'   E6 F8                 	and	not 7
+  00B3'   B1                    	or	c		;insert new select
+  00B4'   3C                    	inc	a		;0-1, 1-2
+  00B5'   D3 1C                 	out	(wdsl),a	;select drive
+  00B7'   A8                    	xor	b
+  00B8'   E6 03                 	and	3
+  00BA'   28 25                 	jr	z,sel3		;if drive select identical
+  00BC'   3E FF                 	ld	a,-1		;force track position recovery
+  00BE'   12                    	ld	(de),a
+  00BF'   CB 60                 	bit	c.8in,b		;test 8/5 status
+  00C1'   20 1E                 	jr	nz,sel3		;if 8"
+  00C3'   CD 0197'              	call	rdc		;set type I status
+  00C6'   06 08                 	ld	b,2*4		;watch for four holes (8 transitions)
+  00C8'   E5                    sel1:	push	hl
+  00C9'   2A 00A9'              	ld	hl,(mtradr)	;get address of motor select timer
+  00CC'   7E                    	ld	a,(hl)
+  00CD'   E1                    	pop	hl
+  00CE'   D6 04                 	sub	timout-2	;look for 1-2 seconds
+  00D0'   D8                    	ret	c		;if drive not spinning
+  00D1'   DB 10                 	in	a,(wdsr)
+  00D3'   E6 02                 	and	2
+  00D5'   28 F1                 sel2:	jr	z,sel1		;if index not under light
+  00D7'   3A 00D5'              	ld	a,(sel2)	;switch index polarity
+  00DA'   EE 08                 	xor	8 ; (jr z) xor (jr nz)
+  00DC'   32 00D5'              	ld	(sel2),a
+  00DF'   10 E7                 	djnz	sel1		;wait for at least three revolutions
+  00E1'   DB 10                 sel3:	in	a,(wdsr)	;set ready status
+  00E3'   E6 80                 	and	80h
+  00E5'   C9                    	ret
+                                
+  00E6'   3E 18                 seldns:	ld	a,18h		;set track zero single density
+  00E8'   32 0182'              selden:	ld	(dsw),a		;store switch for read/write routines
+  00EB'   E6 18                 	and	18h
+  00ED'   D3 31                 	out	(wddd),a	;pre-select dual density
+  00EF'   C8                    	ret	z		;if dual density
+  00F0'   D3 30                 	out	(wdsd),a	;select single density
+  00F2'   C9                    	ret
+                                
+                                ;;	seek - position disk.
+                                ;
+  00F3'   79                    seek:	ld	a,c		;set new track
+  00F4'   B7                    	or	a
+  00F5'   CC 00E6'              	call	z,seldns	;force single density track 0
+  00F8'   13                    	inc	de
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-5
+Floppy Disk Driver Proper
+
+  00F9'   1A                    	ld	a,(de)
+  00FA'   1B                    	dec	de
+  00FB'   E6 01                 	and	1
+  00FD'   28 15                 	jr	z,sek1		;if one sided diskette
+  00FF'   DB 1C                 	in	a,(wdsl)
+  0101'   CB 67                 	bit	c.8in,a
+  0103'   06 4D                 	ld	b,ntrk8		;set number of eight inch tracks
+  0105'   20 02                 	jr	nz,sek0		;if 8" drives
+  0107'   06 28                 	ld	b,ntrk5
+  0109'   79                    sek0:	ld	a,c		;set seek track
+  010A'   B8                    	cp	b
+  010B'   3E 00                 	ld	a,0		;preset side 0
+  010D'   38 05                 	jr	c,sek1		;if side 0
+  010F'   79                    	ld	a,c
+  0110'   90                    	sub	b		;wrap to side 1
+  0111'   4F                    	ld	c,a
+  0112'   3E 02                 	ld	a,2		;set side 1
+  0114'   32 0046'              sek1:	ld	(rdwrs),a	;store F1 (update SS0)
+  0117'   87                    	add	a,a		;move into select port position
+  0118'   47                    	ld	b,a
+  0119'   F3                    	di
+  011A'   DB 1C                 	in	a,(wdsl)
+  011C'   CB 97                 	res	2,a
+  011E'   B0                    	or	b
+  011F'   FB                    	ei
+  0120'   D3 1C                 	out	(wdsl),a	;send out REAL SS0
+  0122'   1A                    	ld	a,(de)		;check current position
+  0123'   D3 11                 	out	(wdtr),a	;inform 1797 of current track
+  0125'   B9                    	cp	c
+  0126'   28 17                 	jr	z,seek3		;if position ok, load head
+  0128'   3C                    	inc	a		;check for forced recovery
+  0129'   CC 0148'              	call	z,rse		;recover seek errors
+  012C'   28 0D                 	jr	z,seek1		;if error not recoverable
+  012E'   79                    seek0:	ld	a,c		;set new track
+  012F'   D3 13                 	out	(wddt),a	;in data register
+  0131'   3E 1C                 	ld	a,1ch		;set seek with verify command
+  0133'   CD 0193'              	call	isc		;issue step command
+  0136'   E6 98                 	and	98h
+  0138'   79                    	ld	a,c		;update current track
+  0139'   28 02                 	jr	z,seek2		;if no errors
+  013B'   F6 FF                 seek1:	or	-1		;force recovery next time
+  013D'   12                    seek2:	ld	(de),a
+  013E'   C9                    	ret
+  013F'   CD 0197'              seek3:	call	rdc		;set type I status
+  0142'   E6 20                 	and	20h		;test head load
+  0144'   28 E8                 	jr	z,seek0		;if head is not loaded
+  0146'   AF                    retzr:	xor	a		;say seek complete
+  0147'   C9                    	ret
+                                
+                                ;;	rse - recover seek error.
+                                ;
+  0148'   C5                    rse:	push	bc
+  0149'   CD 0155'              	call	rdid		;read id mark
+  014C'   20 05                 	jr	nz,rse1		;if track position identified
+  014E'   CD 0191'              	call	recal		;recalibrate
+  0151'   E6 04                 	and	4		;verify track zero flag set
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-6
+Floppy Disk Driver Proper
+
+  0153'   C1                    rse1:	pop	bc
+  0154'   C9                    	ret
+                                
+                                ;;	rdid - read id mark.
+                                ;
+  0155'   0E C4                 rdid:	ld	c,0c4h		;set Read Address Command
+  0157'   CD 016D'              	call	stc		;start transfer command
+  015A'   76                    	halt			;wait for interrupt
+  015B'   ED 40                 	in	b,(c)		;first byte is track
+  015D'   76                    	halt
+  015E'   ED 48                 	in	c,(c)		;second byte is side, pitch next 4
+  0160'   CD 0189'              	call	ttc		;terminate transfer command
+  0163'   E6 98                 	and	98h		;ignore lost data
+  0165'   20 04                 	jr	nz,rdid1	;if track not identified
+  0167'   78                    	ld	a,b
+  0168'   D3 11                 	out	(wdtr),a	;tell 1797 track head is on now
+  016A'   F6                    	defb	0f6h		;or xra to set NZ
+  016B'   AF                    rdid1:	xor	a		;set track not found
+  016C'   C9                    	ret
+                                
+                                ;;	stc - start transfer command.
+                                ;
+  016D'   F3                    stc:	di			;lock normal interrupts
+  016E'   3A 0066               	ld	a,(NMI)		;save byte at NMI address
+  0171'   32 018A'              	ld	(ttca),a
+  0174'   3E C9                 	ld	a,0c9h		;store RET there
+  0176'   32 0066               	ld	(NMI),a
+  0179'   79                    	ld	a,c		;retrieve command
+  017A'   01 1413               	ld	bc,wddt+20*256	;1797 access timer / data port
+  017D'   D3 10                 	out	(wdcr),a	;issue command
+  017F'   10 FE                 	djnz	$		;pause 60 usec
+  0181'   3E 00                 	ld	a,0
+  0182'                         dsw	equ	$-1		;density switch
+  0183'   E6 18                 	and	18h		;say ready and density
+  0185'   C8                    	ret	z		;if double density
+  0186'   06 80                 	ld	b,128		;set 128 byte single density sectors
+  0188'   C9                    	ret
+                                
+                                ;;	ttc - terminate transfer command.
+                                ;
+  0189'   3E 00                 ttc:	ld	a,0		;restore location 66
+  018A'                         ttca	equ	$-1
+  018B'   32 0066               	ld	(NMI),a
+  018E'   FB                    	ei			;take interrupts now
+  018F'   18 0A                 	jr	woc		;wait for 1797 to complete
+                                
+                                ;;	recalibrate drive.
+                                ;
+  0191'   AF                    recal:	xor	a		;set restore command / track 0
+  0192'   12                    	ld	(de),a		;set track zero
+                                
+                                ;;	isc - issue step command.
+                                ;
+  0193'   F6 01                 isc:	or	1		;insert step rate
+  0194'                         stepr	equ	$-1	;*****=>;modify here for step rate change
+  0195'   18 02                 	jr	icc
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-7
+Floppy Disk Driver Proper
+
+                                
+  0197'   3E D0                 rdc:	ld	a,0d0h		;terminate and set type I status
+                                
+                                ;;	icc  - issue controller command.
+                                ;
+  0199'   D3 10                 icc:	out	(wdcr),a	;issue 1797 command
+                                
+                                ;;	woc  - wait operation complete.
+                                ;
+  019B'   3E 14                 woc:	ld	a,20		;set 60 usec delay
+  019D'   3D                    woc1:	dec	a
+  019E'   20 FD                 	jr	nz,woc1
+  01A0'   CD F066               woc2:	call	idle		;idle cpu
+  01A3'   DB 10                 	in	a,(wdsr)	;set 1797 status
+  01A5'   CB 47                 	bit	0,a
+  01A7'   20 F7                 	jr	nz,woc2		;if busy, wait
+  01A9'   C9                    	ret
+                                
+                                	subttl	Media Format Selector
+                                	page
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-8
+Media Format Selector
+
+                                
+                                
+                                ;;	smf - set media format.
+                                ;
+                                ;	entry:	unit in A
+                                ;
+                                ;	exit:	DE = dpb address
+                                ;		BC = translate table
+                                ;
+  01AA'   CD 0094'              smf:	call	selunt		;select unit
+  01AD'   FA 0146'              	jp	m,retzr		;if disk not ready
+  01B0'   21 0225'              	ld	hl,dtype
+  01B3'   36 A0                 	ld	(hl),fm.ddss	;start out double density, single side, retry
+  01B5'   DB 1C                 	in	a,(wdsl)	;read select status
+  01B7'   CB 67                 	bit	c.8in,a		;test 8" / 5" status
+  01B9'   20 02                 	jr	nz,smf0		;if 8 inch drives
+  01BB'   CB F6                 	set	fm.fv,(hl)	;move up to 5.25" dpbs
+  01BD'   3A 01BE'              smf0:	ld	a,(stpadr)	;set configurable step rate for 8" drives
+  01BE'                         stpadr	equ	$-2
+  01C0'   E6 03                 	and	3		;just so seeks aren't formats
+  01C2'   32 0194'              	ld	(stepr),a	;save step rate in seek command
+  01C5'   CD 0191'              smf0a:	call	recal		;establish position
+  01C8'   E6 84                 	and	84h
+  01CA'   C8                    	ret	z		;if not on track zero
+  01CB'   FA 0146'              	jp	m,retzr		;if unit not ready
+  01CE'   D3 31                 	out	(wddd),a	;set double density
+  01D0'   3E FF                 	ld	a,-1
+  01D2'   12                    	ld	(de),a		;clear drive on track
+  01D3'   3E 02                 	ld	a,2		;use track 2 for density select
+  01D5'   D3 13                 	out	(wddt),a
+  01D7'   3E 18                 	ld	a,18h		;seek / no verify
+  01D9'   CD 0193'              	call	isc		;issue seek command
+  01DC'   3E 1C                 	ld	a,1ch		;find id mark
+  01DE'   D3 10                 	out	(wdcr),a	;start verify
+  01E0'   01 0000               	ld	bc,0		;set timers
+  01E3'   10 FE                 smf1:	djnz	$		;pause
+  01E5'   DB 10                 	in	a,(wdsr)
+  01E7'   CB 47                 	bit	0,a
+  01E9'   28 08                 	jr	z,smf1a		;if command completed
+  01EB'   0D                    	dec	c
+  01EC'   20 F5                 	jr	nz,smf1		;if more time
+  01EE'   CD 0197'              	call	rdc		;terminate seek
+  01F1'   3E 18                 	ld	a,18h		;set pseudo record not found
+  01F3'   E6 18                 smf1a:	and	18h		;check record not found / crc error
+  01F5'   13                    	inc	de		;point to density word in track table
+  01F6'   12                    	ld	(de),a
+  01F7'   1B                    	dec	de
+  01F8'   28 14                 	jr	z,smf2		;if density select successful
+  01FA'   D3 30                 	out	(wdsd),a	;use single density
+  01FC'   3E 1C                 	ld	a,1ch		;verify single density
+  01FE'   CD 0193'              	call	isc		;issue seek
+  0201'   E6 18                 	and	18h
+  0203'   28 07                 	jr	z,smf1b		;if single density successful
+  0205'   CB 7E                 	bit	fm.un,(hl)	;test retry
+  0207'   CB BE                 	res	fm.un,(hl)	;clear retry
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	1-9
+Media Format Selector
+
+  0209'   20 BA                 	jr	nz,smf0a	;if retry
+  020B'   C9                    	ret			;return select error
+  020C'   CB AE                 smf1b:	res	fm.dd,(hl)	;back up to single density dpbs
+  020E'   CB BE                 smf2:	res	fm.un,(hl)	;clear retry
+  0210'   DB 1C                 	in	a,(wdsl)
+  0212'   CB D7                 	set	2,a		;select side 2
+  0214'   D3 1C                 	out	(wdsl),a
+  0216'   CD 0155'              	call	rdid		;read id mark
+  0219'   28 09                 	jr	z,smf4		;if no id found, must be one side
+  021B'   0D                    	dec	c
+  021C'   20 06                 	jr	nz,smf4		;if side 1 ID not read
+  021E'   CB E6                 	set	fm.ds,(hl)	;bump up to two sided dpbs
+  0220'   21 0221'              	ld	hl,smfa		;set double sided status in track table
+  0221'                         smfa	equ	$-2
+  0223'   34                    	inc	(hl)
+  0224'   21 0000               smf4:	ld	hl,0		;set diskette type
+  0225'                         dtype	equ	$-2
+  0227'   7D                    	ld	a,l		;save type
+  0228'   4C                    	ld	c,h		;preset no translate
+  0229'   44                    	ld	b,h
+  022A'   11 0000*              	ld	de,dpb8s	;set base of disk parameter blocks
+  022D'   19                    	add	hl,de
+  022E'   EB                    	ex	de,hl		;return DPB address in DE
+  022F'   CB 6F                 	bit	fm.dd,a
+  0231'   C0                    	ret	nz		;if diskette is double density
+  0232'   01 023D'              	ld	bc,trn5		;preset 5.25" skew table
+  0235'   CB 77                 	bit	fm.fv,a
+  0237'   C0                    	ret	nz		;if diskette is small
+  0238'   01 0000*              	ld	bc,trn6		;set 8" translate
+  023B'   3C                    	inc	a		;force NZ
+  023C'   C9                    	ret
+                                
+                                ;;	Skew by 5 translate table.
+                                ;
+  023D'   01 06 0B 10           trn5::	db	01,06,11,16
+  0241'   03 08 0D 12           	db	03,08,13,18
+  0245'   05 0A 0F 02           	db	05,10,15,02
+  0249'   07 0C 11 04           	db	07,12,17,04
+  024D'   09 0E                 	db	09,14
+                                
+  024F'                         trktbl:
+                                
+                                	end
+Western Digital WD-1797-02 Floppy Disk Driver			MACRO-80 3.44	09-Dec-81	PAGE	S
+Media Format Selector
+
+Macros:
+
+Symbols:
+0004 	C.8IN           0005 	C.TWO           F039 	DAYTIM          
+022B*	DPB8S           007B*	DPBASE          000A 	DPBOFS          
+0000I'	DSKDVR          0182'	DSW             0225'	DTYPE           
+000D'	FLOP1           002E'	FLOP2           0042'	FLOP3           
+004C'	FLOP4           0056'	FLOP5           0005 	FM.DD           
+00A0 	FM.DDSS         0004 	FM.DS           0006 	FM.FV           
+0007 	FM.UN           0199'	ICC             F066 	IDLE            
+0193'	ISC             00A9'	MTRADR          0066 	NMI             
+0028 	NTRK5           004D 	NTRK8           0197'	RDC             
+0155'	RDID            016B'	RDID1           0037'	RDOP            
+004E'	RDWRA           0046'	RDWRS           0191'	RECAL           
+0146'	RETZR           0148'	RSE             0153'	RSE1            
+00F3'	SEEK            012E'	SEEK0           013B'	SEEK1           
+013D'	SEEK2           013F'	SEEK3           0109'	SEK0            
+0114'	SEK1            00C8'	SEL1            00D5'	SEL2            
+00E1'	SEL3            00E8'	SELDEN          00E6'	SELDNS          
+0060'	SELECT          0084*	SELERR          0094'	SELUNT          
+01AA'	SMF             01BD'	SMF0            01C5'	SMF0A           
+01E3'	SMF1            01F3'	SMF1A           020C'	SMF1B           
+020E'	SMF2            0224'	SMF4            0221'	SMFA            
+F069 	SOFT            016D'	STC             0194'	STEPR           
+01BE'	STPADR          0006 	TIMOUT          024F'	TRKTBL          
+023DI'	TRN5            0239*	TRN6            0189'	TTC             
+018A'	TTCA            0010 	WDCR            0031 	WDDD            
+0013 	WDDT            0030 	WDSD            001C 	WDSL            
+0012 	WDSN            0010 	WDSR            0011 	WDTR            
+019B'	WOC             019D'	WOC1            01A0'	WOC2            
+
+
+
+No Fatal error(s)
+
+
+   
+F069 	SOFT            016D'	STC             01

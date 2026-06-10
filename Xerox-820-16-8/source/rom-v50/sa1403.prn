@@ -1,0 +1,829 @@
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	title	SA1403 - Shugart / DTC SASI Driver			
+                                
+                                ;;;	SA-1403D SASI driver.
+                                ;
+                                ;	Copyright (C) 1981 by Balcones Computer Corporation
+                                ;
+                                	.z80
+                                
+                                ;;	Monitor Entry Points.
+                                ;
+  F00F                          fastcrt	equ	0f00fh		;crt driver
+  F039                          daytim	equ	0f039h		;get address of timer data
+  F066                          idle	equ	0f066h		;idle cpu
+  F069                          soft	equ	0f069h		;record soft error
+  EE00                          rgdbuf	equ	0ee00h		;rigid parameter load buffer
+  0000                          xebec	equ	0
+                                
+                                	extrn	Dpbase		;Disk Parameter Headers
+                                	extrn	Dpbrg4		;Disk Parameter Blocks (rigid)
+                                	extrn	Dpb8s		;Disk Parameter Blocks (floppy)
+                                	extrn	Trn6		;Single density translate table
+                                
+                                ;;	Sasi Pio Port Addresses.
+                                ;
+  0011                          pioAs	equ	11h		;Pio A Status
+  0010                          pioAd	equ	pioAs xor 01b
+  0013                          pioBs	equ	pioAs xor 10b
+  0012                          pioBd	equ	pioAs xor 11b
+                                
+  0010                          Sasid	equ	pioAd		;bus data
+  0012                          Sasic	equ	pioBd		;bus control
+  0012                          Sasis	equ	pioBd		;bus status
+                                
+  001C                          syspio	equ	1ch		;system configuration port
+                                
+                                ;;	Sasi controller status bit definitions.
+                                ;
+  0000                          b.bsy	equ	00		;(in)  controller busy status
+  0001                          b.msg	equ	01		;(in)  status byte completion status
+  0002                          b.cd	equ	02		;(in)  control byte or data byte transfer
+  0003                          b.req	equ	03		;(in)  controller request for data/command
+  0004                          b.io	equ	04		;(in)  data transfer direction
+  0005                          b.sel	equ	05		;(out) controller select
+  0006                          b.par	equ	06		;(in)  buss parity error
+  0007                          b.rst	equ	07		;(out) controller reset
+                                
+                                ;;	Logical Unit Assignments.
+                                ;
+  0000                          falun	equ	0		;A: Lun
+  0001                          fblun	equ	1		;B: Lun
+  0000                          fclun	equ	0		;C: Lun
+  0002                          fdlun	equ	2		;D: Lun
+  0003                          rglun	equ	3		;E: Lun
+                                
+                                	subttl	Sasi Class Code Definitions
+                                	page	60
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-1
+Sasi Class Code Definitions
+
+                                
+                                ;;	Class Command Codes for Prom Set AS31*
+                                ;
+                                ;	DTC Reference Manual Dated February 4, 1981.
+                                ;
+                                ;;	class  0 commands.
+                                ;
+  0000                          c.trdy	equ	00h		;test ready status
+  0001                          c.recal	equ	01h		;recalibrate drive
+  0002                          c.rsyn	equ	02h		;request syndrome
+  0003                          c.rqsn	equ	03h		;request sense after error
+  0004                          c.fmat	equ	04h		;format drive
+  0005                          c.vtrk	equ	05h		;verify track format
+  0006                          c.ftrk	equ	06h		;format single track
+  0007                          c.flaw	equ	07h		;format track with flaw
+  0008                          c.read	equ	08h		;read data
+  0009                          c.wrpr	equ	09h		;write protect sector
+  000A                          c.writ	equ	0ah		;write data
+  000B                          c.seek	equ	0bh		;initiate seek
+  000C                          c.init	equ	0ch		;inititialize drive
+                                
+                                ;;	Class 6 commands.
+                                ;
+  00C0                          c.flpy	equ	0c0h		;define floppy disk format
+                                
+                                ;;	Floppy Format Codes.
+                                ;
+  0000                          fm.ds	equ	0		;double side bit
+  0001                          fm.dd	equ	1		;double density bit
+  0002                          fm.sz	equ	2		;sector size bit
+  0003                          fm.wr	equ	3		;log2(fm.ddds+1)
+                                
+  0000                          fm.sdss	equ	00h		;Single Density, Single Sided
+  0001                          fm.sdds	equ	01h		;Single Density, Double Sided
+  0006                          fm.ddss	equ	06h		;Double Density, Single Sided
+  0007                          fm.ddds	equ	07h		;Double Density, Double Sided
+                                
+  0080                          fm.hard	equ	80h		;Rigid
+                                
+                                ;;	Class 7 commands.
+                                ;
+  00E0                          c.tram	equ	0e0h		;test ram buffer
+                                
+                                ;;	Message Macros.
+                                ;
+                                pmsg	macro	n,msg
+                                	if1
+                                	.printx	+MSG N+
+                                	endif
+                                	endm
+                                
+                                phex	macro	n,m
+                                	.radix	16
+                                	pmsg	%(n),<m>
+                                	.radix	10
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-2
+Sasi Class Code Definitions
+
+                                	endm
+                                
+                                	subttl	Sasi Physical Driver.
+                                	page
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-3
+Sasi Physical Driver.
+
+                                
+                                ;;	Sa1403 - Sasi Physical Driver.
+                                ;
+  0000'                         Dskdvr::
+  0000'   06 06                 sa1403:	ld	b,6		;set retry count
+  0002'   7E                    sas0a:	ld	a,(hl)		;set driver operation
+  0003'   23                    	inc	hl		;point to unit
+  0004'   3C                    	inc	a
+  0005'   28 49                 	jr	z,select	;if select DPH
+  0007'   E5                    	push	hl
+  0008'   C5                    	push	bc
+  0009'   3D                    	dec	a
+  000A'   3E 0A                 	ld	a,c.writ	;preset write opcode
+  000C'   28 02                 	jr	z,sas0
+  000E'   3E 08                 	ld	a,c.read	;assume read
+  0010'   32 0240'              sas0:	ld	(opcode),a	;set Sasi opcode
+  0013'   7E                    	ld	a,(hl)		;get driver unit
+  0014'   E5                    	push	hl
+  0015'   CD 00FF'              	call	mlu		;map to logical unit
+  0018'   E1                    	pop	hl
+  0019'   23                    	inc	hl		;ignore cpm dsk
+  001A'   23                    	inc	hl		;track low
+  001B'   56                    	ld	d,(hl)		;set track
+  001C'   23                    	inc	hl
+  001D'   23                    	inc	hl
+  001E'   5E                    	ld	e,(hl)		;set sector
+  001F'   CD 0227'              	call	cwp		;check write protect
+  0022'   20 22                 	jr	nz,sas2		;if write protected and track > 0
+  0024'   E5                    	push	hl		;save request block address
+  0025'   CD 0112'              	call	mpa		;map physical address to logical address
+  0028'   21 0240'              	ld	hl,opcode
+  002B'   CD 0193'              	call	icc		;issue controller command
+  002E'   E1                     	pop	hl		;get pointer to low sector back
+  002F'   23                    	inc	hl		;ignore sector high
+  0030'   23                    	inc	hl		;dma low
+  0031'   5E                    	ld	e,(hl)
+  0032'   23                    	inc	hl		;dma high
+  0033'   56                    	ld	d,(hl)
+  0034'   EB                    	ex	de,hl		;set transfer address to HL
+  0035'   06 00                 	ld	b,0		;set sector length
+  0036'                         seclen	equ	$-1
+  0037'   3A 0240'              	ld	a,(opcode)
+  003A'   FE 0A                 	cp	c.writ
+  003C'   28 05                 	jr	z,sas1		;if write command
+  003E'   CD 01AF'              	call	tdi		;transfer data in
+  0041'   18 03                 	jr	sas2
+  0043'   CD 01A6'              sas1:	call	tdo		;transfer data out 
+  0046'   C1                    sas2:	pop	bc
+  0047'   E1                    	pop	hl
+  0048'   2B                    	dec	hl
+  0049'   C8                    	ret	z		;if no errors
+  004A'   CD F069               	call	soft		;report soft error
+  004D'   10 B3                 	djnz	sas0a		;if more retries
+  004F'   C9                    	ret			;return error
+                                
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-4
+Sasi Physical Driver.
+
+                                	if	0
+                                	ld	hl,opcode
+                                	ld	(hl),c.rqsn	;request sense
+                                	call	icc		;issue controller command
+                                	ld	b,4		;read four status bytes
+                                	call	tdi		;transfer status bytes
+                                	ret
+                                	endif
+                                
+                                	subttl	Physical Driver Select
+                                	page
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-5
+Physical Driver Select
+
+                                
+                                ;;	Select - Physical Driver Select.
+                                ;
+  0050'   7E                    select:	ld	a,(hl)		;set physical unit
+  0051'   FE 08                 	cp	8		;verify in range
+  0052'                         numunt	equ	$-1
+  0053'   3F                    	ccf
+  0054'   D4 005E'              	call	nc,smf		;set media format
+  0057'   D0                    	ret	nc		;if media identified
+                                
+                                ;;	selerr - Select Error Driver.
+                                ;
+  0058'   21 0000               selerr: ld	hl,0		;Select Error Driver
+  005B'   F6 FF                 seler1:	or	-1
+  005D'   C9                    	ret
+                                
+                                ;;	Smf - Set Media Format.
+                                ;
+                                ;	entry:	A = Driver unit index
+                                ;	Exit:	HL = DPH address, if no carry
+                                ;
+  005E'   CD 0246'              smf:	call	first		;execute first time only routine
+  0061'   CD 00FF'              	call	mlu		;map to logical unit
+  0064'   EB                    	ex	de,hl		;get dph index to hl
+  0065'   7D                    	ld	a,l		;and A
+  0066'   29                    	add	hl,hl		;index *16
+  0067'   29                    	add	hl,hl
+  0068'   29                    	add	hl,hl
+  0069'   29                    	add	hl,hl
+  006A'   11 0000*              	ld	de,Dpbase	;set base of Disk Parameter Headers
+  006D'   19                    	add	hl,de
+  006E'   FE 04                 	cp	4
+  0070'   D0                    	ret	nc		;if rigid unit
+  0071'   E5                    	push	hl		;save dph address
+  0072'   3E 80                 	ld	a,80h		;disable error recovery
+  0074'   32 0245'              	ld	(dctrl),a
+  0077'   32 0141'              	ld	(lastfm+1),a
+  007A'   0A                    	ld	a,(bc)		;always try double side first
+  007B'   F6 01                 	or	1 shl fm.ds
+  007D'   02                    	ld	(bc),a
+  007E'   3E 07                 	ld	a,8-1		;try each type two times
+  0080'   32 008D'              smf1:	ld	(smfa),a	;set retry count
+  0083'   C5                    	push	bc		;save define format table address
+  0084'   CD 00CA'              	call	cdd		;check drive density
+  0087'   C1                    	pop	bc
+  0088'   60                    	ld	h,b		;set format table address
+  0089'   69                    	ld	l,c
+  008A'   28 14                 	jr	z,smf2		;if diskette type identified
+  008C'   3E 00                 	ld	a,0
+  008D'                         smfa	equ	$-1		;diskette type retry counter
+  008E'   D6 01                 	sub	1
+  0090'   38 31                 	jr	c,smf4		;if media not identified
+  0092'   35                    	dec	(hl)		;advance disk type code
+  0093'   F2 0098'              	jp	p,smf1a		;if no wrap
+  0096'   36 07                 	ld	(hl),fm.ddds
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-6
+Physical Driver Select
+
+  0098'   CB 4E                 smf1a:	bit	fm.dd,(hl)	;test for double density
+  009A'   20 E4                 	jr	nz,smf1		;if double density
+  009C'   CB 96                 	res	fm.sz,(hl)	;set sector size = 128
+  009E'   18 E0                 	jr	smf1		;try more diskette types
+  00A0'   57                    smf2:	ld	d,a		;preset no translate
+  00A1'   5A                    	ld	e,d
+  00A2'   CB 4E                 	bit	fm.dd,(hl)
+  00A4'   20 03                 	jr	nz,smf3		;if diskette is double density
+  00A6'   11 0000*              	ld	de,trn6		;set single density translate
+  00A9'   E1                    smf3:	pop	hl		;get dph address
+  00AA'   E5                    	push	hl
+  00AB'   73                    	ld	(hl),e		;store translate address
+  00AC'   23                    	inc	hl
+  00AD'   72                    	ld	(hl),d
+  00AE'   11 0009               	ld	de,10-1
+  00B1'   19                    	add	hl,de		;point to dpb address in dph
+  00B2'   0A                    	ld	a,(bc)		;get selected format
+  00B3'   E6 03                 	and	3
+  00B5'   EB                    	ex	de,hl
+  00B6'   6F                    	ld	l,a
+  00B7'   29                    	add	hl,hl		;index by 16
+  00B8'   29                    	add	hl,hl
+  00B9'   29                    	add	hl,hl
+  00BA'   29                    	add	hl,hl
+  00BB'   01 0000*              	ld	bc,dpb8s	;set dpb base
+  00BE'   09                    	add	hl,bc		;set dpb address (clears carry)
+  00BF'   EB                    	ex	de,hl		;recover dpb pointer address in dph
+  00C0'   73                    	ld	(hl),e
+  00C1'   23                    	inc	hl
+  00C2'   72                    	ld	(hl),d
+  00C3'   E1                    smf4:	pop	hl		;get dph address
+  00C4'   3E 00                 	ld	a,0		;enable error recovery
+  00C6'   32 0245'              	ld	(dctrl),a
+  00C9'   C9                    	ret
+                                
+                                ;;	cdd - check drive density.
+                                ;
+  00CA'   0A                    cdd:	ld	a,(bc)		;get attempted side
+  00CB'   E6 01                 	and	1		;try side 1 on ds, 0 on ss
+  00CD'   11 0201               	ld	de,2*256+1
+  00D0'   28 02                 	jr	z,cdd0		;if single side
+  00D2'   16 4F                 	ld	d,77+2		;use back side
+  00D4'   CD 0112'              cdd0:	call	mpa		;map physical address
+  00D7'   21 0240'              	ld	hl,opcode
+  00DA'   36 08                 	ld	(hl),c.read
+  00DC'   CD 0193'              	call	icc		;issue controller command
+  00DF'   CD 021E'              	call	sim		;set input mode
+  00E2'   CD 01D7'              cdd1:	call	wfr		;wait for req
+  00E5'   20 04                 	jr	nz,cdd2		;if timeout or status, not data requested
+  00E7'   ED 78                 	in	a,(c)		;eat sector
+  00E9'   18 F7                 	jr	cdd1
+  00EB'   CD 01B9'              cdd2:	call	wcc		;wait command complete
+  00EE'   C9                    	ret
+                                
+                                ;;	p2l - Physical to Logical Mapping Table.
+                                ;
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-7
+Physical Driver Select
+
+                                ;	First byte is the SA1403 Logical Unit Number
+                                ;	Second byte is extended drive format code
+                                ;
+  00EF'   00 00                 p2l:	db	falun shl 5,fm.sdss	;Floppy Drive 0
+  00F1'   20 01                 	db	fblun shl 5,fm.sdds	;Floppy Drive 1
+  00F3'   00 06                 	db	falun shl 5,fm.ddss	;Floppy Drive 0
+  00F5'   40 07                 	db	fdlun shl 5,fm.ddds	;Floppy Drive 2
+  00F7'   60 80                 	db	rglun shl 5,fm.hard	;Rigid Partition 0
+  00F9'   60 80                 	db	rglun shl 5,fm.hard	;Rigid Partition 1
+  00FB'   60 80                 	db	rglun shl 5,fm.hard	;Rigid Partition 2
+  00FD'   60 80                 	db	rglun shl 5,fm.hard	;Rigid Partition 3
+                                
+                                ;;	Mlu - Map Logical Unit.
+                                ;
+                                ;	Entry:	A  =  Physical Driver Unit from Deblocker
+                                ;	Exit:	DE =  dph index
+                                ;		BC = pointer to format code
+                                ;		Sasi LUN stored in command block
+                                ;
+  00FF'   21 00EF'              mlu:	ld	hl,p2l		;set Rigid Physical to Logical map table
+  0102'   16 00                 	ld	d,0
+  0104'   5F                    	ld	e,a
+  0105'   19                    	add	hl,de		;point to table entry
+  0106'   19                    	add	hl,de
+  0107'   7E                    	ld	a,(hl)		;get Sasi LUN
+  0108'   32 0241'              	ld	(lun),a		;store in read/write command
+  010B'   32 023B'              	ld	(deflun),a	;store in define command
+                                	if	xebec
+                                	ld	(reclun),a	;store in recalibrate
+                                	endif
+  010E'   23                    	inc	hl		;point to format descriptor
+  010F'   44                    	ld	b,h
+  0110'   4D                    	ld	c,l
+  0111'   C9                    	ret
+                                
+                                ;;	Mpa - Map Physical Address.
+                                ;
+                                ;	Entry:	BC = p2l format code address
+                                ;		D  = Track
+                                ;		E  = Sector
+                                ;
+                                ;	Exit:	Logical Address set in command block
+                                ;		Seclen set for transfer
+                                ;		Controller notified of floppy format
+                                ;
+  0112'   21 0036'              mpa:	ld	hl,seclen	;preset sector length
+  0115'   36 00                 	ld	(hl),0
+  0117'   EB                    	ex	de,hl		;preset Laddr = Paddr for rigid
+  0118'   0A                    	ld	a,(bc)		;get drive format code
+  0119'   FE 80                 	cp	fm.hard
+  011B'   28 46                 	jr	z,mpa5		;if Rigid Partition
+  011D'   FE 06                 	cp	fm.ddss
+  011F'   38 06                 	jr	c,mpa1		;if single density
+  0121'   2C                    	inc	l		;advance sector from 0->25 to 1->26
+  0122'   7C                    	ld	a,h
+  0123'   B7                    	or	a
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-8
+Physical Driver Select
+
+  0124'   20 04                 	jr	nz,mpa2		;if not on track zero
+  0126'   2D                    	dec	l
+  0127'   3E 80                 mpa1:	ld	a,128		;set short sector
+  0129'   12                    	ld	(de),a
+  012A'   0A                    mpa2:	ld	a,(bc)
+  012B'   CB 47                 	bit	fm.ds,a
+  012D'   28 0A                 	jr	z,mpa22		;if not double sided disk
+  012F'   7C                    	ld	a,h		;map first 77 tracks to side zero
+  0130'   FE 4D                 	cp	77
+  0132'   38 02                 	jr	c,mpa21		;if side zero tracks
+  0134'   D6 4D                 	sub	77		;offset to back side
+  0136'   3F                    mpa21:	ccf
+  0137'   8F                    	adc	a,a
+  0138'   67                    	ld	h,a
+  0139'   E5                    mpa22:	push	hl		;save track/sector
+  013A'   0A                    	ld	a,(bc)		;get floppy format
+  013B'   2A 023B'              	ld	hl,(deflun)	;get new unit
+  013E'   67                    	ld	h,a
+  013F'   11 FFFF               	ld	de,-1		;get previously used format/lun
+  0140'                         lastfm	equ	$-2
+  0142'   22 0140'              	ld	(lastfm),hl	;save this format/unit for next time
+  0145'   B7                    	or	a
+  0146'   ED 52                 	sbc	hl,de
+  0148'   28 0C                 	jr	z,mpa3		;if unit and format same as last time
+  014A'   32 023F'              	ld	(flpfrm),a
+  014D'   21 023A'              	ld	hl,deflpy	;issue define floppy command
+  0150'   CD 0193'              	call	icc
+  0153'   CD 01B9'              	call	wcc
+  0156'   E1                    mpa3:	pop	hl		;recover track / sector
+  0157'   44                    	ld	b,h		;set track
+  0158'   11 001A               	ld	de,26		;compute sector-26-1+(Track+1)*26
+  015B'   62                    	ld	h,d		;clear upper track
+  015C'   37                    	scf
+  015D'   ED 52                 	sbc	hl,de		;adjust sector
+  015F'   04                    	inc	b		;force one pass
+  0160'   19                    mpa4:	add	hl,de		;multiply track by sectors/track
+  0161'   10 FD                 	djnz	mpa4		;if multiply incomplete
+  0163'   7C                    mpa5:	ld	a,h		;swap H & L
+  0164'   65                    	ld	h,l
+  0165'   6F                    	ld	l,a
+  0166'   22 0242'              	ld	(addrh),hl	;Store address in command block
+  0169'   C9                    	ret
+                                
+                                	subttl	Sasi Bus Control Interface
+                                	page
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-9
+Sasi Bus Control Interface
+
+                                
+                                ;;	gca - get controller attention.
+                                ;
+  016A'   CD 01FD'              gca:	call	reset		;reset controller if required
+  016D'   7E                    	ld	a,(hl)		;get command
+  016E'   FE 01                 	cp	c.recal
+  0170'   3E 0A                 	ld	a,9+1		;set 9+ second time-out
+  0172'   28 02                 	jr	z,gca0		;if recalibrate, use long time-out
+  0174'   3E 03                 	ld	a,2+1		;use short time-out
+  0176'   32 0177'              gca0:	ld	(gcaa),a
+  0177'                         gcaa	equ	$-2	;*****=>;monitor one second timer address goes here
+                                	public	gcaa
+  0179'   CD 0222'              	call	som		;set output mode
+  017C'   3E 01                 	ld	a,1		;Set sasi controller address
+  017E'   D3 10                 	out	(Sasid),a
+  0180'   3E 20                 	ld	a,1 shl b.sel	;assert Select Line
+  0182'   D3 12                 	out	(Sasic),a
+  0184'   DB 12                 gca1:	in	a,(Sasis)	;get sasi status
+  0186'   0F                    	rrca			;get busy bit in C
+  0187'   38 06                 	jr	c,gca2		;if controller is ready
+  0189'   CD 01F5'              	call	cft		;check for time-out
+  018C'   F2 0184'              	jp	p,gca1		;if not timed out
+  018F'   AF                    gca2:	xor	a
+  0190'   D3 12                 	out	(Sasic),a	;drop Select
+  0192'   C9                    	ret
+                                
+                                ;;	Icc  - issue Controller Command.
+                                ;
+                                ;	HL => Sasi command block
+                                ;
+  0193'   7E                    icc::	ld	a,(hl)		;peek at opcode
+  0194'   FE 04                 	cp	c.fmat
+  0196'   C8                    	ret	z		;do not allow format entire disk
+  0197'   CD 016A'              	call	gca		;get controller attention
+  019A'   01 0610               	ld	bc,Sasid+6*256	;set port / command block length
+  019D'   CD 01D7'              icc1:	call	wfr		;wait for REQ
+  01A0'   C8                    	ret	z		;if data requested
+  01A1'   ED A3                 	outi			;send next byte
+  01A3'   20 F8                 	jr	nz,icc1
+  01A5'   C9                    	ret
+                                
+                                ;;	tdo - transmit data out.
+                                ;
+  01A6'   CD 01D7'              tdo::	call	wfr		;wait for req
+  01A9'   20 0E                 	jr	nz,wcc		;if not data requested
+                                
+  01AB'   ED B3                 	otir			;pitch sector out
+                                	if	xebec
+                                	dw	0
+                                	endif
+                                
+  01AD'   18 0A                 	jr	wcc
+                                
+                                ;;	tdi - transmit data in.
+                                ;
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-10
+Sasi Bus Control Interface
+
+  01AF'   CD 021E'              tdi::	call	sim		;set input mode
+  01B2'   CD 01D7'              	call	wfr		;wait for req
+  01B5'   20 02                 	jr	nz,wcc		;if status, not data requested
+                                
+  01B7'   ED B2                 	inir			;read sector
+                                	if	xebec
+                                	dw	0		;patch for 512 byte sectors
+                                	endif
+                                
+                                ;;	wcc  - wait command complete.
+                                ;
+  01B9'   CD 021E'              wcc::	call	sim		;set input mode
+  01BC'   CD 01D7'              	call	wfr		;wait for REQ
+  01BF'   28 2A                 	jr	z,ecr		;if controller not providing status
+  01C1'   ED 78                 	in	a,(c)		;read completion status
+  01C3'   E6 03                 	and	3		;ignore unused bits
+  01C5'   47                    	ld	b,a
+  01C6'   CD 01D7'              	call	wfr		;wait for REQ
+  01C9'   28 20                 	jr	z,ecr		;if not status
+  01CB'   DB 12                 	in	a,(Sasis)	;recover status
+  01CD'   CB 4F                 	bit	b.msg,a
+  01CF'   28 1A                 	jr	z,ecr		;if not message byte
+  01D1'   ED 78                 	in	a,(c)		;read message byte
+  01D3'   20 16                 	jr	nz,ecr		;if last byte not zero
+  01D5'   B0                    	or	b		;set Sasi error status byte
+  01D6'   C9                    	ret
+                                
+                                ;;	wfr - wait for REQ.
+                                ;
+                                ;	Exit:	A < 0	Timer Expired
+                                ;		A = 0	Request is for data
+                                ;		A > 0	Request is for control
+                                ;
+  01D7'   CD 01F5'              wfr::	call	cft		;check for time-out
+  01DA'   FA 01EA'              	jp	m,wfr1		;if controller hung
+  01DD'   DB 12                 	in	a,(Sasis)	;read sasi status
+  01DF'   CB 5F                 	bit	b.req,a
+  01E1'   28 F4                 	jr	z,wfr		;if request not asserted
+  01E3'   CB 77                 	bit	b.par,a		;check buss parity
+  01E5'   20 03                 	jr	nz,wfr1		;if parity error
+  01E6'                         wfra	equ	$-1
+  01E7'   E6 04                 	and	1 shl b.cd	;test control / data bit
+  01E9'   C9                    	ret
+  01EA'   F1                    wfr1:	pop	af		;pitch return address
+                                
+                                ;;	ecr - Enable Controller Reset.
+                                ;
+  01EB'   AF                    ecr::	xor	a		;enable controller reset next time
+  01EC'   32 01FD'              	ld	(reset),a	;by placing NOP at reset entry point
+  01EF'   F6 FF                 	or	-1		;return error status
+  01F1'   32 0140'              	ld	(lastfm),a	;force define floppy format
+  01F4'   C9                    	ret
+                                
+                                ;;	Cft - Check for Time-out.
+                                ;
+  01F5'   CD F066               cft:	call	idle		;idle cpu
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-11
+Sasi Bus Control Interface
+
+  01F8'   3A 0000               	ld	a,(0)
+  01F9'                         cfta	equ	$-2	;*****=>;This word gets the address of the timer
+                                	public	cfta
+  01FB'   B7                    	or	a
+  01FC'   C9                    	ret
+                                
+                                ;;	Reset - Reset Controller.
+                                ;
+                                ;	This routine is called prior to every command that is
+                                ;	issued to the controller, but disables itself after
+                                ;	running.  When, and if the controller times-out, this
+                                ;	routine is re-enabled.  Thus, the controller will be
+                                ;	reset again before the next command is issued.
+                                ;
+  01FD'   00                    reset::	nop		;*****=>;Note RET gets put here after reset
+                                				;     NOP gets put there if time-out
+  01FE'   3E CF                 	ld	a,11001111b	;initialize pio in mode 3
+  0200'   D3 13                 	out	(pioBs),a
+  0202'   3E 5F                 	ld	a,01011111b	;d7, d5 are outputs
+  0204'   D3 13                 	out	(pioBs),a
+  0206'   3E 80                 	ld	a,1 shl b.rst	;assert reset to controller
+  0208'   D3 12                 	out	(Sasic),a
+  020A'   AF                    	xor	a
+  020B'   D3 12                 	out	(Sasic),a	;de-assert reset
+  020D'   3E C9                 	ld	a,0c9h
+  020F'   32 01FD'              	ld	(reset),a	;disable reset until time-out
+  0212'   E5                    	push	hl
+                                	if	xebec
+                                	in	a,(syspio)
+                                	bit	1,a
+                                	jr	nz,reset1	;if dtc
+                                	ld	hl,initdr	;init drive characteristics
+                                	call	icc
+                                	ld	b,8
+                                	call	tdo
+                                reset1:
+                                	endif
+                                
+  0213'   21 0238'              	ld	hl,rgrecal
+  0216'   CD 0193'              	call	icc		;issue recursive rigid recalibrate
+  0219'   CD 01B9'              	call	wcc
+  021C'   E1                    	pop	hl
+  021D'   C9                    	ret
+                                
+                                ;;	Sim - Set Input Mode.
+                                ;
+  021E'   3E 4F                 sim:	ld	a,01001111b	;set pio A input mode
+  0220'   18 02                 	jr	som1
+                                
+                                ;;	Som - Set Output Mode.
+                                ;
+  0222'   3E 0F                 som:	ld	a,00001111b	;set pio A output mode
+  0224'   D3 11                 som1:	out	(pioAs),a
+  0226'   C9                    	ret
+                                
+                                ;;	cwp - check write protect.
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-12
+Sasi Bus Control Interface
+
+                                ;
+  0227'   0A                    cwp:	ld	a,(bc)		;get drive type
+  0228'   E6 80                 	and	fm.hard
+  022A'   C8                    	ret	z		;if not rigid disk access
+  022B'   3E 00                 	ld	a,0		;get dirty parameter flag
+  022C'                         rdonly	equ	$-1
+  022D'   B7                    	or	a
+  022E'   C8                    	ret	z		;if not write protected
+  022F'   7A                    	ld	a,d
+  0230'   B7                    	or	a
+  0231'   C8                    	ret	z		;if track zero request
+  0232'   3A 0240'              	ld	a,(opcode)
+  0235'   D6 08                 	sub	c.read		;allow reads, but no writes to file system
+  0237'   C9                    	ret
+                                
+                                	subttl	Sasi Command Blocks
+                                	page
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-13
+Sasi Command Blocks
+
+                                
+                                
+                                ;;	Sasi Command Blocks.
+                                ;
+                                	if	xebec
+                                initdr:	db	c.init
+                                	db	0
+                                	endif
+                                
+  0238'   01                    rgrecal:db	c.recal
+  0239'   60                    reclun:	db	3 shl 5
+                                
+                                	if	xebec
+                                	db	0,0,0
+                                	dw	1024
+                                nheads:	db	0
+                                	dw	100
+                                	dw	0
+                                	db	11
+                                	endif
+                                
+  023A'   C0                    deflpy:	db	c.flpy		;define floppy format
+  023B'   00                    deflun:	db	0
+  023C'   00 00 00              	db	0,0,0		
+  023F'   00                    flpfrm:	db	0
+                                
+  0240'   00                    opcode:	db	0		;Class code / Operation
+  0241'   00                    lun:	db	0		;Logical Unit & Logical Address 20-16
+  0242'   00                    addrh:	db	0		;		Logical Address 15-8
+  0243'   00                    addrl:	db	0		;		Logical Address  7-0
+  0244'   01                    nblk:	db	1		;Number of Blocks
+  0245'   00                    dctrl:	db	0		;Error Retry Disable Control word
+                                
+                                ;status:	db	-1,-2,-3,-4	;error status
+                                
+                                	subttl	Overlayable Initialization Code
+                                	page
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-14
+Overlayable Initialization Code
+
+                                
+                                ;;	First - First time only.
+                                ;
+  0246'   F5                    first::	push	af
+                                	phex	$-dskdvr,<SASI Resident Length is>
+  0010                    +     	.radix	16
+  000A                    +     	.radix	10
+  0247'   3E C9                 	ld	a,0c9h		;nuke self first time
+  0249'   32 0246'              	ld	(first),a
+  024C'   26 00                 	ld	h,0		;indicate return register value
+  024E'   CD F039               	call	daytim		;get address of monitor timer
+  0251'   2B                    	dec	hl
+  0252'   22 01F9'              	ld	(cfta),hl	;store address of timer for check routine
+  0255'   22 0177'              	ld	(gcaa),hl	;and for command startup
+                                	if	xebec
+                                	in	a,(syspio)
+                                	bit	5,a
+                                	jr	nz,first1	;if jumper not installed
+                                	ld	c,a
+                                	and	110b		;isolate number of heads
+                                	add	a,2
+                                	ld	(nheads),a
+                                	ld	hl,p2l		;arrange physical to logical table
+                                	ld	a,4		;set number of partitions
+                                	ld	(numunt),a
+                                	bit	4,c
+                                	jr	nz,first0	;if not bufferred step
+                                ;	ld	a,4
+                                	ld	(dctrl),a	;set buffered step
+                                
+                                first0:	ld	(hl),0		;set LUN 0
+                                	inc	hl
+                                	ld	(hl),fm.hard	;set rigid density
+                                	inc	hl
+                                	dec	a
+                                	jr	nz,first0
+                                	ld	(wfra),a	;disable parity check
+                                	endif
+                                
+  0258'   21 02B7'              first1:	ld	hl,cnfdpb	;point to physical driver read command
+  025B'   CD 0000'              	call	sa1403		;read partition parameters
+  025E'   B7                    	or	a
+  025F'   CC 0273'              	call	z,cpb		;if no errors then check parameter blocks
+  0262'   28 0D                 	jr	z,first2	;if parameters are loaded
+  0264'   21 02BC'              	ld	hl,cnfdpb+5	;try backup heads
+  0267'   7E                    	ld	a,(hl)		;get logical sector
+  0268'   C6 20                 	add	a,32		;advance to next head
+  026A'   77                    	ld	(hl),a
+  026B'   20 EB                 	jr	nz,first1	;if 4 heads and 2 cylinders not attempted
+  026D'   2F                    	cpl			;set tracks > 0 read only
+  026E'   32 022C'              	ld	(rdonly),a
+  0271'   F1                    first2:	pop	af
+  0272'   C9                    	ret
+                                
+                                ;;	cpb - check parameter blocks.
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	1-15
+Overlayable Initialization Code
+
+                                ;
+  0273'   21 EE00               cpb:	ld	hl,rgdbuf	;point to dpb buffer
+  0276'   3A 02BC'              	ld	a,(cnfdpb+5)	;get sector this dpb set came from
+  0279'   FE 20                 	cp	32
+  027B'   20 04                 	jr	nz,cpb1		;if not primary set
+  027D'   7E                    	ld	a,(hl)
+  027E'   FE E5                 	cp	0e5h
+  0280'   C8                    	ret	z		;use default dpbs if none configured
+  0281'   11 000F               cpb1:	ld	de,16-1		;set offset from high spt to deblock control
+  0284'   06 04                 	ld	b,4		;verify 4 dpbs
+  0286'   7E                    cpb2:	ld	a,(hl)		;set low sectors / track
+  0287'   B7                    	or	a
+  0288'   C0                    	ret	nz		;if bummer sectors / track
+  0289'   19                    	add	hl,de		;advance to deblock control
+  028A'   7E                    	ld	a,(hl)
+  028B'   E6 87                 	and	87h
+  028D'   CB 2F                 	sra	a
+  028F'   CB 2F                 	sra	a
+  0291'   C0                    	ret	nz		;if bad deblocking constant
+  0292'   23                    	inc	hl
+  0293'   10 F1                 	djnz	cpb2
+  0295'   2B                    	dec	hl
+  0296'   11 003F*              	ld	de,Dpbrg4+16*4-1
+  0299'   01 0040               	ld	bc,16*4
+  029C'   ED B8                 	lddr			;move dpbs into place
+  029E'   01 0010               	ld	bc,16		;set 16 bytes/dpx
+  02A1'   11 004E*              	ld	de,Dpbase+4*16+14 ;point at alloc vector pointer
+  02A4'   21 000D*              	ld	hl,Dpbrg4+13	;point at reserved tracks
+  02A7'   3E 04                 	ld	a,4		;count off 4 partitions
+  02A9'   F5                    cpb3:	push	af
+  02AA'   7E                    	ld	a,(hl)		;get reserved tracks for partition
+  02AB'   3D                    	dec	a		;just so nice numbers come out
+  02AC'   87                    	add	a,a		;16 blks/track / 8 blks/byte = 2 bytes/track
+  02AD'   12                    	ld	(de),a		;store low allocation vector address
+  02AE'   09                    	add	hl,bc		;advance to next dpb
+  02AF'   EB                    	ex	de,hl
+  02B0'   09                    	add	hl,bc		;advance to next dph
+  02B1'   EB                    	ex	de,hl
+  02B2'   F1                    	pop	af
+  02B3'   3D                    	dec	a
+  02B4'   20 F3                 	jr	nz,cpb3		;if more to allocate
+  02B6'   C8                    	ret	z		;return success
+                                
+  02B7'   01 04 00              cnfdpb:	db	01,4,0		;read partition 0
+  02BA'   0000                  	dw	0		;track zero
+  02BC'   0020                  	dw	32		;sector 32
+  02BE'   EE00                  	dw	rgdbuf		;rigid parameter table buffer
+                                
+                                	phex	$-Dskdvr,<SASI Driver Length is >
+  0010                    +     	.radix	16
+  000A                    +     	.radix	10
+                                
+                                	end
+SA1403 - Shugart / DTC SASI Driver				MACRO-80 3.44	09-Dec-81	PAGE	S
+Overlayable Initialization Code
+
+Macros:
+PHEX            PMSG            
+
+Symbols:
+0242'	ADDRH           0243'	ADDRL           0000 	B.BSY           
+0002 	B.CD            0004 	B.IO            0001 	B.MSG           
+0006 	B.PAR           0003 	B.REQ           0007 	B.RST           
+0005 	B.SEL           0007 	C.FLAW          00C0 	C.FLPY          
+0004 	C.FMAT          0006 	C.FTRK          000C 	C.INIT          
+0008 	C.READ          0001 	C.RECAL         0003 	C.RQSN          
+0002 	C.RSYN          000B 	C.SEEK          00E0 	C.TRAM          
+0000 	C.TRDY          0005 	C.VTRK          000A 	C.WRIT          
+0009 	C.WRPR          00CA'	CDD             00D4'	CDD0            
+00E2'	CDD1            00EB'	CDD2            01F5'	CFT             
+01F9I'	CFTA            02B7'	CNFDPB          0273'	CPB             
+0281'	CPB1            0286'	CPB2            02A9'	CPB3            
+0227'	CWP             F039 	DAYTIM          0245'	DCTRL           
+023A'	DEFLPY          023B'	DEFLUN          00BC*	DPB8S           
+02A2*	DPBASE          02A5*	DPBRG4          0000I'	DSKDVR          
+01EBI'	ECR             0000 	FALUN           F00F 	FASTCRT         
+0001 	FBLUN           0000 	FCLUN           0002 	FDLUN           
+0246I'	FIRST           0258'	FIRST1          0271'	FIRST2          
+023F'	FLPFRM          0001 	FM.DD           0007 	FM.DDDS         
+0006 	FM.DDSS         0000 	FM.DS           0080 	FM.HARD         
+0001 	FM.SDDS         0000 	FM.SDSS         0002 	FM.SZ           
+0003 	FM.WR           016A'	GCA             0176'	GCA0            
+0184'	GCA1            018F'	GCA2            0177I'	GCAA            
+0193I'	ICC             019D'	ICC1            F066 	IDLE            
+0140'	LASTFM          0241'	LUN             00FF'	MLU             
+0112'	MPA             0127'	MPA1            012A'	MPA2            
+0136'	MPA21           0139'	MPA22           0156'	MPA3            
+0160'	MPA4            0163'	MPA5            0244'	NBLK            
+0052'	NUMUNT          0240'	OPCODE          00EF'	P2L             
+0010 	PIOAD           0011 	PIOAS           0012 	PIOBD           
+0013 	PIOBS           022C'	RDONLY          0239'	RECLUN          
+01FDI'	RESET           EE00 	RGDBUF          0003 	RGLUN           
+0238'	RGRECAL         0000'	SA1403          0010'	SAS0            
+0002'	SAS0A           0043'	SAS1            0046'	SAS2            
+0012 	SASIC           0010 	SASID           0012 	SASIS           
+0036'	SECLEN          0050'	SELECT          005B'	SELER1          
+0058'	SELERR          021E'	SIM             005E'	SMF             
+0080'	SMF1            0098'	SMF1A           00A0'	SMF2            
+00A9'	SMF3            00C3'	SMF4            008D'	SMFA            
+F069 	SOFT            0222'	SOM             0224'	SOM1            
+001C 	SYSPIO          01AFI'	TDI             01A6I'	TDO             
+00A7*	TRN6            01B9I'	WCC             01D7I'	WFR             
+01EA'	WFR1            01E6'	WFRA            0000 	XEBEC           
+
+
+
+No Fatal error(s)
+
+
+
+0058'	SELERR          021E'	SIM             005E'	SMF             
+0080'	SMF1            0098'	SMF1A           00A0'	SMF2

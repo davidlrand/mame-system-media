@@ -1,0 +1,18 @@
+	Title	CHARIO - Character I/O Module		
+
+	.z80
+
+	public	conin,const,conout,list,reader,punch,listst
+
+monitr	equ	0f000h		;820+ Resident Monitor Address
+
+const	equ	monitr+4bh
+conin	equ	monitr+4eh
+conout	equ	monitr+51h
+list	equ	monitr+54h
+listst	equ	monitr+57h
+reader	equ	monitr+5dh
+punch	equ	monitr+60h
+
+	end
+

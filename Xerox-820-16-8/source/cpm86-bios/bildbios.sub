@@ -1,0 +1,8 @@
+m80 =xbios
+m80 =cwboot
+m80 =chario
+m80 =deblkr
+m80 =qfs
+mac cpmove
+submit makebios
+

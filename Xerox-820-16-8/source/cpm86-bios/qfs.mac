@@ -1,0 +1,170 @@
+	.z80
+
+Xqdvr	equ	0f02ah		;Physical Driver Executioner
+cdisk	equ	00004h		;current user/disk
+biosl	equ	00380h		;length of bios
+
+	cseg
+
+bios	equ	$		;origin of bios above ccp & bdos
+
+	.phase	80h
+
+phycmd	equ	$
+phyunt	equ	$+1
+phydrv	equ	$+2
+phytrk	equ	$+3
+physec	equ	$+5
+phydma	equ	$+7
+
+;*
+;*  QFS - RESIDES ON TRACK 0, SECTOR 1 OF SYSTEM DISKS
+;*        THIS ROUTINE IS READ INTO MEMORY BY THE
+;*        BOOT PORTION OF THE MONITOR.  AFTER QFS IS
+;*        GIVEN CONTROL BY THE MONITOR, QFS READS IN
+;*        BIOS FROM THE SYSTEM DISK.  THE LOCATION OF
+;*        BIOS IS DEPENDENT UPON THE FORMATTING OF THE
+;*        DISK.  ALSO POSSIBLE FORMATS/LOCATIONS OF BIOS
+;*        ARE LISTED IN LDRTBL AT THE END OF QFS.
+;*        QFS FINALLY GIVES CONTROL TO BIOS AND DISAPPEARS.
+;*
+;*   INPUT:	A =  Sectors per Track
+;*		DE = Address of Physical Command Block that
+;*                   loaded qfs
+;*
+qfs:	ex	de,hl		;transfer command block
+	ld	bc,physec-phycmd
+;*
+;* Start overwriting qfs making it into a physical
+;* command block for bios reads
+;*Š	ldir
+;*
+;*  Find entry in ldrtbl which matches spt in a
+;*
+	ld	hl,ldrtbl-5	;set loader control table address
+	ld	c,5		;set table entry size
+qfs1:	add	hl,bc		;advance table address
+	cp	(hl)		;  Match found?
+	jr	c,qfs1		;  No
+;*
+;*  If end of table return 
+;*
+	ret	nz		;if entry not in table
+;*
+;*  Get track offset + 1 ( The ldi command will subtract
+;*  1 from c)
+;*
+	inc	hl
+	ld	c,(hl)		;set track offset+1
+;*
+;*  move starting sector to phycmd block ( start of qfs)
+;*
+	inc	hl
+	ldi			;move starting sector, adjust track offset
+	xor	a
+	ld	(de),a		;clear upper sector
+;*
+;*  Number of sectors to read all of BIOS
+;*
+	ld	a,(hl)		;set number of sectors
+	inc	hl
+;*
+;*  Sector size and adjust it
+;*
+	ld	l,(hl)		;set (sector size)/4-1
+	inc	hl		;sector size / 4
+	add	hl,hl
+	add	hl,hl
+	ex	de,hl		;set sector size in DE
+	ld	hl,(phytrk)	;add track offset
+	add	hl,bc
+	ld	(phytrk),hl
+	ld	b,a		;set number of sectors
+	ld	a,d		;check sector size
+;**5.0	ld	hl,bios-80h	;set starting address
+;**5.0	or	a
+;**5.0	jr	nz,qfs3		;if big sectors
+	ld	hl,bios		;** 5.0 set starting address
+	jr	qfs3		;** 5.0
+qfs2:	add	hl,de		;advance transfer address
+qfs3:	ld	(phydma),hl
+	exx			;switch register sets
+	ld	hl,phycmd or qfs;set physical command address
+	call	Xqdvr		;execute driver read
+	ld	hl,physec	;advance sector
+	inc	(hl)
+	exx			;switch back
+	or	a
+	ret	nz		;if boot error
+	djnz	qfs2		;if cold start not completeŠ	ld	(cdisk),a	;start out in A: user 0
+	ld	hl,bios+3	;warm start after signon
+	push	hl
+	ld	hl,sernum
+	ld	de,ldrtbl
+	ld	c,sernml
+;*
+;*  Move serial number over ldrtbl so a return follows it
+;*  for use pmsg
+;*
+	ldir
+	ld	(de),a
+	inc	de
+	ld	a,0c9h              ; Add return code
+	ld	(de),a
+	call	bios		;execute cold start loader
+;*
+;*	Loader Control Table.
+;*
+;*	Entries Must be in Sort Order (by sectors per track)
+;*
+;*  Format of ldrtbl:
+;*	db	sectors per track
+;*	db	offset+1 from boot track
+;*      db	starting bios sector
+;*      db	number of bios sectors
+;*	db      sector size/4-1
+;*
+ldrtbl:
+	db	68,0+1,13,2,512/4-1	;5.25 Rigid Disk
+;	db	52,1+1,22,4,256/4-1	;8" Double Density
+	db	36,1+1,04,2,512/4-1	;5.25  9 spt
+;	db	34,2+1,05,4,256/4-1	;5" Double Density
+	db	34,1+1,07,4,256/4-1	;5.25 17 spt
+	db	32,1+1,05,2,512/4-1	;5.25  8 spt
+;	db	26,1+1,20,7,128/4-1	;8" Single Density
+;	db	18,2+1,10,7,128/4-1	;5" Single Density
+;	db	00,0+1,22,4,256/4-1	;Any SASI Rigid Disk
+	db	00			;   End of table
+
+	if	$ gt 100h-10
+	.printx * Too Big *
+	else
+	if	$ eq 100h-10
+	.printx + Perfect Fit +
+	else
+	ds	100h-10-$,-1
+	endif
+	endif
+
+;;	Serialization.
+;
+sernum:	db	' EC*******'		;Manufacturing serial number here
+sernml	equ	$-sernum
+
+	if	$ ne 100h
+	.printx	* Serial Number Out of Place *
+	endif
+
+	.dephase
+;        .phase   100h
+
+;*	initialize configuration sector
+
+;	defs	(128+256),0e5h
+
+;        .dephase
+
+stack:	defw	00
+
+	end
+

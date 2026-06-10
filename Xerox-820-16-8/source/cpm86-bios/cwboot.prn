@@ -1,0 +1,246 @@
+Cold and Warm Start Module	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	Title	Cold and Warm Start Module
+                                
+                                ;;	Copyright 1981, Balcones Computer Corporation.
+                                ;
+                                
+                                	.z80
+                                
+  0E00                          bdosln	equ	0e00h		;Length of CP/M v 2.2 BDOS
+  0800                          ccplen	equ	0800h		;Length of CP/M v 2.2 CCP
+  0004                          cdisk	equ	4		;Current user/disk
+  002C                          nsects	equ	(ccplen+bdosln)/128	;number of sectors for ccp + bdos
+                                
+  F03C                          confg	equ	0f03ch		;Configuration Status
+  FFCC                          osboot	equ	0ffcch		;O/S identification byte
+                                
+  008C                          os.cpm	equ	8ch		;CP/M id byte
+                                
+                                ;;	Configuration Status Byte Bit Definitions.
+                                ;
+  0007                          c.keym	equ	7		;Keyboard upper bit is passed
+                                ;
+                                ;	bits 6,5 are for rigid disk configurations
+                                ;
+  0060                          c.rgd	equ	01100000b	;Configuration Mask for Rigid Disks
+  0040                          c.sasi	equ	01000000b	;Configuration Mask for 8" 8 Mbyte Rigid Disk
+                                				;Shugart SA-1403D Disk Controller present
+                                				; (this is a mask value not a bit position)
+  0020                          c.rgd5	equ	00100000b	;Configuration Mask for 5.25" 10 Mbyte Rigid Disk
+  0004                          c.five	equ	4		;Five inch micro floppies
+  0003                          c.lpkb	equ	3		;Low Profile Keyboard present
+  0002                          c.eb2	equ	2		;Expansion Box II present
+                                
+  0043                          rev	equ	'C'
+                                
+                                ;;	Wboot - Warm Start CP/M.
+                                ;
+  0000'   3E C3                 wbt5:	ld	a,0c3h		;plant jumps
+  0002'   21 F206*              	ld	hl,bios##-bdosln+6
+  0005'   BE                    	cp	(hl)
+  0006'   20 1C                 	jr	nz,wbterr	;if no jump to bdos
+  0008'   32 0000               	ld	(0),a
+  000B'   32 0005               	ld	(5),a
+  000E'   22 0006               	ld	(6),hl		;set address of jump to bdos
+  0011'   21 0000*              	ld	hl,bwboot##	;set warm boot address
+  0014'   22 0001               	ld	(1),hl
+  0017'   ED 4B 0004            	ld	bc,(cdisk)	;set current disk / user
+  001B'   21 EA00*              	ld	hl,bios##-bdosln-ccplen ;Enter CCP
+  001C'                         wbtcom	equ	$-2		;patch to "03" to disable warm boot command
+  001E'   3E 03                 	ld	a,3
+  0020'   32 001C'              	ld	(wbtcom),a
+  0023'   E9                    	jp	(hl)
+                                
+  0024'   CD 00F8'              wbterr:	call	pmsg		;display error message
+  0027'   0D 0A 42 6F           	db	13,10,'Boot Err',0
+  002B'   6F 74 20 45           
+  002F'   72 72 00              
+Cold and Warm Start Module	MACRO-80 3.44	09-Dec-81	PAGE	1-1
+
+
+  0032'   CD 0000*              	call	bconin##	;wait for key
+  0035'   31 0100               wboot::	ld	sp,100h		;use external stack
+  0038'   CD 0000*              	call	dboot##		;inform deblocker
+  003B'   4F                    	ld	c,a		;(zero) select A:
+  003C'   3E 2C                 	ld	a,nsects	;set number of sectors to read
+  003E'   32 00AE'              	ld	(seccnt),a	;set sector counter
+  0041'   C5                    	push	bc		;** 5.0
+  0042'   D5                    	push	de		;** 5.0
+  0043'   21 0000               	ld	hl,0		;** 5.0
+  0046'   CD F03C               	call	confg		;** 5.0
+  0049'   CB 55                 	bit	c.eb2,l		;** 5.0
+  004B'   D1                    	pop	de		;** 5.0
+  004C'   C1                    	pop	bc		;** 5.0
+  004D'   21 E600*              	ld	hl,bios##-bdosln-ccplen-(128*8)	;** 5.0 set starting address
+                                						;** 5.0 for sector 0
+  0050'   20 03                 	jr	nz,wbt0		;** 5.0 if expansion box II
+  0052'   21 E980*              	ld	hl,bios##-bdosln-ccplen-128
+  0055'   22 011E'              wbt0:	ld	(dmabas),hl	;set base track dma address
+  0058'   CD 0000*              	call	bseld##		;select boot drive (A:)
+  005B'   7C                    	ld	a,h
+  005C'   B5                    	or	l
+  005D'   28 C5                 	jr	z,wbterr
+  005F'   23                    	inc	hl		;point to high translate address
+  0060'   7E                    	ld	a,(hl)
+  0061'   32 0105'              	ld	(xlate),a
+  0064'   E5                    	push	hl
+  0065'   0E 00                 	ld	c,0		;translate sector zero
+  0067'   CD 0104'              	call	mls
+  006A'   79                    	ld	a,c
+  006B'   32 0116'              	ld	(transz),a	;set sector zero translate value
+  006E'   E1                    	pop	hl
+  006F'   11 0009               	ld	de,10-1		;offset to dpb
+  0072'   19                    	add	hl,de
+  0073'   4E                    	ld	c,(hl)		;get dpb address
+  0074'   23                    	inc	hl
+  0075'   46                    	ld	b,(hl)
+  0076'   0A                    	ld	a,(bc)		;get low sectors per track
+  0077'   32 00BA'              	ld	(spt),a
+  007A'   21 000D               	ld	hl,13
+  007D'   09                    	add	hl,bc
+  007E'   4E                    	ld	c,(hl)		;get reserved tracks
+  007F'   23                    	inc	hl
+  0080'   46                    	ld	b,(hl)
+  0081'   0B                    	dec	bc
+                                
+  0082'   1E 08                 eb2wbt:	ld	e,8		;** 5.0 expansion box II system starts in sector 8
+  0084'   3A 00BA'              	ld	a,(spt)		;** 5.0	
+  0087'   FE 35                 	cp	26*2+1		;** 5.0 check for largest floppy disk
+                                				;** 5.0 spt capacity (8" DD)
+  0089'   30 02                 	jr	nc,wbt1		;** 5.0 if rigid disk
+                                				;** 5.0 (assume rigid disk
+                                				;** 5.0  if larger than largest floppy)
+                                				;** 5.0 (system track is already calculated)
+  008B'   0E 00                 	ld	c,0		;** 5.0 floppy disks use track 0 for system
+  008D'   C5                    wbt1:	push	bc		;save track
+  008E'   D5                    	push	de		;save starting sector
+Cold and Warm Start Module	MACRO-80 3.44	09-Dec-81	PAGE	1-2
+
+
+  008F'   CD 0000*              	call	bsett##		;position disk
+  0092'   C1                    	pop	bc
+  0093'   C5                    wbt2:	push	bc		;save sector
+  0094'   CD 0104'              	call	mls		;map logical sector
+  0097'   E5                    	push	hl		;save address
+  0098'   CD 0000*              	call	bsets##		;set sector
+  009B'   C1                    	pop	bc
+  009C'   21 FFFE*              	ld	hl,bios##-2
+  009F'   ED 42                 	sbc	hl,bc
+  00A1'   38 13                 	jr	c,wbt3		;if within bios
+  00A3'   CD 0000*              	call	bsetd##		;set dma address
+  00A6'   CD 0000*              	call	read##		;read next sector
+  00A9'   B7                    	or	a
+  00AA'   C2 0024'              	jp	nz,wbterr	;if load error
+  00AD'   3E 00                 	ld	a,0		;update sectors read counter
+  00AE'                         seccnt	equ	$-1
+  00AF'   3D                    	dec	a
+  00B0'   32 00AE'              	ld	(seccnt),a
+  00B3'   CA 0000'              	jp	z,wbt5		;if end of load
+  00B6'   C1                    wbt3:	pop	bc		;advance sector
+  00B7'   0C                    	inc	c
+  00B8'   79                    	ld	a,c
+  00B9'   FE FF                 	cp	-1
+  00BA'                         spt	equ	$-1
+  00BB'   20 D6                 	jr	nz,wbt2		;if not end of track
+  00BD'   41                    	ld	b,c
+  00BE'   2A 011E'              	ld	hl,(dmabas)	;advance base dma address
+  00C1'   11 0080               	ld	de,128
+  00C4'   19                    wbt4:	add	hl,de		;by spt*128
+  00C5'   10 FD                 	djnz	wbt4
+  00C7'   22 011E'              	ld	(dmabas),hl
+  00CA'   C1                    	pop	bc		;advance track
+  00CB'   0C                    	inc	c
+  00CC'   58                    	ld	e,b		;and restart on sector 0
+  00CD'   18 BE                 	jr	wbt1
+                                
+                                
+                                ;;	Cold Start CP/M.
+                                ;
+  00CF'   21 FFCC               cboot::	ld	hl,osboot	;store O/S id byte - CP/M
+  00D2'   36 8C                 	ld	(hl),os.cpm
+  00D4'   CD 00F8'              	call	pmsg		;Announce CP/M size and version
+  00D7'   1A 58 65 72           	db	26,'Xerox 60k CP/M vers 2.2',rev
+  00DB'   6F 78 20 36           
+  00DF'   30 6B 20 43           
+  00E3'   50 2F 4D 20           
+  00E7'   76 65 72 73           
+  00EB'   20 32 2E 32           
+  00EF'   43                    
+  00F0'   20 23 32 2D           	db	' #2-294'
+  00F4'   32 39 34              
+  00F7'   00                    	db	0
+                                
+                                ;;	pmsg - print message at return address.
+                                ;
+  00F8'   E1                    pmsg::	pop	hl		;print message after call
+Cold and Warm Start Module	MACRO-80 3.44	09-Dec-81	PAGE	1-3
+
+
+  00F9'   7E                    	ld	a,(hl)
+  00FA'   23                    	inc	hl
+  00FB'   B7                    	or	a
+  00FC'   E5                    	push	hl
+  00FD'   C8                    	ret	z		;if end of message
+  00FE'   4F                    	ld	c,a
+  00FF'   CD 0000*              	call	bconot##	;display message at current console
+  0102'   18 F4                 	jr	pmsg
+                                
+                                ;;	mls - map logical sector.
+                                ;
+  0104'   3E 00                 mls:	ld	a,0		;set translate address
+  0105'                         xlate	equ	$-1
+  0106'   B7                    	or	a
+  0107'   79                    	ld	a,c
+  0108'   28 0B                 	jr	z,mls2		;if not single density
+  010A'   87                    	add	a,a		;read by half tracks
+  010B'   2A 00BA'              	ld	hl,(spt)	;get sectors per track
+  010E'   BD                    	cp	l
+  010F'   38 02                 	jr	c,mls1		;if not past end of track
+  0111'   95                    	sub	l		;offset back to beginning of track
+  0112'   3C                    	inc	a
+  0113'   3C                    mls1:	inc	a		;map sector 0->1
+  0114'   4F                    	ld	c,a
+  0115'   D6 00                 mls2:	sub	0		;offset by translate of sector zero
+  0116'                         transz	equ	$-1
+  0117'   1F                    	rra
+  0118'   67                    	ld	h,a
+  0119'   2E 00                 	ld	l,0
+  011B'   CB 1D                 	rr	l
+  011D'   11 0000               	ld	de,0		;set base dma for this track
+  011E'                         dmabas	equ	$-2
+  0120'   19                    	add	hl,de		;compute address for this sector
+  0121'   C9                    	ret
+                                
+                                	end
+Cold and Warm Start Module	MACRO-80 3.44	09-Dec-81	PAGE	S
+
+
+Macros:
+
+Symbols:
+0033*	BCONIN          0100*	BCONOT          0E00 	BDOSLN          
+009D*	BIOS            0059*	BSELD           00A4*	BSETD           
+0099*	BSETS           0090*	BSETT           0012*	BWBOOT          
+0002 	C.EB2           0004 	C.FIVE          0007 	C.KEYM          
+0003 	C.LPKB          0060 	C.RGD           0020 	C.RGD5          
+0040 	C.SASI          00CFI'	CBOOT           0800 	CCPLEN          
+0004 	CDISK           F03C 	CONFG           0039*	DBOOT           
+011E'	DMABAS          0082'	EB2WBT          0104'	MLS             
+0113'	MLS1            0115'	MLS2            002C 	NSECTS          
+008C 	OS.CPM          FFCC 	OSBOOT          00F8I'	PMSG            
+00A7*	READ            0043 	REV             00AE'	SECCNT          
+00BA'	SPT             0116'	TRANSZ          0035I'	WBOOT           
+0055'	WBT0            008D'	WBT1            0093'	WBT2            
+00B6'	WBT3            00C4'	WBT4            0000'	WBT5            
+001C'	WBTCOM          0024'	WBTERR          0105'	XLATE           
+
+
+
+No Fatal error(s)
+
+
+  
+0113'	MLS1            0115'	MLS2            002C 	NSECTS          
+008C 	OS.CPM          FFCC 	OSBOOT          00F8

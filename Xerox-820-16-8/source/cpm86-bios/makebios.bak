@@ -1,0 +1,64 @@
+if ne .$1 . skip 4
+l80 /p:1600,/d:19C0,xbios,cwboot,chario,deblkr,bios0/n/x/e
+l80 /p:1700,/d:1AC0,xbios,cwboot,chario,deblkr,bios1/n/x/e
+l80 /p:1600,qfs,boot0/n/x/e
+l80 /p:1700,qfs,boot1/n/x/e
+xsub
+zsid
+f100,21ff,0
+iboot0.hex
+r180-1600
+icpsys0.hex
+r200-0000
+l200+12d2-2,+8
+a200+12d2
+nop
+nop
+ld hl,0
+.
+ibios0.hex
+r200-0000
+g0
+save 28 cpm0.com
+zsid
+f100,21ff,0
+iboot1.hex
+r180-1700
+icpsys1.hex
+r200-0100
+l200+12d2-2,+8
+a200+12d2
+nop
+nop
+ld hl,0
+.
+ibios1.hex
+r200-0100
+g0
+save 28 cpm1.com
+genhex cpm0.com
+genhex cpm1.com 100
+ed cpm0.hex
+#a
+430:
+20T
+430:
+20kt
+e
+ed cpm1.hex
+#a
+430:
+20T
+430:
+20kt
+e
+pip cpm10.hex = cpm0.hex,cpm1.hex
+genmod cpm10.hex cpm10.com
+save 39 cpm10.com
+zsid cpm10.com
+f100,7ff,0
+icpmove.hex
+r
+g0
+save 39 movcpmx.com
+

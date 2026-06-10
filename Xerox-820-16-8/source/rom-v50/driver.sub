@@ -1,0 +1,30 @@
+>	Copyright (C) 1982 by Balcones Computer Corporation       <
+>
+if ne .$1 .all skip 1
+do $0 seltab dphdpb fivdpb rigdpb wd1797 sa1403 xr
+if eq .$1 . skip 4
+m80 =$1/l
+if ne .$1 .xr skip 1
+l80 xr,x/n/e
+do $0 $2 $3 $4 $5 $6 $7 $8 $9
+xsub
+l80 /p:f360,seltab,dphdpb,fivdpb,wd1797,wdvr/n/x/e
+n
+l80 /p:f360,seltab,dphdpb,rigdpb,sa1403,sdvr/n/x/e
+n
+zsid x.com
+d00a2f,+f
+isdvr.hex
+r00a2f+3a8-110-f360
+d00a2f+688-10,+1f
+iwdvr.hex
+r00a2f-f360
+d00a2f,+f
+d00a2f+3a8-10,+1f
+g100
+save 25 yrom.com
+zsid yrom.com
+m200 1a00 100
+g0
+save 24 rom500.com
+

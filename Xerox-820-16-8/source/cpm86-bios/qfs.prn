@@ -1,0 +1,209 @@
+	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	.z80
+                                
+  F02A                          Xqdvr	equ	0f02ah		;Physical Driver Executioner
+  0004                          cdisk	equ	00004h		;current user/disk
+  0380                          biosl	equ	00380h		;length of bios
+                                
+  0000'                         	cseg
+                                
+  0000'                         bios	equ	$		;origin of bios above ccp & bdos
+                                
+                                	.phase	80h
+                                
+  0080                          phycmd	equ	$
+  0081                          phyunt	equ	$+1
+  0082                          phydrv	equ	$+2
+  0083                          phytrk	equ	$+3
+  0085                          physec	equ	$+5
+  0087                          phydma	equ	$+7
+                                
+                                ;*
+                                ;*  QFS - RESIDES ON TRACK 0, SECTOR 1 OF SYSTEM DISKS
+                                ;*        THIS ROUTINE IS READ INTO MEMORY BY THE
+                                ;*        BOOT PORTION OF THE MONITOR.  AFTER QFS IS
+                                ;*        GIVEN CONTROL BY THE MONITOR, QFS READS IN
+                                ;*        BIOS FROM THE SYSTEM DISK.  THE LOCATION OF
+                                ;*        BIOS IS DEPENDENT UPON THE FORMATTING OF THE
+                                ;*        DISK.  ALSO POSSIBLE FORMATS/LOCATIONS OF BIOS
+                                ;*        ARE LISTED IN LDRTBL AT THE END OF QFS.
+                                ;*        QFS FINALLY GIVES CONTROL TO BIOS AND DISAPPEARS.
+                                ;*
+                                ;*   INPUT:	A =  Sectors per Track
+                                ;*		DE = Address of Physical Command Block that
+                                ;*                   loaded qfs
+                                ;*
+  0080    EB                    qfs:	ex	de,hl		;transfer command block
+  0081    01 0005               	ld	bc,physec-phycmd
+                                ;*
+                                ;* Start overwriting qfs making it into a physical
+                                ;* command block for bios reads
+                                ;*
+  0084    ED B0                 	ldir
+                                ;*
+                                ;*  Find entry in ldrtbl which matches spt in a
+                                ;*
+  0086    21 00D4               	ld	hl,ldrtbl-5	;set loader control table address
+  0089    0E 05                 	ld	c,5		;set table entry size
+  008B    09                    qfs1:	add	hl,bc		;advance table address
+  008C    BE                    	cp	(hl)		;  Match found?
+  008D    38 FC                 	jr	c,qfs1		;  No
+                                ;*
+                                ;*  If end of table return 
+                                ;*
+  008F    C0                    	ret	nz		;if entry not in table
+                                ;*
+                                ;*  Get track offset + 1 ( The ldi command will subtract
+                                ;*  1 from c)
+	MACRO-80 3.44	09-Dec-81	PAGE	1-1
+
+
+                                ;*
+  0090    23                    	inc	hl
+  0091    4E                    	ld	c,(hl)		;set track offset+1
+                                ;*
+                                ;*  move starting sector to phycmd block ( start of qfs)
+                                ;*
+  0092    23                    	inc	hl
+  0093    ED A0                 	ldi			;move starting sector, adjust track offset
+  0095    AF                    	xor	a
+  0096    12                    	ld	(de),a		;clear upper sector
+                                ;*
+                                ;*  Number of sectors to read all of BIOS
+                                ;*
+  0097    7E                    	ld	a,(hl)		;set number of sectors
+  0098    23                    	inc	hl
+                                ;*
+                                ;*  Sector size and adjust it
+                                ;*
+  0099    6E                    	ld	l,(hl)		;set (sector size)/4-1
+  009A    23                    	inc	hl		;sector size / 4
+  009B    29                    	add	hl,hl
+  009C    29                    	add	hl,hl
+  009D    EB                    	ex	de,hl		;set sector size in DE
+  009E    2A 0083               	ld	hl,(phytrk)	;add track offset
+  00A1    09                    	add	hl,bc
+  00A2    22 0083               	ld	(phytrk),hl
+  00A5    47                    	ld	b,a		;set number of sectors
+  00A6    7A                    	ld	a,d		;check sector size
+                                ;**5.0	ld	hl,bios-80h	;set starting address
+                                ;**5.0	or	a
+                                ;**5.0	jr	nz,qfs3		;if big sectors
+  00A7    21 0000'              	ld	hl,bios		;** 5.0 set starting address
+  00AA    18 01                 	jr	qfs3		;** 5.0
+  00AC    19                    qfs2:	add	hl,de		;advance transfer address
+  00AD    22 0087               qfs3:	ld	(phydma),hl
+  00B0    D9                    	exx			;switch register sets
+  00B1    21 0080               	ld	hl,phycmd or qfs;set physical command address
+  00B4    CD F02A               	call	Xqdvr		;execute driver read
+  00B7    21 0085               	ld	hl,physec	;advance sector
+  00BA    34                    	inc	(hl)
+  00BB    D9                    	exx			;switch back
+  00BC    B7                    	or	a
+  00BD    C0                    	ret	nz		;if boot error
+  00BE    10 EC                 	djnz	qfs2		;if cold start not complete
+  00C0    32 0004               	ld	(cdisk),a	;start out in A: user 0
+  00C3    21 0003'              	ld	hl,bios+3	;warm start after signon
+  00C6    E5                    	push	hl
+  00C7    21 00F6               	ld	hl,sernum
+  00CA    11 00D9               	ld	de,ldrtbl
+  00CD    0E 0A                 	ld	c,sernml
+                                ;*
+                                ;*  Move serial number over ldrtbl so a return follows it
+                                ;*  for use pmsg
+                                ;*
+  00CF    ED B0                 	ldir
+  00D1    12                    	ld	(de),a
+	MACRO-80 3.44	09-Dec-81	PAGE	1-2
+
+
+  00D2    13                    	inc	de
+  00D3    3E C9                 	ld	a,0c9h              ; Add return code
+  00D5    12                    	ld	(de),a
+  00D6    CD 0000'              	call	bios		;execute cold start loader
+                                ;*
+                                ;*	Loader Control Table.
+                                ;*
+                                ;*	Entries Must be in Sort Order (by sectors per track)
+                                ;*
+                                ;*  Format of ldrtbl:
+                                ;*	db	sectors per track
+                                ;*	db	offset+1 from boot track
+                                ;*      db	starting bios sector
+                                ;*      db	number of bios sectors
+                                ;*	db      sector size/4-1
+                                ;*
+  00D9                          ldrtbl:
+  00D9    44 01 0D 02           	db	68,0+1,13,2,512/4-1	;5.25 Rigid Disk
+  00DD    7F                    
+                                ;	db	52,1+1,22,4,256/4-1	;8" Double Density
+  00DE    24 02 04 02           	db	36,1+1,04,2,512/4-1	;5.25  9 spt
+  00E2    7F                    
+                                ;	db	34,2+1,05,4,256/4-1	;5" Double Density
+  00E3    22 02 07 04           	db	34,1+1,07,4,256/4-1	;5.25 17 spt
+  00E7    3F                    
+  00E8    20 02 05 02           	db	32,1+1,05,2,512/4-1	;5.25  8 spt
+  00EC    7F                    
+                                ;	db	26,1+1,20,7,128/4-1	;8" Single Density
+                                ;	db	18,2+1,10,7,128/4-1	;5" Single Density
+                                ;	db	00,0+1,22,4,256/4-1	;Any SASI Rigid Disk
+  00ED    00                    	db	00			;   End of table
+                                
+                                	if	$ gt 100h-10
+                                	.printx * Too Big *
+                                	else
+                                	if	$ eq 100h-10
+                                	.printx + Perfect Fit +
+                                	else
+  00EE                          	ds	100h-10-$,-1
+                                	endif
+                                	endif
+                                
+                                ;;	Serialization.
+                                ;
+  00F6    20 45 43 2A           sernum:	db	' EC*******'		;Manufacturing serial number here
+  00FA    2A 2A 2A 2A           
+  00FE    2A 2A                 
+  000A                          sernml	equ	$-sernum
+                                
+                                	if	$ ne 100h
+                                	.printx	* Serial Number Out of Place *
+                                	endif
+                                
+                                	.dephase
+                                ;        .phase   100h
+                                
+	MACRO-80 3.44	09-Dec-81	PAGE	1-3
+
+
+                                ;*	initialize configuration sector
+                                
+                                ;	defs	(128+256),0e5h
+                                
+                                ;        .dephase
+                                
+  0080'   0000                  stack:	defw	00
+                                
+                                	end
+	MACRO-80 3.44	09-Dec-81	PAGE	S
+
+
+Macros:
+
+Symbols:
+0000'	BIOS            0380 	BIOSL           0004 	CDISK           
+00D9 	LDRTBL          0080 	PHYCMD          0087 	PHYDMA          
+0082 	PHYDRV          0085 	PHYSEC          0083 	PHYTRK          
+0081 	PHYUNT          0080 	QFS             008B 	QFS1            
+00AC 	QFS2            00AD 	QFS3            000A 	SERNML          
+00F6 	SERNUM          0080'	STACK           F02A 	XQDVR           
+
+
+
+No Fatal error(s)
+
+
+         	end
+	M

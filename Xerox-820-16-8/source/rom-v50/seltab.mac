@@ -1,0 +1,53 @@
+	title	Logical to Physical Drive Mapping Tables
+
+;;	Copyright 1981 (C) Balcones Computer Corporation.
+;
+;;	Logical to Physical Drive Mapping Tables.
+;
+;	Seltab contains two bytes per logical CP/M drive A-P.
+;	The first byte is an index into the physical driver
+;	address table below.  The second byte is a unit number
+;	that is  passed to the driver by the standard deblocker.
+;
+Seltab::
+
+.A:	defb	1,0		;Floppy Unit 0
+.B:	defb	1,1		;Floppy Unit 1
+.C:	defb	1,2		;Floppy Unit 2
+.D:	defb	1,3		;Floppy Unit 3
+
+.E:	defb	1,4		;Rigid Partition 0
+.F:	defb	1,5		;Rigid Partition 1
+.G:	defb	1,6		;Rigid Partition 2
+.H:	defb	1,7		;Rigid Partition 3
+
+.I:	defb	0,0		;Error Driver
+.J:	defb	0,0		;Error Driver
+.K:	defb	0,0		;Error Driver
+.L:	defb	0,0		;Error Driver
+
+.M:	defb	0,0		;Error Driver
+.N:	defb	0,0		;Error Driver
+.O:	defb	0,0		;Error Driver
+.P:	defb	0,0		;Error Driver
+
+;;	Physical Driver Address Table.
+;
+;	Dvrtab contains the addresses of several independent
+;	physical disk drivers.  By convention, driver # 0 always
+;	returns a select error.  Unused entries in Seltab should
+;	point to this trivial driver.
+;
+Drvtab::
+
+	defw	Selerr##	;select error physical driver
+	defw	Dskdvr##	;Disk driver (WD or SA)
+	defw	0		;Empty physical driver expansion slots
+	defw	0
+	defw	0
+	defw	0
+	defw	0
+	defw	0-1		;mark last empty expansion slot
+
+	end
+

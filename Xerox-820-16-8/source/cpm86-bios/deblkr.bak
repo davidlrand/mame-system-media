@@ -1,0 +1,625 @@
+	title	CP/M Deblocking Driver			
+
+;;	CP/M Deblocking Driver.
+;
+;	Copyright 1981 (C) Balcones Computer Corporation.
+;
+	.z80
+	cseg
+
+;;	Ascii.
+;
+lf	equ	10
+up	equ	11
+cr	equ	13
+esc	equ	27
+
+vctrl	equ	0
+	if	vctrl
+inslin	equ	22
+dellin	equ	23
+	else
+inslin	equ	('E' shl 8) + esc
+dellin	equ	('R' shl 8) + esc
+	endif
+
+;;	Global Entry Points.
+;
+	public	dboot, seldsk, home, settrk, setsec
+	public	setdma, sectrn, read, write
+	extrn	pmsg
+
+;;	Absolute Machine Addresses.
+;
+xqdvr	equ	0f02ah		;Resident Monitor Driver Executioner
+osboot	equ	0ffcch		;O/S identification byte
+ospart	equ	0f74dh		;Partitions 1-4 O/S identification byte
+seltab	equ	0f360h		;select table
+confg	equ	0f091h		;configuration byte
+cdisk	equ	4		;CCP active user/disk
+
+;;	CP/M Write Types.
+;
+wrall	equ	0		;normal write to allocated sector
+wrdir	equ	1		;write to directory sector
+wrual	equ	2		;first write to unallocated block
+
+cpm.ms	equ	86h		;O/S override identification
+
+;;	skip - skip next instruction.
+;
+;	Uses HL to perform very short jumps
+;
+skip	macro	n
+	if	((n)-$) eq 2
+	db	26h		;;;set PC = $+2  (ld h,...)
+	endif
+	if	((n)-$) eq 3
+	db	21h		;;;set PC = $+3  (ld hl,...)
+	endif
+	endm
+
+	page	60
+;;	Dboot - Deblocking Bootstrap.
+;
+;	Entry:	Called prior to Warm Start reload.
+;
+dboot:
+	if	0
+	ld	a,(hstwrt)	;check host written flag
+	or	a
+	jr	z,dbt1		;if buffer clean
+	ld	a,(hstdsk)
+	add	a,'A'
+	ld	(dbta),a
+	call	pmsg		;print following message
+	db	13,10
+dbta:	db	'd: Write Pending. ',0
+	call	bconin##
+	cp	'C'-'@'
+	call	nz,flush	;flush buffer if not ^C
+dbt1:
+	endif
+	ld	hl,hstbuf	;initialize host buffer address
+	ld	(hstdma),hl
+	ld	hl,dphtab	;clear internal DPH table of addresses
+	ld	bc,16*2*256	;set table length, zero
+dbt2:	ld	(hl),c		;clear next byte
+	inc	hl
+	djnz	dbt2		;if table not clear
+
+;;	clract - Clear host buffer active.
+;
+clract:	xor	a
+	ld	(hstact),a	;clear host buffer active
+	ret
+
+;;	select - select CP/M disk.
+;
+;	Entry:	C = CP/M Logical Drive, 0-15.
+;		E = 2*n+0 if media identification required
+;		E = 2*n+1 if media previously identified
+;
+seldsk:	ld	a,c		;remember disk to seek
+	ld	(sekdsk),a
+	exx
+	ld	hl,seltab	;index into SELTAB to get
+	ld	a,(sekdsk)	; the physical unit number of rigid partition
+	add   	a,a	
+	inc	a
+	ld	d,0
+	ld	e,a
+	add	hl,de
+	ld	a,(hl)
+	cp	4		;if physical unit number is not  betw 4 and 7 
+	jr	c,sel0		;   discontinue media check(not a rigid part.)
+	cp	8
+	jr 	nc,sel0		;else 
+	sub	4		;   subtract 4 from physical unit number to
+	ld	c,a		;   
+	ld	a,(osboot)	;   
+	cp	cpm.ms		;   if override then ignore O/S check
+	jr 	z,sel0
+	ld	b,0		;   index into OSPART to get partition's O/S id
+	ld	hl,ospart	;   compare O/S id with partition's id
+	add	hl,bc
+	cp	(hl)		;   if O/S id = partition's O/S id then
+	jr	z,sel0 		;      continue with select
+	call	pmsg		;   else error	
+	db	cr,lf,'Invalid Media'
+	db	0
+	push	de
+	push	bc
+	jp	cad
+sel0:   pop	bc
+	pop	de
+	ld	b,0
+sel1:	ld	hl,dphtab	;set table of remembered dph's
+	add	hl,bc		;index by words
+	add	hl,bc
+	bit	0,e
+	jr	z,sel2		;if drive not previously selected
+	ld	a,(hl)		;set disk parameter header address in hl
+	inc	hl
+	ld	h,(hl)
+	ld	l,a
+	or	h
+	jr	nz,sel3		;if previous select succesful
+	ld	e,a		;force media identification
+	jr	sel1
+sel2:	push	hl		;save dph table address
+	ld	hl,selcmd+2
+	ld	(hl),c		;set CP/M Logical drive
+	dec	hl
+	dec	hl		;point to select command
+	ld	(hl),-1		;set driver select operation
+	call	xdr		;execute driver request
+	ex	de,hl
+	pop	hl
+	ld	(hl),e		;remember disk parameter header address
+	inc	hl
+	ld	(hl),d
+	ex	de,hl
+	ld	a,l
+	or	h
+	jr	z,sel4		;if drive not succesfully selected
+sel3:	push	hl		;save dph address
+	ld	bc,10		;set dpb offset in dph
+	add	hl,bc
+	ld	e,(hl)		;set disk parameter block address
+	inc	hl
+	ld	d,(hl)
+	ex	de,hl
+	ld	(dpbadr),hl
+	ld	c,3
+	add	hl,bc
+	ld	a,(hl)		;set block shift factor
+	inc	a		;form 128 byte records per block
+	ld	(rpb),a
+	ld	c,15-3		;point to end of dpb
+	add	hl,bc
+	ld	a,(hl)		;set internal parameter
+;	ld	(trkzfl),a	;set track zero single density flag
+	and	7
+	ld	(secmsk),a	;set sector mask
+	pop	hl
+	ret
+sel4:				;fall into clear active disk
+
+;;	cad - Clear Active Disk.
+;
+cad:	ld	hl,cdisk	;get disk that CCP will log in
+	ld	a,(sekdsk)	;get disk that failed
+	xor	(hl)
+	and	not 11110000b	;clear active user
+	jr	nz,cad1		;if selected disk is not default disk
+	ld	a,(hl)		;cause CCP to log in A:
+	and	not 1111b	;retain active user area
+	ld	(hl),a
+cad1:	ld	l,h		;indicate select failure
+	ret
+
+;;	Home - Set Track Zero.
+;
+home:	ld	bc,0		;seek track zero
+
+;;	Settrk - Set Track.
+;
+;	Entry:	BC = Track number
+;
+settrk:	ld	(sektrk),bc	;set track to seek
+	ret
+
+;;	Setsec - Set Sector.
+;
+;	Entry:	BC = Sector number
+;
+setsec:	ld	(seksec),bc	;set sector to seek
+	ret
+
+;;	Setdma - Set Direct Memory Address.
+;
+;	Entry:	BC = DMA address
+;
+setdma:	ld	(sekdma),bc
+	ret
+
+;;	Sectran - Sector Translate.
+;
+;	Entry:	BC = Sector number, 0 <= BC <  Sectors per Track
+;		DE = Single byte skew table address
+;
+;	Exit:	HL = BC		if DE =  0
+;		 L = (DE+BC)	if DE <> 0
+;		 H = B		which better be zero
+;
+sectrn:	ld	l,c		;set untranslated sector
+	ld	h,b
+	ld	a,d
+	or	e
+	ret	z		;if no translate table
+	ex	de,hl
+	add	hl,bc
+	ld	l,(hl)		;single byte translate
+	ld	h,b
+	ret
+
+;;	Rdwrs - Read or Write Single Density.
+;
+;rdwrs:	ld	a,(readop)	;set read/write operation
+;	ld	hl,sekcmd	;set seek request
+;	jr	rdwrhs		;enter read/write dispatcher
+
+;;	Readhs - Read Host Sector.
+;
+readhs:	ld	a,1		;set read operation
+	skip	$+2		;jump over write entry point
+
+;;	Wriths - Write Host Sector.
+;
+wriths:	xor	a		;set write operation
+	ld	hl,hstcmd
+
+;;	Rdwrhs - Read or Write Host Sector.
+;
+;	Entry:	HL = Physical command request address
+;		 A = 0 to write
+;		 A = 1 to read
+;
+;	Exit:	A  =  0, if no errors
+;		A  = -1, if errors
+;		Z  = condition of A reg
+;
+rdwrhs:	ld	(hl),a		;set driver operation
+	call	xdr		;execute driver read or write
+	ld	hl,erflag	;merge error flag for directory protection
+	or	(hl)
+	ld	(hl),a
+	ret
+
+;;	Read - Read CP/M Sector.
+;
+;	Entry:	Seldsk, Settrk, Setsec, Setdma previously called
+;
+;	Exit:	A =  0 if no errors
+;		A = -1 if errors
+;
+read:	xor	a		;clear unalloc processing
+	ld	(unacnt),a
+	ld	c,wrall		;inhibit buffer flush after read
+	inc	a		;set read operation
+	skip	$+2
+
+;;	Write - Write CP/M Sector.
+;
+;	Entry:	Seldsk, Settrk, Setsec, Setdma previously called
+;
+;	Exit:	A =  0 if no errors
+;		A = -1 if errors
+;		C = Write type
+;
+write:	xor	a		;set write operation
+
+;;	Rdwr - Read or Write.
+;
+;	Entry:	 A = 0 to write
+;		 A = 1 to read
+;
+rdwr:	ld	(readop),a	;set read/write switch
+	xor	a		;reset error flag
+	ld	(erflag),a
+	ld	hl,(seksec)	;set seek host sector
+	ld	(sekhst),hl
+;	ld	a,(secmsk)	;set sector size
+;	or	a
+;	jr	z,rdwrs		;if deblocking not required
+;	or	0		;check track zero single density flag
+;trkzfl	equ	$-1
+;	jp	p,rdwr1		;if track zero not single density
+;	ld	a,(sektrk)	;set seek track
+;	or	a
+;	jr	z,rdwrs		;if track 0, read or write without deblocking
+rdwr1:	ld	a,c		;save write type
+	ld	(wrtype),a
+	cp	wrual
+	jr	nz,writ1	;if not write to unallocated group
+	ld	a,0		;set records per block
+rpb	equ	$-1
+	ld	(unacnt),a	;start counting unallocated writes
+	ld	de,unadsk	;set unallocated parameter block address
+	call	cpb		;copy parameter block
+writ1:	ld	a,0		;set remaining unallocated sectors
+unacnt	equ	$-1
+	or	a
+	jr	z,writ4		;if not processing unallocated group
+	dec	a
+	ld	(unacnt),a	;update unallocated sectors remaining
+	ld	hl,sekdsk	;set seek parameters
+	ld	de,unadsk	;set unallocated parameters
+	call	cmp		;compare parameter blocks
+	jr	nz,writ3	;if not seek to unallocated sector
+	ld	hl,(unasec)	;advance unallocated sector
+	inc	hl
+	ld	(unasec),hl
+	ld	de,0		;set sectors per track
+dpbadr	equ	$-2
+	sbc	hl,de
+	jr	nz,writ2	;if not end of track
+	ld	(unasec),hl	;reset to sector zero
+	ld	hl,(unatrk)	;advance unallocated track
+	inc	hl
+	ld	(unatrk),hl
+writ2:	xor	a		;mark pre-read not required
+	jr	rwoper
+writ3:	xor	a		;clear unallocated processing
+	ld	(unacnt),a
+writ4:	inc	a		;mark pre-read required
+
+;;	Rwoper - Read or Write Operation Proper.
+;
+rwoper:	ld	(rsflag),a	;set pre-read block flag
+	ld	a,(secmsk)	;set shift counter
+	ld	hl,(seksec)
+rwop1:	srl	h		;compute host sector = cpmsec/(2**sekmsk)
+	rr	l
+	srl	a
+	jr	nz,rwop1	;if shift incomplete
+	ld	(sekhst),hl	;set seek host sector
+	or	0		;check host active flag
+hstact	equ	$-1
+	ld	a,1
+	ld	(hstact),a	;host buffer always becoms active
+	jr	z,rwop2		;if host buffer was not active
+	ld	hl,hstdsk	;set active host buffer identification
+	ld	de,sekdsk	;set seek identification
+	call	cmp		;compare seek request with active host sector
+	jr	z,rwop3		;if host buffer contains seek sector
+	call	flush		;flush buffer if previously written
+rwop2:	ld	de,hstdsk	;set host request block address
+	call	cpb		;copy seek parameter block to host
+	ld	a,0		;check pre-read required
+rsflag	equ	$-1
+	or	a
+	call	nz,readhs	;read host sector if preread required
+	or	a
+	call	nz,clract	;clear host buffer active if read errors
+	ld	(hstwrt),a	;mark buffer not written into
+rwop3:	ld	a,(seksec)	;set seek sector
+	and	0		;form host buffer index from sector mask
+secmsk	equ	$-1
+	rra
+	ld	d,a		;multiply index by 128 bytes/sector
+	ld	a,0
+	rra
+	ld	e,a
+	ld	hl,(hstdma)	;set host buffer address
+	add	hl,de		;form seek buffer address
+	ld	de,(sekdma)	;set user transfer address
+	ld	bc,128		;set CP/M sector length
+	ld	a,0		;set transfer direction
+readop	equ	$-1
+	or	a
+	jr	nz,rwop4	;if read operation
+	ex	de,hl		;switch directions
+	inc	a
+	ld	(hstwrt),a	;mark buffer written into
+rwop4:	ldir			;move sector to/from user buffer
+	ld	a,0		;set write type
+wrtype	equ	$-1
+	cp	wrdir
+	ld	a,0		;set error flag
+erflag	equ	$-1
+	ret	nz
+	or	a
+	ret	nz		;if errors, do not clobber directory
+
+;;	Flush - Flush buffer to disk.
+;
+flush:	ld	a,0		;check host written flag
+hstwrt	equ	$-1
+	or	a
+	call	nz,wriths	;if buffer written into, write host sector
+	ld	(hstwrt),a	;clear host written flag if no errors
+	ret
+
+;;	Cmp - Compare Paramater Blocks.
+;
+;	Entry:	HL = Parameter block
+;		DL = Parameter block
+;
+;	Exit:	Z  = Set   if parameters identical
+;		Z  = Clear if parameters different
+;
+cmp:	ld	b,5		;set length of parameter block
+cmp1:	ld	a,(de)		;compare next byte
+	xor	(hl)
+	ret	nz		;if parameters different
+	inc	de
+	inc	hl
+	djnz	cmp1		;if more bytes
+	ret
+
+;;	Cpb - Copy Parameter Block.
+;
+;	Entry:	DE = Address of Unallocated or Host parameter block
+;
+;	Exit:	Seek parameter block copied into block at DE
+;
+cpb:	ld	hl,sekdsk	;set source parameters
+	ld	bc,5		;set block length
+	ldir			;copy parameter block
+	ret
+
+;;	Xdr - Execute Driver Request.
+;
+;	Entry:	HL = pointer to Physical Driver Request Block
+;
+;	Exit:	Physical Driver exit condition are maintained if
+;		no errors or user did not request warm start.
+;
+xdr:	ld	(xdra),hl	;save request for retrys
+xdr1:	ld	hl,(xdra)	;restore request address
+	call	Xqdvr		;execute physical driver
+	ld	b,a		;save read/write error status
+	ld	a,(xdra)	;get driver operation
+xdra	equ	$-2
+	ld	c,a		;set message index
+	inc	a
+	jr	nz,xdr2		;if not select request
+	or	l
+	or	h
+	ret	nz		;if dph address returned by driver
+	jr	xdr3
+xdr2:	ld	a,b		;set read/write error status
+	or	a
+	ret	z		;if no read/write errors
+xdr3:	ld	hl,(xdra)	;put drive name in message
+	inc	hl
+	inc	hl
+	ld	a,(hl)
+	add	a,'A'
+	ld	(xdrb),a
+	inc	c
+	jr	nz,xdr4		;if not select request
+	call	pmsgi
+	db	'Select',0
+	jr	xdr6
+xdr4:	dec	c
+	jr	nz,xdr5		;if not write request
+	call	pmsgi
+	db	'Write',0
+	jr	xdr6
+xdr5:	call	pmsgi		;must be read request
+	db	'Read',0
+xdr6:	call	pmsg
+	db	' Err '
+xdrb:	db	'd: '
+	db	'A(ccept), '
+	db	'I(gnore), '
+	db	'R(etry) '
+	db	0
+	call	bconin##	;read character from console
+	push	af
+	call	pmsg
+	db	cr
+	if	vctrl
+	db	dellin
+	else
+	dw	dellin
+	endif
+	db	up,0
+	ld	h,a		;zero dph for accepted or ignored select errors
+	ld	l,a
+	pop	af
+	and	5fh		;ignore parity, case
+	cp	3
+	jr	z,xdr7		;if warm start requested
+	sub	'I'
+	ret	z		;if user ignored error, don't tell BDOS
+	sub	'A'-'I'
+	jp	nz,xdr1		;retry request
+	cpl
+	ret
+
+xdr7:	call	cad		;clear active disk
+	jp	bwboot##
+
+pmsgi:	call	pmsg
+	db	cr,lf
+	if	vctrl
+	db	inslin
+	else
+	dw	inslin
+	endif
+	db	0
+	jp	pmsg
+
+;***
+;***   2/8/84
+;***
+;***   Patch disk driver code to do side 1 backwards.
+;***
+;***   820-II normally numbers tracks from 40 to 79 on side 1
+;***   IBM PC numbers them from 79 to 40 - exactly opposite what we thought
+;***
+hstbuf::        ; disk buffer will overwrite this code
+PATCH:: ld      HL,(CBOOT##)         ; normal BIOS cold start entry
+        ld      (BIOS##+1),HL        ; correct BIOS cold start jump vector
+
+        ld      BC,PATCH2-PATCH1     ; add link to patch within disk driver
+        ld      DE,0F736
+        ld      HL,PATCH1
+        ldir
+
+        ld      BC,EPATCH-PATCH2
+        ld      DE,0f759             ; put patch over first select code
+        ld      HL,PATCH2
+        ldir
+
+        jp      BIOS##               ; cold start BIOS
+
+;the actual patches
+PATCH1: call    nc,0F759             ; call patch
+        nop                          ; fill
+PATCH2: ld      A,(0F530)            ; get select byte to determine spt
+        bit     5,A
+        jr      z,SPT17              ; 17 spt - compute normally
+        ld      A,79                 ; compute 8 and 9 spt backasswards
+        sub     C
+        ret
+SPT17:  ld      A,C
+        sub     40
+        ret
+EPATCH:
+
+
+	subttl	Deblocker Storage Area
+	page
+reserve	macro	s,n
+s	equ	$+.
+.	aset	.+n
+	endm
+.	aset	0
+	dseg
+
+;;	Host Sector Deblocking Buffer.
+;
+;commented out to install patch above ;reserve	hstbuf,512
+
+;;	Physical Driver Select Command.
+;
+reserve	selcmd,3		;select command, unit, drive
+
+;;	Seek Sector Parameter Block.
+;
+reserve	sekcmd,1		;kindly      
+reserve	sekunt,1		; leave      
+reserve	sekdsk,1		;  these     
+reserve	sektrk,2		;   bytes    
+reserve	sekhst,2		;    alone   
+reserve	sekdma,2		;     turkey 
+reserve	seksec,2
+
+;;	Unallocated Sector Parameter Block.
+;
+reserve	unadsk,1		;kindly      
+reserve	unatrk,2		; leave      
+reserve	unasec,2		;  these     
+
+;;	Host Sector Parameter Block.
+;
+reserve	hstcmd,1		;kindly
+reserve	hstunt,1		; leave
+reserve	hstdsk,1		;  these
+reserve	hsttrk,2		;   bytes
+reserve	hstsec,2		;    alone
+reserve	hstdma,2		;     turkey 
+
+;;	Disk Parameter Header Addresses.
+;
+reserve	dphtab,('P'-'A'+1)*2
+
+	cseg
+
+	end
+

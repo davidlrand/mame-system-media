@@ -1,0 +1,42 @@
+	title	XEROX 820+ BIOS Jump Table
+
+;;	XEROX 820+ Rom Resident Bios Jump Table.
+;
+;	Copyright 1981, Balcones Computer Corporation.
+;
+	.z80
+
+BIOS::  jp      PATCH##         ;*** 2/8/84 install patch to disk driver
+                                ;*** see deblkr for details
+;bios::	jp	cboot##		;cold start
+bwboot::jp	wboot##		;warm start
+
+bconst::jp	const##		;console status
+bconin::jp	conin##		;console character in
+bconot::jp	conout##	;console character out
+bprint::jp	list##		;list character on printer
+bpunch::jp	punch##		;punch
+breadr::jp	reader##	;reader
+
+bhome::	jp	home##		;move head to home position
+bseld::	jp	seldsk##	;select disk
+bsett::	jp	settrk##	;set track number
+bsets::	jp	setsec##	;set sector number
+bsetd::	jp	setdma##	;set dma address
+bread::	jp	read##		;read a record
+bwrit::	jp	write##		;write a record
+
+bprnts::jp	listst##	;printer ready status
+bsctrn::jp	sectrn##    	;sector translate
+
+	if	0
+Userst::jp	Userst		;User Input Status
+Userin::jp	Userin		;User Input Character
+Userot::jp	Userot		;User Output Character
+Userrd::jp	Userrd		;User Output Ready Status
+	endif
+
+initio::db	10000001b	;Initial I/O Byte
+
+	end
+

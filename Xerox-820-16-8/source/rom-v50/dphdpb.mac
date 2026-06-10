@@ -1,0 +1,128 @@
+	titlå	Disë Parameteò Tables
+
+;;	Copyright (C) 1981 by Balcones Computer Corporation
+;
+	.z80
+
+;;	Overlaid Monitor Ram Address Definitions.
+;
+dirbuf	equ	0fc80h		;director buffer
+
+chk00	equ	0fd00h		;Directory Check Vector for Floppy Drive 0
+chk01	equ	0fd20h		;Directory Check Vector for Floppy Drive 1
+chk02	equ	0fd40h		;Directory Check Vector for Floppy Drive 2
+chk03	equ	0fd60h		;Directory Check Vector for Floppy Drive 3
+chk04	equ	0		;No Check Vector for Rigid Partition 0
+chk05	equ	0		;No Check Vector for Rigid Partition 1 
+chk06	equ	0		;No Check Vector for Rigid Partition 2 
+chk07	equ	0		;No Check Vector for Rigid Partition 3 
+
+all00	equ	0fd80h		;Floppy Drive 0 Allocation Vector
+all01	equ	0fda0h		;Floppy Drive 1 Allocation Vector
+all02	equ	0fdc0h		;Floppy Drive 2 Allocation Vector
+all03	equ	0fde0h		;Floppy Drive 3 Allocation Vector
+all04	equ	0fe00h		;Rigid Partition Allocation vectors
+all05	equ	0fe80h
+all06	equ	0fec0h
+all07	equ	0fee0h
+
+	subttl	Disk Parameter Headers
+	page
+;;	Disk Parameter Headers.
+;
+Dpbase::
+	dw	0,0,0,0		;Floppy Drive 0
+	dw	dirbuf,0
+	dw	chk00,all00
+
+	dw	0,0,0,0		;Floppy Drive 1
+	dw	dirbuf,0
+	dw	chk01,all01
+
+	dw	0,0,0,0		;Floppy Drive 2
+	dw	dirbuf,0
+	dw	chk02,all02
+
+	dw	0,0,0,0		;Floppy Drive 3
+	dw	dirbuf,0
+	dw	chk03,all03
+
+	dw	0,0,0,0		;Rigid Partition 0
+	dw	dirbuf,Dpbrg4
+	dw	chk04,all04
+
+	dw	0,0,0,0		;Rigid Partition 1
+	dw	dirbuf,Dpbrg5
+	dw	chk05,all05
+
+	dw	0,0,0,0		;Rigid Partition 2
+	dw	dirbuf,Dpbrg6
+	dw	chk06,all06
+
+	dw	0,0,0,0		;Rigid Partition 3
+	dw	dirbuf,Dpbrg7
+	dw	chk07,all07
+
+	subttl	Sector Translate Tables
+	page
+;;	Sector Translation Tables.
+;
+;	For 8 inch single density drives.
+;	Skew by 6
+;
+trn6::	db	01,07,13,19
+	db	25,05,11,17
+	db	23,03,09,15
+	db	21,02,08,14
+	db	20,26,06,12
+	db	18,24,04,10
+	db	16,22
+
+selerr::
+	ld	hl,0
+	or	-1
+	ret
+
+	subttl	Floppy Disk Parameter Blocks
+	page
+;;	Floppy Disk Parameter Blocks, one per media format.
+;
+dpb8s::
+
+;	Single Density, Single side
+
+	dw	26		;spt
+	db	3,7,0		;blkshf, blkmsk, nullmsk
+	dw	242,63,192,16,2	;dsw,dirm,alloc01,chksiz,trk off
+	db	0		;128 byte sectors
+
+;	Single Density, Double Side
+
+	dw	26		;spt
+	db	4,15,1		;blkshf, blkmsk, nullmsk
+	dw	246,127,192,16,2;dsw,dirm,alloc01,chksiz,trk off
+	db	0		;128 byte sectors
+
+dpb8d::
+
+;	Double Density, Single Side
+
+	dw	2*26		;spt
+	db	4,15,1		;blkshf, blkmsk, nullmsk
+	dw	242,127,192,32,2;dsw,dirm,alloc01,chksiz,trk off
+	db	81h		;256 byte sectors, track zero single density
+
+;	Double Density, Double Side
+
+	dw	2*26		;spt
+	db	5,31,3		;blkshf, blkmsk, nullmsk
+	dw	246,127,192,32,2;dsw,dirm,alloc01,chksiz,trk off
+	db	81h		;256 byte sectors, track zero single density
+
+Dpbrg4	equ	$+00h
+Dpbrg5	equ	$+10h
+Dpbrg6	equ	$+20h
+Dpbrg7	equ	$+30h
+
+	end
+

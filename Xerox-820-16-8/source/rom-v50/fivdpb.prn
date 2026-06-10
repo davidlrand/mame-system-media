@@ -1,0 +1,65 @@
+Micro Floppy Disk Parameter Blocks	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                	title	Micro Floppy Disk Parameter Blocks
+                                
+                                ;;	Copyright (C) 1981 by Balcones Computer Corporation
+                                ;
+                                	.z80
+                                
+  0000'                         dpb5s::
+                                
+                                ;	Single Density, Single Side
+                                
+  0000'   0012                  	dw	18		;spt
+  0002'   03 07 00              	db	3,7,0		;blkshf, blkmsk, nulmsk
+  0005'   0052 001F             	dw	82,31,128,8,3	;dsw,dirm,alloc01,chksiz,trk off
+  0009'   0080 0008             
+  000D'   0003                  
+  000F'   00                    	db	0		;128 byte sectors
+                                
+                                ;	Single Density, Double Side
+                                
+  0010'   0012                  	dw	18		;spt
+  0012'   03 07 00              	db	3,7,0		;blkshf, blkmsk, nulmsk
+  0015'   00AC 001F             	dw	172,31,128,8,3	;dsw,dirm,alloc01,chksiz,trk off
+  0019'   0080 0008             
+  001D'   0003                  
+  001F'   00                    	db	0		;128 byte sectors
+                                
+  0020'                         dpb5d::
+                                
+                                ;	Double Density, Single Side
+                                
+  0020'   0022                  	dw	17*2		;spt
+  0022'   03 07 00              	db	3,7,0		;blkshf, blkmsk, nulmsk
+  0025'   009C 003F             	dw	156,63,192,16,3	;dsw,dirm,alloc01,chksiz,trk off
+  0029'   00C0 0010             
+  002D'   0003                  
+  002F'   81                    	db	81h		;256 byte sectors, track zero single density
+                                
+                                ;	Double Density, Double Side
+                                
+  0030'   0022                  	dw	17*2		;spt
+  0032'   04 0F 01              	db	4,15,1		;blkshf, blkmsk, nulmsk
+  0035'   00A2 003F             	dw	162,63,192,16,3	;dsw,dirm,alloc01,chksiz,trk off
+  0039'   00C0 0010             
+  003D'   0003                  
+  003F'   81                    	db	81h		;256 byte sectors, track zero single density
+                                
+                                	end
+Micro Floppy Disk Parameter Blocks	MACRO-80 3.44	09-Dec-81	PAGE	S
+
+
+Macros:
+
+Symbols:
+0020I'	DPB5D           0000I'	DPB5S           
+
+
+
+No Fatal error(s)
+
+
+1		;blkshf, blkmsk, nulmsk
+  0035'   00A2 003F             	dw	
