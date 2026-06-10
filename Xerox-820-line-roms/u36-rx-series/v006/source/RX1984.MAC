@@ -1,0 +1,850 @@
+
+
+;;	RX1984 is the stand alone rom addition to the Xerox 820-II
+;		monitor. It is called once during monitor restart
+;		and at that time it patches the monitor in ram to
+;		call the rx modifications to k/b,crt and printer routines.
+;		It the moves in its own SIGNON overlay and jumps into it.
+;
+;		This SIGNON in addition to selecting the disk driver also
+;		moves into ram (in the spare driver area) translation
+;		tables and code for k/b and printer routines (crt is run
+;		out of rom).
+;
+;		There is also a RX BOOT overlay which is selected instead
+;		of the Xerox one. This loads the national translation
+;		tables from disk and then calls the Xerox BOOT.
+
+
+	.z80
+	title	RX1984
+
+
+;	Revision History
+
+	ver	defl	001		;4th June 1982
+
+;	First release. Compatible with XR Ver. 3.90
+
+	ver	defl	002		;8th June 1982
+
+;	Fixed relocation bug.
+
+ver	defl	003		;9th June 1982
+
+;	Corrected missing bracket in signon message.
+;	Correct boot source address.
+;	Keyboad vector equate corrected.
+;	Printer handler patch put in sioout instead of vector table
+;		to catch monitor calls to sioout.
+
+ver	defl	004		;10th June 1982
+
+;	Corrected missing bracket in signon message - again
+;	Changed rigid sector equates to 29 and 30.
+;	Corrected fill of empty rom with -1s.
+
+ver	defl	005		;15th June 1982
+
+;	Corrected bug in SIGNON that switches of rom.
+;	Removed 'typewriter' from SIGNON prompt.
+
+ver	defl	006		;18t June 1982
+
+;	Release for XR ver 4.00.
+;	Modified signon to pick up XR ver. no. from the 
+;	XR signon code.
+
+
+	subttl	XR dependant equates
+	page
+
+
+;;	The following equates are dependant on the revision of XR.
+;		These are compatible with Ver. 3.90
+
+
+;	Addresses used to patch the monitor.
+
+monitr	equ	0f000h		;start of monitor ad jump table
+sysvec	equ	0ff18h		;vector page
+kbvec	equ	sysvec+2	;keyboard vector
+tca	equ	0fc55h		;start of transient command area
+rx1984	equ	1800h		;start of rx1984
+romsiz	equ	800h		;size of eprom
+
+;	Offsets used to patch the monitor
+
+boff1	equ	('A'-'@')*2	;A command vector in command table
+boff2	equ	('L'-'@')*2	;l command vector in command table
+sioff	equ	19h		;sioout vector in monitor table
+kboff	equ	0ah		;offset in k/b int service for patch
+fcrtof	equ	10h		;fast crt out vector in monitor table
+crtcall	equ	12h		;offset in crt driver for patch
+
+;	Routines referenced by rx1984
+
+pnext	equ	0fc3dh
+xqphys	equ	0fa51h
+crtoff	equ	0f293h
+prompt	equ	0fa62h
+autobt	equ	prompt+16h
+const	equ	monitr+6
+conin	equ	monitr+9
+warm	equ	monitr+3
+crtd1	equ	0182h
+crtd2	equ	0196h
+select	equ	monitr+1bh
+home	equ	monitr+1eh
+read	equ	monitr+24h
+xrboot	equ	11b8h		;boot o/l address
+rfi	equ	0f1e9h
+siordy	equ	0f105h
+idle	equ	0f066h
+tabled	equ	0f800h		;space for rx code
+xrsign	equ	1070h		;adress of xr signon overlay
+sigoff	equ	60h		;offset of ver value in signon
+
+
+;	Data Addreses
+
+confg	equ	0f091h
+steprt	equ	0ff54h
+rigdpb	equ	0f708h
+fivdpb	equ	0f470h
+seltab	equ	0f360h
+linbuf	equ	0ff5ch
+cursor	equ	0ffach
+chrsav	equ	0ffb4h
+gold	equ	0f319h
+leadin	equ	0ffb2h
+mask	equ	0f0e3h
+phytrk	equ	0fa11h
+bootbf	equ	0ed80h
+
+;	Port addressess
+
+sysctl	equ	1dh
+syspio	equ	1ch
+siodpb	equ	05h
+wd1797	equ	10h
+kbdat	equ	1eh
+
+;	Equates
+
+c.five	equ	04
+c.sasi	equ	06
+o.auto	equ	0000h
+o.esct	equ	0010h
+o.term	equ	0001h
+o.type	equ	0008h
+sasidl	equ	300h
+rev	equ	390
+prboff	equ	0fa95h
+
+
+
+	subttl	Internal Equates
+	page
+
+
+;	Internal equates
+
+rtab1	equ	29		;rigid disk tables sector 1
+rtab2	equ	30		;  "    "      "     "    2
+ftab1	equ	04		;floppy	"      "     "    1
+ftab2	equ	05		;  "    "      "     "    2
+ftab3	equ	06		;  "    "      "     "    3
+
+lang	equ	00		;offset of language no. in index table
+kbrd	equ	01		;offset of k/b flag in index table
+font	equ	02		;offset of font flag in index table
+prnt	equ	03		;offset of printer flag in index table
+kbrdtb	equ	04		;offset of k/b tables in first sector
+
+clrs	equ	1ah		;clear screen key
+esc	equ	1bh		;escape key
+eot	equ	04h		;end of text
+cr	equ	0dh		;carriage return
+lf	equ	0ah		;
+
+
+	subttl	RX1984 Restart
+	page
+
+start:
+
+	.phase	rx1984
+
+;;	RX1984
+;		Entry here from Xerox monitor bfore entering SIGNON.
+;
+;		Input:-
+;			hl - cmdtab
+;			de - seltab
+;			bc - cloc
+;
+
+
+	pop	bc		;throw away return address
+
+
+;	alter BOOT commnd vectors
+
+	push	hl
+	pop	ix		;cmdtab address
+	ld	(ix+boff1),low rxboot
+	ld	(ix+boff1+1),high rxboot
+
+	ld	(ix+boff2),low rxboot
+	ld	(ix+boff2+1),high rxboot
+
+;	alter SIOOUT
+
+	ld	ix,(monitr+sioff)	;soout address
+	ld	(ix),0c3h		;jump instruction
+	ld	(ix+1),low rxsioo
+	ld	(ix+2),high rxsioo
+
+;	alter keyboard interrupt service
+
+	ld	ix,(kbvec)		;k/b int vector
+	ld	(ix+kboff),0cdh		;CALL operation
+	ld	(ix+kboff+1),low rxkb
+	ld	(ix+kboff+2),high rxkb
+
+;	alter crt driver
+
+	ld	ix,(monitr+fcrtof)	;address of fast crt handler
+	ld	(ix+crtcall),low rxcrt
+	ld	(ix+crtcall+1),high rxcrt
+
+;	Move in RX SIGNON to o/l area and execute it
+
+	ld	hl,rxsign		;rom address
+	ld	de,tca			;o/l area
+	ld	bc,rxsigl		;length
+	ldir
+
+	jp	tca			;GO SIGN ON
+
+
+
+
+
+	subttl	ROM resident (crt driver)
+	page
+
+;;	crtdvr - Crt Driver RX Addition.
+;
+rxcrt:
+	ld	hl,(cursor)	;set cursor address
+	ld	a,(chrsav)	;retrieve character under cursor
+	ld	(hl),a		;replace character under cursor
+	ld	(gold),a	;bury balcones gold
+	ld	a,(leadin)	;set leadin state
+	or	a
+	jp	nz,crtd2	;if processing escape sequence
+	ld	a,(mask)	;get keyboard mask
+	and	c
+	ld	c,a
+	cp	' '
+	jp	c,crtd2		;if control code
+	call	fonchk		;do font translation
+	jp	crtd1		;go to XR code
+
+	;;subroutine fonchk does the font translation for national
+	;character sets
+
+	; entry:  C contains the character
+	; exit:   C contains the translation
+
+
+fonchk:
+	push	hl		;save cursor posn.
+
+	ld	a,c		;get char in a
+	and	10000000b	;preserve attribute bit
+	push	af
+	ld	a,c
+	res	7,a		;clear attribute bit
+
+	ld	hl,fontbl	;address of exceptions table
+	ld	bc,fontsz	;size of exceptions table
+	cpir			;search for char. in exceptions
+	ld	c,a		;restore char to c
+	call	z,fntran	;if found do translation
+	pop	af		;retrieve attribute bit
+	add	a,c		;add it in
+	ld	c,a
+
+	pop	hl		;retrieve cursor
+	ret
+
+	;;	s/r fntran translates font characters
+	;	entry: (HL) - address+1 of char to be translated in fontbl
+	;	exit:  (c)  - translated character
+
+fntran:
+	dec	hl		;back to byte to be translated
+	ld	bc,fontsz	;size of table
+	add	hl,bc		;add to address of char. to be translated
+	ld	c,(hl)		;get translated value
+	ret
+
+	.dephase
+
+	subttl	Ram resident (Tables)
+	page
+
+
+tables:				;rom address
+	.phase	tabled		;ram address
+
+
+
+tabl:				;k/b unshifted in posn. value order
+	defb	2ch,6dh,6eh,62h,76h,63h,78h,7ah
+	defb	34h,2bh,1bh,5dh,5bh,70h,6fh,69h
+	defb	6ch,3bh,27h,0dh,0ah,01h,31h,32h
+	defb	20h,2eh,2fh,04h,02h,03h,30h,2eh
+	defb	37h,38h,35h,39h,36h,00h,00h,33h
+	defb	2dh,7fh,08h,3dh,2dh,30h,39h,38h
+	defb	1eh,31h,32h,33h,34h,35h,36h,37h
+	defb	09h,71h,77h,65h,72h,74h,79h,75h
+	defb	6bh,6ah,68h,67h,66h,64h,73h,61h
+
+shtab:				;k/b shifted
+	defb	3ch,4dh,4eh,42h,56h,43h,58h,5ah
+	defb	34h,2bh,1bh,7dh,7bh,50h,4fh,49h
+	defb	4ch,3ah,22h,0dh,0ah,01h,31h,32h
+	defb	20h,3eh,3fh,04h,02h,03h,30h,2eh
+	defb	37h,38h,35h,39h,36h,00h,00h,33h
+	defb	2dh,7fh,08h,2bh,5fh,29h,28h,2ah
+	defb	1eh,21h,40h,23h,24h,25h,5eh,26h
+	defb	09h,51h,57h,45h,52h,54h,59h,55h
+	defb	4bh,4ah,48h,47h,46h,44h,53h,41h
+
+cdtab:				;k/b coded
+	defb	1ch,0dh,0eh,02h,16h,03h,18h,1ah
+	defb	0b4h,0abh,9bh,1dh,1bh,10h,0fh,09h
+	defb	0ch,7eh,60h,8dh,8ah,81h,0b1h,0b2h
+	defb	00h,7ch,5ch,84h,82h,83h,0b0h,0aeh
+	defb	0b7h,0b8h,0b5h,0b9h,0b6h,00h,00h,0b3h
+	defb	0adh,0ffh,88h,9ah,1fh,90h,99h,98h
+	defb	9eh,91h,92h,93h,94h,95h,96h,97h
+	defb	89h,11h,17h,95h,12h,14h,18h,15h
+	defb	0bh,0ah,08h,07h,06h,04h,13h,01h
+
+ktabsz	equ	$-tabl		;size of k/b tables
+
+fontbl:				;font translation table
+				;first the exception codes
+	defb	23h,3ch,3eh,40h,5bh,5ch,5dh,5eh
+	defb	60h,7bh,7ch,7dh,7eh
+				;now their translations
+	defb	23h,3ch,3eh,40h,5bh,5ch,5dh,5eh
+	defb	60h,7bh,7ch,7dh,7eh
+fontsz	equ	($-fontbl)/2	;size of font tables
+
+prntbl:				;printer translation table
+				;first the exception codes (dummies for now)
+	defb	00,00,00,00,00,00,00,00
+	defb	00,00,00,00,00,00,00,00
+	defb	00,00
+				;now the translations
+	defb	00,00,00,00,00,00,00,00
+	defb	00,00,00,00,00,00,00,00
+	defb	00,00
+prntsz	equ	($-prntbl)/2	;size of printer table
+
+
+tabsiz	equ	$-tabl		;size of complete table layout
+
+	subttl	Ram resident (k/b)
+	page
+
+
+
+rxkb:		;k/b handler for rank xerox position encoded k/b
+
+	in	a,(kbdat)	;read k/b port
+	cpl
+	call	pekhdl		;decode posn. enc. k/b
+	ret	nc		;return to xerox code with char.
+				;here if command byte
+	pop	bc		;throw away return address
+	pop	bc		;restore bc
+	jp	rfi		;return from interrupt (via xerox)
+
+
+pekhdl:		;function:- to deal with characters form a psition
+		;	    encoded keyboard.
+		;input:-    A  character read from PIO
+		;
+		;output:-   1) Carry set -- command byte or sequence error
+		;	    2) Carry clear -- translated character returned
+		;			      in A.
+
+	push	de		;save registers
+	bit	7,a		;command byte?
+	jr	nz,cmdb		;yes
+
+	ld	hl,(tabadd)	;no. have we had one set up the table?
+	ld	de,0000
+	scf
+	ccf			;clear carry
+	sbc	hl,de		;(tabadd)=0?
+	jr	z,peknoc	;yes.ignore this byte.
+
+	ld	hl,(tabadd)	;no.get the translation table address
+	ld	c,a		;position code in c
+	ld	b,0		;(BC)=offset in translation table
+	add	hl,bc
+	ld	a,(hl)		;get translated char
+
+	scf
+	ccf			;clear carry
+	jr	pekex		;exit
+
+
+cmdb:				;here for command byte
+	and	00000111b	;clear command bit and unused bits
+	ld	hl,cdtab	;preset to control table
+	bit	2,a		;control bit set?
+	jr	nz,cmdb1	;yes
+
+	ld	hl,shtab	;preset shift table
+	or	a		;test parity of shift and lock bits
+				;shift and lock or neither shift nor
+				;lock are even parity and use normal table
+				;otherwise odd parity means shift table
+	jp	po,cmdb1	;odd parity  shift table required
+	ld	hl,tabl		;even parity  normal table
+
+cmdb1:				;here with translation table address in hl
+	ld	(tabadd),hl	;set it up
+
+peknoc:				;here to exit with no char
+	scf
+pekex:
+	pop	de
+	ret
+
+
+tabadd:	defw	0000		;after a command byte has been received it
+				;contans the address of the correct
+				;translation table. otherwise it is zero.
+
+	subttl	Ram resident (printer)
+	page
+
+
+;;	siout - output to channel b after translation and
+;		escape sequence handling
+rxsioo:				;char in a
+	push	bc
+	push	hl
+	call	posend		;does real work
+	pop	hl
+	pop	bc
+	ret
+
+;;	posend - deals with character translation and escape
+;		 sequences for the diablo 630
+;		 input--- a contains char for output to channel b
+posend:
+	ld	c,a
+
+	ld	a,(escsq)	;in an escape sequence?
+	or	a
+	jr	nz,pos04	;yes
+
+	ld	a,c
+	cp	esc		;escape char?
+	jr	nz,pos01	;no
+
+	call	posout		;output char
+	ld	(escsq),a	;set escape sequence flag
+	ret
+
+pos01:				;not escape char
+	call	potran		;do translation if neccessary
+	jr	nz,pos03	;wasn't neccessary
+
+	bit	7,a		;escape marker set?
+	jr	z,pos02		;no
+
+	ld	c,a
+	ld	a,esc
+	call	posout		;output escape char
+
+	ld	a,c
+	res	7,a		;clear escape marker
+
+pos02:				;escape marker not set
+pos03:				;no translation
+	call posout		;output char
+	ret
+
+pos04:				;escape sequence
+	cp	0ffh		;3rd byte?
+	jr	nz,pos05	;no 2nd
+
+	ld	a,c
+	call	posout		;output char
+	xor	a
+	ld	(escsq),a	;clear sequence
+	ret
+
+pos05:				;2nd byte of escape sequence
+	ld	a,c
+	call	posout		;output byte
+
+	call	poesc		;search escape table for char
+	jr	nz,pos06	;not present---2 byte sequence
+
+	ld	a,0ffh		;set sequence for 3rd byte
+	ld	(escsq),a
+	ret
+
+pos06:				;end of 2 byte sequence
+	xor	a
+	ld	(escsq),a	;clear sequence flag
+	ret
+
+escsq:	defb	0		;escape sequence flag
+				;0=> no sequence in progress
+				;1b=> expecting 2nd byte
+				;ff=> expecting 3rd byte
+
+posout:	push	af
+siox1:	call	siordy
+	call	z,idle
+	jr	z,siox1
+	pop	af
+	out	(siodpb),a
+	ret
+
+
+;;	potran - does printer translation if neccessary and returns
+;		 a flag to indicate if translation has been done.
+
+;		input- a  char for translaation
+
+;		output- a  (translated) char
+;			z  set if char is translated (otherwise reset)
+
+potran:
+	ld	hl,prntbl	;print exceptions table
+	ld	bc,prntsz	;size of table
+	cpir
+	ret	nz		;no match - don't translate
+
+	dec	hl		;translate
+	ld	bc,prntsz
+	add	hl,bc		;offset to translation
+	xor	a		;set z for return flag
+	ld	a,(hl)		;get translation
+	ret
+
+
+;;	poesc - searches the escape table for a match with the char
+;		passed in a. if found returns with z set otherwise
+;		z is clear
+
+poesc:
+	ld	hl,pesctb	;table of escape sequences
+	ld	bc,esctsz	;size of table
+	cpir
+	ret
+
+pesctb:	defb	09h,0bh,0ch,1eh,1fh,16h,11h
+esctsz	equ	$-pesctb
+
+olsiz	equ	$-tabled	;size of overlay
+
+	.dephase
+	subttl	Overlay (signon)
+	page
+
+
+	;;	signon - Announce System Ready.
+rxsign:				;source address in rom
+	.phase	tca		;execution in transient command area
+
+signon:	ld	hl,confg	;point to configuration byte
+	in	a,(syspio)	;check configuration
+	bit	0,a
+	jr	z,sign3		;if SASI interface present
+	di
+	ld	a,11001111b	;set Pio B in Bit Mode
+	out	(sysctl),a
+	ld	a,00111000b	;turn around d0,1,2
+	out	(sysctl),a
+	ld	a,10000000b	;ensure rom switched on but .....
+	out	(syspio),a	;drop all drive selects
+	ld	a,0d0h		;reset wd-1797-02
+	out	(wd1797),a
+sign1:	djnz	sign1		;wait 1797 not busy
+	in	a,(syspio)
+	bit	c.five,a
+	ld	a,2		;preset 10 msec step rate
+	jr	nz,sign2	;if not 5"
+	set	c.five,(hl)
+	ld	a,3		;set long step
+sign2:	out	(wd1797),a	;restore / unload heads
+	ld	(steprt),a
+	jr	sign4
+sign3:	set	c.sasi,(hl)	;set Sasi card installed
+	ld	hl,Rigdpb	;set address of rigid dpb
+	ld	de,Fivdpb	;set address of 5.25" floppy dpb
+	ld	bc,Sasidl	;set sasi driver length
+	ldir			;Move driver down
+	and	2
+	jr	nz,sign4	;if not A/E swap
+	ld	hl,Seltab+1
+	ld	b,8
+sign3a:	ld	a,(hl)
+	xor	4
+	ld	(hl),a
+	inc	hl
+	inc	hl
+	djnz	sign3a
+
+sign4:
+	ld	hl,tables	;move rx resident code to ram
+	ld	de,tabled
+	ld	bc,olsiz
+	ldir
+
+	ld	hl,xrsign+sigoff ;address of xr rev value
+	ld	de,sign6	;put it in our signon message
+	ld	bc,4
+	ldir
+
+	call	crtoff		;disable rom bank
+
+	call	pnext
+	defb	clrs		;clear screen
+	if	o.esct
+	defb	esc,'8'		;set low light as default mode
+	else
+	defb	'R'-'@'
+	endif
+
+	defm	'820-II v '
+sign6:	defb	0,0,0,0		;*********** space for the XR rev value
+	defm	' ',31,28,' 1982 Xerox Corp'
+	defm	'(RX v'
+	defm	ver/100+'0',(ver mod 100)/10+'0',(ver mod 10)+'0'
+	defb	')',cr,lf
+	if	o.auto
+	defb	7,eot
+
+	ld	b,-1		;select drive A:
+	call	xqphys		;execute physical driver
+	ld	a,l
+	or	h
+	jr	z,sign5
+	ld	b,1		;read drive A:
+	call	xqphys
+	ld	hl,'L'+cr*256
+	ld	(linbuf),hl
+	jp	z,autobt	;if auto booting	
+
+sign5:	call	pnext
+	endif
+	defb	lf
+	defm	'L - Load System'
+	defb	cr,lf
+
+	if	o.term
+	defm	'H - Host Terminal'
+	defb	cr,lf
+	endif
+	defb	7,eot
+
+eatme:	call	const
+	jp	z,warm		;go enter monitor
+	call	conin
+	jr	eatme
+
+rxsigl	equ	$-signon
+
+	.dephase
+	subttl	Overlay (boot)
+	page
+
+
+rxboot:				;rom source address
+	.phase	tca		;execution address o/l area
+
+
+	ld	hl,linbuf+1
+boot1:	ld	a,(hl)		;scan command line
+	inc	l
+	sub	cr
+	jr	z,boot2		;if no parameter, boot from A:
+	cp	' '-cr
+	jr	z,boot1		;skip leading blanks
+	sub	'A'-cr
+	ret	c		;if invalid drive
+	cp	16
+	ccf
+	ret	c		;if bad drive
+boot2:	ld	c,a		;set boot drive selected
+	add	a,'A'
+	ld	(bootd),a	;set up error message
+	ld	l,0		;set A:
+	push	bc
+	push	hl
+	call	swap		;switch boot drive with A:
+	ld	hl,booter	;set boot error return
+	push	hl
+	ld	c,0		;then boot from A:
+	call	select
+	ret	nz		;if drive not configured or density error
+	ld	a,-1
+	ld	(de),a
+	ld	de,10		;set dpb address offset within dph
+	add	hl,de
+	ld	e,(hl)		;set dpb address
+	inc	hl
+	ld	d,(hl)
+	call	home
+	ld	a,(de)		;get low sectors per track
+	ld	(boots),a	;inform boot loader
+	or	a
+	jr	nz,boot3	;if not rigid
+	ld	hl,13		;set reserved track offset within dpb
+	add	hl,de
+	ld	c,(hl)		;get reserved tracks
+	inc	hl
+	ld	b,(hl)
+	dec	bc		;point behind directory
+	ld	(phytrk),bc	;do implied seek
+
+				;here for rigid
+	ld	c,rtab1		;first rigid sector
+	ld	hl,bootbf	;buffer
+	call	read		;layout and k/b tables
+	ret	nz
+	jr	rxb01
+
+boot3:				;here for floppy
+	cp	27		;double density?
+	jr	c,boot4		;no - exit
+
+	ld	c,ftab1		;first floppy sector
+	ld	hl,bootbf	;buffer
+	call	read		;layout table and half of k/b
+	ret	nz
+
+	ld	c,ftab2		;second floppy sector
+	ld	hl,bootbf+128
+	call	read		;second half of k/b tables
+	ret	nz
+
+rxb01:				;check tables are present
+	ld	a,(bootbf+lang)	;language no. set?
+	cp	0e5h
+	jr	z,boot4		;no - exit
+
+	ld	a,(bootbf+kbrd)	;k/b tables present?
+	cp	'K'
+	jr	nz,boot4	;no - exit
+
+	ld	a,(bootbf+font)	;font tables present?
+	cp	'F'
+	jr	nz,boot4	;no - exit
+
+	ld	a,(bootbf+prnt)	;printer tables prsent?
+	cp	'P'
+	jr	nz,boot4	;no - exit
+
+	ld	hl,bootbf+kbrdtb ;move in k/b tables
+	ld	de,tabled
+	ld	bc,ktabsz
+	ldir
+
+	ld	c,rtab2		;second rigid sector
+	ld	a,(boots)	;rigid or floppy?
+	or	a
+	jr	z,boot5		;rigid
+	ld	c,ftab3		;floppy - third sector
+boot5:
+	ld	hl,bootbf	;buffer
+	call	read		;font and print tables
+	ret	nz
+
+	ld	a,(bootbf)	;configured?
+	cp	0e5h
+	jr	z,boot4		;no -exit
+
+	ld	hl,bootbf	;move them to position
+	ld	de,fontbl
+	ld	bc,fontsz*2+prntsz*2
+	ldir
+
+boot4:				;here to exit
+	pop	bc		;throw away booter return
+	pop	bc		;get disk swap parameters
+	pop	hl
+	call	swap		;swap them back for xerox boot
+
+	pop	bc		;throw away return address
+	ld	hl,xrboot	;address of xerox boot overlay
+	jp	prboff		;enter xerox code to execute boot
+
+boots:	defb	0		;workbyte to save disk type
+
+
+;;	Booter - Boot Error Processor.
+;
+booter:	call	pnext
+	defb	7
+bootd:	defm	'd:Tables Load error.'
+	defb	eot
+	pop	bc		;switch drives back
+	pop	hl
+
+;;	swap - swap logical drives.
+;
+;	Entry:	C = first  drive index, 0-15
+;		L = second drive index, 0-15
+;
+swap:	ld	b,0		;clear upper indices
+	ld	h,b
+	ld	de,seltab	;set select table address
+	add	hl,hl
+	add	hl,de
+	ex	de,hl		;set second address to DE, get seltab to HL
+	add	hl,bc
+	add	hl,bc		;set first address to HL
+	ld	b,2
+swap1:	ld	c,(hl)		;swap two bytes
+	ld	a,(de)
+	ld	(hl),a
+	ld	a,c
+	ld	(de),a
+	inc	hl
+	inc	de
+	djnz	swap1		;if swap not complete
+	ret
+
+	.dephase
+	subttl	end
+	page
+
+romtop:
+	defs	(romsiz-3)-(romtop-start),-1
+
+				;define checkword to let xerox know
+				;that we are present
+	defb	0aah,55h
+	defb	0		;space for checksum
+
+
+
+	end

@@ -1,0 +1,3 @@
+XR.MAC + XR.REL: from Don Maslin disk B16D35 (820ii_images), "SOURCE ROM 4.0 820-II SS/DD 6/18/82 MASTER SWC 2" — Balcones XR.MAC ending REV DEFL 400, the source of ROM400.COM (the v4.00 set in this directory).
+lineage/xr-v390.mac: from Maslin disk B16D36 ("ROM 3.90 SOURCE 5/26/82 MASTER 1") — XR.MAC ending REV DEFL 390 (v3.90); earlier-revision reference, renamed from XR.MAC to avoid collision, bytes untouched.
+lineage/xr-v301.mac: from Maslin disk B16D36 user area 1 (u1/) — XR.MAC ending "rev defl 301 ;correct microfloppy ready check" (v3.01, ~Apr 1982, oldest surviving monitor source); renamed from XR.MAC, bytes untouched.

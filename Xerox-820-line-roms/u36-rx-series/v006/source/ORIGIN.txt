@@ -1,0 +1,1 @@
+RX1984.MAC: from Don Maslin disk B16D29 (820ii_images), "RX 820-II / RX1984.MAC / SETUP(12).COM" — Rank Xerox u36 option-ROM source, ver 006 (18 Jun 1982, "Release for XR ver 4.00"); byte-identical copy on B16D31. Builds ../rx006.com.

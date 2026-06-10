@@ -1,0 +1,2162 @@
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                
+                                ;;	RX1984 is the stand alone rom addition to the Xerox 820-II
+                                ;		monitor. It is called once during monitor restart
+                                ;		and at that time it patches the monitor in ram to
+                                ;		call the rx modifications to k/b,crt,Screenprint
+                                ;		and printer routines.
+                                ;		It then moves in its own SIGNON overlay and jumps into it.
+                                ;
+                                ;		This SIGNON in addition to selecting the disk driver also
+                                ;		moves into ram (in the spare driver area) translation
+                                ;		tables and code for k/b and printer routines (crt is run
+                                ;		out of rom).
+                                ;
+                                ;		There is also a RX BOOT overlay which is selected instead
+                                ;		of the Xerox one. This loads the national translation
+                                ;		tables from disk and then calls the Xerox BOOT.
+                                
+                                
+                                	.z80
+                                	title	RX1984
+                                
+                                
+                                ;	Revision History
+                                
+  0001                          	ver	defl	001		;4th June 1982
+                                
+                                ;	First release. Compatible with XR Ver. 3.90
+                                
+  0002                          	ver	defl	002		;8th June 1982
+                                
+                                ;	Fixed relocation bug.
+                                
+  0003                          ver	defl	003		;9th June 1982
+                                
+                                ;	Corrected missing bracket in signon message.
+                                ;	Correct boot source address.
+                                ;	Keyboad vector equate corrected.
+                                ;	Printer handler patch put in sioout instead of vector table
+                                ;		to catch monitor calls to sioout.
+                                
+  0004                          ver	defl	004		;10th June 1982
+                                
+                                ;	Corrected missing bracket in signon message - again
+                                ;	Changed rigid sector equates to 29 and 30.
+                                ;	Corrected fill of empty rom with -1s.
+                                
+  0005                          ver	defl	005		;15th June 1982
+                                
+                                ;	Corrected bug in SIGNON that switches of rom.
+                                ;	Removed 'typewriter' from SIGNON prompt.
+                                
+  0006                          ver	defl	006		;18th June 1982
+                                
+                                ;	Release for XR ver 4.00.
+                                ;	Modified signon to pick up XR ver. no. from the 
+                                ;	XR signon code.
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-1
+
+
+                                
+  0007                          ver	defl	007		;22nd July 1982
+                                
+                                ;	Correct bug in k/b interrupt service routine which doesn't
+                                ;	zero the command byte in flag after a position byte.
+                                ;	Rewrite the k/b interrupt service routine to use shift
+                                ;	lock key as a caps lock.
+                                ;
+                                
+  0008                          ver	defl	008		;24th August 1982
+                                
+                                ;	Changes made to accommodate 4.02 ROM
+                                ;	All changes were to memory references.
+                                ;	No logic changes made.
+                                
+  0009                          ver	defl	009		;2nd Sept. 1982
+                                
+                                ;	Changes made to printer logic to
+                                ;	accomodate 620 printer tables.
+                                ;	Printer table expanded.
+                                ;	CRT driver modified so that no
+                                ;	translation is done if the graphics
+                                ;	attribute is set.
+                                
+  000A                          ver	defl	010		;10th Sept. 1982
+                                
+                                ;	Correction to 'graphics translation inhibit' fix
+                                ;	to account for attributes enabled mode.
+                                
+  000B                          ver	defl	011		;15th Sept. 1982
+                                
+                                ;	Include fix to ensure the screenprint function is as
+                                ;	accurate as possible.
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-2
+
+
+                                
+  000C                          ver	defl	012		;January 19, 1983
+                                
+                                ;	Modified keyboad interrupt service routine to work with the
+                                ;	position encoded low profile keyboard with 97 key stations 
+                                ;	(156P82508 keyboard specification) for
+                                ;	the US or 100 key stations for RX.  The interrupt handler contains:
+                                ;	o	Key station translation tables
+                                ;	o	Up stroke truncation code
+                                ;	o	Code to truncate the lock, shift, and ctrl characters &
+                                ;		expansion for 1 character
+                                ;	o	Alpha lock code for the 26 alphabets
+                                ;	o	Shift lock byte
+                                ;	o	Repeat code for 15 characters & expansion for 4 characters
+                                ;	o	Redefinabe speed for the repeat keys
+                                ;	o	Minimum code for the mouse(pointer)
+                                ;	o	Minimum upstroke code
+                                ;	o	Signon and boot overlay adjusted to work with 4.01 & 4.02 ONLY
+                                ;	o	Typewritter is not dropped from SIGNON page
+                                ;	o	Majority of keyboard and printer code remains ROM resident
+                                ;		to save on limited RAM space of X'F800'-X'FA07'
+                                ;	o	An additonal sector is used on track zero to store the
+                                ;		increase table sizes
+                                ;	o	KYBD jump table appended to monitor vector table for use by
+                                ;		COMM KYBD handler
+                                ;	o	Printer and font exception hanler loaded on if nationalized
+                                ;		tables are on system disc
+                                ;	o	Address table of fourth ROM tables
+                                	subttl	XR dependant equates
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-3
+XR dependant equates
+
+                                
+                                
+                                
+                                ;;	The following equates are dependant on the revision of XR.
+                                ;		These are compatible with Ver. 4.02
+                                
+                                
+                                
+                                ;	Addresses used to patch the monitor.
+                                
+  1800                          rx1984	equ	1800h		;start of rx1984
+  0800                          romsiz	equ	800h		;size of eprom
+  F000                          monitr	equ	0f000h		;start of monitor ad jump table
+  F1EC                          savstk	equ	x'f1ec'		;stack save address
+  FF10                          ctcvec	equ	x'ff10'		;counter timer interrupt vector
+  FF18                          sysvec	equ	0ff18h		;vector page
+  FF1A                          kbvec	equ	sysvec+2	;keyboard vector
+  FC5D                          tca	equ	0fc5dh		;start of 4.02 transient command area
+                                
+                                ;	Offsets used to patch the monitor
+                                
+  0002                          boff1	equ	('A'-'@')*2	;A command vector in command table
+  0018                          boff2	equ	('L'-'@')*2	;l command vector in command table
+  0019                          sioff	equ	19h		;sioout vector in monitor table
+  000A                          kboff	equ	0ah		;offset in k/b int service for patch
+  0010                          fcrtof	equ	10h		;fast crt out vector in monitor table
+  0012                          crtcall	equ	12h		;offset in crt driver for patch
+                                
+                                ;	Routines referenced by rx1984
+                                
+  F006                          const	equ	monitr+6
+  F009                          conin	equ	monitr+9
+  F003                          warm	equ	monitr+3
+  F01B                          select	equ	monitr+1bh
+  F01E                          home	equ	monitr+1eh
+  F024                          read	equ	monitr+24h
+  F03C                          config	equ	monitr+x'3c'	;monitor configure routine
+  F03F                          siordy	equ	monitr+x'3f'	;sio channel b output ready status
+  F066                          idle	equ	monitr+x'66'	;idle while i/o pending
+  F06C                          mntrex	equ	monitr+x'6c'	;monitor jump table expansion area
+  F06C                          kybdlp	equ	monitr+x'6c'	;low profile keyboard entry address
+  F06F                          key2	equ	monitr+x'6f'	;keyboard xlat char entry address
+  F072                          key5	equ	monitr+x'72'	;keyboard without xlat char entry address
+  F075                          pnext	equ	monitr+x'75'	;print message after call
+  F078                          prboff	equ	monitr+x'78'	;promt boot entry
+  FA80                          autobt	equ	prompt+1eh
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-4
+XR dependant equates
+
+                                
+  0182                          crtd1	equ	0182h
+  0196                          crtd2	equ	0196h
+  01DD                          grpad	equ	1ddh		;address of set graphics attribute
+  1078                          xrsign	equ	1078h		;adress of xr signon overlay
+  0060                          sigoff	equ	60h		;offset of ver value in signon
+  11C0                          xrboot	equ	11c0h		;boot o/l address
+  F167                          mkey2	equ	x'f167'		;keyboard handler entry address
+  F18F                          mkey5	equ	x'f18f'		;return from keyboard and timer interrupt add
+                                ;key5	equ	0f18fh
+  F22F                          sprnt1	equ	0f22fh		;patch address for screen print
+  F232                          sprnt2	equ	0f232h		;return address from RX screenprint code
+  F293                          crtoff	equ	x'f293'		;switch to ram side
+  F29C                          crton	equ	x'f29c'		;switch to rom side
+  F339                          prvatt	equ	0f339h		;contains address of current set attribute
+  FA51                          xqphys	equ	0fa51h
+  FA62                          prompt	equ	0fa62h		;4.02 PROMPT
+  FA95                          mprmt0	equ	x'fa95'		;4.01 PRMT0
+  FB34                          rxgethlp equ	x'fb34'		;4.02 GETHLP address
+  FC3D                          mpnext	equ	x'fc3d'		;4.01 PNEXT
+                                ;pnext	equ	0fc45h		;4.02 PNEXT
+                                
+                                
+                                ;	Data Addreses
+                                
+  ED80                          bootbf	equ	0ed80h
+  F0E3                          mask	equ	0f0e3h
+  F091                          confg	equ	0f091h
+  F20E                          spact	equ	x'f20e'
+  F319                          gold	equ	0f319h
+  F360                          seltab	equ	0f360h
+  F470                          fivdpb	equ	0f470h
+  F708                          rigdpb	equ	0f708h
+  F800                          tabled	equ	0f800h		;space for rx code
+  FA11                          phytrk	equ	0fa11h
+                                ;prboff	equ	0fa9dh
+  FD50                          olspace	equ	x'fd50'		;temporary address save area
+  FF3C                          availb	equ	x'ff3c'		;bottom available ram memory
+  FF50                          intstk	equ	x'ff50'		;tempory stack address
+  FF54                          steprt	equ	0ff54h
+  FF5C                          linbuf	equ	0ff5ch
+  FFAC                          cursor	equ	0ffach
+  FFB2                          leadin	equ	0ffb2h
+  FFB3                          attrib	equ	0ffb3h		;address of attributes enabled flag
+  FFB4                          chrsav	equ	0ffb4h
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-5
+XR dependant equates
+
+                                
+                                ;	Port addressess
+                                
+  001D                          sysctl	equ	1dh
+  001C                          syspio	equ	1ch
+  0005                          siodpb	equ	05h
+  0010                          wd1797	equ	10h
+  001E                          kbdat	equ	1eh
+  0019                          ctc1	equ	x'19'		;ctc1 port address
+                                
+                                ;	Other Equates
+                                
+  0081                          encntr	equ	x'81'		;enable ctc command
+  0001                          stcntr	equ	x'01'		;stop ctc command
+  0001                          rev1	equ	x'01'		;4.01 Revision Level
+  0002                          rev2	equ	x'02'		;4.02 Revision Level
+  003C                          cnfgoff	equ	x'3c'		;monitor configuration offset
+  0006                          cnfbyte	equ	x'06'		;configuration subroutine byte offset
+  0008                          kblp	equ	x'08'		;configuration bit id for LPKYBD
+  0008                          romofs	equ	x'08'		;PROMPT offset between 4.02 & 4.01 monitor
+  0001                          lpkofs	equ	x'01'		;additonal sector required for table storage
+  007B                          upper	equ	'z'+1		;upper limit for alpha test
+  0061                          lower	equ	'a'		;lower limit for alpha test
+  0020                          upascii equ	'a'-'A'		;set to upper case ASCII mask
+  0000                          zero	equ	0		;zero
+  00FF                          setflg	equ	x'ff'		;set flag
+  0000                          skip	equ	0		;Conditional assembly equate
+  0000                          future	equ	0		;Conditional assembly equate
+                                
+                                ;	Equates
+                                
+  0004                          c.five	equ	04
+  0006                          c.sasi	equ	06
+  0000                          o.auto	equ	0000h
+  0010                          o.esct	equ	0010h
+  0001                          o.term	equ	0001h
+  0008                          o.type	equ	0008h
+  0300                          sasidl	equ	300h
+  0186                          rev	equ	390
+                                
+                                
+                                
+                                	subttl	Internal Equates
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-6
+Internal Equates
+
+                                
+                                
+                                
+                                ;	Internal equates
+                                
+  001D                          rtab1	equ	29		;rigid disk tables sector 1
+  001E                          rtab2	equ	30		;  "    "      "     "    2
+  0004                          ftab1	equ	04		;floppy	"      "     "    1
+  0005                          ftab2	equ	05		;  "    "      "     "    2
+  0006                          ftab3	equ	06		;  "    "      "     "    3
+                                
+  0000                          lang	equ	00		;offset of language no. in index table
+  0001                          kbrd	equ	01		;offset of k/b flag in index table
+  0002                          font	equ	02		;offset of font flag in index table
+  0003                          prnt	equ	03		;offset of printer flag in index table
+  0004                          kbrdtb	equ	04		;offset of k/b tables in first sector
+                                
+  001A                          clrs	equ	1ah		;clear screen key
+  001B                          esc	equ	1bh		;escape key
+  0004                          eot	equ	04h		;end of text
+  000D                          cr	equ	0dh		;carriage return
+  000A                          lf	equ	0ah		;
+                                
+                                	subttl	RX1984 Restart
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-7
+RX1984 Restart
+
+                                
+                                
+  0000'                         start:
+                                
+                                	.phase	rx1984
+                                
+                                ;;	RX1984
+                                ;		Entry here from Xerox monitor bfore entering SIGNON.
+                                ;
+                                ;		Input:-
+                                ;			hl - cmdtab
+                                ;			de - seltab
+                                ;			bc - cloc
+                                ;
+                                
+                                	if	skip
+                                	pop	bc		;throw away return address
+                                	endif
+  1800    C5                    	push	bc
+  1801    D5                    	push	de
+  1802    E5                    	push	hl
+                                
+                                ;	verify either 4.01 or 4.02 monitor roms
+                                
+  1803    21 0000               	ld	hl,0
+  1806    CD F03C               	call	config		;get monitor configuration
+  1809    7C                    	ld	a,h
+  180A    FE 02                 	cp	rev2
+  180C    20 05                 	jr	nz,nxtlvl	;skip if not 4.02
+  180E    21 1B26               	ld	hl,rv2tbl
+  1811    18 08                 	jr	tbxfer
+                                
+  1813    FE 01                 nxtlvl: cp	rev1
+  1815    C2 187B               	jp	nz,noload	;skip if not 4.01
+                                
+  1818    21 1B17               	ld	hl,rv1tbl
+  181B    11 F06C               tbxfer:	ld	de,mntrex
+  181E    01 000F               	ld	bc,jtblsz	
+  1821    F5                    	push	af			;save monitor level
+  1822    ED B0                 	ldir			;append monitor table with lpkybd jmp vectors
+                                
+  1824    DD 2A F03D            	ld	ix,(monitr+cnfgoff+1)	;set address at monitor config:
+  1828    DD 7E 06              	ld	a,(ix+cnfbyte)
+  182B    F6 08                 	or	kblp			;set low profile bit flag
+  182D    DD 77 06              	ld	(ix+cnfbyte),a
+  1830    F1                    	pop	af			;recover monitor level
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-8
+RX1984 Restart
+
+                                
+                                ;	alter BOOT commnd vectors
+                                
+                                	if	skip
+                                	push	hl
+                                	pop	ix		;cmdtab address
+                                	endif
+  1831    DD E1                 	pop	ix				;cmdtab address
+  1833    DD E5                 	push	ix
+                                
+  1835    DD 36 02 42'          	ld	(ix+boff1),low (rxboot+romofs)	;4.02 monitor boot over addr
+  1839    DD 36 03 06'          	ld	(ix+boff1+1),high (rxboot+romofs)
+                                
+  183D    DD 36 18 42'          	ld	(ix+boff2),low (rxboot+romofs)
+  1841    DD 36 19 06'          	ld	(ix+boff2+1),high (rxboot+romofs)
+                                
+  1845    FE 02                 	cp	rev2				;monitor check
+  1847    28 10                 	jr	z,soout				;skip if 4.02 monitor
+                                
+  1849    DD 36 02 3A'          	ld	(ix+boff1),low rxboot		;assume 4.01 monitor
+  184D    DD 36 03 06'          	ld	(ix+boff1+1),high rxboot
+                                
+  1851    DD 36 18 3A'          	ld	(ix+boff2),low rxboot
+  1855    DD 36 19 06'          	ld	(ix+boff2+1),high rxboot
+                                
+  1859                          soout:
+                                	if	skip
+                                ;	alter SIOOUT
+                                
+                                	ld	ix,(monitr+sioff)	;soout address
+                                	ld	(ix),0c3h		;jump instruction
+                                	ld	(ix+1),low rxsioo
+                                	ld	(ix+2),high rxsioo
+                                	endif
+                                
+                                ;	alter keyboard interrupt service
+                                
+  1859    DD 2A FF1A            	ld	ix,(kbvec)		;k/b int vector
+  185D    DD 36 0A CD           	ld	(ix+kboff),0cdh		;CALL operation
+  1861    DD 36 0B 6C           	ld	(ix+kboff+1),low kybdlp
+  1865    DD 36 0C F0           	ld	(ix+kboff+2),high kybdlp
+                                
+                                	if	skip
+                                ;	alter crt driver
+                                
+                                	ld	ix,(monitr+fcrtof)	;address of fast crt handler
+                                	ld	(ix+crtcall),low rxcrt
+                                	ld	(ix+crtcall+1),high rxcrt
+                                
+                                	ld	ix,sprnt1		;address of screenprint patch
+                                	ld	(ix),0c3h		;jump instruction
+                                	ld	(ix+1),low scrprt
+                                	ld	(ix+2),high scrprt
+                                	endif
+                                
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-9
+RX1984 Restart
+
+                                ;	Move in RX SIGNON to o/l area and execute it
+                                
+  1869    E1                    	pop	hl
+  186A    D1                    	pop	de
+  186B    C1                    	pop	bc
+  186C    C1                    	pop	bc			;throw away  return address
+                                
+  186D    21 054F'              	ld	hl,rxsign		;rom address
+  1870    11 FC5D               	ld	de,tca			;o/l area
+  1873    01 00EB               	ld	bc,rxsigl		;length
+  1876    ED B0                 	ldir
+                                
+  1878    C3 FC5D               	jp	tca			;GO SIGN ON
+                                
+  187B    E1                    noload:	pop	hl
+  187C    D1                    	pop	de
+  187D    C1                    	pop	bc
+  187E    3E FF                 	ld	a,x'ff'			;wrong monitor
+  1880    A7                    	and	a			;load signon from monitor
+  1881    C9                    	ret
+                                
+                                
+                                
+                                
+                                	subttl	ROM resident (crt driver)
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-10
+ROM resident (crt driver)
+
+                                
+                                
+                                ;;	crtdvr - Crt Driver RX Addition.
+                                ;
+  1882                          rxcrt:
+  1882    2A FFAC               	ld	hl,(cursor)	;set cursor address
+  1885    3A FFB4               	ld	a,(chrsav)	;retrieve character under cursor
+  1888    77                    	ld	(hl),a		;replace character under cursor
+  1889    32 F319               	ld	(gold),a	;bury balcones gold
+  188C    3A FFB2               	ld	a,(leadin)	;set leadin state
+  188F    B7                    	or	a
+  1890    C2 0196               	jp	nz,crtd2	;if processing escape sequence
+  1893    3A F0E3               	ld	a,(mask)	;get keyboard mask
+  1896    A1                    	and	c
+  1897    4F                    	ld	c,a
+  1898    FE 20                 	cp	' '
+  189A    DA 0196               	jp	c,crtd2		;if control code
+  189D    CD 18A3               	call	fonchk		;do font translation
+  18A0    C3 0182               	jp	crtd1		;go to XR code
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-11
+ROM resident (crt driver)
+
+                                
+                                	;;subroutine fonchk does the font translation for national
+                                	;character sets
+                                
+                                	; entry:  C contains the character
+                                	; exit:   C contains the translation
+                                
+                                
+  18A3                          fonchk:
+  18A3    E5                    	push	hl		;save cursor posn.
+                                
+  18A4    79                    	ld	a,c		;get char in a
+  18A5    E6 80                 	and	10000000b	;preserve attribute bit
+  18A7    F5                    	push	af
+  18A8    21 FFB3               	ld	hl,attrib	;point to attribute enabled flag
+  18AB    B6                    	or	(hl)		;test if set
+  18AC    28 0A                 	jr	z,fon1		;no attribute bit - go do translation
+  18AE    11 01DD               	ld	de,grpad	;check if graphics mode
+  18B1    2A F339               	ld	hl,(prvatt)	;current attribute mode
+  18B4    ED 52                 	sbc	hl,de
+  18B6    28 0F                 	jr	z,fon2		;grahics mode - no translate
+  18B8                          fon1:				;here to do translate
+  18B8    79                    	ld	a,c
+  18B9    CB BF                 	res	7,a		;clear attribute bit
+                                
+  18BB    21 F960               	ld	hl,fontbl	;address of exceptions table
+  18BE    01 000D               	ld	bc,fontsz	;size of exceptions table
+  18C1    ED B1                 	cpir			;search for char. in exceptions
+  18C3    4F                    	ld	c,a		;restore char to c
+  18C4    CC 18CC               	call	z,fntran	;if found do translation
+  18C7    F1                    fon2:	pop	af		;retrieve attribute bit
+  18C8    B1                    	or	c		;or it in
+  18C9    4F                    	ld	c,a
+                                
+  18CA    E1                    	pop	hl		;retrieve cursor
+  18CB    C9                    	ret
+                                
+                                	;;	s/r fntran translates font characters
+                                	;	entry: (HL) - address+1 of char to be translated in fontbl
+                                	;	exit:  (c)  - translated character
+                                
+  18CC                          fntran:
+  18CC    2B                    	dec	hl		;back to byte to be translated
+  18CD    01 000D               	ld	bc,fontsz	;size of table
+  18D0    09                    	add	hl,bc		;add to address of char. to be translated
+  18D1    4E                    	ld	c,(hl)		;get translated value
+  18D2    C9                    	ret
+                                
+                                	subttl	ROM resident (screenprint routine)
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-12
+ROM resident (screenprint routine)
+
+                                
+                                
+                                ;;	This routine is called from the Xerox screenprint handler. It
+                                ;	picks up the character to be printed from the crt ram, does a
+                                ;	reverse font translate,replaces any control codes with a space,
+                                ;	does a printer translate and outputs the character to the printer.
+                                
+                                ;	entry:- HL - address of byte to be printed
+  18D3                          scrprt:				;entry point
+                                	if	skip
+                                	ld	(hlsav),hl	;save registers
+                                	ld	(bcsav),bc
+                                	endif
+  18D3    E5                    	push	hl
+  18D4    C5                    	push	bc
+                                
+  18D5    7E                    	ld	a,(hl)		;byte for printing
+  18D6    CB BF                 	res	7,a		;ignore attribute bit
+                                				;do reverse font translate
+  18D8    21 F96D               	ld	hl,fontbl+fontsz	;point to translates
+  18DB    01 000D               	ld	bc,fontsz
+  18DE    ED B1                 	cpir			;search for char.
+  18E0    20 07                 	jr	nz,scr01	;not in table
+                                				;in table convert to media code
+  18E2    01 000D               	ld	bc,fontsz	;offset back to media code
+  18E5    37                    	scf
+  18E6    ED 42                 	sbc	hl,bc		;points to media code
+  18E8    7E                    	ld	a,(hl)
+  18E9                          scr01:				;here with media code
+  18E9    FE 20                 	cp	20h		;is it a control code
+  18EB    30 02                 	jr	nc,scr02	;no
+  18ED    3E 20                 	ld	a,20h		;yes. substitute a space
+  18EF                          scr02:
+  18EF    CD 1963               	call	potran		;do printer translation
+  18F2    20 0D                 	jr	nz,scr03	;no translation done. go output char.
+                                				;translation done.check escape bit
+  18F4    CB 7F                 	bit	7,a		;escape bit
+  18F6    28 09                 	jr	z,scr03		;not set go output char
+  18F8    4F                    	ld	c,a		;set. save char.
+  18F9    3E 1B                 	ld	a,esc		;output an escape
+  18FB    CD 1956               	call	posout		;output routine
+  18FE    79                    	ld	a,c		;restore char.
+  18FF    CB BF                 	res	7,a		;clear escape bit
+  1901                          scr03:
+  1901    CD 1956               	call	posout		;print char
+                                
+                                	if 	skip
+                                	ld	hl,(hlsav)	;restore registers
+                                	ld	bc,(bcsav)
+                                	endif
+  1904    C1                    	pop	bc
+  1905    E1                    	pop	hl
+  1906    C3 F232               	jp	sprnt2		;return to Xerox code
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-13
+ROM resident (screenprint routine)
+
+                                
+                                ;	Exception print driver - ROM entry point
+                                ;
+  1909    C5                    rmposend: push	bc
+  190A    E5                    	push	hl
+  190B    CD 1911               	call	posend
+  190E    E1                    	pop	hl
+  190F    C1                    	pop	bc
+  1910    C9                    	ret
+                                
+                                ;;	posend - deals with character translation and escape
+                                ;		 sequences for the diablo 630
+                                ;		 input--- a contains char for output to channel b
+  1911                          posend:
+  1911    4F                    	ld	c,a
+                                
+  1912    3A F9A6               	ld	a,(escsq)	;in an escape sequence?
+  1915    B7                    	or	a
+  1916    20 22                 	jr	nz,pos04	;yes
+                                
+  1918    79                    	ld	a,c
+  1919    FE 1B                 	cp	esc		;escape char?
+  191B    20 07                 	jr	nz,pos01	;no
+                                
+  191D    CD 1956               	call	posout		;output char
+  1920    32 F9A6               	ld	(escsq),a	;set escape sequence flag
+  1923    C9                    	ret
+                                
+  1924                          pos01:				;not escape char
+  1924    CD 1963               	call	potran		;do translation if neccessary
+  1927    20 0D                 	jr	nz,pos03	;wasn't neccessary
+                                
+  1929    CB 7F                 	bit	7,a		;escape marker set?
+  192B    28 09                 	jr	z,pos02		;no
+                                
+  192D    4F                    	ld	c,a
+  192E    3E 1B                 	ld	a,esc
+  1930    CD 1956               	call	posout		;output escape char
+                                
+  1933    79                    	ld	a,c
+  1934    CB BF                 	res	7,a		;clear escape marker
+                                
+  1936                          pos02:				;escape marker not set
+  1936                          pos03:				;no translation
+  1936    CD 1956               	call posout		;output char
+  1939    C9                    	ret
+                                
+  193A                          pos04:				;escape sequence
+  193A    FE FF                 	cp	0ffh		;3rd byte?
+  193C    20 06                 	jr	nz,pos05	;no 2nd
+                                
+  193E    79                    	ld	a,c
+  193F    CD 1956               	call	posout		;output char
+  1942    18 0D                 	jr	pos06
+                                
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-14
+ROM resident (screenprint routine)
+
+                                
+  1944                          pos05:				;2nd byte of escape sequence
+  1944    79                    	ld	a,c
+  1945    CD 1956               	call	posout		;output byte
+                                
+  1948    CD 1983               	call	poesc		;search escape table for char
+  194B    20 04                 	jr	nz,pos06	;not present---2 byte sequence
+                                
+  194D    3E FF                 	ld	a,0ffh		;set sequence for 3rd byte
+  194F    18 01                 	jr	pos07
+                                
+  1951                          pos06:				;end of 2 byte sequence
+  1951    AF                    	xor	a
+  1952    32 F9A6               pos07:	ld	(escsq),a	;toggle escape sequence flag
+  1955    C9                    	ret
+                                
+                                ;escsq:	defb	0		;escape sequence flag
+                                				;0=> no sequence in progress
+                                				;1b=> expecting 2nd byte
+                                				;ff=> expecting 3rd byte
+                                
+                                
+  1956                          posout:
+                                	if	skip
+                                	push	af
+                                	endif
+  1956    47                    	ld	b,a
+  1957    CD F03F               siox1:	call	siordy
+  195A    CC F066               	call	z,idle
+  195D    28 F8                 	jr	z,siox1
+                                	if	skip
+                                	pop	af
+                                	endif
+  195F    78                    	ld	a,b
+  1960    D3 05                 	out	(siodpb),a
+  1962    C9                    	ret
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-15
+ROM resident (screenprint routine)
+
+                                
+                                
+                                ;;	potran - does printer translation if neccessary and returns
+                                ;		 a flag to indicate if translation has been done.
+                                
+                                ;		input- a  char for translaation
+                                
+                                ;		output- a  (translated) char
+                                ;			z  set if char is translated (otherwise reset)
+                                
+  1963                          potran:
+  1963    21 F97A               	ld	hl,prntbl	;print exceptions table
+  1966    01 0016               	ld	bc,prntsz	;size of table
+  1969    ED B1                 	cpir
+  196B    C0                    	ret	nz		;no match - don't translate
+                                
+  196C    2B                    	dec	hl		;translate
+  196D    01 0016               	ld	bc,prntsz
+  1970    09                    	add	hl,bc		;offset to translation
+  1971    7E                    	ld	a,(hl)		;translation byte
+  1972    B7                    	or	a		;if zero, requires overstriking sequence
+  1973    20 0B                 	jr	nz,ptr01	;non-zero - go output char
+                                				;zero - use next 2 bytes in table as sequence
+  1975    23                    	inc	hl
+  1976    7E                    	ld	a,(hl)		;first byte
+  1977    CD 1956               	call	posout
+  197A    3E 08                 	ld	a,08h		;backspace
+  197C    CD 1956               	call	posout
+  197F    23                    	inc	hl		;second byte
+                                
+  1980    AF                    ptr01:	xor	a		;set z for return flag
+  1981    7E                    	ld	a,(hl)		;get translation
+  1982    C9                    	ret
+                                
+                                
+                                ;;	poesc - searches the escape table for a match with the char
+                                ;		passed in a. if found returns with z set otherwise
+                                ;		z is clear
+                                
+  1983                          poesc:
+  1983    21 198C               	ld	hl,pesctb	;table of escape sequences
+  1986    01 0007               	ld	bc,esctsz	;size of table
+  1989    ED B1                 	cpir
+  198B    C9                    	ret
+                                
+  198C    09 0B 0C 1E           pesctb:	defb	09h,0bh,0ch,1eh,1fh,16h,11h	;630 daisy printer
+  1990    1F 16 11              
+  0007                          esctsz	equ	$-pesctb
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-16
+ROM resident (screenprint routine)
+
+                                
+  1993                          pekhdl:	;function:- to deal with characters form a position
+                                	;	    encoded keyboard.
+                                	;input:-    A  character read from PIO
+                                	;		CMD/STATUS byte
+                                	;	bit 7 -CMD/STATUS byte if set
+                                	;	bit 6 -upstroke flag
+                                	;	bit 5 -y axis negative (mouse)
+                                	;	bit 4 -x axis negative (mouse)
+                                	;	bit 3 -mouse active
+                                	;	bit 2 -ctrl key station active
+                                	;	bit 1 -shift key station active
+                                	;	bit 0 -lock key station active
+                                	;		First data byte
+                                	;	bit 7 -Always reset
+                                	;	bits(6-0) -key station or x mouse displacement
+                                	;		Second mouse data byte
+                                	;	bit 7 -Always reset
+                                	;	bits(6-0) -y mouse displacement
+                                	;
+                                	;output:-   1) Carry set -- command byte or sequence error
+                                	;	    2) Carry clear -- translated character returned in A
+                                
+  1993    2F                    	cpl			;complement keyboard byte
+  1994    D5                    	push	de		;save registers
+  1995    16 00                 	ld	d,zero		;get flags
+  1997    CB 7F                 	bit	cmd,a		;command byte?
+  1999    28 17                 	jr	z,kypos		;skip to position byte handler
+  199B    18 01                 	jr	cmdb		;skip to command byte handler
+  199D                          nochar	equ	$
+  199D    7A                    peknoc2: ld	a,d		;clear command byte (non-valid position byte)
+                                
+  199E    32 F9A7               cmdb:	ld	(cmdstat),a	;save command-status byte
+  19A1    CB 5F                 	bit	mouse,a		;mouse cmd?
+  19A3    28 05                 	jr	z,peknoc	;skip if not mouse
+  19A5    21 F95D               	ld	hl,mstbl
+  19A8    CB 8E                 	res	xy,(hl)
+  19AA    CD 1A63               peknoc:	call	stpctc1		;reset repeat flag
+  19AD    37                    peknoc1: scf			;this no the position byte
+  19AE    D1                    pekex:	pop	de		;recover registers
+                                ;	ret
+  19AF    C3 F9B7               	jp	lpkext		;jmp instead of ret - small interrupt stack
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-17
+ROM resident (screenprint routine)
+
+                                
+  19B2    5F                    kypos:	ld	e,a		;save position code
+  19B3    21 F9A7               	ld	hl,cmdstat	;fetch command byte
+  19B6    CB 7E                 	bit	cmd,(hl)	;out of sync check
+  19B8    28 F0                 	jr	z,peknoc	;quit if no command byte
+  19BA    CB 5E                 	bit	mouse,(hl)	;test for mickey mouse movement
+  19BC    C2 1A7A               	jp	nz,mice		;skip if mickey mouse moved
+  19BF    CB 76                 	bit	ustrk,(hl)	;test key posistion
+  19C1    20 20                 	jr	nz,upstrk	;jump if special upstroke
+  19C3    CD 19D8               	call	ctrtst		;test for control codes
+  19C6    28 D5                 	jr	z,peknoc2	;quit if non printable control character
+  19C8    CD 19FC               	call	tblsel		;select translation table
+  19CB    CD 1A20               	call	alphtst		;test for alpha lock char
+  19CE    CD 1A3A               	call	rptst		;test for repeat keys
+  19D1    21 F9A7               charout: ld	hl,cmdstat	;fetch command byte
+  19D4    72                    	ld	(hl),d		;clear command byte (valid position byte)
+  19D5    A7                    	and	a		;clear carry
+                                ;	pop	de		;recover registers
+                                ;	ret
+  19D6    18 D6                 	jr	pekex
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-18
+ROM resident (screenprint routine)
+
+                                
+  19D8                          ctrtst:
+                                	;Character is tested for the lock, shift, and ctrl key station.
+                                	;
+                                	;input	a - key station code
+                                	;
+                                	;output z - set if lock,shift, or ctrl key station
+                                	;
+  19D8    E5                    	push	hl		;save registers
+  19D9    21 F953               	ld	hl,ctrltb	;non printable char table
+  19DC    01 0006               	ld	bc,cntctr	;byte count of table
+  19DF    ED B1                 	cpir			;search table
+  19E1    E1                    	pop	hl
+  19E2    C9                    	ret
+                                
+  19E3                          upstrk:
+                                	;The up-stroke is tested for special up-stroke key-stations.
+                                	;
+                                	;input	a - key station code
+                                	;	strkup - user enable flag
+                                	;
+                                	;output	a - translated up-stroke key-station code
+                                	;
+  19E3    21 F95D               	ld	hl,mstbl	;user enable up-stroke flag
+  19E6    CB 5E                 	bit	strkup,(hl)
+  19E8    28 B3                 	jr	z,nochar	;quit if user inhibited
+                                	
+  19EA    21 F959               	ld	hl,ups		;exception key-station table
+  19ED    01 0002               	ld	bc,upssz	;byte count of table
+  19F0    ED B1                 	cpir			;search table
+  19F2    20 A9                 	jr	nz,nochar	;quit if no match
+                                
+  19F4    2B                    	dec	hl		;get exception
+  19F5    01 0002               	ld	bc,upssz
+  19F8    09                    	add	hl,bc
+  19F9    7E                    	ld	a,(hl)
+                                
+  19FA    18 D5                 	jr	charout		;return translated character
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-19
+ROM resident (screenprint routine)
+
+                                
+  19FC                          tblsel:
+                                	;The appropriate keyboard translation table is selected
+                                	;
+                                	;input	hl - command-status address
+                                	;	de - key station code
+                                	;
+                                	;output	a  - translated key station code
+                                	;
+  19FC    7E                    	ld	a,(hl)		;move cmd-status byte
+  19FD    E5                    	push	hl		;save command-status ptr
+  19FE    21 F867               	ld	hl,shtab	;preset to shift table
+  1A01    CB 4F                 	bit	shift,a		;shift bit set?
+  1A03    20 17                 	jr	nz,cmdb1	;skip if set
+                                
+  1A05    21 F8CE               	ld	hl,cdtab	;preset to control table
+  1A08    CB 57                 	bit	ctrl,a		;control bit set?
+  1A0A    20 10                 	jr	nz,cmdb1	;skip if set
+                                
+  1A0C    21 F800               	ld	hl,tabl		;preset to un shifted table
+  1A0F    CB 47                 	bit	lock,a		;lock key set
+  1A11    28 09                 	jr	z,cmdb1		;skip if reset
+                                
+  1A13    3A F93B               	ld	a,(shftlck)	;lock key set
+  1A16    A7                    	and	a		;test for shift lock (not alpha lock)
+  1A17    28 03                 	jr	z,cmdb1		;skip if reset
+                                
+  1A19    21 F867               	ld	hl,shtab	;preset to shift table
+                                
+  1A1C                          cmdb1:				;here with translation table address in hl
+  1A1C    19                    	add	hl,de		;index into table
+  1A1D    7E                    	ld	a,(hl)		;get translated char
+  1A1E    E1                    	pop	hl		;recover command-status ptr
+  1A1F    C9                    	ret
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-20
+ROM resident (screenprint routine)
+
+                                
+  1A20                          alphtst:
+                                	;If the lock key is depressed, the translated character is
+                                	;tested to see if it is an alphabet.  If it is lower case,
+                                	;then it is forced upper case.
+                                	;
+                                	;input	hl - command-status address
+                                	;	a  - translated character
+                                	;
+                                	;output a  - translated character(upper chase if alpha+lock)
+                                	;
+  1A20    CB 46                 	bit	lock,(hl)	;test alpha lock flag
+  1A22    C8                    	ret	z		;quit if not alpha lock
+                                
+  1A23    FE 7B                 	cp	upper		;test for upper alpha range
+  1A25    30 06                 	jr	nc,alphexc	;skip if non alpha range
+  1A27    FE 61                 	cp	lower		;test for lower case alpha range
+  1A29    38 02                 	jr	c,alphexc	;skip if not lower alpha case
+  1A2B    D6 20                 	sub	upascii		;set upper case ASCII alpha character
+                                ;	ret
+                                
+                                
+                                
+  1A2D                          alphexc:
+                                	;Three additional caracters are allowed for the alpha lock key
+                                	;
+                                	;input	hl - command-status address
+                                	;	a  - translated character
+                                	;
+                                	;output	a  - upper case exception
+                                	;
+  1A2D    21 F935               	ld	hl,captab		;lock exception table
+  1A30    01 0003               	ld	bc,cptbsz		;table size
+  1A33    ED B1                 	cpir				;search
+  1A35    C0                    	ret	nz			;quit if not found
+                                
+  1A36    23                    	inc	hl			;get exception
+  1A37    23                    	inc	hl
+  1A38    7E                    	ld	a,(hl)
+  1A39    C9                    	ret
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-21
+ROM resident (screenprint routine)
+
+                                
+  1A3A                          rptst:
+                                	;Checks for repeat character.  If repeat character, the millisec
+                                	;timer is vector address is modified and the timer is set up
+                                	;for 0.5 second.  The timer is kicked off.
+                                	;
+                                	;input	a - translated character
+                                	;
+  1A3A    21 F940               	ld	hl,rptbl	;repeat char table
+  1A3D    01 0013               	ld	bc,cntrp	;number of repeat chars
+  1A40    ED B1                 	cpir			;test for repeat chars
+  1A42    C0                    	ret	nz		;quit if not repeat char
+                                
+  1A43    2A F93C               	ld	hl,(tick)	;millisec count
+  1A46    22 F9A8               	ld	(millcnt),hl	;save it in table
+  1A49    21 F9AA               	ld	hl,rptchar	;repeat char save address
+  1A4C    77                    	ld	(hl),a		;save repeat char
+  1A4D    F5                    	push	af
+  1A4E    23                    	inc	hl		;repeat flag address
+  1A4F    36 FF                 	ld	(hl),setflg	;set repeat flag
+                                
+  1A51    2A FF12               	ld	hl,(ctcvec+2)	;get 1 millisec interrupt vector
+  1A54    22 F9AC               	ld	(save),hl	;save it
+  1A57    21 F9D0               	ld	hl,rptclk	;kybd repeat key timer
+  1A5A    22 FF12               	ld	(ctcvec+2),hl	;substitute it
+                                
+  1A5D    3E 81                 strctc1: ld	a,encntr	;enable millisec timmer
+  1A5F    D3 19                 	out	(ctc1),a	;do it
+  1A61    F1                    	pop	af		;recover character
+  1A62    C9                    	ret
+                                
+                                
+  1A63                          stpctc1:
+                                	;This routine stops the millisecond timer and restores the
+                                	;original timer vector
+                                
+  1A63    21 F9AB               	ld	hl,rptflg	;fetch repeat char flag
+  1A66    7E                    	ld	a,(hl)
+  1A67    A7                    	and	a		;set flags
+  1A68    C8                    	ret	z		;quit if no repeat keys
+                                
+  1A69    72                    	ld	(hl),d		;clear repeat char flag
+  1A6A    2A F9AC                	ld	hl,(save)	;original 1 millisec interrupt address
+  1A6D    22 FF12               	ld	(ctcvec+2),hl	;restore it
+                                
+  1A70    3A F20E               	ld	a,(spact)	;fetch screen print flag
+  1A73    A7                    	and	a
+  1A74    C0                    	ret	nz		;don't kill timer, if screen printing
+                                
+  1A75    3E 01                 	ld	a,stcntr	;stop timer 
+  1A77    D3 19                 	out	(ctc1),a
+  1A79    C9                    	ret
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-22
+ROM resident (screenprint routine)
+
+                                
+  1A7A                          mice:	;This is the optical mouse handler.  The delta x and y mouse
+                                	;movement is accumulate and stored in memory locations.
+                                	;
+                                	;input	a=	mouse delta either x or y
+                                	;	xy=	zero for x mouse delta
+                                	;		x'ff' for y mouse delta
+                                	;	hl=	cmdstat address
+                                	;	cmdstat=bit 3	mouse moved
+                                	;		bit 4	x delta negative
+                                	;		bit 5	y delta negative
+                                	;	mstbl  =bit 7	mouse enabled user flag
+                                	;		bit 6	intrp/npol
+                                	;		bit 1	y/nx byte
+                                	;		bit 0	mouse table is updated
+                                	;	mbyte  =interrupt return byte
+                                	;	xmax   =maximum horizontal display units
+                                	;	ymax   =maximum vertical display units
+                                	;
+                                	;output mstbl=	bit 0, mouse table updated
+                                	;	xloc=	x position of mouse
+                                	;	yloc=	y position of mouse
+                                	;	dxmv=	prior x signed displacement
+                                	;	dymv=	prior y signed displacement
+                                	;
+                                	;special requirements
+                                	;	The majority of the mouse-pointer table is require memory
+                                	;	resident in the in the user address space above X'BFFF'
+                                	;	since this handle is ROM resident.  Variables MSTBL AND MSPTR
+                                	;	reside in keyboard RAM space.  Variable MSPTR pointers to
+                                	;	where the user mouse table resides.  These variable are
+                                	;	update by both the handler and the user.  The following
+                                	;	data structure resides in the user's RAM space only if
+                                	;	the two-button mouse pointer is required for the applicaton:
+                                	;	(MSPTR+0)	=MBYTE
+                                	;	(MSPTR+1)	=XMAX-LSB
+                                	;	(MSPTR+2)	=    -MSB
+                                	;	(MSPTR+3)	=YMAX-LSB
+                                	;	(MSPTR+4)	=    -MSB
+                                	;	(MSPTR+5)	=XLOC-LSB
+                                	;	(MSPTR+6)	=    -MSB
+                                	;	(MSPTR+7)	=YLOC-LSB
+                                	;	(MSPTR+8)	=    -MSB
+                                	;	(MSPTR+9)	=DXMV-LSB
+                                	;	(MSPTR+A)	=    -MSB
+                                	;	(MSPTR+B)	=DYMV-LSB
+                                	;	(MSPTR+C)	=    -MSB
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-23
+ROM resident (screenprint routine)
+
+                                
+  1A7A    5F                    	ld	e,a		;save mouse delta
+  1A7B    7E                    	ld	a,(hl)
+  1A7C    47                    	ld	b,a		;save cmd/status byte
+  1A7D    21 F95D               	ld	hl,mstbl	;mouse table
+  1A80    CB 7E                 	bit	msflg,(hl)	;test for user enabled
+  1A82    CA 199D               	jp	z,nochar	;quit if mouse handler is not enabled
+  1A85    DD E5                 	push	ix		;save register
+  1A87    DD 2A F95E            	ld	ix,(msptr)	;fetch user's table
+  1A8B    CB 4E                 	bit	xy,(hl)		;test y/nx mouse byte flag
+  1A8D    20 26                 	jr	nz,micey	;skip if y axis delta
+                                
+  1A8F                          micex:
+                                ;	ld	hl,(xloc)	;fetch current x position
+  1A8F    DD 6E 05              	ld	l,(ix+5)	;fetch current x position
+  1A92    DD 66 06              	ld	h,(ix+6)
+  1A95    7B                    	ld	a,e		;save unsigned mouse delta byte
+  1A96    CB 60                 	bit	xneg,b		;test polarity of x delta
+  1A98    CD 1AE8               	call	mice1		;add delta & do min value check
+                                ;	ld	(dxmv),de	;save signed mouse delta word
+  1A9B    DD 73 09              	ld	(ix+x'9'),e	;save signed mouse delta word
+  1A9E    DD 72 0A              	ld	(ix+x'a'),d
+                                ;	ld	de,(xmax)	;fetch max position value
+  1AA1    DD 5E 01              	ld	e,(ix+1)	;fetch max position value
+  1AA4    DD 56 02              	ld	d,(ix+2)
+  1AA7    CD 1AFD               	call	mice2		;do max value check
+                                ;	ld	(xloc),hl	;save position
+  1AAA    DD 75 05              	ld	(ix+5),l	;save position
+  1AAD    DD 74 06              	ld	(ix+6),h
+  1AB0    DD E1                 micex1:	pop	ix		;restore regiser
+  1AB2    C3 19AD               	jp	peknoc1		;return to wait for y mouse byte
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-24
+ROM resident (screenprint routine)
+
+                                
+  1AB5                          micey:
+                                ;	ld	hl,(yloc)	;fetch current y position
+  1AB5    DD 6E 07              	ld	l,(ix+7)	;fetch current y position
+  1AB8    DD 66 08              	ld	h,(ix+8)
+  1ABB    7B                    	ld	a,e		;save unsigned mouse delta byte
+  1ABC    CB 68                 	bit	yneg,b		;test polarity of y delta
+  1ABE    CD 1AE8               	call	mice1		;add delta & do min value check
+                                ;	ld	(dymv),de	;save signed mouse delta word
+  1AC1    DD 73 0B              	ld	(ix+x'b'),e	;save signed mouse delta word
+  1AC4    DD 72 0C              	ld	(ix+x'c'),d
+                                ;	ld	de,(ymax)	;fetch max position value
+  1AC7    DD 5E 03              	ld	e,(ix+3)	;fetch max position value
+  1ACA    DD 56 04              	ld	d,(ix+4)
+  1ACD    CD 1AFD               	call	mice2		;do max value check
+                                ;	ld	(yloc),hl	;save position
+  1AD0    DD 75 07              	ld	(ix+7),l	;save position
+  1AD3    DD 74 08              	ld	(ix+8),h
+                                
+  1AD6    21 F95D               	ld	hl,mstbl	;update mouse status
+  1AD9    CB C6                 	set	msmov,(hl)	;set the mouse update flag
+  1ADB    CB 76                 	bit	mintrp,(hl)	;test for interrupt mode
+  1ADD    CA 1AB0               	jp	z,micex1	;bye bye if polling mode
+                                ;	ld	a,(mbyte)	;user interrupt byte
+  1AE0    DD 7E 00              	ld	a,(ix)		;user interrupt byte
+  1AE3    DD E1                 	pop	ix		;restore regiser
+  1AE5    C3 19D1               	jp	charout		;bye bye
+                                	page	
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-25
+ROM resident (screenprint routine)
+
+                                
+                                	;This routine adds the delta to either the x or y position and
+                                	;does minimum position check
+                                	;input	e=	mouse delta (absolute)
+                                	;	zero	set if positive mouse delta
+                                	;		reset if negative mouse delta
+                                	;
+                                	;output	hl=	update position
+                                	;
+  1AE8                          mice1:
+  1AE8    20 04                 	jr	nz,mice11	;skip if delta negative
+  1AEA    16 00                 	ld	d,zero		;set msb positive
+  1AEC    18 07                 	jr	mice12
+  1AEE    16 FF                 mice11: ld	d,-1		;set msb negative
+  1AF0    7B                    	ld	a,e		;recover delta
+  1AF1    2F                    	cpl			;2's complement
+  1AF2    C6 01                 	add	a,1
+  1AF4    5F                    	ld	e,a		;put negative value back
+  1AF5    19                    mice12:	add	hl,de		;add delta to mouse position
+  1AF6    7C                    	ld	a,h		;get msb
+  1AF7    A7                    	and	a
+  1AF8    F0                    	ret	p		;skip if msb is positive
+  1AF9    21 0000               	ld	hl,zero		;set to minimum boundary
+  1AFC    C9                    	ret
+                                
+                                	;This routine does a maximum x or y position check
+                                	;input	hl=	x or y position
+                                	;	de=	x or y max value
+                                	;
+                                	;output	a =	mstbl
+                                	;
+  1AFD    7A                    mice2:	ld	a,d		;msb position test
+  1AFE    BC                    	cp	h
+  1AFF    38 04                 	jr	c,mice21	;skip if msb too big
+  1B01    7B                    	ld	a,e		;lsb position test
+  1B02    BD                    	cp	l
+  1B03    30 01                 	jr	nc,mice22	;skip if lsb is not too big
+  1B05    EB                    mice21:	ex	de,hl		;force maximum limit
+                                
+  1B06    3A F95D               mice22:	ld	a,(mstbl)	;mouse table
+  1B09    CB 4F                 	bit	xy,a		;complement xy flag
+  1B0B    28 04                 	jr	z,mice23
+  1B0D    CB 8F                 	res	xy,a
+  1B0F    18 02                 	jr	mice24
+                                
+  1B11    CB CF                 mice23:	set	xy,a
+  1B13    32 F95D               mice24:	ld	(mstbl),a	;update table
+  1B16    C9                    	ret
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-26
+ROM resident (screenprint routine)
+
+                                
+                                ;	Jump table for keyboard translator and interrupt handler.
+                                ;	Exit points and monitor adjustment points for the SIGNON
+                                ;	overlay and boot overlay
+                                ;
+  1B17    C3 F9AF               rv1tbl: jp	lpkybd		;4.01	monitor lpkybd jump table
+  1B1A    C3 F167               	jp	mkey2
+  1B1D    C3 F18F               	jp	mkey5
+  1B20    C3 FC3D               	jp	mpnext
+  1B23    C3 FA95               	jp	mprmt0
+  000F                          jtblsz	equ	$-rv1tbl
+                                
+                                
+  1B26    C3 F9AF               rv2tbl: jp	lpkybd		;4.02	monitor lpkybd jump table
+  1B29    C3 F167               	jp	mkey2
+  1B2C    C3 F18F               	jp	mkey5
+  1B2F    C3 FC45               	jp	mpnext+romofs
+  1B32    C3 FA9D               	jp	mprmt0+romofs
+  000F                          jtblsz2	equ	$-rv2tbl
+                                
+                                
+                                
+                                
+  1B35                          movtbl:
+                                	;The keyboard tables are restored to the original default values
+                                	;that are stored in rom
+                                	;
+  1B35    C5                    	push	bc
+  1B36    D5                    	push	de
+  1B37    E5                    	push	hl
+  1B38    21 0347'              	ld	hl,tables
+  1B3B    11 F800               	ld	de,tabled
+  1B3E    01 0159               	ld	bc,tablex
+  1B41    ED B0                 	ldir
+  1B43    E1                    	pop	hl
+  1B44    D1                    	pop	de
+  1B45    C1                    	pop	bc
+  1B46    C9                    	ret
+                                
+                                	.dephase
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-27
+ROM resident (screenprint routine)
+
+                                
+                                	subttl	RAM resident (Tables)
+                                
+  0347'                         tables:				;rom address
+                                	.phase	tabled		;ram address
+                                
+  0010                          	.radix	16
+                                
+  F800                          tabl:				;k/b unshifted table
+  F800    00 1B 31 32           	defb	00h,1bh,31h,32h,33h,34h,35h,36h	;nul,esc,1,2,3,4,5,6
+  F804    33 34 35 36           
+  F808    37 38 39 30           	defb	37h,38h,39h,30h,2dh,3dh,08h,09h ;7,8,9,0,-,=,bs,tab
+  F80C    2D 3D 08 09           
+  F810    71 77 65 72           	defb	71h,77h,65h,72h,74h,79h,75h,69h ;q,w,e,r,t,y,u,i
+  F814    74 79 75 69           
+  F818    6F 70 5B 5D           	defb	6fh,70h,5bh,5dh,0dh,0ee,61h,73h ;o,p,[,],cr,lctrl,a,s
+  F81C    0D EE 61 73           
+  F820    64 66 67 68           	defb	64h,66h,67h,68h,6ah,6bh,6ch,3bh ;d,f,g,h,j,k,l,;
+  F824    6A 6B 6C 3B           
+  F828    27 0A EC 2E           	defb	27h,0ah,0ec,2eh,7ah,78h,63h,76h ;',lf,lshift,.,z,x,c,v
+  F82C    7A 78 63 76           
+  F830    62 6E 6D 2C           	defb	62h,6eh,6dh,2ch,2eh,2fh,0ed,1eh ;b,n,m,,,.,/,rshift,help
+  F834    2E 2F ED 1E           
+  F838    EF 20 EB F1           	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5 ;rctrl,sp,f1,f2,f3,f4,f5
+  F83C    F2 F3 F4 F5           
+  F840    F6 F7 F8 F9           	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h ;f6,f7,f8,f9,f10,f11,f12,7
+  F844    FA FB FC 37           
+  F848    38 39 2C 34           	defb	38h,39h,2ch,34h,35h,36h,0bd,31h ;8,9,,,4,5,6,=enter,1
+  F84C    35 36 BD 31           
+  F850    32 33 30 E7           	defb	32h,33h,30h,0e7,82h,84h,83h,80h ;2,3,0,next,darr,larr,rarr,home
+  F854    82 84 83 80           
+  F858    81 E6 FD 7F           	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh ;uarr,prev,acc,del,+,-,mul,div
+  F85C    2B 2D 2A 2F           
+  F860    F0 18 8E 8F           	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4	;ins,can,msw1,msw2,rx1,rx2,rx3
+  F864    A0 A2 A4              
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-28
+RAM resident (Tables)
+
+                                
+  F867                          shtab:				;k/b shifted
+  F867    00 1B 21 40           	defb	00h,1bh,21h,40h,23h,24h,25h,5eh ;nul,esc,!,@,#,$,%,^
+  F86B    23 24 25 5E           
+  F86F    26 2A 28 29           	defb	26h,2ah,28h,29h,5fh,2bh,08h,09h ;&,*,(,),_,+,bs,tab
+  F873    5F 2B 08 09           
+  F877    51 57 45 52           	defb	51h,57h,45h,52h,54h,59h,55h,49h ;Q,W,E,R,T,Y,U,I
+  F87B    54 59 55 49           
+  F87F    4F 50 7B 7D           	defb	4fh,50h,7bh,7dh,0dh,0ee,41h,53h ;O,P,{,},cr,lcrtl,A,S
+  F883    0D EE 41 53           
+  F887    44 46 47 48           	defb	44h,46h,47h,48h,4ah,4bh,4ch,3ah ;D,F,G,H,J,K,L,:
+  F88B    4A 4B 4C 3A           
+  F88F    22 0A EC 2E           	defb	22h,0ah,0ec,2eh,5ah,58h,43h,56h ;",lf,lshift,.,Z,X,C,V
+  F893    5A 58 43 56           
+  F897    42 4E 4D 3C           	defb	42h,4eh,4dh,3ch,3eh,3fh,0ed,1eh ;B,N,M,<,>,?,rshift,help
+  F89B    3E 3F ED 1E           
+  F89F    EF 20 EB F1           	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5 ;rctrl,sp,lock,f1,f2,f3,f4,f5
+  F8A3    F2 F3 F4 F5           
+  F8A7    F6 F7 F8 F9           	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h	;f6,f7,f8,f9,f10,f11,f12,7
+  F8AB    FA FB FC 37           
+  F8AF    38 39 2C 34           	defb	38h,39h,2ch,34h,35h,36h,0bd,31h ;8,9,,,4,5,6,=enter,1
+  F8B3    35 36 BD 31           
+  F8B7    32 33 30 E7           	defb	32h,33h,30h,0e7,82h,84h,83h,80h ;2,3,0,next,darr,larr,rarr,home
+  F8BB    82 84 83 80           
+  F8BF    81 E6 FD 7F           	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh ;uarr,prev,acc,del,+,-,mul,div
+  F8C3    2B 2D 2A 2F           
+  F8C7    F0 18 8E 8F           	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5	;ins,can,msw1,msw2,rx1,rx2,rx3
+  F8CB    A1 A3 A5              
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-29
+RAM resident (Tables)
+
+                                
+  F8CE                          cdtab:				;k/b coded
+  F8CE    00 9B 91 92           	defb	00h,9bh,91h,92h,93h,94h,95h,96h ;nul,esc,1,2,3,4,5,6
+  F8D2    93 94 95 96           
+  F8D6    97 98 99 90           	defb	97h,98h,99h,90h,1fh,9ah,88h,89h ;7,8,9,0,-,=,bs,tab
+  F8DA    1F 9A 88 89           
+  F8DE    11 17 05 12           	defb	11h,17h,05h,12h,14h,19h,15h,09h ;q,w,e,r,t,y,u,i
+  F8E2    14 19 15 09           
+  F8E6    0F 10 1B 1D           	defb	0fh,10h,1bh,1dh,8dh,0ee,01h,13h ;o,p,[,],cr,lctrl,a,s
+  F8EA    8D EE 01 13           
+  F8EE    04 06 07 08           	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh ;d,f,g,h,j,k,l,~
+  F8F2    0A 0B 0C 7E           
+  F8F6    60 8A EC AE           	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h ;`,lf,lshift,.,z,s,c,v
+  F8FA    1A 18 03 16           
+  F8FE    02 0E 0D 1C           	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh ;b,n,m,,,|,\,rshift,help
+  F902    7C 5C ED 9E           
+  F906    EF 00 EB D1           	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5	;rctrl,sp,lock,f1,f2,f3,f4,f5
+  F90A    D2 D3 D4 D5           
+  F90E    D6 D7 D8 D9           	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7	;f6,f7,f8,f9,f10,f11,f12,7
+  F912    DA DB DC B7           
+  F916    B8 B9 AC B4           	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1 ;8,9,,,4,5,6,=enter,1
+  F91A    B5 B6 FE B1           
+  F91E    B2 B3 B0 C7           	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh ;2,3,0,next,darr,larr,rarr,home
+  F922    02 04 03 1E           
+  F926    01 C6 DD FF           	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af ;uarr,prev,acc,del,+,-,mul,div
+  F92A    AB AD AA AF           
+  F92E    D0 DE 8E 8F           	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca	;ins,can,msw1,msw2,rx1,rx2,rx3
+  F932    C8 C9 CA              
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                ;	defb	0,0,0,0,0,0,0,0
+                                
+  0135                          ktabsz	equ	$-tabl
+                                
+                                ;kybdsze	equ	$-tabled
+                                
+  000A                          	.radix	10
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-30
+RAM resident (Tables)
+
+                                
+                                
+  F935                          captab:
+  F935    00 00 00              	defb	0,0,0		;table of exceptions requiring shifting for
+  F938    00 00 00              cptex:	defb	0,0,0		;caps lock key.(3 excepts then 3 translates)
+  0003                          cptbsz	equ	($-captab)/2	;size of table
+                                
+  F93B    00                    shftlck: defb	0		;if set, locks all keys to shift table if lock set	
+                                
+  F93C    F4                    tick:	defb	low hlfsec			;lsb - repeat char speed
+  F93D    01                    	defb	high hlfsec			;msb
+  F93E    3F                    tock:	defb	low tenths			;lsb
+  F93F    00                    	defb	high tenths			;msb
+  01F4                          hlfsec	equ	500				;0.5 second count
+  003F                          tenths	equ	63				;16 chars/sec
+                                
+  F940    08 0A 0D 20           rptbl:	defb	x'08',x'0a',x'0d',x'20' 	;bs,lf,cr,sp
+  F944    2D 2E 2F              	defb	x'2d',x'2e',x'2f'		;-,.,/
+  F947    3D 58 78 7F           	defb	x'3d',x'58',x'78',x'7f'		;=,X,x,del
+  F94B    81 82 83 84           	defb	x'81',x'82',x'83',x'84'		;ucur,dcur,rcur,lcur
+  F94F    E0 E0 E0 E0           rptex:	defb	x'e0',x'e0',x'e0',x'e0'		;16 TBD repeat keys
+                                	if	future
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	endif
+  0013                          cntrp	equ	$-rptbl
+                                
+  F953    1D 2A 36 38           ctrltb:	db	x'1d',x'2a',x'36',x'38',x'3a'	;lctr,lshft,rshft,rctr,lck
+  F957    3A                    
+  F958    E0                    ctrlex:	db	x'e0'				;19 TBD additional key stations
+                                	if	future
+                                	defb	x'e0',x'e0'
+                                	defb	x'e0',x'e0',x'e0',x'e0'		;to inhibit
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	defb	x'e0',x'e0',x'e0',x'e0'
+                                	endif
+  0006                          cntctr	equ	$-ctrltb
+                                
+  0159                          tablex	equ	$-tabl
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-31
+RAM resident (Tables)
+
+                                
+                                ;strkup: defb	0			;upstroke user enable flag
+  F959    E0 E0                 ups:	defb	x'e0',x'e0'		;upstroke exception key stations
+  F95B    E0 E0                 upsx:	defb	x'e0',x'e0'		;upstroke char or code translations
+  0002                          upssz	equ	($-ups)/2		;size
+                                
+                                
+  F95D    00                    mstbl:	defb	0		;mouse table
+  0007                          msflg	equ	7		;mouse translator enabled if set
+  0006                          mintrp	equ	6		;user interrupt with mbyte else user polls
+  0003                          strkup	equ	3		;upstroke user enable flag
+  0001                          xy	equ	1		;set for x delta else y delta
+  0000                          msmov	equ	0		;mouse table contains new data
+                                
+  F95E    0000                  msptr:	defw	0		;user address containing the following table
+                                	if	future
+                                mbyte:	defb	0		;interrupt byte to return
+                                xmax:	defb	low maxx	;lsb
+                                	defb	high maxx	;msb
+                                ymax:	defb	low maxy	;lsb
+                                	defb	high maxy	;msb
+                                xloc:	defw	0		;x mouse position (lsb,msb)
+                                yloc:	defw	0		;y mouse position (lsb,msb)
+                                dxmv:	defw	0		;last x signed delta (lsb,msb)
+                                dymv:	defw	0		;last y signed delta (lsb,msb)
+                                	endif
+                                
+  004F                          maxx	equ	80-1		;maximum horizontal pixels for 820-II
+  0017                          maxy	equ	24-1		;maximum vertical pixels for 820-II
+                                
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-32
+RAM resident (Tables)
+
+                                
+                                ;ktabsz	equ	$-tabl		;size of k/b tables
+                                
+  F960                          fontbl:				;font translation table
+                                				;first the exception codes
+  F960    23 3C 3E 40           	defb	23h,3ch,3eh,40h,5bh,5ch,5dh,5eh	;#,<,>,@,[,\,],^
+  F964    5B 5C 5D 5E           
+  F968    60 7B 7C 7D           	defb	60h,7bh,7ch,7dh,7eh		;`,{,|,},~
+  F96C    7E                    
+                                				;now their translations
+  F96D    23 3C 3E 40           	defb	23h,3ch,3eh,40h,5bh,5ch,5dh,5eh
+  F971    5B 5C 5D 5E           
+  F975    60 7B 7C 7D           	defb	60h,7bh,7ch,7dh,7eh
+  F979    7E                    
+  000D                          fontsz	equ	($-fontbl)/2	;size of font tables
+                                
+  F97A                          prntbl:				;printer translation table
+                                				;first the exception codes (dummies for now)
+  F97A    21 23 2A 2B           	defb	21h,23h,2ah,2bh,2ch,2eh,3ch,3eh	;!,#,*,+,,,.,<,>
+  F97E    2C 2E 3C 3E           
+  F982    40 5B 5C 5D           	defb	40h,5bh,5ch,5dh,5eh,60h,7bh,7ch	;@,[,\,],^,`,{,|
+  F986    5E 60 7B 7C           
+  F98A    7D 7E FF FF           	defb	7dh,7eh,x'ff',x'ff',x'ff',x'ff'	;},~,TBD,TBD,TBD,TBD
+  F98E    FF FF                 
+                                				;now the translations
+  F990    21 23 2A 2B           	defb	21h,23h,2ah,2bh,2ch,2eh,3ch,3eh	
+  F994    2C 2E 3C 3E           
+  F998    40 5B 5C 5D           	defb	40h,5bh,5ch,5dh,5eh,60h,7bh,7ch
+  F99C    5E 60 7B 7C           
+  F9A0    7D 7E FF FF           	defb	7dh,7eh,x'ff',x'ff',x'ff',x'ff'
+  F9A4    FF FF                 
+  0016                          prntsz	equ	($-prntbl)/2	;size of printer table
+                                
+                                ;pesctb:	defb	09h,0bh,0ch,1eh,1fh,16h,11h
+                                ;esctsz	equ	$-pesctb
+                                
+  F9A6    00                    escsq:	defb	0		;escape sequence flag
+                                				;0=> no sequence in progress
+                                				;1b=> expecting 2nd byte
+                                				;ff=> expecting 3rd byte
+                                
+                                	if	skip
+                                bcsav:	defs	2		;save location for screenprint r/t
+                                hlsav:	defs	2		;save location for screenprint r/t
+                                	endif
+                                
+                                
+  01A7                          tabsiz	equ	$-tabl		;size of complete table layout
+                                
+  01A7                          	extabl	equ	$-tabl
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-33
+RAM resident (Tables)
+
+                                
+                                
+  F9A7    00                    cmdstat: defb	00		;comand-status byte
+  0007                          cmd	equ	7		;command-status flag
+  0006                          ustrk	equ	6		;up stroke
+  0005                          yneg	equ	5		;mouse y axis negative
+  0004                          xneg	equ	4		;mouse x axis negative
+  0003                          mouse	equ	3		;mouse active
+  0002                          ctrl	equ	2		;control key active
+  0001                          shift	equ	1		;shift key active
+  0000                          lock	equ	0		;lock key active
+                                
+  F9A8    0000                  millcnt: defw	0		;current millisecond count
+  F9AA    00                    rptchar: defb	0		;repeat character
+  F9AB    00                    rptflg: defb	0		;repeat flag
+  F9AC                          save:
+  F9AC    0000                  	defw	0		;save address of the interrupt vector
+                                
+  F9AE    00                    romram:	defb	0		;rom/ram memory bank status
+  0007                          siderom	equ	7		;ram side
+                                
+  01AF                          	strge	equ	$-tabl
+                                
+                                
+  01AF                          olsiz	equ	$-tabled
+                                	if	skip
+                                	.dephase
+                                	page
+                                	subttl	Ram resident (k/b)
+                                
+                                here:
+                                	.phase	rxgethlp
+                                	endif
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-34
+RAM resident (Tables)
+
+                                
+  F9AF                          lpkybd:	;k/b interrupt handler for the low profile position encoded k/b.
+                                	;The interrupt interrupt service routine inputs two or three
+                                	;bytes from the keyboard port.  The first byte is the cmd/status
+                                	;byte.  Appropriate information is saved in memory and the return
+                                	;from interrupt code is invoked.  The second and third byte(mouse)
+                                	;is position encoded data or mouse displacement is analyzed,
+                                	;translated, and return to the existing keyboard handler if the
+                                	;information is valid; otherwise it is truncated and a return
+                                	;from interrupt is invoked.  All registers saved except for the
+                                	;A register.		
+                                	;
+                                	;input-	keyboard input port (data complemented) kbdat
+                                	;
+                                	;output- Carry flag set - Command byte or truncated character
+                                	;	 Carry flag reset - Translated character in A register
+                                
+  F9AF    DB 1E                 	in	a,(kbdat)	;read k/b port
+  F9B1    CD F9BE               	call	romside		;switch to romside
+  F9B4    C3 1993               	jp	pekhdl		;decode posn. enc. k/b
+                                				;jp instead of call - interrupt stack small
+  F9B7    CD F9C8               lpkext:	call	ramside		;restore original memory side
+  F9BA    D0                    	ret	nc		;return to xerox code with char.
+                                				;here if command byte
+  F9BB    C1                    	pop	bc		;throw away return address
+  F9BC    18 3B                 	jr	rptclk2		;return from interrupt (via xerox)
+                                
+  F9BE                          romside:	;romside saves the status of the current side of memory
+                                		;and switches to romside
+                                		;
+                                		;output	romram=	status of syspio
+                                		;
+  F9BE    F5                    	push	af		;save register
+  F9BF    DB 1C                 	in	a,(syspio)	;read ram/rom status
+  F9C1    32 F9AE               	ld	(romram),a	;save it
+  F9C4    CB FF                 	set	siderom,a	;force rom side
+  F9C6    18 04                 	jr	rmside2
+                                
+  F9C8                          ramside:	;ramside restores the ram/rom memory back to where it was
+                                		;
+                                		;input	romram=	;status of prior ram/rom
+                                		;
+  F9C8    F5                    	push	af		;save register
+  F9C9    3A F9AE               	ld	a,(romram)	;recover prior ram/rom status
+  F9CC    D3 1C                 rmside2: out	(syspio),a	;switch it
+  F9CE    F1                    	pop	af
+  F9CF    C9                    	ret
+                                
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-35
+RAM resident (Tables)
+
+                                
+  F9D0                          rptclk:
+                                	;This routine is the repeat key timer interrupt handler.  If the
+                                	;the repeat flag or the count is not zero, then the return from
+                                	;interrupt is invoked.  If the count is zero, then the repeat
+                                	;character is passed to the ASCII keyboard handler.
+                                	;
+                                	;input	rptflg	-repeat flag
+                                	;	rptchar -repeat char
+                                	;	millcnt -timer table
+                                	;
+                                	;output	a	-repeat char if count is zero
+                                	;
+                                
+  F9D0    ED 73 F1EC            	ld	(savstk),sp	;save current stack ptr
+  F9D4    31 FF50               	ld	sp,intstk	;temporary interrupt stack
+  F9D7    E5                    	push	hl		;save registers
+  F9D8    F5                    	push	af
+  F9D9    C5                    	push	bc
+                                
+  F9DA    3A F9AB               	ld	a,(rptflg)	;repeat key flag
+  F9DD    A7                    	and	a		;set flags
+  F9DE    28 19                 	jr	z,rptclk2	;quit if not in repeat key mode
+                                
+  F9E0    2A F9A8               	ld	hl,(millcnt)	;current millisec count
+  F9E3    7C                    	ld	a,h
+  F9E4    B5                    	or	l		;test count
+  F9E5    28 06                 	jr	z,rptclk1	;skip if time elasped
+  F9E7    2B                    	dec	hl		;dcr count
+  F9E8    22 F9A8               	ld	(millcnt),hl	;save  millisec count
+  F9EB    18 0C                 	jr	rptclk2		;quit if not time
+                                
+  F9ED    2A F93E               rptclk1: ld	hl,(tock)	;reset millisec count
+  F9F0    22 F9A8               	ld	(millcnt),hl
+  F9F3    3A F9AA               	ld	a,(rptchar)	;fetch repeat char
+  F9F6    C3 F06F               	jp	key2		;give char to keyboard key
+                                
+  F9F9    C3 F072               rptclk2: jp	key5
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-36
+RAM resident (Tables)
+
+                                
+                                	if	skip
+                                defkybd:
+                                	;The keyboard tables are restored to the original default values
+                                	;that are stored in rom
+                                	;
+                                	call	romside
+                                	call	movtbl
+                                	jr	ramside
+                                	endif
+                                
+  01FC                          kybdsze	equ	$-tabled
+                                
+                                ;	.dephase
+                                	subttl	end
+                                
+                                
+                                
+                                	subttl	Ram resident (printer)
+                                ;	page
+                                
+                                
+                                ;;	siout - output to channel b after translation and
+                                ;		escape sequence handling
+  F9FC                          rxsioo:				;char in a
+  F9FC    F3                    	di
+  F9FD    CD F9BE               	call	romside		;switch to romside
+  FA00    CD 1909               	call	rmposend	;does real work
+  FA03    CD F9C8               	call	ramside		;restore original memory side
+  FA06    FB                    	ei
+  FA07    C9                    	ret
+                                
+  FA07                          kbramend equ	$-1		;last location of code in ram
+                                
+                                ;olsiz	equ	$-tabled	;size of overlay
+  0059                          olsiz2	equ	$-lpkybd
+  0208                          olsiz3	equ	$-tabled	;size of relocatable code
+                                
+                                	.dephase
+                                	subttl	Overlay (signon)
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-37
+Overlay (signon)
+
+                                
+                                
+                                
+                                	;;	signon - Announce System Ready.
+  054F'                         rxsign:				;source address in rom
+                                	.phase	tca		;execution in transient command area
+                                
+  FC5D    21 F091               signon:	ld	hl,confg	;point to configuration byte
+  FC60    DB 1C                 	in	a,(syspio)	;check configuration
+  FC62    CB 47                 	bit	0,a
+  FC64    28 26                 	jr	z,sign3		;if SASI interface present
+  FC66    F3                    	di
+  FC67    3E CF                 	ld	a,11001111b	;set Pio B in Bit Mode
+  FC69    D3 1D                 	out	(sysctl),a
+  FC6B    3E 38                 	ld	a,00111000b	;turn around d0,1,2
+  FC6D    D3 1D                 	out	(sysctl),a
+  FC6F    3E 80                 	ld	a,10000000b	;ensure rom switched on but .....
+  FC71    D3 1C                 	out	(syspio),a	;drop all drive selects
+  FC73    3E D0                 	ld	a,0d0h		;reset wd-1797-02
+  FC75    D3 10                 	out	(wd1797),a
+  FC77    10 FE                 sign1:	djnz	sign1		;wait 1797 not busy
+  FC79    DB 1C                 	in	a,(syspio)
+  FC7B    CB 67                 	bit	c.five,a
+  FC7D    3E 02                 	ld	a,2		;preset 10 msec step rate
+  FC7F    20 04                 	jr	nz,sign2	;if not 5"
+  FC81    CB E6                 	set	c.five,(hl)
+  FC83    3E 03                 	ld	a,3		;set long step
+  FC85    D3 10                 sign2:	out	(wd1797),a	;restore / unload heads
+  FC87    32 FF54               	ld	(steprt),a
+  FC8A    18 1E                 	jr	sign4
+  FC8C    CB F6                 sign3:	set	c.sasi,(hl)	;set Sasi card installed
+  FC8E    21 F708               	ld	hl,Rigdpb	;set address of rigid dpb
+  FC91    11 F470               	ld	de,Fivdpb	;set address of 5.25" floppy dpb
+  FC94    01 0300               	ld	bc,Sasidl	;set sasi driver length
+  FC97    ED B0                 	ldir			;Move driver down
+  FC99    E6 02                 	and	2
+  FC9B    20 0D                 	jr	nz,sign4	;if not A/E swap
+  FC9D    21 F361               	ld	hl,Seltab+1
+  FCA0    06 08                 	ld	b,8
+  FCA2    7E                    sign3a:	ld	a,(hl)
+  FCA3    EE 04                 	xor	4
+  FCA5    77                    	ld	(hl),a
+  FCA6    23                    	inc	hl
+  FCA7    23                    	inc	hl
+  FCA8    10 F8                 	djnz	sign3a
+                                
+  FCAA                          sign4:
+  FCAA    21 0347'              	ld	hl,tables	;move rx resident code to ram
+  FCAD    11 F800               	ld	de,tabled
+                                	if	skip
+                                	ld	bc,olsiz
+                                	ldir
+                                
+                                	ld	hl,here		;not enough room for ram code
+                                	ld	de,lpkybd
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-38
+Overlay (signon)
+
+                                	ld	bc,olsiz2
+                                	endif
+  FCB0    01 0208               	ld	bc,olsiz3
+  FCB3    ED B0                 	ldir			;move on top of GETHLP
+                                
+  FCB5    21 FA08               	ld	hl,kbramend+1	;next available ram loc
+  FCB8    22 FF3C               	ld	(availb),hl	;tell the world
+                                
+  FCBB    21 0000               	ld	hl,0
+  FCBE    CD F03C               	call	config		;get monitor configuration
+  FCC1    7C                    	ld	a,h		;monitor level
+  FCC2    21 10D8               	ld	hl,xrsign+sigoff ;4.02 level location
+  FCC5    FE 02                 	cp	rev2
+  FCC7    28 03                 	jr	z,sign7		;skip if 4.02
+  FCC9    21 10D0               	ld	hl,xrsign+sigoff-romofs	;assume 4.02 level location
+  FCCC    11 FCE6               sign7:	ld	de,sign6	;put it in our signon message
+  FCCF    01 0004               	ld	bc,4
+  FCD2    ED B0                 	ldir
+                                
+  FCD4    CD F293               	call	crtoff		;disable rom bank
+                                
+  FCD7    CD F075               	call	pnext
+  FCDA    1A                    	defb	clrs		;clear screen
+                                	if	o.esct
+  FCDB    1B 38                 	defb	esc,'8'		;set low light as default mode
+                                	else
+                                	defb	'R'-'@'
+                                	endif
+                                
+  FCDD    38 32 30 2D           	defm	'820-II v '
+  FCE1    49 49 20 76           
+  FCE5    20                    
+  FCE6    00 00 00 00           sign6:	defb	0,0,0,0		;*********** space for the XR rev value
+  FCEA    20 1F 1C 20           	defm	' ',31,28,' 1983 Xerox Corp'
+  FCEE    31 39 38 33           
+  FCF2    20 58 65 72           
+  FCF6    6F 78 20 43           
+  FCFA    6F 72 70              
+  FCFD    20 28 76              	defm	' (v'
+  FD00    30 31 32              	defm	ver/100+'0',(ver mod 100)/10+'0',(ver mod 10)+'0'
+  FD03    29 0D 0A              	defb	')',cr,lf
+                                	if	skip
+                                	defb	'Low Profile Keyboard',cr,lf
+                                	endif
+                                	if	o.auto
+                                	defb	7,eot
+                                
+                                	ld	b,-1		;select drive A:
+                                	call	xqphys		;execute physical driver
+                                	ld	a,l
+                                	or	h
+                                	jr	z,sign5
+                                	ld	b,1		;read drive A:
+                                	call	xqphys
+                                	ld	hl,'L'+cr*256
+                                	ld	(linbuf),hl
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-39
+Overlay (signon)
+
+                                	jp	z,autobt	;if auto booting	
+                                
+                                sign5:	call	pnext
+                                	endif
+  FD06    0A                    	defb	lf
+  FD07    4C 20 2D 20           	defm	'L - Load System'
+  FD0B    4C 6F 61 64           
+  FD0F    20 53 79 73           
+  FD13    74 65 6D              
+  FD16    0D 0A                 	defb	cr,lf
+                                
+                                	if	o.term
+  FD18    48 20 2D 20           	defm	'H - Host Terminal'
+  FD1C    48 6F 73 74           
+  FD20    20 54 65 72           
+  FD24    6D 69 6E 61           
+  FD28    6C                    
+  FD29    0D 0A                 	defb	cr,lf
+                                	endif
+                                
+                                	if	o.term
+  FD2B    54 20 2D 20           	defb	'T - Typewriter'
+  FD2F    54 79 70 65           
+  FD33    77 72 69 74           
+  FD37    65 72                 
+  FD39    0D 0A                 	defb	cr,lf
+                                	endif
+                                
+  FD3B    07 04                 	defb	7,eot
+                                
+  FD3D    CD F006               eatme:	call	const
+  FD40    CA F003               	jp	z,warm		;go enter monitor
+  FD43    CD F009               	call	conin
+  FD46    18 F5                 	jr	eatme
+                                
+  00EB                          rxsigl	equ	$-signon
+                                
+                                	.dephase
+                                	subttl	Overlay (boot)
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-40
+Overlay (boot)
+
+                                
+                                
+                                
+  063A'                         rxboot:				;rom source address
+                                	.phase	tca-romofs	;execution address o/l area
+                                
+  FC55                          	ds	romofs,0	;4.01 overlay start address
+  FC5D    21 FF5D               	ld	hl,linbuf+1	;4.02 overlay start address
+  FC60    7E                    boot1:	ld	a,(hl)		;scan command line
+  FC61    2C                    	inc	l
+  FC62    D6 0D                 	sub	cr
+  FC64    28 0B                 	jr	z,boot2		;if no parameter, boot from A:
+  FC66    FE 13                 	cp	' '-cr
+  FC68    28 F6                 	jr	z,boot1		;skip leading blanks
+  FC6A    D6 34                 	sub	'A'-cr
+  FC6C    D8                    	ret	c		;if invalid drive
+  FC6D    FE 10                 	cp	16
+  FC6F    3F                    	ccf
+  FC70    D8                    	ret	c		;if bad drive
+  FC71    4F                    boot2:	ld	c,a		;set boot drive selected
+  FC72    C6 41                 	add	a,'A'
+  FC74    32 FD72               	ld	(bootd),a	;set up error message
+  FC77    2E 00                 	ld	l,0		;set A:
+  FC79    C5                    	push	bc
+  FC7A    E5                    	push	hl
+  FC7B    CD FD89               	call	swap		;switch boot drive with A:
+  FC7E    21 FD6E               	ld	hl,booter	;set boot error return
+  FC81    E5                    	push	hl
+  FC82    0E 00                 	ld	c,0		;then boot from A:
+  FC84    CD F01B               	call	select
+  FC87    C0                    	ret	nz		;if drive not configured or density error
+  FC88    3E FF                 	ld	a,-1
+  FC8A    12                    	ld	(de),a
+  FC8B    11 000A               	ld	de,10		;set dpb address offset within dph
+  FC8E    19                    	add	hl,de
+  FC8F    5E                    	ld	e,(hl)		;set dpb address
+  FC90    23                    	inc	hl
+  FC91    56                    	ld	d,(hl)
+  FC92    CD F01E               	call	home
+  FC95    1A                    	ld	a,(de)		;get low sectors per track
+  FC96    32 FD6D               	ld	(boots),a	;inform boot loader
+  FC99    B7                    	or	a
+  FC9A    20 20                 	jr	nz,boot3	;if not rigid
+  FC9C    21 000D               	ld	hl,13		;set reserved track offset within dpb
+  FC9F    19                    	add	hl,de
+  FCA0    4E                    	ld	c,(hl)		;get reserved tracks
+  FCA1    23                    	inc	hl
+  FCA2    46                    	ld	b,(hl)
+  FCA3    0B                    	dec	bc		;point behind directory
+  FCA4    ED 43 FA11            	ld	(phytrk),bc	;do implied seek
+                                
+                                				;here for rigid
+  FCA8    0E 1D                 	ld	c,rtab1		;first rigid sector
+  FCAA    21 ED80               	ld	hl,bootbf	;buffer
+  FCAD    CD F024               	call	read		;layout and k/b tables
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-41
+Overlay (boot)
+
+  FCB0    C0                    	ret	nz
+                                
+  FCB1    0E 1E                 	ld	c,rtab1+lpkofs	;2nd rigid sector
+  FCB3    21 EE80               	ld	hl,bootbf+x'100' ;buffer
+  FCB6    CD F024               	call	read		;layout and k/b tables
+  FCB9    C0                    	ret	nz
+                                
+  FCBA    18 20                 	jr	rxb01
+                                
+  FCBC                          boot3:
+                                
+                                				;here for floppy
+  FCBC    FE 1B                 	cp	27		;double density?
+  FCBE    DA FD52               	jp	c,boot4		;no - exit
+                                
+  FCC1    0E 04                 	ld	c,ftab1		;first floppy sector
+  FCC3    21 ED80               	ld	hl,bootbf	;buffer
+  FCC6    CD F024               	call	read		;layout table and half of k/b
+  FCC9    C0                    	ret	nz
+                                
+  FCCA    0E 05                 	ld	c,ftab2		;second floppy sector
+  FCCC    21 EE00               	ld	hl,bootbf+128
+  FCCF    CD F024               	call	read		;midle third of k/b tables
+  FCD2    C0                    	ret	nz
+                                
+  FCD3    0E 06                 	ld	c,ftab2+lpkofs	;third floppy sector
+  FCD5    21 EE80               	ld	hl,bootbf+128+128
+  FCD8    CD F024               	call	read		;last third of k/b tables
+  FCDB    C0                    	ret	nz
+                                
+  FCDC                          rxb01:				;check tables are present
+  FCDC    3A ED80               	ld	a,(bootbf+lang)	;language no. set?
+  FCDF    FE E5                 	cp	0e5h
+  FCE1    28 6F                 	jr	z,boot4		;no - exit
+                                
+                                	if	skip
+                                	ld	a,(bootbf+kbrd)	;k/b tables present?
+                                	cp	'K'
+                                	jr	nz,boot4	;no - exit
+                                
+                                	ld	a,(bootbf+font)	;font tables present?
+                                	cp	'F'
+                                	jr	nz,boot4	;no - exit
+                                
+                                	ld	a,(bootbf+prnt)	;printer tables prsent?
+                                	cp	'P'
+                                	jr	nz,boot4	;no - exit
+                                	endif
+                                
+  FCE3    3A ED81               	ld	a,(bootbf+kbrd)	;k/b tables present?
+  FCE6    FE 6B                 	cp	'k'
+  FCE8    20 68                 	jr	nz,boot4	;no - exit
+                                
+  FCEA    3A ED82               	ld	a,(bootbf+font)	;font tables present?
+  FCED    FE 66                 	cp	'f'
+  FCEF    20 61                 	jr	nz,boot4	;no - exit
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-42
+Overlay (boot)
+
+                                
+  FCF1    3A ED83               	ld	a,(bootbf+prnt)	;printer tables prsent?
+  FCF4    FE 70                 	cp	'p'
+  FCF6    20 5A                 	jr	nz,boot4	;no - exit
+                                
+  FCF8    21 ED84               	ld	hl,bootbf+kbrdtb ;move in k/b tables
+  FCFB    11 F800               	ld	de,tabled
+  FCFE    01 0135               	ld	bc,ktabsz
+  FD01    ED B0                 	ldir
+                                
+  FD03    0E 1F                 	ld	c,rtab2+lpkofs	;3rd rigid sector
+  FD05    3A FD6D               	ld	a,(boots)	;rigid or floppy?
+  FD08    B7                    	or	a
+  FD09    28 02                 	jr	z,boot5		;rigid
+  FD0B    0E 07                 	ld	c,ftab3+lpkofs	;floppy - 4th sector
+  FD0D                          boot5:
+  FD0D    21 ED80               	ld	hl,bootbf	;buffer
+  FD10    CD F024               	call	read		;font and print tables
+  FD13    C0                    	ret	nz
+                                
+  FD14    3A ED80               	ld	a,(bootbf)	;configured?
+  FD17    FE E5                 	cp	0e5h
+  FD19    28 37                 	jr	z,boot4		;no -exit
+                                
+  FD1B    21 ED80               	ld	hl,bootbf	;move font & print tables in
+  FD1E    11 F960               	ld	de,fontbl
+  FD21    01 0046               	ld	bc,fontsz*2+prntsz*2
+  FD24    ED B0                 	ldir
+                                
+                                ;	alter SIOOUT
+                                
+  FD26    DD 2A F019            	ld	ix,(monitr+sioff)	;soout address
+  FD2A    DD 36 00 C3           	ld	(ix),0c3h		;jump instruction
+  FD2E    DD 36 01 FC           	ld	(ix+1),low rxsioo
+  FD32    DD 36 02 F9           	ld	(ix+2),high rxsioo
+                                
+                                ;	alter crt driver
+                                
+  FD36    DD 2A F010            	ld	ix,(monitr+fcrtof)	;address of fast crt handler
+  FD3A    DD 36 12 82           	ld	(ix+crtcall),low rxcrt
+  FD3E    DD 36 13 18           	ld	(ix+crtcall+1),high rxcrt
+                                
+  FD42    DD 21 F22F            	ld	ix,sprnt1		;address of screenprint patch
+  FD46    DD 36 00 C3           	ld	(ix),0c3h		;jump instruction
+  FD4A    DD 36 01 D3           	ld	(ix+1),low scrprt
+  FD4E    DD 36 02 18           	ld	(ix+2),high scrprt
+                                
+  FD52                          boot4:				;here to exit
+  FD52    C1                    	pop	bc		;throw away booter return
+  FD53    C1                    	pop	bc		;get disk swap parameters
+  FD54    E1                    	pop	hl
+  FD55    CD FD89               	call	swap		;swap them back for xerox boot
+                                
+  FD58    C1                    	pop	bc		;throw away return address
+  FD59    21 0000               	ld	hl,0
+  FD5C    CD F03C               	call	config		;get monitor configuration
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-43
+Overlay (boot)
+
+  FD5F    7C                    	ld	a,h
+  FD60    21 11C0               	ld	hl,xrboot	;address of 4.02 monitor boot overlay
+  FD63    FE 02                 	cp	rev2
+  FD65    28 03                 	jr	z,boot6		;skip if 4.02
+  FD67    21 11B8               	ld	hl,xrboot-romofs ;assumed 4.01 monitor boot overlay address
+  FD6A                          boot6:
+                                
+  FD6A    C3 F078               	jp	prboff		;enter xerox code to execute boot
+                                
+  FD6D    00                    boots:	defb	0		;workbyte to save disk type
+                                
+                                
+                                ;;	Booter - Boot Error Processor.
+                                ;
+  FD6E    CD F075               booter:	call	pnext
+  FD71    07                    	defb	7
+  FD72    64 3A 54 61           bootd:	defm	'd:Tables Load error.'
+  FD76    62 6C 65 73           
+  FD7A    20 4C 6F 61           
+  FD7E    64 20 65 72           
+  FD82    72 6F 72 2E           
+  FD86    04                    	defb	eot
+  FD87    C1                    	pop	bc		;switch drives back
+  FD88    E1                    	pop	hl
+                                
+                                ;;	swap - swap logical drives.
+                                ;
+                                ;	Entry:	C = first  drive index, 0-15
+                                ;		L = second drive index, 0-15
+                                ;
+  FD89    06 00                 swap:	ld	b,0		;clear upper indices
+  FD8B    60                    	ld	h,b
+  FD8C    11 F360               	ld	de,seltab	;set select table address
+  FD8F    29                    	add	hl,hl
+  FD90    19                    	add	hl,de
+  FD91    EB                    	ex	de,hl		;set second address to DE, get seltab to HL
+  FD92    09                    	add	hl,bc
+  FD93    09                    	add	hl,bc		;set first address to HL
+  FD94    06 02                 	ld	b,2
+  FD96    4E                    swap1:	ld	c,(hl)		;swap two bytes
+  FD97    1A                    	ld	a,(de)
+  FD98    77                    	ld	(hl),a
+  FD99    79                    	ld	a,c
+  FD9A    12                    	ld	(de),a
+  FD9B    23                    	inc	hl
+  FD9C    13                    	inc	de
+  FD9D    10 F7                 	djnz	swap1		;if swap not complete
+  FD9F    C9                    	ret
+                                
+                                	.dephase
+                                	subttl	end
+                                	page
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	1-44
+end
+
+                                
+                                
+  0785'                         romtop:
+  0785'                         	defs	(romsiz-x'24')-(romtop-start),-1
+                                
+  07DC'                         drctry:
+                                	;Drctry is a table containing the RAM addresses of the keyboard
+                                	;tables.  This table is located on ROM side of memory.  The
+                                	;ROM address must be offset by x'1800' since resides in
+                                	;the fourth 2kx8 ROM slot.  This directory is helpful if future
+                                	;release require the RAM tables to reside in a different RAM
+                                	;location
+                                	;
+  07DC'   F97A                  	defw	prntbl		;print exception table
+  07DE'   F960                  	defw	fontbl		;font exception table
+  07E0'   F95D                  	defw	mstbl		;mouse table
+  07E2'   F959                  	defw	ups		;upstroke table
+  07E4'   F958                  	defw	ctrlex		;function key inhibit expansion table
+  07E6'   F953                  	defw	ctrltb		;function key inhibit table
+  07E8'   F94F                  	defw	rptex		;repeat key expansion table
+  07EA'   F940                  	defw	rptbl		;repeat key table
+  07EC'   F93C                  	defw	tick		;repeat speed table
+  07EE'   F93B                  	defw	shftlck		;shift lock flag
+  07F0'   F938                  	defw	cptex		;alpha lock expansion table
+  07F2'   F935                  	defw	captab		;alpha lock table
+  07F4'   F8CE                  	defw	cdtab		;code + table
+  07F6'   F867                  	defw	shtab		;shift table
+  07F8'   F800                  	defw	tabl		;unshifted table
+                                
+                                				;define checkword to let xerox know
+                                				;that we are present
+  07FA'   0C                    revs:	defb	ver		;revision level
+  07FB'   00 FF                 lpid:	defb	x'00',x'ff'	;low profile kybd with Galaxy id
+  07FD'   AA 55                 peid:	defb	0aah,55h	;position encoded kybd id
+  07FF'   00                    cksum:	defb	0		;space for checksum
+                                
+  0024                          sz	equ	$-drctry	;end of ROM space occupied
+                                
+                                
+                                	end
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	S
+end
+
+Macros:
+
+Symbols:
+1A2D 	ALPHEXC         1A20 	ALPHTST         FFB3 	ATTRIB          
+FA80 	AUTOBT          FF3C 	AVAILB          0002 	BOFF1           
+0018 	BOFF2           FC60 	BOOT1           FC71 	BOOT2           
+FCBC 	BOOT3           FD52 	BOOT4           FD0D 	BOOT5           
+FD6A 	BOOT6           ED80 	BOOTBF          FD72 	BOOTD           
+FD6E 	BOOTER          FD6D 	BOOTS           0004 	C.FIVE          
+0006 	C.SASI          F935 	CAPTAB          F8CE 	CDTAB           
+19D1 	CHAROUT         FFB4 	CHRSAV          07FF'	CKSUM           
+001A 	CLRS            0007 	CMD             199E 	CMDB            
+1A1C 	CMDB1           F9A7 	CMDSTAT         0006 	CNFBYTE         
+003C 	CNFGOFF         0006 	CNTCTR          0013 	CNTRP           
+F091 	CONFG           F03C 	CONFIG          F009 	CONIN           
+F006 	CONST           0003 	CPTBSZ          F938 	CPTEX           
+000D 	CR              0012 	CRTCALL         0182 	CRTD1           
+0196 	CRTD2           F293 	CRTOFF          F29C 	CRTON           
+0019 	CTC1            FF10 	CTCVEC          0002 	CTRL            
+F958 	CTRLEX          F953 	CTRLTB          19D8 	CTRTST          
+FFAC 	CURSOR          07DC'	DRCTRY          FD3D 	EATME           
+0081 	ENCNTR          0004 	EOT             001B 	ESC             
+F9A6 	ESCSQ           0007 	ESCTSZ          01A7 	EXTABL          
+0010 	FCRTOF          F470 	FIVDPB          18CC 	FNTRAN          
+18B8 	FON1            18C7 	FON2            18A3 	FONCHK          
+0002 	FONT            F960 	FONTBL          000D 	FONTSZ          
+0004 	FTAB1           0005 	FTAB2           0006 	FTAB3           
+0000 	FUTURE          F319 	GOLD            01DD 	GRPAD           
+01F4 	HLFSEC          F01E 	HOME            F066 	IDLE            
+FF50 	INTSTK          000F 	JTBLSZ          000F 	JTBLSZ2         
+001E 	KBDAT           0008 	KBLP            000A 	KBOFF           
+FA07 	KBRAMEND        0001 	KBRD            0004 	KBRDTB          
+FF1A 	KBVEC           F06F 	KEY2            F072 	KEY5            
+0135 	KTABSZ          F06C 	KYBDLP          01FC 	KYBDSZE         
+19B2 	KYPOS           0000 	LANG            FFB2 	LEADIN          
+000A 	LF              FF5C 	LINBUF          0000 	LOCK            
+0061 	LOWER           07FB'	LPID            F9B7 	LPKEXT          
+0001 	LPKOFS          F9AF 	LPKYBD          F0E3 	MASK            
+004F 	MAXX            0017 	MAXY            1A7A 	MICE            
+1AE8 	MICE1           1AEE 	MICE11          1AF5 	MICE12          
+1AFD 	MICE2           1B05 	MICE21          1B06 	MICE22          
+1B11 	MICE23          1B13 	MICE24          1A8F 	MICEX           
+1AB0 	MICEX1          1AB5 	MICEY           F9A8 	MILLCNT         
+0006 	MINTRP          F167 	MKEY2           F18F 	MKEY5           
+F06C 	MNTREX          F000 	MONITR          0003 	MOUSE           
+1B35 	MOVTBL          FC3D 	MPNEXT          FA95 	MPRMT0          
+0007 	MSFLG           0000 	MSMOV           F95E 	MSPTR           
+F95D 	MSTBL           199D 	NOCHAR          187B 	NOLOAD          
+1813 	NXTLVL          0000 	O.AUTO          0010 	O.ESCT          
+0001 	O.TERM          0008 	O.TYPE          01AF 	OLSIZ           
+0059 	OLSIZ2          0208 	OLSIZ3          FD50 	OLSPACE         
+07FD'	PEID            19AE 	PEKEX           1993 	PEKHDL          
+19AA 	PEKNOC          19AD 	PEKNOC1         199D 	PEKNOC2         
+198C 	PESCTB          FA11 	PHYTRK          F075 	PNEXT           
+1983 	POESC           1924 	POS01           1936 	POS02           
+RX1984	MACRO-80 3.44	09-Dec-81	PAGE	S-1
+end
+
+1936 	POS03           193A 	POS04           1944 	POS05           
+1951 	POS06           1952 	POS07           1911 	POSEND          
+1956 	POSOUT          1963 	POTRAN          F078 	PRBOFF          
+0003 	PRNT            F97A 	PRNTBL          0016 	PRNTSZ          
+FA62 	PROMPT          F339 	PRVATT          1980 	PTR01           
+F9C8 	RAMSIDE         F024 	READ            0186 	REV             
+0001 	REV1            0002 	REV2            07FA'	REVS            
+F708 	RIGDPB          1909 	RMPOSEND        F9CC 	RMSIDE2         
+0008 	ROMOFS          F9AE 	ROMRAM          F9BE 	ROMSIDE         
+0800 	ROMSIZ          0785'	ROMTOP          F940 	RPTBL           
+F9AA 	RPTCHAR         F9D0 	RPTCLK          F9ED 	RPTCLK1         
+F9F9 	RPTCLK2         F94F 	RPTEX           F9AB 	RPTFLG          
+1A3A 	RPTST           001D 	RTAB1           001E 	RTAB2           
+1B17 	RV1TBL          1B26 	RV2TBL          1800 	RX1984          
+FCDC 	RXB01           063A'	RXBOOT          1882 	RXCRT           
+FB34 	RXGETHLP        00EB 	RXSIGL          054F'	RXSIGN          
+F9FC 	RXSIOO          0300 	SASIDL          F9AC 	SAVE            
+F1EC 	SAVSTK          18E9 	SCR01           18EF 	SCR02           
+1901 	SCR03           18D3 	SCRPRT          F01B 	SELECT          
+F360 	SELTAB          00FF 	SETFLG          F93B 	SHFTLCK         
+0001 	SHIFT           F867 	SHTAB           0007 	SIDEROM         
+FC77 	SIGN1           FC85 	SIGN2           FC8C 	SIGN3           
+FCA2 	SIGN3A          FCAA 	SIGN4           FCE6 	SIGN6           
+FCCC 	SIGN7           FC5D 	SIGNON          0060 	SIGOFF          
+0005 	SIODPB          0019 	SIOFF           F03F 	SIORDY          
+1957 	SIOX1           0000 	SKIP            1859 	SOOUT           
+F20E 	SPACT           F22F 	SPRNT1          F232 	SPRNT2          
+0000'	START           0001 	STCNTR          FF54 	STEPRT          
+1A63 	STPCTC1         1A5D 	STRCTC1         01AF 	STRGE           
+0003 	STRKUP          FD89 	SWAP            FD96 	SWAP1           
+001D 	SYSCTL          001C 	SYSPIO          FF18 	SYSVEC          
+0024 	SZ              F800 	TABL            F800 	TABLED          
+0347'	TABLES          0159 	TABLEX          01A7 	TABSIZ          
+19FC 	TBLSEL          181B 	TBXFER          FC5D 	TCA             
+003F 	TENTHS          F93C 	TICK            F93E 	TOCK            
+0020 	UPASCII         007B 	UPPER           F959 	UPS             
+0002 	UPSSZ           19E3 	UPSTRK          F95B 	UPSX            
+0006 	USTRK           000C 	VER             F003 	WARM            
+0010 	WD1797          0004 	XNEG            FA51 	XQPHYS          
+11C0 	XRBOOT          1078 	XRSIGN          0001 	XY              
+0005 	YNEG            0000 	ZERO            
+
+
+
+No Fatal error(s)
+
+

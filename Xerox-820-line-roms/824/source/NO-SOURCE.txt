@@ -1,0 +1,1 @@
+No source recovered for the 824 test-disk dumps (537P3682 / 8749 MCU, B18D9 hex images only); the parts themselves are still unidentified — look for Xerox 824 development material.

@@ -1,0 +1,1 @@
+No v4.03 source recovered (rev 403 "Disabled RTS on comm port" survives only as a history line in the v5.0 XR.MAC). Look for a Balcones XR/XROM.MAC ending REV DEFL 403 — and for the missing u35 ROM that would confirm this set's sign-on version.

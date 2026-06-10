@@ -1,0 +1,1 @@
+No source or disk image for LPKYBD vers 019-024 recovered anywhere in the Maslin set; u36.rx024.rom exists only as the MAME x168 board dump. Look for a 1984 Rank Xerox LPKYBD.MAC ending ver 024.

@@ -1,0 +1,1 @@
+No source for LPKYBD vers 013-017 recovered; ver 016 exists only as the B17D7 U36.ROM hex image (../u36-v016.rom). Nearest surviving sources: ver 012 (../../v012/source/) and ver 018 (../../v018/source/) — look for an LPKYBD.MAC ending ver 016 (27 Sep 1983).

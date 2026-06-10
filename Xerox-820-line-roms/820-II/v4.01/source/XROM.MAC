@@ -1,0 +1,3735 @@
+	TITLE	BALCONES OPERATING SYSTEM FOR THE XEROX 820-II   
+	.Z80
+;
+;
+;                Balcones Operating System for XEROX 820-II
+;
+;             Copyright 1982 (C) Balcones Computer Corporation
+;
+;                           All rights reserved
+;
+;	Genesis:
+;
+;	In the beginning there was no order, only chaos.  Then came
+;	the Big Board.  This expanding cloud of hot gas contained the 
+;	fundamental matter necessary to produce	a Xerox copy of itself.
+;
+;
+;	Version 0.00	March 2, 1982.  Robert Burns, Bcc.
+;
+;	The 820-2/4 monitor sources converted to M80 format.
+;
+REV	DEFL	000
+;
+;	Version 0.01	March 3, 1982	Robert Burns, Bcc.
+;
+;	The code placement was reorganized to conserve valuable RAM.
+;	In particular, the CRT driver was reworked extensively.  It
+;	now executes directly out of the ROM in the screen bank.
+;	There ain't no such thing as a free lunch.  (wait states)
+;	The G command scans arguments to HL, DE, BC for the callee.
+;	It also prints the A register and the HL registers on return.
+;	The Input and Output commands were repaired for scroll port.
+;	A debug loader is provided for check-out in banked RAM.
+; 
+REV	DEFL	001
+;
+;	Version 0.02	March 4, 1982.  Robert Burns, Bcc.
+;
+;	The CRT driver will allow interrupts during screen processing.
+;	A fast CRT driver was provided that does not save/restore the
+;	registers.  CP/M does not require this time consuming service.
+;	The upper 4k of RAM is tested on reset.
+;
+REV	DEFL	002
+;
+;	Version 0.03	March 5, 1982.	Robert Burns, Bcc.
+;
+;	Several Entry Point Vectors were installed to access a
+;	standard physical disk driver executrix.  They provide
+;	a complete, dynamic logical to physical device mapping.
+;	The 820 disk entry vectors  were replaced by an Emulator
+;	that interfaces to this logical to physical disk mapper.
+;	The standard CP/M deblocker also knows how to employ these
+;	drivers.  1k of code space was reserved within the RAM
+;	Resident Monitor for the actual physical drivers, which
+;	are assembled and linked independently.
+;
+REV	DEFL	003
+;
+;	Version 0.04	March 9, 1982.  Robert Burns, Bcc.
+;
+;	An escape table with insert line, delete line, and sundry
+;	attribute control functions was installed.  Change message text
+;	as specified by C. Key.  In and Out commands accept 16 bit
+;	port addresses.  Command to select 7 or 8 bit data from keyboard.
+;
+REV	DEFL	004
+;
+;	Version 0.05	March 10, 1982.  Robert Burns, Bcc.
+;
+;	Background screen print with Xon/Xoff protocol added.  Insert and
+;	delete character provided.  The configuration byte will provide the
+;	calling program with information about the attached peripherals
+;	and software flags indicating 7 or 8  bit keyboard data, etc.
+;	An Options statement was added that allows certain less important
+;	routines to not be included at assembly time, since ROM space
+;	is tight.  Provided a user accessible 1 second interrupt jump vector.
+;
+REV	DEFL	005
+;
+;	Version 0.06	March 12, 1982.  Robert Burns, Bcc.
+;
+;	Corrected Disk Parameter Tables for variable rigid partitions.
+;	Made boot loader read into temporary buffer so big sectors
+;	Don't clobber the TPA.
+;
+REV	DEFL	006
+;
+;	Version 0.07	March 13, 1982.  Robert Burns, Bcc.
+;
+;	Added high level language interface to Daytim, Getsel, and Getcon
+;	Centralized CRT RAM turn on/off
+;
+REV	DEFL	007
+;
+;	Version 0.08	March 13, 1982.  Robert Burns, Bcc.
+;
+;	Set escape table as an option, with all video control codes
+;	as control characters, except cursor positioning.  Set
+;	typewriter/terminal mode as an option.  Corrected configuration
+;	check to disable drive select if WD 1797 disk board is installed.
+;
+REV	DEFL	008
+;
+;	Version 0.09	March 14, 1982.  Robert Burns, Bcc.
+;
+;	Added configurable options: Xon/Xoff, hardware handshake,
+;	step rate for WD 1797.  Use keyboard data mask to mask
+;	video output data so that WordStar files display properly
+;	when typed, if keyboard passes only 7 bits.  Cursor modified.
+;	Added rigid disk boot from any partition.
+;
+REV	DEFL	009
+;
+;	Version 0.10	March 14, 1982.  Robert Burns, Bcc.
+;
+;	Burned first ROM
+;
+REV	DEFL	010
+;
+;	Version 1.0x	March 18, 1982...
+;
+;	Boot command now automatically switches drive with A:
+;	Won't jump into an E5 sector,
+;	Enabled disk read/write commands, and
+;	Dug gold mine in video driver.
+;
+REV	DEFL	101
+REV	DEFL	102
+REV	DEFL	110		;ROM burned
+REV	DEFL	111		;new WD driver
+REV	DEFL	112		;baud rate command, II/IV
+REV	DEFL	120		;ROM Burned
+REV	DEFL	121		;line feed burys gold
+REV	DEFL	122		;made LDIRS macro
+REV	DEFL	130		;new disk drivers
+REV	DEFL	131		;fixed single density selection
+REV	DEFL	140		;burned ROM
+REV	DEFL	150		;transient area code macros
+REV	DEFL	151		;transient commands
+REV	DEFL	160		;Burned ROM with faith
+REV	DEFL	161		;Faith didn't help
+REV	DEFL	170		;coming down the wire
+REV	DEFL	171		;reworked double sided code
+REV	DEFL	172		;fixed SA1403 DS
+REV	DEFL	173		;installed help text
+REV	DEFL	174		;fixed 1797 DS
+REV	DEFL	175		;rigid partitions
+REV	DEFL	176		;write enabled floppy if rigid par bad
+REV	DEFL	177		;CRC, config, more gold for the Goose
+REV	DEFL	178		;almost Final ROM Prior to QA Testing
+REV	DEFL	179		;adjusted SIO mask for S. T.
+REV	DEFL	180		;this is the one that burned 'em up
+REV	DEFL	181		;fix DD configure
+REV	DEFL	300		;This was IT
+REV	DEFL	182
+REV	DEFL	183		;parallel printer, copyright, iobyte
+REV	DEFL	190		;disk drivers at same exec address
+REV	DEFL	300		;This is really it, Charlie
+REV	DEFL	301		;proof that there is always another change
+REV	DEFL	399		;SA1403D error recovery, AS31A rev 02
+REV	DEFL	398		;WD1797 density select error recovery
+REV	DEFL	397		;idle / soft error report
+REV	DEFL	396		;Western Digital cleanup, removed fill, ramt
+REV	DEFL	395		;eat keyboard error message
+REV	DEFL	394		;auto boot A:
+REV	DEFL	393		;fix auto boot
+REV	DEFL	392		;no auto boot
+REV	DEFL	391		;fix SA select failure, WD ready time, 10 msec
+REV	DEFL	390		;fix SA floppy format code
+REV	DEFL	400		;handle dead DTC controller during density sel
+REV	DEFL	401		;corrected WD driver stack overflow
+	SUBTTL	SYMBOL DEFINITIONS
+	PAGE	64
+TRUE	EQU	-1
+FALSE	EQU	NOT TRUE
+DEBUG	EQU	FALSE		;assemble RAM loader
+LDIRSM	EQU	FALSE		;simulate LDIR on screen accesses
+;
+;	Absolute Memory Addresses.
+;
+ROM	EQU	01000H AND DEBUG;non resident code base
+ROMSIZ	EQU	01000H+((NOT DEBUG) AND 0800H)
+RX1984	EQU	01800H		;prescription for the future
+LX1984	EQU	00800H		;length of future
+IOBYTE	EQU	00003H		;I/O byte
+BOOTLD	EQU	00080H		;boot loader address
+BOOTBF	EQU	0ED80H		;boot loader buffer
+RAM	EQU	0FF00H		;system RAM page address
+MONITR	EQU	0F000H		;resident monitor address
+CRTMEM	EQU	03000H		;CRT memory address
+CRTMAX	EQU	CRTMEM+24*128	;CRT maximum address
+CRTBAS	EQU	HIGH CRTMEM	;starting page of display RAM
+CRTTOP	EQU	HIGH CRTMAX	;ending page of display RAM
+;
+;	I/O Port Addresses.
+;
+BAUDA	EQU	00H		;channel A baud rate generator
+SIODPA	EQU	04H		;SIO data port A (communications)
+SIODPB	EQU	05H		;SIO data port B (printer)
+SIOCPA	EQU	06H		;SIO control/status port A
+SIOCPB	EQU	07H		;SIO control/status port B
+GPIODA	EQU	08H		;general purpose parallel I/O A data
+GPIOCA	EQU	09H		;general purpose parallel I/O A control
+GPIODB	EQU	0AH		;general purpose parallel I/O B data
+GPIOCB	EQU	0BH		;general purpose parallel I/O B control
+BAUDB	EQU	0CH		;channel B baud rate generator
+WD1797	EQU	10H		;Western Digital disk controller base
+SCROLL	EQU	14H		;CRT bottom line scroll register
+CTC	EQU	18H		;quad counter/timer circuit
+CTC0	EQU	18H		;CTC channel 0 (user)
+CTC1	EQU	19H		;CTC channel 1 (msec, screen print)
+CTC2	EQU	1AH		;CTC channel 2 (one second prescaler)
+CTC3	EQU	1BH		;CTC channel 3 (one second)
+SYSPIO	EQU	1CH		;system PIO data
+SYSCTL	EQU	1DH		;system PIO control
+KBDDAT	EQU	1EH		;keyboard data
+KBDCTL	EQU	1FH		;keyboard control
+BELLOF	EQU	28H		;turn bell off
+BELLON	EQU	29H		;turn bell on
+SLSDEN	EQU	30H		;select single density
+SLDDEN	EQU	31H		;select double density
+CHROM1	EQU	34H		;select ROM 1 character generator
+CHROM2	EQU	35H		;select ROM 2 character generator
+LOWLITE	EQU	36H		;select low intensity attribute
+ASYNC	EQU	68H		;set internal clocks for asynchronous SIO A
+SYNC	EQU	69H		;set external clocks for  synchronous SIO A
+;
+;	Configuration Status Byte Bit Definitions.
+;
+C.KEYM	EQU	7		;Keyboard upper bit is passed
+C.SASI	EQU	6		;Shugart SA-1403D Disk Controller
+C.FIVE	EQU	4		;Five inch micro floppies
+;
+;	ASCII Control Characters.
+;
+EOT	EQU	04H		;ASCII end of text
+LF	EQU	0AH		;ASCII line feed
+CR	EQU	0DH		;ASCII carriage return
+XON	EQU	11H		;ASCII Xon
+XOFF	EQU	13H		;ASCII Xoff
+ESC	EQU	1BH		;ASCII escape
+CLRS	EQU	1AH		;clear screen
+;
+;	Special Key Constants.
+;
+HELPKEY	EQU	01EH
+SCRPRT	EQU	09EH		;Screen Print key CTRL <HELP>
+ABORT	EQU	09BH		;Automatic Abort  CTRL <ESC>
+;
+;	Bell Constants.
+;
+BLTIM	EQU	35H		;bell loop time
+BLONC	EQU	61H		;bell on time
+BLOFC	EQU	61H		;bell off time
+;
+;	Assembly Options.
+;
+O.RESV	EQU	1000000000000000B	;reserved
+O.AUTO	EQU	0100000000000000B	;auto boot A:
+O.HELP	EQU	0010000000000000B	;help command
+O.PROT	EQU	0001000000000000B	;printer protocol
+O.DDVR	EQU	0000100000000000B	;disk drivers
+O.BAUD	EQU	0000010000000000B	;baud rate set command
+O.INPC	EQU	0000001000000000B	;in command
+O.OUTC	EQU	0000000100000000B	;out command
+O.VERF	EQU	0000000010000000B	;verify memory block
+O.RAMT	EQU	0000000001000000B	;simple RAM test
+O.DISK	EQU	0000000000100000B	;console disk read/write commands
+O.ESCT	EQU	0000000000010000B	;escape command table
+O.TYPE	EQU	0000000000001000B	;typewriter mode
+O.FILL	EQU	0000000000000100B	;fill memory
+O.MOVE	EQU	0000000000000010B	;move memory
+O.TERM	EQU	0000000000000001B	;terminal scroll driver
+OPTIONS	DEFL	DEBUG    AND NOT O.DDVR AND NOT O.ESCT
+OPTIONS	DEFL	OPTIONS  AND NOT O.DISK AND NOT O.RESV
+OPTIONS	DEFL	OPTIONS  AND NOT O.VERF AND NOT O.FILL
+OPTIONS	DEFL	OPTIONS  AND NOT O.RAMT
+OPTIONS	DEFL	(NOT DEBUG OR O.ESCT) AND NOT O.AUTO
+;
+;	Configuration Sector Offsets.
+;
+Z.SCRA	EQU	BOOTBF+255-32	;initial screen attribute
+Z.STPR	EQU	Z.SCRA+1	;floppy step rate
+Z.KEYM	EQU	Z.STPR+2	;keyboard mask
+Z.SIOA	EQU	Z.KEYM+1	;SIO A init
+Z.SIOB	EQU	Z.SIOA+10	;SIO B init
+Z.SIOM	EQU	Z.SIOB+10	;clear to send low/high/ignore
+Z.SIOV	EQU	Z.SIOM+2	;data carrier detect low/high/ignore
+Z.XONP	EQU	Z.SIOV+2	;Xon/Xoff protocol
+Z.BAUA	EQU	Z.XONP+2	;comm channel baud rate
+Z.BAUB	EQU	Z.BAUA+1	;printer baud rate
+Z.IOBT	EQU	Z.BAUB+1	;initial I/O byte
+;
+;	Parallel Printer Status Bits.
+;
+P.ACKN	EQU	7		;acknowledge
+P.ONLN	EQU	6		;on line
+P.RDYI	EQU	5		;ready to input
+P.RDYO	EQU	4		;ready to output
+P.STRB	EQU	2		;data stobe
+P.AUTO	EQU	0		;auto LF enable
+	SUBTTL	CODE GENERATION CONTROL MACROS DEFINITIONS
+	PAGE
+;
+;	ROM Code Placement Macros.
+;
+;
+;	The Common Segment holds the non-resident (banked) portion
+;	of the monitor.  This segment is not copied to RAM.
+;
+;
+;	The Data Segment holds the resident portion of the monitor.
+;	It is moved to RAM, at location MONITR during initialization.
+;
+;
+;	The Code Segment holds the various Transient Commands.  Each
+;	command is loaded from the ROM to the TPA when it is executed.
+;
+;
+;	The following macros keep it all straight.
+;
+;
+;	BELOW - Generate code for ROM below.
+;
+BELOW	MACRO
+	SEGMENT	B		;;enable common segment
+	ENDM
+;
+;	ABOVE - Generate code for RAM above.
+;
+ABOVE	MACRO
+	SEGMENT	D		;;enable data segment
+	ENDM
+;
+;	OVERLAY - Generate code for transients.
+;
+OVERLAY	MACRO	ADDR
+TLOC	DEFL	TLOC+$-CLOC
+ADDR	EQU	TLOC+BLOC+CLOC-MONITR
+	SEGMENT	C		;;enable code segment
+	ENDM
+;
+;	BSEG - activate common segment.
+;
+BSEG	MACRO
+	COMMON	/COMROM/
+	DEFS	COMRES
+SEGA	DEFL	$
+	ENDM
+;
+;	SEGMENT - Activate Segment.
+;
+SEGMENT	MACRO	S
+	UPDATE			;;update active phase counter
+S&SPACE	DEFL	-1		;;set enabled segment active        
+	S&SEG			;;activate segment code placement
+	.PHASE	S&LOC		;;set absolute segment location counter
+	ENDM
+;
+;	UPDATE - Update Phase Counters.
+;
+UPDATE	MACRO
+	IF	BSPACE
+COMRES	DEFL	$-ROM+100H-3
+	ENDIF
+	IRPC	X,<BCD>
+	IF	X&SPACE		;;if segment active
+	IF	CSPACE
+	IF	TPAL LT ($-CLOC)
+TPAL	DEFL	$-CLOC
+	ENDIF
+	ELSE
+X&LOC	DEFL	$		;;save segment address
+	ENDIF
+X&SPACE	DEFL	0		;;clear segment active
+	.DEPHASE		;;revert to relocatable
+	ENDIF
+	ENDM
+	ENDM
+BLOC	DEFL	ROM		;establish non-resident code base
+DLOC	DEFL	MONITR		;establish resident code base
+TLOC	DEFL	0		;establise transient code base
+TPAL	DEFL	0		;establish maximum transient length
+BSPACE	DEFL	0		;preset common segment inactive
+CSPACE	DEFL	0		;preset code segment inactive
+DSPACE	DEFL	0		;preset data segment inactive
+COMRES	DEFL	0		;preset common base address
+LDIRS	MACRO
+	IF	LDIRSM
+	CALL	SIMLDIR
+	ELSE
+	LDIR
+	ENDIF
+	ENDM
+	SUBTTL	RAM LOADER FOR TESTING ONLY
+	PAGE
+	BSEG
+ENTRY:
+	IF	DEBUG
+	JP	CPYOUT
+	JP	XCKS		;compute checksum
+CPYOUT:	DI
+	LD	HL,BBASE	;move code out of resident memory
+	LD	DE,0C000H
+	LD	BC,ROMSIZ+MOVLN
+	LDIR
+	JP	0C000H
+	ELSE
+	JP	XCKS
+	ENDIF
+XCKS:	LD	HL,BBASE+MOVLN
+	LD	BC,ROMSIZ-1
+	LD	E,0		;preset checksum
+XCKS1:	LD	A,(HL)
+	INC	HL
+	ADD	A,E
+	LD	E,A
+	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,XCKS1
+	LD	A,E		;store twos complement of checksum
+	NEG
+	LD	(HL),A		;store checksum
+	JP	0
+	IF	DEBUG
+	DEFS	80H-($-(ENTRY-3)),-1
+	ENDIF
+	SUBTTL	SYSTEM INITIALIZATION
+	PAGE
+BBASE:				;symbol for accessing non-resident base address
+	IF	DEBUG
+	LD	HL,0C000H+MOVLN	;move code into banked memory
+	LD	DE,PRS		;set destination below
+	LD	BC,ROMSIZ	;move 4k
+	IN	A,(SYSPIO)
+	OR	80H		;turn on ROM/RAM bank
+	OUT	(SYSPIO),A
+	LDIR
+	JP	PRS
+	ENDIF
+	DEFS	100H-($-(ENTRY-3)),-1
+MOVLN	EQU	$-BBASE
+COMRES	DEFL	100H-3
+	BELOW			;generate non-resident code
+;
+;	PRS - preset storage.
+;
+;	Entry:	Power up or Reset button.
+;
+PRS:	DI			;lock up system
+	XOR	A
+PRS1:	DEC	A		;the pause that refreshes
+	JR	NZ,PRS1
+	LD	(RSTSP),SP	;save partial reset state
+	LD	(RSTHL),HL	;in case the luser go boom
+	POP	HL		;pick possible return off stack
+	LD	(RSTPC),HL
+	EXX			;give primary registers half a break
+	INC	E
+	LD	SP,3839H	;load strange values in SP
+	LD	SP,4142H
+	LD	C,H		;insure
+	LD	B,E		;registers
+	LD	C,A		;can
+	LD	C,(HL)		;forget
+	LD	B,L		;insure
+	LD	D,E		;registers
+	LD	B,E		;can
+	LD	C,A		;copy
+	LD	C,L
+	LD	D,B
+	LD	D,L
+	LD	D,H
+	LD	B,L
+	LD	D,D
+	EX	AF,AF'
+	LD	A,24-1		;line up bottom of screen
+	OUT	(SCROLL),A	;init scroll port
+	LD	HL,CRTMEM	;clear display memory
+	LD	(HL),' '
+	LD	DE,CRTMEM+1
+	LD	BC,CRTMAX-CRTMEM-1
+	LDIR			;pray the video hardware works
+	LD	SP,MONITR	;insure monitor RAM ok
+PRS2:	LD	HL,0AA55H	;walk checker board through RAM
+	POP	BC		;read RAM
+	PUSH	HL		;write RAM fast
+	POP	DE		;read RAM fast
+	PUSH	BC		;put RAM back
+	POP	AF		;and verify it
+	SUB	B
+	JR	NZ,ERR1		;if RAM failure
+	SBC	HL,DE
+	JR	NZ,ERR1		;if RAM or register failure
+	DEC	SP		;advance test address
+	CCF
+	ADC	HL,SP
+	JR	NZ,PRS2		;if top of memory not reached
+	LD	SP,STACK	;set monitor stack
+	LD	HL,PRS		;set ROM address
+	LD	BC,ROMSIZ
+	CALL	CCS		;compute check sum
+	JR	NZ,ERR2		;if bad ROM
+	LD	HL,INTAB	;point to default variable table
+PRS3:	LD	B,0
+	LD	C,(HL)		;set data block length
+	INC	HL
+	LD	E,(HL)		;set variable address in RAM
+	INC	HL
+	LD	D,(HL)
+	INC	HL		;point to initial values
+	LDIR			;copy data from ROM to variables in RAM
+	BIT	7,(HL)
+	JR	Z,PRS3		;if more data to preset
+	INC	HL		;point to I/O init data table
+PRS4:	LD	B,(HL)		;set number of bytes to preset
+	INC	HL
+	LD	C,(HL)		;set I/O port address
+	INC	HL
+	OTIR			;shoot preset data to I/O device
+	BIT	7,(HL)
+	JR	Z,PRS4		;if more devices require initialization
+	IN	A,(KBDDAT)	;assert PARDY
+	IM	2		;select interrupt mode 2
+	LD	A,HIGH VECTAB	;set interrupt vector page
+	LD	I,A
+	LD	HL,RBASE	;set resident base address
+	LD	DE,MONITR	;set monitor address
+	LD	BC,RAM-MONITR	;set max resident length
+	LDIR			;plant monitor upstairs
+	LD	HL,RX1984	;prognosticate
+	LD	BC,LX1984
+	CALL	CCS
+	JR	NZ,PRS5
+	LD	HL,(RX1984+LX1984-3)
+	LD	DE,55AAH
+	SBC	HL,DE
+	LD	HL,CMDTAB
+	LD	DE,SELTAB
+	LD	BC,CLOC
+	CALL	Z,RX1984	;FutureShock
+PRS5:	JP	SIGNON		;Signon Resident Monitor
+CCS:	LD	E,0		;preset ckecksum
+CCS1:	LD	A,(HL)
+	INC	HL
+	ADD	A,E
+	LD	E,A
+	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,CCS1
+	OR	E
+	RET
+ERR1:	LD	HL,ERRM1	;set RAM error message
+	JR	ERR
+ERR2:	LD	HL,ERRM2
+ERR:	LD	DE,CRTMEM+40-(ERRML/2)
+	LD	BC,ERRML
+	LDIR
+ERR3:	DEC	BC		;pause a while
+	LD	A,B
+	OR	C
+	JR	NZ,ERR3
+	JP	PRS		;try restart again
+ERRM1:	DB	'RAM Error'
+ERRM2:	DB	'ROM Error'
+ERRML	EQU	($-ERRM1)/2
+;
+;	Initialize the Interrupt Vector Table
+;
+INTAB:	DEFB	2
+	DEFW	SYSVEC+2
+	DEFW	KEYSRV		;parallel keyboard interrupt vector
+	DEFB	6
+	DEFW	CTCVEC+2
+	DEFW	MILLI		;one millisecond interrupt timer
+	DEFW	0
+	DEFW	TIMER		;one second timer interrupt vector
+;
+;	Initialize keyboard FIFO buffer
+;
+	DEFB	3
+	DEFW	FIFCNT
+	DEFB	0		;FIFO count
+	DEFB	0		;FIFO in
+	DEFB	0		;FIFO out
+;
+;	Initialize the CRT display
+;
+	DEFB	8
+	DEFW	CURSOR
+	DEFW	CRTMEM		;base address is 3000h
+	DEFB	02 		;use non-blinking box cursor
+	DEFW	CRTMEM		;direct CRT memory output address
+	DEFB	23		;initial scroll base
+	DEFB	0		;initial leadin
+	DEFB	0		;initial attribute
+;
+;	Initialize configurable parameter addresses
+;
+	DEFB	2*NUMCON
+	DEFW	CONTBL		;configure table address
+CFINIT:	DEFW	SIOMSK		;printer output ready mask
+	DEFW	SIOVAL		;printer output ready value
+	DEFW	XONENB		;Xon/Xoff enable/disable (NOP or RET)
+ 	DEFW	STEPRT		;step rate for WD1797
+	DEFW	SPARE1
+	DEFW	SPARE2
+NUMCON	EQU	($-CFINIT)/2
+	DEFB	2*2
+	DEFW	AVAILB
+	DEFW	IOBLOC+IOBDVS
+	DEFW	RAM-280H
+	DEFB	-1		;end of variable init table
+;
+;	I/O port initialization.
+;
+;	Initialize system PIO for use as bank-switch,
+;	configuration select, and parallel keyboard input
+;
+	DEFB	1,SYSCTL
+	DEFB	01001111B	;select input mode
+	DEFB	1,SYSPIO
+	DEFB	10000000B	;enable ROM
+	DEFB	3,SYSCTL
+	DEFB	11001111B	;put system PIO in bit mode
+	DEFB	00111111B	;make bits 5, 4, 3, 2, 1, and 0 be inputs
+	DEFB	00000111B	;disable interrupts
+	DEFB	3,KBDCTL
+	DEFB	01001111B	;put keyboard port in input mode
+	DEFB	SYSVEC+2	;load keyboard interrupt vector
+	DEFB	10000011B	;enable interrupts
+;
+;	Initialize Counter Timer Circuit.
+;
+	DEFB	2,CTC0
+	DEFB	00000011B	;reset timer
+	DEFB	LOW CTCVEC	;base interrupt vector for CTC
+	DEFB	2,CTC1
+	DEFB	00000111B	;start timer, but no interrupts
+	DEFB	250		;CTC1 period = 1 msec
+	DEFB	2,CTC2
+	DEFB	00100111B	;put CTC2 in timer / 256 mode (64 usec/count)
+ 	DEFB	125		;CTC2 period = 8 msec
+	DEFB	2,CTC3
+	DEFB	11000111B	;put CTC3 in counter mode with interrupt
+	DEFB	125		;CTC3 period = 125*8 msec = 1 second
+;
+;	Initialize SIO channel B for asynchronous serial
+;	interface to printer or terminal
+;
+	DEFB	10,SIOCPB
+	DEFB	1		;select register #1
+	DEFB	00000000B	;disable interrupts
+	DEFB	2		;select register #2
+	DEFB	LOW SIOVEC	;base SIO interrupt vector
+	DEFB	3		;select register #3
+	DEFB	01000001B	;7 bits/Rx characters
+	DEFB	4		;select register #4
+	DEFB	01000111B	;16x clock, 1 stop bit, even parity enabled
+	DEFB	5		;select register #5
+	DEFB	10101010B	;DTR, 7 bits/Tx character, Tx enb, RTS
+	DEFB	1,BAUDB
+	DEFB	0111B		;default clock is 1200 bps
+;
+;	Initialize communications port for async modem interface
+;
+	DEFB	8,SIOCPA
+	DEFB	1		;select register #1
+	DEFB	00000000B	;disable interrupts
+	DEFB	3		;select register #3
+	DEFB	01000001B	;7 bits/Rx characters
+	DEFB	4		;select register #4
+	DEFB	01000111B	;16x clock, 1 stop bit, even parity enabled
+	DEFB	5		;select register #5
+	DEFB	10101010B	;DTR, 7 bits/Tx character, Tx enb, RTS
+	DEFB	1,BAUDA
+	IF	DEBUG
+	DEFB	1110B		;debug clock is 9600 bps
+	ELSE
+	DEFB	0101B		;default clock is 300 bps
+	ENDIF
+	DEFB	1,ASYNC		;set internal Rx+Tx clocks
+	DEFB	0
+;
+;	Initialize PIO for Centronics style printer
+;
+	DEFB	3,GPIOCA
+	DEFB	11001111B	;mode 3
+	DEFB	00000000B	;all output
+	DEFB	00000111B	;no interrupts
+	DEFB	3,GPIOCB
+	DEFB	11001111B	;mode 3
+	DEFB	11110000B	;upper nibble in, lower out
+	DEFB	00000111B	;no interrupts
+	DEFB	1,GPIODB
+	DEFB	(1 SHL P.STRB) OR (1 SHL P.AUTO)
+	DEFB	-1		;end of I/O init table
+	SUBTTL	RESIDENT MONITOR ENTRY POINTS
+	PAGE
+;
+;	Resident monitor entry points.
+;
+;	This Entry Point Vector provides the only reliable access
+;	to services provided by the Resident Monitor.  Any access
+;	to code in the Monitor or its RAM page past the keyboard
+;	variables is not allowed.  Future releases of the Resident
+;	Monitor will always provide compatability with these entry
+;	vectors.
+;
+;	This restriction also applies to the Resident Monitor RAM
+;	Page at the top of memory.  Access to RAM Variables must
+;	be obtained through the appropriate entry vector.
+;
+	ABOVE
+COLD:	JP	RESTART		;monitor restart
+WARM:	JP	PROMPT		;monitor entry point
+CONST:	JP	KBDST		;console status to A
+CONIN:	JP	KBDIN		;console input to A
+CONOUT:	JP	CRTOUT		;console output from A
+	JP	FASTCRT		;fast CRT output from C
+	JP	SIOST		;SIO channel B status to A
+	JP	SIOIN		;SIO channel B input to A
+	JP	SIOOUT		;SIO channel B output from A
+	JP	SELECT		;select drive in C
+	JP	HOME		;home R/W head
+	JP	SEEK		;seek to track in C
+	JP	READ		;read sector C -> buffer @ HL
+	JP	WRITE		;write sector C <- buffer @ HL
+	JP	XQDVR		;execute physical driver request @ HL 
+	JP	SETCUR		;set direct CRT cursor from HL
+	JP	OUTCUR		;direct CRT display
+	JP	CRTLDIR		;CRT memory block move ala` LDIR
+	JP	GETSEL		;return address of disk mapping table to HL
+	JP	DAYTIM		;return address of Time-of-Day
+	JP	CONFIG		;return configuration status
+	JP	SIORDY		;SIO channel B output ready status
+	JP	SETCON		;set configuration
+	JP	SSP		;start screen print
+USRSEC:	JP	NULINT		;user accessible 1 second interrupt
+	JP	IOCONS		;console status through iobyte
+	JP	IOCONI		;console input through iobyte
+	JP	IOCONO		;console output through iobyte
+	JP	IOLIST		;printer output through iobyte
+	JP	IOLSTS		;printer status through iobyte
+	JP	COMINS		;communications input ready status
+	JP	COMINP		;communications input data to A
+	JP	COMOUT		;communications output data from C
+	JP	COMOTS		;communications output ready status
+IDLE:	JP	NULINT		;idle while I/O is pending
+	JP	SOFT		;record soft error
+	DEFS	16,-1		;space for option ROM linkage
+	SUBTTL	MONITOR FUNCTION PROCESSORS
+	PAGE
+;
+;	Monitor Restart.
+;
+RESTART:DI			;lock system
+	IN	A,(SYSPIO)
+	OR	1 SHL 7		;enable banked ROM
+	OUT	(SYSPIO),A
+	JP	PRS		;reload monitor from ROM or RAM
+;
+;	DAYTIM - Return Address of Time-of-Day.
+;
+DAYTIM:	LD	DE,DAY		;point to day of month
+	JR	RETVAL
+;
+;	CONFIG - Return Configuration Status Byte.
+;
+CONFIG:	LD	A,(MASK)	;turn keyboard mask into C.KEYM
+	AND	080H
+	OR	0
+CONFG	EQU	$-1	;*****=>;This word stored by Preset
+	LD	E,A
+	LD	D,REV-400	;return revision level
+	JR	RETVAL
+;
+;	GETSEL - Get address of Select table.
+;
+GETSEL:	LD	DE,SELTAB	;set select table address
+;
+;	RETVAL - Return Value to Caller.
+;
+RETVAL:	INC	H		;see if high level language call
+	DEC	H
+	JR	Z,RETV1		;if assembly level call
+	LD	(HL),E		;store answer in variable
+	INC	HL
+	LD	(HL),D
+RETV1:	EX	DE,HL		;leave result in HL as well
+EIRET:	EI
+	RET
+;
+;	SETCON - Set Configuration.
+;
+SETCON:	LD	A,(HL)		;get configuration table index
+	RES	7,A
+	CP	NUMCON
+	RET	NC		;if index out of range
+	LD	E,A
+	LD	A,(HL)		;get read/write flag
+	INC	HL
+	LD	B,(HL)		;get configuration data
+	LD	D,0
+	LD	HL,CONTBL	;set address of configuration table addresses
+	ADD	HL,DE
+	ADD	HL,DE
+	LD	E,(HL)		;get configurable byte address
+	INC	HL
+	LD	D,(HL)
+	EX	DE,HL
+	BIT	7,A		;set direction
+	LD	A,(HL)		;get previous value
+	RET	Z		;if asking current configuration
+	LD	(HL),B		;store new configuration
+	RET
+;
+;	SSP - Start Screen Print.
+;
+SSP:	LD	A,3+((24+1) SHL 2)	;start with CR/LF
+	LD	(SPACT),A
+	XOR	A
+	LD	(SPCNT),A
+	LD	A,81H		;start millisecond timer
+	OUT	(CTC1),A
+	RET
+	SUBTTL	CONSOLE / PRINTER DRIVERS
+	PAGE
+	ABOVE			;run this code upstairs
+;
+;	KBDST - Keyboard Status.
+;
+;	Returns A =  0 if no character
+;		A = -1 if character available
+;
+KBDST:	LD	A,(FIFCNT)	;get input FIFO bytecount
+	OR	A
+	RET	Z		;if keyboard queue is empty
+;
+;	SOFT - Record soft error.
+;
+SOFT:	OR	-1		;set ready / error status
+	RET
+;
+;	KBDIN - Keyboard Input.
+;
+;	Returns A = character
+;
+KBDIN1:	CALL	IDLE		;idle CPU
+KBDIN:	CALL	KBDST
+	JR	Z,KBDIN1	;loop until keyboard input ready
+	PUSH	HL
+	CALL	REMOVE		;get keyboard entry
+	POP	HL
+KBMASK:	AND	07FH
+MASK	EQU	$-1	;*****=>;this byte modified by ESC 0/1
+	RET
+;
+;	SIOST - SIO channel B input ready status.
+;
+SIOST:	IN	A,(SIOCPB)	;get SIO status register
+	AND	00000001B
+	RET	Z		;if no data available
+	LD	A,-1
+	RET
+;
+;	SIOIN - SIO channel B input character.
+;
+SIOIN1:	CALL	IDLE		;idle CPU
+SIOIN:	CALL	SIOST		;test console status
+	JR	Z,SIOIN1	;loop until data is
+	IN	A,(SIODPB)	;ready at SIO data port
+	RET
+;
+;	SIOOUT - SIO channel B output character.
+;
+SIOOUT:	PUSH	AF
+SIOX1:	CALL	SIORDY
+	CALL	Z,IDLE		;idle CPU if transmitter not ready
+	JR	Z,SIOX1
+	POP	AF
+	OUT	(SIODPB),A	;output data to SIO
+	RET
+;
+;	SIORDY - SIO channel B output ready ststus.
+;
+SIORDY:	LD	A,10H		;reset status latch
+	OUT	(SIOCPB),A
+	IN	A,(SIOCPB)
+	AND	00000100B	;test TBE status bit
+SIOMSK	EQU	$-1	;*****=>;modified at run time
+	XOR	00000100B
+SIOVAL	EQU	$-1	;*****=>;modified at run time
+	JR	Z,SIORD1	;if hardware is ready
+	XOR	A
+	RET
+SIORD1:	OR	-1		;set ready status
+XONENB:	NOP		;*****=>;put RET here to disable Xon/Xoff
+	CALL	SIOST
+	JR	Z,SIORD3	;if input not available
+	CALL	SIOIN
+	AND	7FH
+	SUB	XOFF
+	JR	Z,SIORD2	;if printer said Stop
+	SUB	XON-XOFF
+	JR	NZ,SIORD3	;if not Resume
+	CPL			;set printer ready
+SIORD2:	LD	(XOFFLG),A
+SIORD3:	LD	A,-1
+XOFFLG	EQU	$-1	;*****=>;set ^S pending flag
+	OR	A
+	RET
+;
+;	REMOVE - Remove key from FIFO.
+;
+REMOVE:	LD	HL,FIFCNT	;decrement FIFO count
+	DEC	(HL)
+	LD	HL,FIFOUT	;point HL to FIFO output offset
+INDEX:	INC	(HL)		;advance FIFO pointer
+	RES	4,(HL)		;modulo 16
+	LD	A,LOW FIFO
+	ADD	A,(HL)		;index into FIFO by offset
+	LD	L,A
+	LD	A,(HL)		;fetch character in FIFO
+NULINT:	RET
+	SUBTTL	INTERRUPT SERVICE ROUTINES
+	PAGE
+;
+;	ISR - Interrupt Service Routines.
+;
+SERVICE	MACRO
+	LD	(SAVSTK),SP	;save user stack pointer and
+	LD	SP,INTSTK	;switch to local stack
+	PUSH	HL		;save machine state
+	PUSH	AF
+	ENDM
+;
+;	KEYSRV - Parallel Keyboard Interrupt Service.
+;
+KEYSRV: SERVICE			;save state
+	PUSH	BC
+	IN	A,(KBDDAT)	;read keyboard input port
+	CPL
+	CP	SCRPRT
+	JR	NZ,KEY2		;if not screen print key
+	LD	A,(SPACT)
+	OR	A
+	JR	Z,KEY1		;if screen not printing now
+	LD	A,3+(1 SHL 2)	;set state to CR/LF/stop
+	LD	(SPACT),A	;set screen print state
+	XOR	A
+	LD	(SPCNT),A	;restart character counter
+	JR	KEY5
+KEY1:	CALL	SSP		;start screen print
+	JR	KEY5
+KEY2:	LD	HL,FIFCNT	;bump input FIFO character count
+	CP	ABORT		;check user Abort Key
+	JR	Z,KEY3		;warm start system
+	LD	C,A
+	LD	A,(HL)
+	INC	A
+	CP	16
+	JR	NC,KEY5		;exit now if FIFO is full
+	LD	(HL),A
+	LD	HL,FIFIN	;point HL to FIFO input offset
+	CALL	INDEX
+	LD	(HL),C		;store character in FIFO @ HL
+	JR	KEY5
+KEY3:	CALL	RETINS		;release PIO interrupt controller
+	LD	B,3
+KEY4:	LD	(HL),0		;clear FIFO count
+	INC	L		;and FIFO in/out pointers
+	DJNZ	KEY4
+	CALL	CRTOFF		;turn CRT memory off
+	CALL	WARM		;and warm start system
+KEY5:	POP	BC
+	JR	RFI		;return from interrupt
+;
+;	TIMER - Once per second interrupt.
+;
+TIMER:	SERVICE
+	LD	HL,(TIKCNT)	;advance binary seconds counter
+	INC	HL
+	LD	(TIKCNT),HL
+	CALL	USRSEC		;invoke user's interrupt routine
+	LD	HL,TIMOUT	;decrement disk turn-off timer
+	DEC	(HL)
+	JR	NZ,TIMER1	;exit if not timed out yet
+	IN	A,(SYSPIO)
+	AND	11111000B	;disable all drive selects which
+	OUT	(SYSPIO),A	;turns off spindle motors
+TIMER1:	PUSH	BC
+	LD	B,2
+	LD	A,59
+	LD	HL,SECS		;point at wall clock
+TIMER2:	INC	(HL)		;increment seconds
+	CP	(HL)
+	JR	NC,TIMER3	;if not one minute or hour
+	LD	(HL),0
+	DEC	HL
+	DJNZ	TIMER2
+	LD	A,23
+	INC	(HL)		;increment hours
+	CP	(HL)
+	JR	NC,TIMER3	;if not one day
+	LD	(HL),0
+	PUSH	DE
+	DEC	HL
+	DEC	HL
+	LD	C,(HL)		;get month
+	DEC	HL		;point to day
+	LD	DE,DPM-1	;point to day/month table
+	EX	DE,HL
+	ADD	HL,BC
+	LD	A,(HL)		;get number of days
+	EX	DE,HL
+	POP	DE
+	INC	(HL)		;increment day
+	CP	(HL)
+	JR	NC,TIMER3	;if not end of month
+	LD	(HL),1		;reset day in month
+	INC	HL
+	INC	(HL)		;increment month
+	LD	A,11
+	CP	(HL)
+	JR	NC,TIMER3	;if not New Year's Eve
+	LD	(HL),1		;wrap December to January
+	INC	HL
+	INC	(HL)		;signal Guy Lombardo
+TIMER3:	POP	BC
+;
+;	RFI - Return From Interrupt.
+;
+RFI:	POP	AF
+	POP	HL
+	LD	SP,0		;restore stack
+SAVSTK	EQU	$-2	;*****=>;this word modified at runtime
+	EI			;re-enable interrupts and return
+RETINS:	RETI
+;
+;	Table of Days Per Month.
+;
+DPM:	DB	31		;January
+	DB	28		;Febuary
+	DB	31		;March
+	DB	30		;April
+	DB	31		;May
+	DB	30		;June
+	DB	31		;July
+	DB	31		;August
+	DB	30		;September
+	DB	31		;October
+	DB	30		;November
+	DB	31		;December
+;
+;	MILLI - Millisecond timer interrupt service.
+;
+MILLI:	SERVICE
+	LD	HL,(MILSEC)
+	INC	HL		;increment millisecond counter
+	LD	(MILSEC),HL
+	LD	A,0		;set screen print flag
+SPACT	EQU	$-1	;*****=>;this byte modified at runtime
+	LD	H,A
+	AND	3
+	JR	Z,MILL6		;if not printing screen
+	LD	L,A
+	CALL	SIORDY		;get printer status
+	JR	Z,MILL6		;if printer not ready
+	DEC	L
+	JR	NZ,MILL2	;if not character print state
+	IN	A,(SYSPIO)	;get PIO state
+	PUSH	AF
+	CALL	CRTON
+	LD	A,0		;get character count
+SPCNT	EQU	$-1	;*****=>;byte modified at runtime
+	DEC	A
+	JP	M,MIL0		;if end of line
+	LD	(SPCNT),A
+	LD	HL,0		;set next character address
+SPADDR	EQU	$-2	;*****=>;word modified at runtime
+	LD	A,(HL)
+	OUT	(SIODPB),A	;fire hammer
+	INC	L		;advance screen cursor
+	XOR	A		;do not advance state
+	JR	MILL1		;if not end of line
+MIL0:	LD	A,1+(24 SHL 2)	;set address of next print line
+	SUB	H
+	RRA
+	SRA	A
+	CALL	CCA		;compute cursor address
+	PUSH	HL		;save next line address
+	PUSH	BC
+	LD	B,80		;delete trailing blanks
+	LD	A,L
+	ADD	A,B
+	LD	L,A
+MIL01:	DEC	L
+	LD	A,(HL)		;get next character
+	AND	7FH
+	CP	' '
+	JR	NZ,MIL02	;if not trailing blank
+	DJNZ	MIL01
+MIL02:	LD	A,B
+	LD	(SPCNT),A	;set number of characters to print
+	POP	BC
+	POP	HL
+	LD	A,3		;set CR next state
+MILL1:	LD	(SPADDR),HL	;set next display address
+	LD	HL,SPACT	;set state variable
+	OR	(HL)		;advance state
+	LD	(HL),A
+	POP	AF		;get PIO back
+	OUT	(SYSPIO),A
+	JR	MILL6
+MILL2:	DEC	L		;check next state
+	LD	HL,SPACT	;set state address
+	JR	NZ,MILL4	;if not LF state
+	LD	A,(HL)
+	SUB	1 SHL 2		;advance line counter
+	LD	(HL),A
+	CP	2-(1 SHL 2)
+	JR	NZ,MILL3
+	LD	A,1		;disable CTC interrupt
+	OUT	(CTC1),A
+	LD	(HL),A
+MILL3:	LD	A,LF		;set line feed
+	JR	MILL5
+MILL4:	LD	A,CR		;set carriage return
+MILL5:	OUT	(SIODPB),A	;move paper or carriage
+	DEC	(HL)
+MILL6:	JP	RFI		;return from interrupt
+	
+	SUBTTL	CRT DRIVER
+	PAGE
+;
+;	SETCUR - Set direct display cursor position.
+;
+SETCUR:	LD	(DIRCUR),HL	;set up cursor address
+	RET
+;
+;	OUTCUR - Store character directly to CRT memory.
+;
+OUTCUR:	CALL	CRTON		;turn on CRT bank
+	LD	HL,(DIRCUR)	;fetch direct cursor
+	LD	(HL),C		;store character
+	INC	HL
+	LD	(DIRCUR),HL
+;
+;	CRTOFF - Turn CRT RAM off.
+;
+CRTOFF:	DI			;lock PIO access
+	IN	A,(SYSPIO)
+CRTOF1:	RES	7,A		;reset CRT bank enable
+	EI			;unlock PIO access
+CRTON1:	OUT	(SYSPIO),A
+	RET
+;
+;	CRTON - Turn CRT RAM on.
+;
+CRTON:	DI			;lock time-out interrupt
+	IN	A,(SYSPIO)	;get PIO status
+	SET	7,A		;enable bank
+	JR	CRTON1
+;
+;	CRTLDIR - Block move from/to CRT memory.
+;
+;	Entry:	HL = Source address
+;		DE = Destination address
+;		BC = Number of bytes to move
+;		A  = 0 - Move CRT RAM to CRT RAM
+;		A  < 0 - Move sys RAM to CRT RAM 
+;		A  > 0 - Move CRT RAM to sys RAM
+;
+CRTLDIR:LD	(USRSTK),SP	;do not use callers stack
+	LD	SP,CRTSTK	;since it may disappear
+	AND	A		;set entry conditions
+	CALL	CRTON
+	JR	Z,CRTMV		;block move within CRT RAM
+	JP	P,LDIR2		;if move from CRT RAM to system RAM
+LDIR1:	XOR	80H
+LDIR2:	OUT	(SYSPIO),A	;enable source bank
+	PUSH	HL		;save move source address
+	LD	HL,-80		;count down one transfer buffer
+	ADC	HL,BC
+	EX	(SP),HL		;save overflow, retrieve source address
+	JP	M,LDIR3		;if less than one buffer
+	LD	BC,80		;transfer one buffer
+LDIR3:	PUSH	BC		;save byte count
+	PUSH	DE		;save destination address
+	LD	DE,LINBUF	;set upper buffer
+	LDIR			;move data to upper RAM
+	POP	DE
+	POP	BC
+	IN	A,(SYSPIO)	;enable destination bank
+	XOR	80H
+	OUT	(SYSPIO),A
+	PUSH	HL		;save source address
+	LD	HL,LINBUF	;set upper  buffer
+	LDIR			;move data from buffer to destination
+	POP	HL
+	POP	BC		;retrieve bytes left to transfer
+	LD	A,B
+	AND	A
+	JP	M,CRTMVO	;no more move, turn CRT RAM off and return
+	OR	C
+	JR	Z,CRTMVO	;if no more
+	IN	A,(SYSPIO)
+	JR	LDIR1		;continue transfer one buffer at a crack
+CRTMV:	LDIRS
+CRTMVO:	CALL	CRTOFF		;turn CRT RAM off
+	LD	SP,(USRSTK)
+	RET
+	IF	LDIRSM
+;
+;	SIMLDIR - Simulate LDIR for broken hardware.
+;
+SIMLDIR:LD	A,(HL)		;move one byte
+	LD	(DE),A
+	INC	HL		;advance addresses
+	INC	DE
+	DEC	BC		;decrement byte count
+	LD	A,B
+	OR	C
+	JR	NZ,SIMLDIR	;if move incomplete
+	RET
+	ENDIF
+	SUBTTL	RESIDENT CRT DRIVER.
+	PAGE
+;
+;	CRTOUT - CRT Output Driver.
+;
+;	Entry:	Character in register A
+;		16 bytes of stack space available
+;	Exit:	Character displayed, all registers saved
+;
+CRTOUT:	PUSH	HL		;maintain users registers on his stack
+	PUSH	DE
+	PUSH	BC
+	PUSH	AF
+	LD	C,A		;set character to process
+	CALL	FASTCRT		;process character quickly
+	POP	AF		;restore callers registers
+	POP	BC
+	POP	DE
+	POP	HL
+	RET
+;
+;	FASTCRT - Fast CRT driver.
+;
+;	Entry:	Character in C
+;	Exit:	The only register preserved is SP
+;		Peeking in register A reveals valuable characters.
+;
+FASTCRT:LD	(USRSTK),SP	;do not use callers stack
+	LD	SP,CRTSTK	;since it may disappear
+	PUSH	IX		;since PLINK ignores register usage rules
+	IN	A,(SYSPIO)	;read system PIO
+	OR	A		;set bank enable status
+	PUSH	AF		;save status for exit code
+	CALL	CRTON		;turn on CRT memory
+	EI			;enable interrupts
+	CALL	CRTDVR		;execute CRT driver ROM
+	POP	AF		;get previous bank enable status
+	CALL	P,CRTOFF	;disable bank now if it was disabled on entry
+	POP	IX
+	LD	A,0		;sneak balcones golden characters to FAST users
+GOLD	EQU	$-1
+	LD	SP,USRSTK	;restore callers stack
+USRSTK	EQU	$-2	;*****=>;this operand word is modified at runtime
+	RET
+;
+;	CCA - Compute Cursor Address.
+;
+;	Entry:	A = Row
+;
+CCA:	LD	H,A
+	LD	A,(BASE)
+	ADD	A,H
+CCA1:	INC	A		;entry with base absolute
+CCA2:	SUB	24		;ditto
+	JR	NC,CCA2
+	ADD	A,24+2*CRTBAS
+	LD	H,A
+	LD	L,0
+	SRA	H
+	RR	L
+	RET
+;
+;	RSTATT - Restore Previous Attribute.
+;
+RSTATT:	LD	BC,0		;execute previous attribute routine
+LSTATT	EQU	$-2
+	PUSH	BC
+	RET
+SETPRV:	PUSH	HL
+	LD	HL,SETLOW
+PRVATT	EQU	$-2
+	LD	(LSTATT),HL
+	LD	(PRVATT),BC
+	POP	HL
+	RET
+	SUBTTL	ROM-RESIDENT CRT DRIVER
+	PAGE
+	BELOW			;execute in banked ROM
+;
+;	CRTDVR - Crt Driver Proper.
+;
+CRTDVR:	LD	HL,(CURSOR)	;set cursor address
+	LD	A,(CHRSAV)	;retrieve character under cursor
+	LD	(HL),A		;replace character under cursor
+	LD	(GOLD),A	;bury balcones gold
+	LD	A,(LEADIN)	;set leadin state
+	OR	A
+	JR	NZ,CRTD2	;if processing escape sequence
+	LD	A,(MASK)	;get keyboard mask
+	AND	C
+	LD	C,A
+	CP	' '
+	JR	C,CRTD2		;if control code
+CRTD1:	LD	A,(ATTRIB)
+	OR	C
+	LD	(HL),A		;store displayable character
+	INC	L		;advance pointer to next column
+	LD	A,L
+	AND	01111111B	;extract column# from HL
+	CP	80
+	JR	C,CRTD3		;if end of line not reached
+	XOR	L
+	LD	L,A		;return cursor to left side
+	CALL	LFEED		;execute line feed
+	JR	CRTD3
+CRTD2:	CALL	CONTRL		;process control character
+CRTD3:	LD	(CURSOR),HL	;save cursor pointer for next time
+	LD	A,(HL)		;get character at new cursor location
+	LD	(CHRSAV),A	;save for next time 'CRTOUT' is called
+	LD	A,(CSRCHR)	;get cursor character
+	CP	' '
+	RET	Z		;if no cursor
+	LD	C,A
+	LD	A,(HL)
+	RES	7,A
+	CP	' '
+	LD	A,C		;set character used for cursor
+	JR	Z,CRTD4		;if character is a space
+	LD	A,(HL)		;toggle attribute
+	XOR	80H
+CRTD4:	LD	(HL),A		;store cursor character
+	RET
+;
+;	MULTI - Process multiple character escape sequence.
+;
+MULTI:	EX	DE,HL		;unconditionally reset the lead-in
+	LD	(HL),0		;state to zero
+	EX	DE,HL
+	DEC	A
+	JR	NZ,SETXY1	;if not initial state
+	LD	A,C		;get second character of sequence
+	IF	(OPTIONS AND O.ESCT) EQ 0
+	CP	'='
+	JR	NZ,MULTI1
+	LD	A,2
+	LD	(DE),A
+	RET
+MULTI1:	POP	AF		;pitch return address
+	JR	CRTD1
+	ENDIF
+	IF	(OPTIONS AND O.ESCT) NE 0
+;
+;	Escape table search
+;
+	PUSH	HL
+	LD	HL,ESCTAB
+	LD	BC,ESCTBL
+SEARCH:	CPIR
+	ADD	HL,BC
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	POP	HL
+	RET	NZ
+	PUSH	BC
+	RET
+	ENDIF			;options and o.esct
+;
+;	Set attribute modes.
+;
+SETLOW:	OUT	(LOWLITE),A	;set low-light mode
+	JP	SETPRV
+SETBLI:	OUT	(CHROM2),A	;select ROM 2
+	XOR	A		;select standard character set
+	JR	MODE1
+SETINV:	OUT	(CHROM2),A	;select ROM 2
+	JR	MODE	
+SETGRA:	OUT	(CHROM1),A	;select ROM 1
+MODE:	LD	A,40H		;select alternate character set
+MODE1:	CALL	SETPRV		;set up previous attribute
+	LD	B,A
+	DI			;lock system
+	IN	A,(SYSPIO)	;read system PIO
+	RES	6,A		;clear ROM select bit
+	OR	B
+	EI			;unlock
+	OUT	(SYSPIO),A	;set or reset display mode
+	RET
+;
+;	Enable/disable (D7) display of selected attribute mode
+;
+ENATR:	LD	A,80H
+;	JR	DIS1
+	DB	6 ;LD B,	;skip XOR
+DISATR:	XOR	A
+DIS1:	LD	(ATTRIB),A
+	RET
+;
+;	SETMSK - Select 7 or 8 bit data from keyboard
+;
+SETMSK:	RRCA			;get low order bit as upper bit mask
+	OR	7FH
+	LD	C,A
+	LD	DE,MASK
+	LD	A,(DE)
+	LD	(GOLD),A	;stash balcones gold
+	LD	A,C
+	LD	(DE),A		;store keyboard mask
+	RET
+;
+;	Process cursor position sequence.
+;
+SETXY:	LD	A,2
+	LD	(DE),A		;make leadin=2 next time
+	RET
+SETXY1:	DEC	A
+	JR	NZ,M3TST	;if not in state 2
+	LD	L,A		;clear low cursor pos
+	LD	A,3
+	LD	(DE),A		;set state 3 for next time
+SETROW:	LD	A,C
+	AND	07FH		;strip parity bit
+	SUB	' '
+	RET	C		;if illegal character
+	CP	24
+	RET	NC
+	JP	CCA		;compute cursor address
+M3TST:	DEC	A
+	JR	NZ,M4TST	;if not ready for column
+SETCOL:	LD	A,C
+	AND	07FH		;strip parity bit
+	SUB	' '		; of esc,'=',row,col sequence
+	RET	C
+	CP	80
+	RET	NC
+	OR	L		;merge in col# with L
+	LD	L,A
+	RET
+M4TST:	DEC	A
+	JR	NZ,M5TST	;if not escape state 4
+	POP	DE		;pitch address of CRT D3
+	JP	CRTD1		;display character in C
+M5TST:	LD	A,(CSRCHR)
+	LD	(GOLD),A	;stash balcones gold
+	LD	A,C
+	LD	(CSRCHR),A	;store new cursor character
+	RET
+;
+;	CONTRL - Process control character.
+;
+CONTRL:	LD	DE,LEADIN	;point at leadin state
+	JP	NC,MULTI	;if multi code sequence in progress
+	CP	'E'-64
+	RET	C		;control character is out of range
+	PUSH	HL		;save cursor
+	LD	HL,CTLTAB-('E'-64)*2
+	LD	B,0
+	ADD	HL,BC		;index through control character table
+	ADD	HL,BC
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)		;get address of control subroutine
+	POP	HL
+	PUSH	BC
+	RET			;execute control code driver
+	IF	(OPTIONS AND O.ESCT) EQ 0
+CTLTAB:	DEFW	DEFCUR		;Ctrl-e is define new cursor character
+	DEFW	RSTATT		;Ctrl-f is restore previous attribute mode
+	DEFW	BELL		;Ctrl-g is the bell
+	DEFW	BAKSPC		;Ctrl-h is cursor left
+	DEFW	TAB		;Ctrl-i is tab
+	DEFW	LFEED		;Ctrl-j is cursor down
+	DEFW	UPCSR		;Ctrl-k is cursor up
+	DEFW	FORSPC		;Ctrl-l is cursor right
+	DEFW	RETURN		;Ctrl-m is carriage return
+	DEFW	SETMSK		;Ctrl-n is strip keyboard upper bit
+	DEFW	SETMSK		;Ctrl-o is pass keyboard upper bit
+	DEFW	ENATR		;Ctrl-p is enable screen upper bit
+	DEFW	CLREOS		;Ctrl-q is clear to end-of-screen
+	DEFW	SETLOW		;Ctrl-r is set lo-lite mode
+	DEFW	SETINV		;Ctrl-s is set inverse video mode
+	DEFW	SETGRA		;Ctrl-t is set graphics mode
+	DEFW	SETBLI		;Ctrl-u is set blinking mode
+	DEFW	LININS		;Ctrl-v is line insert
+	DEFW	LINDEL		;Ctrl-w is line delete
+	DEFW	CLREOL		;Ctrl-x is clear to end-of-line
+	DEFW	DISATR		;Ctrl-y is disable screen upper bit
+	DEFW	CLRSCN		;Ctrl-z is clear screen
+	DEFW	ESCAPE		;Ctrl-[ is escape
+	DEFW	CHRINS		;Ctrl-\ is character insert
+	DEFW	CHRDEL		;Ctrl-] is character delete
+	DEFW	HOMEUP		;Ctrl-^ is home up
+	DEFW	STUFF		;Ctrl-_ is display control chars
+CTLSIZ	EQU	$-CTLTAB
+	ENDIF			;options and o.esct
+	IF	(OPTIONS AND O.ESCT) NE 0
+CTLTAB:	DEFW	DEFCUR		;Ctrl-e is define new cursor character
+	DEFW	RSTATT		;Ctrl-f is restore previous attribute mode
+	DEFW	BELL		;Ctrl-g is the bell
+	DEFW	BAKSPC		;Ctrl-h is cursor left
+	DEFW	TAB		;Ctrl-i is tab
+	DEFW	LFEED		;Ctrl-j is cursor down
+	DEFW	UPCSR		;Ctrl-k is cursor up
+	DEFW	FORSPC		;Ctrl-l is cursor right
+	DEFW	RETURN		;Ctrl-m is carriage return
+	DEFW	NONO		;Ctrl-n is not acceptable
+	DEFW	NONO		;Ctrl-o is not acceptable
+	DEFW	NONO		;Ctrl-p is not acceptable
+	DEFW	CLREOS		;Ctrl-q is clear to end-of-screen
+	DEFW	NONO		;Ctrl-r is not acceptable
+	DEFW	NONO		;Ctrl-s is not acceptable
+	DEFW	NONO		;Ctrl-t is not acceptable
+	DEFW	NONO		;Ctrl-u is not acceptable
+	DEFW	NONO		;Ctrl-v is not acceptable
+	DEFW	NONO		;Ctrl-w is not acceptable
+	DEFW	CLREOL		;Ctrl-x is clear to end-of-line
+	DEFW	NONO		;Ctrl-y is not acceptable
+	DEFW	CLRSCN		;Ctrl-z is clear screen
+	DEFW	ESCAPE		;Ctrl-[ is escape
+	DEFW	NONO		;Ctrl-\ is not acceptable
+	DEFW	NONO		;Ctrl-] is not acceptable
+	DEFW	HOMEUP		;Ctrl-^ is home up
+	DEFW	STUFF		;Ctrl-_ is display control chars
+CTLSIZ	EQU	$-CTLTAB
+;
+;	Escape sequence table.
+;
+;	Maintains functional compatibility with terminals supporting
+;	ADM-3a style supersets.
+;
+ESCTAB:	DB	'('		;disable attribute (Soroc/Televideo, et.al)
+	DB	')'		;enable atribute (Soroc/Televideo, et.al)
+	DB	'*'		;clear screen (Soroc/Televideo, et.al)
+	DB	'0'		;strip keyboard upper bit
+	DB	'1'		;pass keyboard upper bit
+	DB	'4'		;char font and blinking
+	DB	'5'		;char font and graphics
+	DB	'6'		;char font and blinking
+	DB	'7'		;char font and inverse video
+	DB	'8'		;char font and lo-light
+	DB	'='		;position cursor
+	DB	'E'		;line insert (Televideo, et.al)
+	DB	'Q'		;character insert (Televideo, et. al)
+	DB	'R'		;line delete (Televideo, et. al)
+	DB	'W'		;character delete (Televideo, et. al)      
+	DB	'T'		;clear to end of line (Televideo, et. al)
+	DB	'Y'		;clear to end of screen (Televideo, et. al)
+ESCTBL	EQU	$-ESCTAB
+ESCADR:	DEFW	CLREOS
+	DEFW	CLREOL
+	DEFW	CHRDEL
+	DEFW	LINDEL
+	DEFW	CHRINS
+	DEFW	LININS
+	DEFW	SETXY
+	DEFW	SETLOW
+	DEFW	SETINV
+	DEFW	SETBLI
+	DEFW	SETGRA
+	DEFW	SETBLI
+	DEFW	SETMSK
+	DEFW	SETMSK
+	DEFW	CLRSCN
+	DEFW	ENATR
+	DEFW	DISATR
+	IF1
+	IF	($-ESCADR)/2 NE ESCTBL
+	.PRINTX	ESCAPE TABLE MISMATCH
+	ENDIF
+	ENDIF
+	ENDIF			;o.esct and options
+;
+;	ESCAPE - Initialize escape sequence.
+;
+ESCAPE:	LD	A,1
+	LD	(DE),A		;set sequence state
+NONO:	RET			;for escape processing
+;
+;	STUFF - Enable next char to be stored directly.
+;
+STUFF:	LD	A,4
+	LD	(DE),A		;set sequence state
+	RET			;for control character output mode
+;
+;	DEFCUR - Enable next chara to be new cursor.
+;
+DEFCUR:	LD	A,5
+	LD	(DE),A
+	RET
+;
+;	HOMEUP - Move cursor to upper left.
+;
+HOMEUP:	LD	C,' '		;use cursor addressing routine
+	JP	SETROW		;to do homeup almost for free
+;
+;	BAKSPC - Move cursor left.
+;
+BAKSPC:	LD	A,L		;check for left margin
+	AND	01111111B
+	RET	Z		;abort if in leftmost column
+	DEC	L		;back up cursor pointer
+	RET
+;
+;	FORSPC - Move cursor right.
+;
+FORSPC:	LD	A,L		;check for rightmost colunm
+	AND	01111111B
+	CP	79
+	RET	NC		;do nothing if already there
+	INC	L
+	RET			;else advance the cursor pointer
+;
+;	UPSCR - Move cursor up.
+;
+UPCSR:	LD	DE,-128		;subtract 1 from row# component
+	ADD	HL,DE		; of cursor pointer in HL
+	LD	A,H
+	CP	CRTBAS		;check for underflow of pointer
+	RET	NC
+	LD	H,CRTTOP-1	;wrap cursor around modulo 3k
+	RET
+;
+;	DNCSR - Move cursor down.
+;
+DNCSR:	LD	DE,128		;add 1 to row# component
+	ADD	HL,DE		; of cursor pointer in HL
+	LD	A,H
+	CP	CRTTOP		;check for overflow of pointer
+	RET	C
+	LD	H,CRTBAS	;reset pointer modulo 128*24
+	RET
+;
+;	RETURN - Move cursor to left side.
+;
+RETURN:	LD	A,L		;clear column
+	AND	10000000B
+	LD	L,A		;move cursor pointer back
+	RET			; to start of line
+;
+;	LFEED - Move cursor down with scroll.
+;
+LFEED:	LD	A,L
+	RLA
+	LD	A,H
+	RLA			;extract row# component of HL
+	AND	00011111B
+	LD	C,A		;copy row# into C for scroll test
+	CALL	DNCSR		;move cursor to next row down
+	LD	A,(BASE)	;test if cursor was on bottom row
+	SUB	C		;of screen before moving down
+	LD	(GOLD),A	;send scroll flag back to fast users
+	RET	NZ		;exit if not at bottom
+	PUSH	HL		;prepare scroll screen up
+	LD	A,(USRSTK+1)
+	INC	A
+	CALL	NZ,BBG		;bury balcones gold, unless monitor running
+	CALL	CLRLIN		;fill top line with spaces
+	ADD	HL,HL
+	LD	A,H		;get row# component of HL into A
+	AND	00011111B
+	LD	(BASE),A	;store new base line#
+	OUT	(SCROLL),A	;scroll top line to bottom
+	POP	HL		;restore cursor
+	RET
+;
+;	TAB - Move cursor to next tab stop.
+;
+TAB:	LD	DE,8		;tabs are every 8 columns
+	LD	A,L		;get column component of
+	AND	01111000B	;previous tab position
+	ADD	A,E
+	CP	80
+	RET	NC		;if next tab column past end of line
+	LD	A,L
+	AND	11111000B	;advance cursor to next tab stop
+	LD	L,A
+	ADD	HL,DE
+	RET
+;
+;	BELL - Move speaker back and forth.
+;
+BELL:	LD	A,BLTIM		;Bell time constant
+BELL1:	OUT	(BELLON),A	;push speaker out
+	LD	B,BLONC		;set Bell on time constant
+	DJNZ	$		;pause B*2 micro seconds
+	OUT	(BELLOF),A	;yank speaker in
+	LD	B,BLOFC		;set Bell off time constant
+	DJNZ	$
+	DEC	A
+	JR	NZ,BELL1	;if more noise to make
+	RET
+;
+;	CLRLIN - Clear line.
+;
+CLRLIN:	CALL	RETURN		;return cursor and fall through clreol
+;
+;	CLREOL - Clear to end of line.
+;
+CLREOL:	LD	A,L
+	AND	01111111B	;get column component of cursor posistion
+	CP	80
+	RET	NC		;if someone busted curpos
+	NEG
+	ADD	A,80		;calculate number of characters to clear
+	LD	B,A
+	LD	A,L		;save cursor column
+CLR1:	LD	(HL),' '	;clear next location
+	INC	L
+	DJNZ	CLR1		;if end of line not clear
+	LD	L,A		;restore cursor column
+	RET
+;
+;	CLRSCN - Clear visible screen memory.
+;
+CLRSCN:	LD	HL,CRTMEM	;home cursor
+	LD	A,23
+	LD	(BASE),A	;put line 23 at bottom of screen
+	OUT	(SCROLL),A	;note scroll register gets A8-A12, not d0-d7
+;
+;	CLREOS - Clear to end of screen.
+;
+CLREOS:	CALL	CLREOL		;clear remainder of current row
+	PUSH	HL		;save cursor location
+CLRS1:	LD	BC,(BASE)	;set bottom screen row to C
+	LD	A,L
+	RLA
+	LD	A,H
+	RLA			;get row# component of HL into A
+	AND	00011111B
+	CP	C
+	JR	Z,CLRS2		;if HL is on bottom row of screen
+	CALL	DNCSR		;point HL to next row
+	CALL	CLRLIN		;and fill that line with spaces
+	JR	CLRS1
+CLRS2:	POP	HL		;restore original cursor pointer
+	RET
+;
+;	LINDEL - Line delete.
+;
+LINDEL:	PUSH	HL		;save cursor address
+	CALL	BBG		;bury balcones gold
+	ADD	HL,HL
+	LD	A,H
+	AND	00011111B	;extract row
+	LD	BC,(BASE-1)	;get base screen row in B
+LIND1:	CALL	SMP		;set move parameters
+	CP	B
+	JR	Z,LIND2		;if last line
+	PUSH	BC		;B=last line, C=row
+	LD	BC,80
+	LDIRS
+	POP	BC
+	LD	A,C
+	INC	A
+	CP	24
+	JR	C,LIND1
+	XOR	A		;wrap
+	JR	LIND1		;move next line
+LIND2:	EX	DE,HL
+LIND3:	CALL	CLRLIN
+	POP	HL		;restore original cursor
+	RET
+;
+;	LININS - Line insert.
+;
+LININS:	PUSH	HL		;save cursor position
+	LD	A,23		;get bottom line
+	CALL	CCA		;compute cursor address
+	CALL	BBG		;bury balcones gold
+	POP	HL
+	PUSH	HL
+	ADD	HL,HL
+	LD	A,H
+	AND	00011111B	;extract cursor row
+	LD	B,A
+	LD	A,(BASE)	;set last line
+LINI1:	CP	B
+	JR	Z,LINI3		;if move complete
+	DEC	A
+	JP	P,LINI2
+	LD	A,23
+LINI2:	CALL	SMP		;set move parameters
+	EX	DE,HL
+	PUSH	BC
+	LD	BC,80
+	LDIRS
+	POP	BC
+	IF	LDIRSM
+	LD	A,C
+	ENDIF
+	JR	LINI1		;move next line
+LINI3:	POP	HL
+	PUSH	HL		;restore cursor
+	JR	LIND3		;clear cursor line
+;
+;	SMP - Set move parameters.
+;
+SMP:	LD	C,A		;save row
+	IF	0
+	LD	L,0
+	LD	E,L
+	ADD	A,CRTBAS SHL 1	;set screen address
+	LD	D,A
+	RR	D
+	RR	E		;destination address
+	INC	A		;advance row
+	LD	H,A
+	RR	H
+	RR	L
+	CP	CRTBAS*2+24
+	JR	NZ,SMP2		;if not on last line
+	LD	H,CRTBAS
+SMP2:
+	ELSE
+	CALL	CCA2
+	EX	DE,HL
+	LD	A,C
+	CALL	CCA1
+	ENDIF
+	LD	A,C
+	RET
+;
+;	CHRINS - Character insert.
+;
+CHRINS:	PUSH	HL
+	LD	A,L		;set cursor column
+	AND	01111111B	;set move length = 79-column
+	NEG
+	ADD	A,79
+	LD	B,A		;number of characters to move
+	LD	A,(HL)		;get character under cursor
+	LD	(HL),' '	;clear character under cursor
+	JR	Z,CHRIN2	;if cursor in last column
+CHRIN1:	INC	L
+	LD	C,(HL)
+	LD	(HL),A
+	LD	A,C
+	DJNZ	CHRIN1
+CHRIN2:	LD	(GOLD),A	;shift line into the gold mine
+	POP	HL
+	RET
+;
+;	CHRDEL - Character delete.
+;
+CHRDEL:	PUSH	HL
+	LD	A,L
+	AND	01111111B	;isolate cursor column
+	NEG
+	ADD	A,79
+	LD	C,A		;number of chars to move = 79-column
+	LD	B,0
+	LD	D,H
+	LD	E,L
+	LD	A,(DE)
+	LD	(GOLD),A	;mine balcones gold
+	INC	HL
+	IF	LDIRSM
+	CALL	NZ,SIMLDIR	;if cursor not in last column
+	ELSE
+	CALL	NZ,LDIRX
+	ENDIF
+	EX	DE,HL
+	LD	(HL),' '	;blank last character on line
+	POP	HL		;restore cursor
+	RET
+;
+;	BBG - Bury balcones gold.
+;
+BBG:	CALL	RETURN
+	LD	DE,LINBUF	;balcones diamonds are forever
+	LD	BC,80
+LDIRX:	LDIR
+	RET
+	SUBTTL	LOGICAL TO PHYSICAL DRIVER EXECUTIONER
+	PAGE
+	ABOVE			;code goes in RAM
+;
+;	XQDVR - Execute Physical Driver.
+;
+;	Entry:	HL = Pointer to Physical Drive Request Block
+;
+;	Exit:	See Physical Driver
+;
+XQDVR:	INC	HL		;point at physical unit
+	PUSH	HL
+	INC	HL
+	LD	E,(HL)		;set logical drive
+	LD	HL,SELTAB	;Set driver mapping table address
+	LD	D,0
+	ADD	HL,DE		;index into driver select table
+	ADD	HL,DE
+	LD	E,(HL)		;set physical driver index
+	INC	HL
+	LD	A,(HL)		;set physical unit
+	LD	HL,DVRTAB	;set driver table address
+	ADD	HL,DE
+	ADD	HL,DE
+	LD	E,(HL)		;set physical driver address
+	INC	HL
+	LD	D,(HL)
+	POP	HL		;recover request block address
+	LD	(HL),A		;store physical unit
+	DEC	HL
+	PUSH	DE		;execute physical driver
+	RET
+	SUBTTL	PHYSICAL DISK DRIVER AREA
+	PAGE
+;
+;	Physical Disk Driver Area.
+;
+;	1.25k of space is reserved here for the Physical Disk Drivers.
+;	These drivers are assembled separately and included prior
+;	to ROM production.
+;
+	ABOVE
+;
+;	Waste space to get drivers on page boundry.
+;
+WASTED:
+BNDRY	EQU	0FH
+	IF	($ AND BNDRY) NE 0
+	DEFS	BNDRY+1-($ AND BNDRY),-1
+	ENDIF
+SELTAB:	DEFM	'SELTAB AND PHYSICAL DRIVERS HERE'
+	DEFS	32-($-SELTAB),0	;Drive Select Mapping Table goes here
+DVRTAB:	REPT	8		;Physical Driver Address Table goes here
+	DEFW	SELERR
+	ENDM
+DSKDVR:
+WD17DL	EQU	298H
+SASIDL	EQU	300H
+FIVDPB	EQU	$+8*16+26+6+4*16
+RIGDPB	EQU	FIVDPB+WD17DL
+IOBLOC	EQU	FIVDPB+SASIDL
+	IF	OPTIONS AND O.DDVR
+	DEFS	FIVDPB-DSKDVR+WD17DL+SASIDL,-1	;Disk Drivers here
+	ENDIF
+DVRLMT:				;disk driver limit
+RQTOP	EQU	$		;set required top of resident monitor
+SELERR:	LD	HL,0
+	OR	-1
+	RET
+	SUBTTL	820 STYLE DISK DRIVER EMULATOR
+	PAGE
+;
+;	820 Style Disk Driver Emulator.
+;
+	ABOVE			;generate code in RAM
+PHYCMD:	DEFB	-1		;physical Driver Command
+PHYUNT:	DEFB	-1		;physical unit
+PHYDRV:	DEFB	00		;logical unit
+PHYTRK:	DEFW	00		;track
+PHYSEC:	DEFW	01		;sector
+PHYDMA:	DEFW	BOOTBF		;dma address
+;
+;	SELECT - Select Unit for I/O.
+;
+;	Entry:	C  = Unit
+;	Exit:	A  = 0  if no errors
+;		A  = -1 if errors
+;
+;	Select is documented as not switching units if the new unit
+;	is not ready.  This is not a very good idea.  This driver
+;	does remember the new unit, so that a seek/read/write will fail.
+;
+SELECT:	LD	A,C		;set drive selected
+	CP	8
+	JR	NC,SEL1
+	LD	(PHYDRV),A	;save logical CP/M drive
+	LD	HL,SELTBL	;set select table address
+	LD	B,0
+	ADD	HL,BC		;index into select table
+	LD	A,(HL)
+	OR	A
+	EX	DE,HL
+	LD	H,A		;in case previous select worked, say no DPH
+	LD	L,A		;to internal routines
+	RET	Z		;if drive has already been selected
+	PUSH	DE		;save table address
+	LD	B,-1		;set Select operation
+	CALL	XQPHYS		;execute physical driver
+	LD	A,L		;get returned DPH address
+	OR	H
+	POP	DE		;retrieve select table address
+	JR	Z,SEL1		;if select unsuccessful
+	XOR	A		;return no errors
+	LD	(DE),A		;prevent more density re-selects
+	RET
+SEL1:	OR	-1		;return error
+	RET
+;
+;	HOME - Position to track zero.
+;
+HOME:	LD	C,0		;force track zero
+;
+;	SEEK - Seek Track.
+;
+;	Entry:	C  = Track to read/write from next
+;
+SEEK:	LD	A,C
+	LD	(PHYTRK),A
+	XOR	A		;return no errors
+	RET
+;
+;	WRITE - Write Physical Sector.
+;
+WRITE:	LD	B,0		;set write operation
+	JR	RDWR
+;
+;	READ - Read Physical Sector.
+;
+READ:	LD	B,1		;set read operation
+;
+;	RDWR - Read/Write Processor.
+;
+;	Entry:	C  = Sector
+;		HL = Transfer Address
+;	Exit:	A  = 0 if no errors
+;		A  = -1 if errors
+;
+RDWR:	LD	A,C
+	LD	(PHYSEC),A	;set physical sector
+	LD	(PHYDMA),HL	;set transfer address
+;
+;	XQPHYS - Internal Execute Physical Driver.
+;
+;	Entry:	B  = -1 for Select
+;		B  =  0 for Write
+;		B  =  1 for Read
+;
+XQPHYS:	LD	HL,PHYCMD	;point to physical command block
+	LD	(HL),B		;store operation
+	CALL	XQDVR		;execute driver
+	OR	A		;set flags
+	RET
+;
+;	Emulator Disk I/O RAM.
+;
+SELTBL:	DEFB	-1,-1,-1,-1	;drive already selected table
+	DEFB	-1,-1,-1,-1
+	SUBTTL	COMMAND PROCESSOR
+	PAGE
+	ABOVE			;put code upstairs
+;
+;	Prompt user for command.
+;
+PROMPT:	EI
+	LD	SP,STACK	;reset system stack
+	CALL	PNEXT
+	DEFB	CR,LF
+	DEFM	'* '
+	DEFB	EOT
+	LD	HL,LINBUF
+	LD	C,80		;buffer of 80 chars (ver. 2.0)
+	CALL	GETLIN		;input a bufered console line
+	JR	C,WHAT		;print 'what ?' if input error
+AUTOBT:	LD	A,(LINBUF)	;get first character in line
+	CP	CR
+	JR	Z,PROMPT	;jump if a null line
+	SUB	'@'
+	CP	'Z'-'@'+1
+	JR	NC,WHAT		;if not letter
+	ADD	A,A
+	LD	C,A
+	LD	B,0
+	LD	HL,CMDTAB+1	;index command table with character
+	ADD	HL,BC
+	LD	A,(HL)
+	DEC	HL
+	LD	L,(HL)		;get address of command processor
+	LD	H,A
+	AND	80H
+	JR	NZ,PRMT1	;if resident command
+	LD	DE,CLOC		;move transient command to RAM area
+	PUSH	DE
+	LD	BC,TPAMAX	;set length of largest transient
+	DI
+	IN	A,(SYSPIO)
+	OR	A
+	PUSH	AF
+	CALL	P,CRTON		;enable ROM if disabled
+	LDIR
+	POP	AF
+	CALL	P,CRTOFF	;disable ROM if enabled
+	EI
+	POP	HL		;set execution address
+PRMT1:	PUSH	HL
+	CALL	CRLF
+	LD	IY,LINBUF+1
+	CALL	PARAMS		;input numeric parameters from
+	POP	IX		;line buffer and test if error
+	LD	HL,(PARAM1)
+	LD	DE,(PARAM2)
+	LD	BC,(PARAM3)
+	CALL	JPIX		;call subroutine @ IX
+	JR	NC,PROMPT	;go back to prompt if no errors
+WHAT:	CALL	PNEXT
+	DEFM	' What?'
+	DEFB	'G'-64		;say 'what ?' and squeal
+	DEFB	EOT
+	JR	PROMPT
+JPIX:	JP	(IX)		;call subroutine @ ix
+CMDTAB:	DEFW	HELP		;@ - Help user
+	DEFW    BOOT            ;a - boot cp/m
+	DEFW	BAUD		;b - bit rate
+	DEFW	BLOCK		;c - memory block move
+	DEFW	MEMDMP		;d - dump memory in hex/ascii
+	DEFW	VIEW		;e - enter memory
+	DEFW	FILL		;f - fill memory
+	DEFW	GOTO		;g - goto program
+	DEFW	TERM		;h - host terminal
+	DEFW	INCMD		;i - read from input port
+	DEFW	WHAT		;j - not used
+	DEFW	WHAT		;k - not used
+	DEFW	BOOT		;l - load system
+	DEFW	VIEW		;m - memory examine/change
+	DEFW	WHAT		;n - not used
+	DEFW	OUTCMD		;o - write to output port
+	DEFW	PROTO		;p - printer protocol
+	DEFW	WHAT		;q - not used
+	DEFW	DSKCMD		;r - display disk sector data
+	DEFW	WHAT		;s - not used
+	DEFW	TYPE		;t - typewriter mode
+	DEFW	WHAT		;u - not used
+	DEFW	VERCMD		;v - memory block compare
+	DEFW	DSKCMD		;w - disc sector write command
+	DEFW	TEST		;x - RAM diagnostic
+	DEFW	WHAT		;y - not used
+	DEFW	WHAT		;z - not used
+CMDSIZ	EQU	$-CMDTAB
+CHECK:	CP	(HL)
+	RET	Z		;return if (HL)=A
+	PUSH	AF
+	CALL	MDATA		;print what was actually read
+	CALL	PNEXT
+	DEFM	'Should='
+	DEFB	EOT
+	POP	AF
+	JR	PUT2J
+MDATA:	CALL	CRLF
+	CALL	PUT4HS
+	LD	A,(HL)
+PUT2J:	JP	PUT2HS
+	SUBTTL	CONSOLE SUPPORT ROUTINES
+	PAGE
+;
+;	GETLIN - Read line into buffer.
+;
+GETHLP:	LD	A,'@'
+	LD	(LINBUF),A
+	LD	A,CR
+	LD	(LINBUF+1),A
+	RET
+GETLIN:	LD	B,C		;save max line length parameter in B
+GLIN1:	CALL	ECHO		;get a character from the console
+	CP	HELPKEY
+	JR	Z,GETHLP	;if user needs help
+	LD	(HL),A
+	CP	CR		;check for carriage return
+	RET	Z		;if end of line
+	CP	'H'-64		;check for ctl-H backspace
+	JR	Z,GLIN4
+	CP	' '
+	RET	C		;other control characters are illegal
+	INC	HL		;store character in buffer
+	DEC	C
+	JR	NZ,GLIN1	;get another if there's more room
+	SCF
+	RET			;return with carry=1 if too
+				;many characters are entered
+GLIN4:	DEC	HL		;delete last character from buffer
+	CALL	PNEXT
+	DEFB	' ','H'-64	;delete character from screen
+	DEFB	EOT
+	INC	C
+	LD	A,B		;set max line length
+	SUB	C
+	JR	NC,GLIN1	;if backspace not past the start of the line
+	RET
+PARA0:	INC	IY		;advance character scan
+PARAMS:	LD	BC,LOW -1	;set parameter index
+	LD	A,(IY+0)	;fetch character
+	SUB	CR
+	RET	Z		;if no parameters
+	SUB	' '-CR
+	JR	Z,PARA0		;if leading blanks
+PARA1:	INC	C		;advance parameter index
+	BIT	2,C
+	SCF
+	RET	NZ		;error if > 4 numbers entered
+PARA2:	PUSH	BC		;save parameter count
+	CALL	GETHEX		;read a number from line buffer
+	POP	BC
+PARA4:	LD	IX,PARAM1	;point to parameter storage area
+	ADD	IX,BC		;add parameter count in bc
+	ADD	IX,BC
+	LD	(IX+0),L
+	LD	(IX+1),H	;store data returned from 'GETHEX'
+	CP	' '
+	JR	Z,PARA1		;get another item if space
+	CP	','
+	JR	Z,PARA1		;get another item if comma
+	LD	A,C		;set parameter count
+	INC	A
+	RET
+;
+;	DUMP - Dump memory.
+;
+DUMP:	PUSH	HL		;save starting address
+	CALL	PUT4HS		;print starting address in hex
+	CALL	SPACE
+	LD	B,16
+DUMP2:	LD	A,16-1		;skip 3 columns on 16 byte boundry
+	CALL	DMPFMT
+	LD	A,8-1		;skip 2 columns on 8 byte boundry
+	CALL	DMPFMT
+	LD	A,4-1		;skip 1 column  on 4 byte boundry
+	CALL	DMPFMT
+	LD	A,(HL)		;get a data byte @ HL
+	INC	HL
+	CALL	PUT2HS		;print the data in hex
+	DJNZ	DUMP2		;repeat 16 times
+	CALL	SPACE
+	POP	HL		;restore starting address
+	LD	B,16
+DUMP3:	LD	A,1FH		;force next character
+	CALL	CONOUT
+	LD	A,(HL)		;get back data byte @ HL
+	INC	HL
+	CALL	CONOUT		;print ASCII character in A
+	DJNZ	DUMP3
+	CALL	CONST		;check console status
+	JR	Z,DUMP4		;if character not ready
+	CALL	CONIN		;read character
+	CP	CR
+	RET	Z		;if user abort
+	CALL	CONIN		;pause while user examines display
+	CP	CR
+	RET	Z		;if user found it
+DUMP4:	CALL	CRLF		;send end of line
+	DEC	DE
+	LD	A,D
+	OR	E
+	JR	NZ,DUMP		;if dump not complete
+	RET
+;
+;	GETHEX - Converts ASCII to binary.
+;
+;	Carry set on illegal conversion result
+;	Terminating character returns in A.
+;	HL returns with 16 bit binary integer
+;
+GETHEX:	LD	HL,0		;preset result
+	LD	D,H
+	LD	E,L
+GNUM1:	ADD	HL,HL		;multiply result by 16
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,DE		;append next digit
+GNUM3:	LD	A,(IY+0)	;get next character from line buffer
+	LD	C,A
+	INC	IY		;advance buffer address
+	CALL	HEXBIN		;convert one ASCII hex to binary
+	LD	E,A
+	JR	NC,GNUM1
+	LD	A,C		;return first non hex digit
+	OR	A
+	RET
+;
+;	HEXBIN - Convert hex to binary.
+;
+HEXBIN:	SUB	'0'
+	RET	C
+	CP	10
+	CCF
+	RET	NC
+	SUB	7
+	CP	10
+	RET	C
+	CP	16
+	CCF
+	RET
+PUT2HX:	PUSH	AF
+	RRA
+	RRA
+	RRA
+	RRA
+	CALL	PUTNIB
+	POP	AF
+PUTNIB:	AND	00001111B
+	ADD	A,90H
+	DAA
+	ADC	A,40H
+	DAA
+	JR	OUTPUT
+PUT4HS:	LD	A,H
+	CALL	PUT2HX
+	LD	A,L
+PUT2HS:	CALL	PUT2HX
+;
+;	SPACE - Output space.
+;
+SPACE:	LD	A,' '		;fall through to output space
+OUTPUT:	JP	CONOUT		;display character
+;
+;	DMPFMT - Dump Command Output Formatter.
+;
+DMPFMT:	AND	L		;check address boundry
+	RET	NZ		;if not on boundry
+	JR	SPACE		;skip one column
+;
+;	ECHO - Read and echo console character.
+;
+;	Echo inputs one character from the console
+;	device, prints it on the console output and
+;	then returns it in the A register in upper case.
+;
+ECHO:	CALL	CONIN		;input a character and echo it
+	CP	HELPKEY
+	RET	Z		;do not echo help key
+	CALL	CONOUT
+	CP	'A'
+	RET	C		;if not lower case
+	SUB	'A'-'A'		;convert lower case to upper case
+	RET
+;
+;	CRLF - Carriage Return/Line Feed.
+;
+CRLF:	CALL	PNEXT		;print next message
+	DEFB	CR,LF,EOT
+	RET
+;
+;	PNEXT - Print message after call.
+;
+PNEXT:	EX	(SP),HL		;set message address
+	LD	A,(HL)
+	INC	HL
+	EX	(SP),HL		;set return address
+	CP	EOT
+	RET	Z
+	CALL	CONOUT
+	JR	PNEXT
+	IF	OPTIONS AND (O.MOVE OR O.VERF)
+;
+;	Set block address for move and verify.
+;
+BLOCAD:	EX	DE,HL
+	OR	A		;clear carry
+	SBC	HL,DE		;get diffrence between
+	EX	DE,HL		;HL & DE for bytecount
+	PUSH	DE		;exchange DE, BC
+	LD	D,B
+	LD	E,C
+	POP	BC
+	INC	BC		;get count+1 into BC
+	RET
+	ENDIF
+	RET
+	SUBTTL	TRANSIENT COMMAND AREA
+	PAGE
+CLOC	DEFL	$		;establish overlay execution address
+	OVERLAY	START
+;
+;	SIGNON - Announce System Ready.
+;
+SIGNON:	EX	AF,AF'
+	CALL	CRTOFF		;disable ROM/RAM
+	EX	AF,AF'
+	JR	Z,SIGN4		;if Rx1984 loaded disk driver
+	EX	AF,AF'		;get system PIO data
+	LD	HL,CONFG	;point to configuration byte
+	BIT	0,A
+	JR	Z,SIGN3		;if SASI interface present
+	DI
+	LD	A,11001111B	;set PIO B in Bit Mode
+	OUT	(SYSCTL),A
+	LD	A,00111000B	;turn around d0,1,2
+	OUT	(SYSCTL),A
+	OUT	(SYSPIO),A	;drop all drive selects
+	LD	A,0D0H		;reset WD-1797-02
+	OUT	(WD1797),A
+SIGN1:	DJNZ	SIGN1		;wait 1797 not busy
+	IN	A,(SYSPIO)
+	BIT	C.FIVE,A
+	LD	A,2		;preset 10 msec step rate
+	JR	NZ,SIGN2	;if not 5"
+	SET	C.FIVE,(HL)
+	LD	A,3		;set long step
+SIGN2:	OUT	(WD1797),A	;restore / unload heads
+	LD	(STEPRT),A
+	JR	SIGN4
+SIGN3:	SET	C.SASI,(HL)	;set SASI card installed
+	LD	HL,RIGDPB	;set address of rigid DPB
+	LD	DE,FIVDPB	;set address of 5.25" floppy DPB
+	LD	BC,SASIDL	;set SASI driver length
+	LDIR			;Move driver down
+	AND	2
+	JR	NZ,SIGN4	;if not A/E swap
+	LD	HL,SELTAB+1
+	LD	B,8
+SIGN3A:	LD	A,(HL)
+	XOR	4
+	LD	(HL),A
+	INC	HL
+	INC	HL
+	DJNZ	SIGN3A
+SIGN4:	CALL	PNEXT
+	DEFB	CLRS		;clear screen
+	IF	OPTIONS AND O.ESCT
+	DEFB	ESC,'8'		;set low light as default mode
+	ELSE
+	DEFB	'R'-'@'
+	ENDIF
+	DEFM	'820-II v '
+	DEFB	REV/100+'0','.',(REV MOD 100)/10+'0',(REV MOD 10)+'0'
+	DEFM	' ',31,28,' 1982 Xerox Corp'
+	DEFB	CR,LF
+	IF	OPTIONS AND O.AUTO
+	DEFB	7,EOT
+	LD	B,-1		;select drive A:
+	CALL	XQPHYS		;execute physical driver
+	LD	A,L
+	OR	H
+	JR	Z,SIGN5
+	LD	B,1		;read drive A:
+	CALL	XQPHYS
+	LD	HL,'L'+CR*256
+	LD	(LINBUF),HL
+	JP	Z,AUTOBT	;if auto booting	
+SIGN5:	CALL	PNEXT
+	ENDIF
+	DEFB	LF
+	DEFM	'L - Load System'
+	DEFB	CR,LF
+	IF	OPTIONS AND O.TERM
+	DEFM	'H - Host Terminal'
+	DEFB	CR,LF
+	ENDIF
+	IF	OPTIONS AND O.TYPE
+	DEFM	'T - Typewriter'
+	DEFB	CR,LF
+	ENDIF
+	DEFB	7,EOT
+EATME:	CALL	CONST
+	JP	Z,WARM		;go enter monitor
+	CALL	CONIN
+	JR	EATME
+	SUBTTL	I/O BYTE DRIVERS
+	PAGE
+	OVERLAY	IOBDVR
+	.DEPHASE
+	.PHASE	IOBLOC
+;
+;	COMINS - Communications input status.
+;
+COMINS:	IN	A,(SIOCPA)
+	RRCA
+	SBC	A,A
+	RET
+;
+;	COMINP - Communications input data.
+;
+COMINP:	IN	A,(SIOCPA)
+	RRCA
+	JR	NC,COMINP
+	IN	A,(SIODPA)
+	JP	KBMASK
+;
+;	COMOUT - Communications output.
+;
+COMOUT:	CALL	COMOTS
+	JR	Z,COMOUT
+	LD	A,C
+	OUT	(SIODPA),A
+	RET
+;
+;	COMOTS - Communications output status.
+;
+COMOTS:	IN	A,(SIOCPA)
+	AND	4
+	RET	Z
+	OR	-1
+	RET
+;
+;	CONIOB - get console I/O byte.
+;
+CONIOB:	LD	A,(IOBYTE)
+	AND	00000011B
+	RET
+;
+;	IOCONO - Console output through IOBYTE.
+;
+IOCONO:	CALL	CONIOB
+	JR	Z,COMOUT
+	DEC	A
+	JP	Z,FASTCRT
+	LD	A,C
+	JP	SIOOUT
+;
+;	IOCONS - Console status through IOBYTE.
+;
+IOCONS:	CALL	CONIOB
+	JR	Z,COMINS
+	DEC	A
+	JP	Z,KBDST
+	JP	SIOST
+;
+;	IOCONI - Console input through IOBYTE.
+;
+IOCONI:	CALL	CONIOB
+	JR	Z,COMINP
+	DEC	A
+	JP	Z,KBDIN
+	JP	SIOIN
+;
+;	LSTOUT - List output through IOBYTE.
+;
+IOLIST:	LD	A,(IOBYTE)
+	AND	11000000B
+	JR	Z,COMOUT
+	JP	PE,PIOOUT
+	LD	A,C
+	JP	M,SIOOUT
+	JP	FASTCRT
+;
+;	List output through IOBYTE.
+;
+IOLSTS:	LD	A,(IOBYTE)
+	AND	11000000B
+	JR	Z,COMOTS
+	JP	PE,PIOSTO
+	JP	M,SIORDY
+	OR	-1
+	RET
+;
+;	Parallel Output Driver.
+;
+PIOOUT:	CALL	PIOSTO
+	JR	Z,PIOOUT	;if printer not ready
+	LD	A,C
+	OUT	(GPIODA),A	;load character data
+	IN	A,(GPIODB)
+	RES	P.STRB,A	;assert strobe
+	OUT	(GPIODB),A
+	SET	P.STRB,A	;release stobe
+	OUT	(GPIODB),A
+	LD	A,10		;delay for ACK
+PIO1:	DEC	A
+	JR	NZ,PIO1
+	RET	
+;
+;	Parallel Output Status.
+;
+PIOSTO:	IN	A,(GPIODB)	;read status
+	CPL
+	AND	1 SHL P.RDYO
+	RET	Z		;if ready
+	OR	-1
+	RET
+IOBDVS	EQU	$-IOBLOC
+	.DEPHASE
+	.PHASE	CLOC+IOBDVS
+	SUBTTL	TRANSIENT COMMAND PROCESSORS
+	PAGE
+	IF	OPTIONS AND O.DDVR
+;	-- disk boot loader command --
+;
+	OVERLAY	BOOT
+	LD	HL,LINBUF+1
+BOOT1:	LD	A,(HL)		;scan command line
+	INC	L
+	SUB	CR
+	JR	Z,BOOT2		;if no parameter, boot from A:
+	CP	' '-CR
+	JR	Z,BOOT1		;skip leading blanks
+	SUB	'A'-CR
+	RET	C		;if invalid drive
+	CP	16
+	CCF
+	RET	C		;if bad drive
+BOOT2:	LD	C,A		;set boot drive selected
+	ADD	A,'A'
+	LD	(BOOTD),A	;set up error message
+	LD	L,0		;set A:
+	PUSH	BC
+	PUSH	HL
+	CALL	SWAP		;switch boot drive with A:
+	LD	HL,BOOTER	;set boot error return
+	PUSH	HL
+	LD	C,0		;then boot from A:
+	CALL	SELECT
+	RET	NZ		;if drive not configured or density error
+	LD	A,-1
+	LD	(DE),A
+	LD	DE,10		;set DPB address offset within DPH
+	ADD	HL,DE
+	LD	E,(HL)		;set DPB address
+	INC	HL
+	LD	D,(HL)
+	CALL	HOME
+	LD	C,1		;set sector 1
+	LD	A,(DE)		;get low sectors per track
+	LD	(BOOTS),A	;inform boot loader
+	OR	A
+	JR	NZ,BOOT3	;if not rigid
+	LD	HL,13		;set reserved track offset within DPB
+	ADD	HL,DE
+	LD	C,(HL)		;get reserved tracks
+	INC	HL
+	LD	B,(HL)
+	DEC	BC		;point behind directory
+	LD	(PHYTRK),BC	;do implied seek
+	LD	C,A		;set sector zero for rigid
+BOOT3:	LD	HL,BOOTBF	;point to boot load buffer
+	CALL	READ		;read cold start loader
+	RET	NZ		;if read error
+	LD	DE,BOOTLD+128-1	;set boot loader address
+	LD	HL,BOOTBF+128-1
+	LD	BC,128
+	LDDR			;move front half of boot loader to 80h
+	INC	DE
+	LD	A,(DE)		;verify instructions read in
+	CP	0E5H
+	RET	Z		;if disk has no system
+	LD	HL,MONITR
+	LD	(WARM+1),HL	;set warm start to reload monitor
+	CALL	LCP		;load configuration parameters
+	LD	HL,IOBDVR	;load IOBYTE driver
+	LD	DE,IOBLOC
+	LD	BC,IOBDVS
+	XOR	A
+	CALL	CRTLDIR
+	LD	HL,BOOTLD	;set start address
+	LD	A,0
+BOOTS	EQU	$-1		;sectors per track
+	LD	DE,PHYCMD	;tell boot loader from whence he came
+	JP	(HL)		;execute Boot Loader with return to booter
+;
+;	BOOTER - Boot Error Processor.
+;
+BOOTER:	CALL	PNEXT
+	DEFB	7
+BOOTD:	DEFM	'D: Load Error.'
+	DEFB	EOT
+	POP	BC		;switch drives back
+	POP	HL
+;
+;	SWAP - Swap logical drives.
+;
+;	Entry:	C = first  drive index, 0-15
+;		L = second drive index, 0-15
+;
+SWAP:	LD	B,0		;clear upper indices
+	LD	H,B
+	LD	DE,SELTAB	;set select table address
+	ADD	HL,HL
+	ADD	HL,DE
+	EX	DE,HL		;set second address to DE, get seltab to HL
+	ADD	HL,BC
+	ADD	HL,BC		;set first address to HL
+	LD	B,2
+SWAP1:	LD	C,(HL)		;swap two bytes
+	LD	A,(DE)
+	LD	(HL),A
+	LD	A,C
+	LD	(DE),A
+	INC	HL
+	INC	DE
+	DJNZ	SWAP1		;if swap not complete
+	RET
+;
+;	LCP - Load Configuration Parameters.
+;
+LCP:	LD	A,10000001B	;default I/O byte to CRT: and LPT:
+	LD	(IOBYTE),A
+	LD	A,(BOOTS)	;get boot diskette type
+	OR	A
+	LD	C,32
+	LD	HL,BOOTBF	;use boot loader buffer
+	JR	Z,LCP1		;if rigid, use system track, sector 32
+	CP	26+1
+	RET	C		;no parameters from single density boots
+	LD	C,3		;dd configuration comes from track 0, sector 3
+	LD	HL,BOOTBF+128	;use second half of boot loader buffer
+LCP1:	CALL	READ
+	RET	NZ		;if can't read configuration
+	LD	A,(BOOTBF+128)
+	SUB	0E5H
+	RET	Z
+	LD	A,(Z.XONP)	;configure Xon-Xoff
+	OR	A
+	JR	Z,LCP2
+	CP	0C9H
+	RET	NZ
+LCP2:	LD	(XONENB),A
+	LD	A,(Z.STPR)	;configure step rate
+	LD	(STEPRT),A
+	LD	A,(Z.SCRA)	;configure screen attribute
+	LD	(LCPA),A
+	LD	A,(Z.KEYM)	;configure keyboard mask
+	LD	(LCPB),A
+	CALL	PNEXT
+	DEFB	ESC
+LCPA:	DEFB	0
+	DEFB	ESC
+LCPB:	DEFB	0
+	DEFB	EOT
+	LD	HL,Z.SIOA	;configure SIO channels
+	LD	A,2
+LCP3:	LD	B,(HL)		;get number of bytes
+	INC	HL
+	LD	C,(HL)		;get port address
+	INC	HL
+	OTIR
+	DEC	A
+	JR	NZ,LCP3
+	LD	A,(Z.BAUA)	;configure channel A bit rate
+	OUT	(BAUDA),A
+	LD	A,(Z.BAUB)	;configure channel B bit rate
+	OUT	(BAUDB),A
+	LD	A,(Z.SIOM)	;configure printer ready mask
+	LD	(SIOMSK),A
+	LD	A,(Z.SIOV)	;configure printer ready value
+	LD	(SIOVAL),A
+	LD	A,(Z.IOBT)	;configure I/O byte
+	LD	(IOBYTE),A
+	RET
+	ELSE
+BOOT	EQU	WHAT
+	ENDIF
+;
+;	-- goto to memory location command --
+;
+	OVERLAY	GOTO
+	OR	A
+	SCF
+	RET	Z		;if no parameters
+	PUSH	HL		;set goto address
+	POP	IX		;LD	IX,HL
+	EX	DE,HL		;set second argument to HL
+	LD	A,L		;and A
+	LD	D,B		;set third argument to DE
+	LD	E,L
+	LD	BC,(PARAM4)	;set fourth argument to BC
+	CALL	JPIX
+	CALL	PUT2HS		;print A register
+	JP	PUT4HS
+;
+;	-- memory dump command --
+;
+	OVERLAY	MEMDMP
+	DEC	A		;check parameter count
+	JR	Z,MDMP2
+	DEC	A
+	JR	Z,MDMP3
+MDMP1:	LD	HL,(LAST)
+MDMP2:	LD	DE,16
+	JR	MDMP3B
+MDMP3:	EX	DE,HL
+	SBC	HL,DE		;derive bytecount for dump range
+	RET	C		;if addresses backwards
+	LD	B,4
+MDMP3A:	SRL	H		;divide bytecount by 16
+	RR	L
+	DJNZ	MDMP3A
+	INC	HL
+	EX	DE,HL
+MDMP3B:	CALL	DUMP		;dump DE*16 bytes strting at HL
+	LD	(LAST),HL
+	RET
+;
+;	-- memory examine command --
+;
+	OVERLAY	VIEW
+VIEW0:	CALL	MDATA
+	CALL	ECHO
+	CP	CR
+	JR	Z,VIEW4
+	CP	'-'
+	JR	Z,VIEW5
+	CP	'"'
+	JR	NZ,VIEW1
+	CALL	CONIN
+	CALL	CONOUT
+	JR	VIEW3
+VIEW1:	CALL	HEXBIN
+	CCF
+	RET	NC
+	LD	C,A
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	LD	B,A
+	CALL	ECHO
+	SUB	CR
+	JR	Z,VIEW2
+	ADD	A,CR
+	CALL	HEXBIN
+	CCF
+	RET	NC
+	LD	C,B
+VIEW2:	ADD	A,C
+VIEW3:	LD	(HL),A
+	CALL	CHECK
+VIEW4:	INC	HL
+	INC	HL
+VIEW5:	DEC	HL
+	JR	VIEW0
+	IF	OPTIONS AND O.BAUD
+;
+;	-- Baud Rate Command --
+;
+;	* B<rate> [channel]	;channel may be 0,1 or A/B
+;
+	OVERLAY	BAUD
+	OR	A
+	SCF
+	RET	Z		;if no parameters
+	DEC	A
+	JR	NZ,BAUD1	;if channel specified
+	LD	E,1		;set channel 1 (B)
+BAUD1:	BIT	0,E		;check port
+	LD	C,BAUDA		;set communications port
+	JR	Z,BAUD2
+	LD	C,BAUDB		;set printer port
+BAUD2:	OUT	(C),L		;set baud rate
+	XOR	A
+	RET
+	ELSE
+BAUD	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.DISK
+;
+;	-- disk sector read/write command --
+;
+;	* R <unit> <track> <sector> <address>
+;	* W <unit> <track> <sector> <address>
+;
+	OVERLAY	DSKCMD
+	LD	B,A
+	LD	A,(LINBUF)
+	SUB	'W'
+	JR	NZ,DSK1
+	OR	B
+	JR	NZ,DSK0
+	LD	C,A
+	CALL	FASTCRT
+	INC	HL
+	LD	DE,17
+	LD	BC,21
+	EX	DE,HL
+	XOR	A
+	LD	($-25),A
+	CALL	CRTLDIR
+	JP	CRLF
+DSK0:	LD	A,($-34)
+	OR	A
+	RET	NZ
+DSK1:	LD	A,B
+	CP	4		;check parameter count
+	SCF
+	RET	NZ
+	IF	0
+	LD	C,L		;use first arg as unit#
+	CALL	SELECT
+	JR	NZ,DSKERR
+	LD	A,(PARAM2)
+	LD	C,A		;get track number
+	CALL	SEEK
+	LD	A,(PARAM3)
+	LD	C,A		;get sector number
+DSK2:	LD	HL,(PARAM4)
+	LD	A,(LINBUF)	;get command read or write
+	CP	'W'
+	JR	NZ,DSK3		;go to read command
+	CALL	WRITE
+	JR	DSK4
+DSK3:	CALL	READ
+DSK4:
+	ENDIF
+	LD	HL,PARAM1	;move parameters to disk command
+	LD	DE,PHYDRV
+	LD	BC,3*2+1
+	LDI
+	INC	HL		;skip upper unit
+	LDIR
+	DEC	B		;set select operation
+	CALL	XQPHYS		;execute physical select
+	LD	A,L
+	OR	H
+	JR	Z,DSKERR	;if select error
+	LD	B,0		;preset write command
+	LD	A,(LINBUF)	;get command
+	CP	'W'
+	JR	Z,DSK3		;if write
+	INC	B
+DSK3:	CALL	XQPHYS		;execute driver
+	LD	HL,(PARAM4)
+	LD	DE,16		;assume 256-byte sector
+	JP	Z,DUMP		;dump disk read buffer if no error
+DSKERR:	CALL	PNEXT
+	DEFM	'dsk err'
+	DEFB	EOT
+	RET
+	ELSE	;(not disk options)
+DSKCMD	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.INPC
+;
+;	-- read input port command --
+;
+;	* I <16-bit port address>
+;
+	OVERLAY	INCMD
+	DEC	A
+	SCF
+	RET	NZ		;if not one parameter
+	LD	C,L		;set input port
+	LD	B,H
+IN1:	CALL	CRLF
+	LD	A,C		;display port address
+	CALL	PUT2HS
+IN2:	IN	A,(C)
+	CALL	PUT2HS
+	CALL	CONIN		;read character
+	CP	' '
+	JR	Z,IN2		;read same port again
+	CP	CR
+	JR	Z,IN3		;if read next
+	CP	'-'
+	JR	Z,IN4		;if read previous
+	OR	A		;clear carry
+	RET
+IN3:	INC	BC		;advance to next port
+	INC	BC
+IN4:	DEC	BC
+	JR	IN1
+	ELSE
+INCMD	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.OUTC
+;
+;	-- write to output port command --
+;
+;	* O <16-bit port address> <8-bit value>
+;
+	OVERLAY	OUTCMD
+	CP	2		;require two parameters
+	SCF
+	RET	NZ		;if not 2 parameters
+	LD	C,L		;set 16 bit output port address
+	LD	B,H
+	OUT	(C),E		;output to d0-d7 and address to a0-a17
+	OR	A
+	RET
+	ELSE
+OUTCMD	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.RAMT
+;
+;	-- memory read/write diagnostic command --
+;
+;	* X <first addr> <last addr>
+;
+	OVERLAY	TEST
+	CP	2		;check parameter count
+	SCF
+	RET	NZ
+	INC	DE
+	LD	E,D		;get ending page address into E
+	LD	D,H		;get starting page address into D
+	LD	B,0		;initialize pass counter
+TEST1:	LD	H,D		;point HL to start of block
+	LD	L,0
+TEST2:	LD	A,L
+	XOR	H		;generate test byte
+	XOR	B
+	LD	(HL),A		;store byte in RAM
+	INC	HL
+	LD	A,H
+	CP	E		;check for end of test block
+	JR	NZ,TEST2
+	LD	H,D		;now read back each byte & compare
+	LD	L,0		;point HL back to start
+TEST3:	LD	A,L
+	XOR	H		;re-generate test byte data
+	XOR	B
+	CALL	CHECK		;verify memory data still good
+	RET	NZ		;exit if escape request is indicated
+	INC	HL		; else go on to next byte
+	LD	A,H
+	CP	E		;check for end of block
+	JR	NZ,TEST3
+	INC	B		;bump pass count
+	LD	A,'+'
+	CALL	OUTPUT
+	JR	Z,TEST1		;do another pass if user not unhappy
+	RET
+	ELSE
+TEST	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.FILL
+;
+;	-- fill memory with constant command --
+;
+	OVERLAY	FILL
+	CP	3		;check if parameter count=3
+	SCF
+	RET	NZ
+FILL1:	LD	(HL),C
+	PUSH	HL
+	OR	A
+	SBC	HL,DE		;compare HL to end address in DE
+	POP	HL
+	INC	HL		;advance pointer after comparison
+	JR	C,FILL1
+	RET
+	ELSE
+FILL	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.MOVE
+;
+;	-- memory block move command --
+;
+	OVERLAY	BLOCK
+	CP	3		;check if parameter count=3
+	SCF
+	RET	NZ
+	CALL	BLOCAD
+	LD	A,C
+	OR	B
+	RET	Z		;exit now if BC=0
+	LDIR
+	RET
+	ELSE
+BLOCK	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.VERF
+;
+;	-- memory block compare command --
+;
+	OVERLAY	VERCMD
+	CP	3		;check if parameter count=3
+	SCF
+	RET	NZ
+	CALL	BLOCAD
+	JR	VERF2
+VERF1:	LD	A,(DE)
+	CALL	CHECK		;compare data @ DE and @ HL
+	RET	NZ		;exit if escape request is indicated
+	INC	HL
+	INC	DE
+	DEC	BC
+VERF2:	LD	A,B
+	OR	C
+	JR	NZ,VERF1
+	RET
+	ELSE
+VERCMD	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.PROT
+;
+;	Printer Protocol.
+;
+	OVERLAY	PROTO
+	DEC	A
+	JR	Z,PROT1		;if one parameter
+	SUB	2
+	SCF
+	RET	NZ
+	LD	A,E
+	OR	4
+	LD	(SIOMSK),A
+	LD	A,C
+	OR	4
+	LD	(SIOVAL),A
+PROT1:	LD	A,L
+	OR	A
+	LD	A,0C9H
+	JR	Z,PROT2
+	XOR	A
+PROT2:	LD	(XONENB),A
+	RET
+	ELSE
+PROTO	EQU	WHAT
+	ENDIF
+	IF	(OPTIONS AND O.TYPE) NE 0
+;
+;	TYPE - Simple Typewriter.
+;
+	OVERLAY	TYPE
+	OR	A
+	JR	Z,TYP0		;if no baud rate
+	DEC	A
+	SCF
+	RET	NZ		;if more than one parameter
+	LD	A,L
+	OUT	(BAUDB),A	;set printer baud rate
+TYP0:	CALL	PNEXT
+	DEFB	CLRS
+	IF	(OPTIONS AND O.ESCT) NE 0
+	DEFB	ESC,'1'		;set 8 bit keyboard mode
+	ELSE
+	DEFB	'O'-'@'		;set 8 bit keyboard mode
+	ENDIF
+	DEFM	'Typewriter mode.  Touch CTRL+ESC to exit.'
+	DEFB	CR,LF,EOT
+TYP1:	CALL	SIOST		;status printer
+	JR	Z,TYP2		;if char not ready
+	CALL	SIOIN		;read character
+	AND	7FH		;strip parity bit
+	CALL	CONOUT
+	CP	CR
+	LD	A,LF
+	CALL	Z,CONOUT
+TYP2:	CALL	CONST		;status console
+	JR	Z,TYP1		;if user not active
+	CALL	CONIN		;read keyboard
+	CALL	SIOOUT		;send character to printer
+	CALL	CONOUT		;and screen
+	CP	CR
+	JR	NZ,TYP1		;if not CR
+	LD	A,LF		;send line feed to screen and printer
+	CALL	SIOOUT
+	CALL	CONOUT
+	JR	TYP1
+	ELSE
+TYPE	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.TERM
+;
+;	Terminal / Scroll Driver.
+;
+	SUBTTL	TERMINAL / SCREEN MANAGER		
+	PAGE
+	OVERLAY	TERM
+PASS8	EQU	15
+INSLIN	EQU	22
+DELLIN	EQU	23
+CLRCHR	EQU	26
+HOMSCR	EQU	30
+FORCE	EQU	31
+KUPLIN	EQU	81H		;Move top line off screen to buffer
+KDNLIN	EQU	82H		;Move bottom line off screen to buffer
+RMTTOG	EQU	80H+'1'		;Toggle Remote Echo
+RMTALF	EQU	80H+'2'		;Toggle Remote Auto LF after CR
+LOCALF	EQU	80H+LF		;Toggle Local Auto LF after CR
+TYPTOG	EQU	80H+7FH		;Toggle Local Echo
+BRKKEY	EQU	80H+'.'		;Hardware BREAK function
+S.LECHO	EQU	7		;local echo
+S.RECHO	EQU	6		;remote echo
+S.AUTOL	EQU	5		;local auto LF after CR
+S.AUTOR	EQU	4		;remote auto LF after CR
+TRMBUF	EQU	100H
+BUFTOP	EQU	TRMBUF+760*80
+SIOBUF	EQU	MONITR-100H
+TRMSTK	EQU	SIOBUF
+	CP	2		;check number of arguments
+	CCF
+	RET	C		;if more than 1
+	OR	A
+	JR	NZ,TERM1	;if port specifed
+	LD	L,0
+TERM1:	LD	BC,SIOCPA+SIODPA*256	;preset A channel ports
+	BIT	0,L
+	JR	Z,TERM2		;if 0/1 or A/B
+	LD	BC,SIOCPB+SIODPB*256	;set B channel ports
+TERM2:	LD	(PORTS),BC
+	LD	SP,TRMSTK
+	CALL	PNEXT
+	DB	CLRS
+	IF	OPTIONS AND O.ESCT
+	DB	ESC,'1'
+	ELSE
+	DB	PASS8
+	ENDIF
+	DB	'Terminal mode.  Touch CTRL+ESC to exit.'
+	DB	CR,LF
+	DB	EOT
+	LD	IY,STATUS	;set pointer to status byte
+TERM3:	CALL	CONST		;status keyboard
+	CALL	NZ,PKI		;process keyboard input
+	CALL	SIOIST		;status SIO
+	CALL	NZ,PRC		;process remote character
+	JR	TERM3		;until user escapes
+;
+;	PKI - Process Keyboard Input.
+;
+PKI:	LD	A,0
+BRKFLG	EQU	$-1
+	OR	A
+	CALL	NZ,CLRBRK	;terminate pending break
+	CALL	CONIN		;read input
+	BIT	7,A
+	JR	NZ,PKI1		;if function key
+	CALL	SNDRMT		;send it to remote
+	BIT	S.LECHO,(IY)
+	CALL	NZ,SNDLOC	;if local echo enabled, display console input
+	RET
+PKI1:	CP	KUPLIN
+	JR	NZ,PKI2		;if not scroll up
+	CALL	GCP		;get cursor position
+	CALL	PNEXT		;home screen, then delete top line
+	IF	OPTIONS AND O.ESCT
+	DEFB	HOMSCR,ESC,'R',EOT
+	ELSE
+	DEFB	HOMSCR,DELLIN,EOT
+	ENDIF
+	CALL	LTL		;link top line
+	CALL	DBL		;display bottom line
+	JR	PKI3
+PKI2:	CP	KDNLIN
+	JR	NZ,PKI4		;if not scroll down
+	CALL	GCP		;get cursor position
+	CALL	PNEXT		;home screen, insert blank line
+	IF	OPTIONS AND O.ESCT
+	DEFB	HOMSCR,ESC,'E',EOT
+	ELSE
+	DEFB	HOMSCR,DELLIN,EOT
+	ENDIF
+	CALL	LBL		;link bottom line
+	CALL	DTL		;display top line
+PKI3:	JP	RCP		;restore cursor position
+PKI4:	CP	TYPTOG
+	JR	NZ,PKI5
+	LD	A,1 SHL S.LECHO
+	JR	PKI8
+PKI5:	CP	RMTTOG
+	JR	NZ,PKI6
+	LD	A,1 SHL S.RECHO
+	JR	PKI8
+PKI6:	CP	LOCALF
+	JR	NZ,PKI7
+	LD	A,1 SHL S.AUTOL
+	JR	PKI8
+PKI7:	CP	RMTALF
+	JR	NZ,PKI9
+	LD	A,1 SHL S.AUTOR
+PKI8:	XOR	(IY)
+	LD	(IY),A
+	RET
+PKI9:	CP	BRKKEY
+	RET	NZ
+	LD	A,(BRKFLG)
+CLRBRK:	XOR	-1
+	LD	(BRKFLG),A
+	LD	D,10H		;set line SPACING
+	JR	NZ,SETBRK
+	LD	D,0		;set line MARKING
+SETBRK:	LD	BC,(PORTS)
+	LD	A,5		;set up WR5
+	DI
+	OUT	(C),A
+	LD	A,10101010B	;assert DTR, 7 bpc, RTS, Tx Enb
+	OR	D
+	OUT	(C),A
+	EI
+	LD	A,0FFH
+	JP	SIOOT		;send RUBOUT to allow MARKING
+;
+;	PRC - Process Remote Character.
+;
+PRC:	CALL	SIOINC		;read remote character
+	BIT	S.RECHO,(IY)
+	CALL	NZ,SNDRMT	;echo it back
+	JR	DOC		;display it locally
+;
+;	SNDLOC - Send character to screen.
+;
+SNDLOC:	CALL	DOC
+	CP	CR
+	RET	NZ
+	BIT	S.AUTOL,(IY)
+	RET	Z
+	LD	A,LF
+	CALL	DOC
+	LD	A,CR
+	RET
+;
+;	SNDRMT - Send character to remote.
+;
+SNDRMT:	CALL	SIOOT
+	CP	CR
+	RET	NZ
+	BIT	S.AUTOR,(IY)
+	RET	Z
+	LD	A,LF
+	CALL	SIOOT
+	LD	A,CR
+	RET
+;
+;	DOC - Display One Character.
+;
+DOC:	CP	7FH
+	RET	Z		;don't display RUBOUT
+	LD	C,A		;send it to screen
+	PUSH	BC
+	CALL	OUTCRT		;display character
+	POP	BC
+	LD	B,A
+	LD	A,C
+	CP	LF
+	RET	NZ
+	INC	B
+	DEC	B
+	RET	NZ		;if line feed did not scroll
+	CALL	LTL		;link top line
+	LD	A,LF
+	RET
+;
+;	LTL - Link Top Line.
+;
+LTL:	LD	HL,LINBUF
+	LD	DE,(TOPPTR)	;set address of line above screen
+	LD	BC,80
+	LDIR			;move line
+	CALL	WUP		;wrap upper pointer
+	LD	(TOPPTR),DE	;set new top line address
+	LD	HL,(BOTPTR)
+	EX	DE,HL
+	OR	A
+	SBC	HL,DE
+	RET	NZ
+	LD	DE,80
+	ADD	HL,DE		;advance bottom pointer
+	EX	DE,HL
+	CALL	WUP		;wrap upper pointer
+	LD	(BOTPTR),DE
+	RET
+;
+;	DTL - Display Top Line.
+;
+DTL:	LD	DE,(TOPPTR)	;get line above screen
+	LD	HL,-80
+	ADD	HL,DE
+	CALL	WLP		;wrap lower pointer
+	LD	(TOPPTR),HL
+	LD	BC,80
+;
+;	DLN - Display line.
+;
+DLN:	PUSH	HL
+	ADD	HL,BC
+	DEC	HL
+	LD	A,' '
+DLN1:	CPD
+	JR	NZ,DLN2		;if not trailing blank
+	JP	PE,DLN1
+DLN2:	POP	HL
+	RET	PO		;if entire line blank
+	LD	B,C
+	INC	B
+DLN3:	PUSH	BC
+	LD	A,(HL)
+	LD	C,A
+	CP	' '
+	JR	NC,DLN4
+	PUSH	HL
+	LD	C,FORCE		;force next character out
+	CALL	OUTCRT
+	POP	HL
+	LD	C,(HL)
+DLN4:	INC	HL		;advance address
+	PUSH	HL
+	CALL	OUTCRT		;display character
+	POP	HL
+	POP	BC
+	DJNZ	DLN3		;if not entire line
+	RET
+;
+;	DBL - Display bottom line.
+;
+DBL:	CALL	PNEXT		;plant cursor on bottom line
+	DB	ESC,'=',' '+23,' ',EOT
+	LD	HL,(BOTPTR)
+	PUSH	HL
+	LD	BC,80-1
+	CALL	DLN		;display bottom line
+	POP	HL
+	LD	BC,80
+	ADD	HL,BC
+	EX	DE,HL
+	CALL	WUP
+	LD	(BOTPTR),DE
+	RET
+;
+;	LBL - link bottom line.
+;
+LBL:	LD	BC,80
+	LD	HL,(BOTPTR)
+	OR	A
+	SBC	HL,BC
+	CALL	WLP
+	LD	(BOTPTR),HL
+	EX	DE,HL
+	LD	HL,(TOPPTR)
+	OR	A
+	SBC	HL,DE
+	JR	NZ,LBL1
+	LD	HL,(TOPPTR)
+	SBC	HL,BC
+	CALL	WLP
+	LD	(TOPPTR),HL
+LBL1:	LD	HL,LINBUF
+	LDIR			;move gold mine to buffer
+	RET
+;
+;	WUP - Wrap upper pointer.
+;
+WUP:	PUSH	HL
+	LD	HL,BUFTOP	;set end of buffer address
+	SCF
+	SBC	HL,DE
+	POP	HL
+	RET	NC		;if not past end of buffer
+	LD	DE,TRMBUF	;start over at beggining of buffer
+	RET
+;
+;	WLP - Wrap lower pointer.
+;
+WLP:	PUSH	HL
+	PUSH	DE
+	LD	DE,TRMBUF	;set start of buffer address
+	OR	A
+	SBC	HL,DE
+	POP	DE
+	POP	HL
+	RET	NC		;if not below start of buffer
+	LD	HL,BUFTOP-80	;start over at end of buffer
+	RET
+;
+;	GCP - get cursor position.
+;
+GCP:	LD	BC,(BASE)
+	LD	HL,(CURSOR)
+	LD	B,L		;get column to B
+	RES	7,B
+	ADD	HL,HL		;set screen row to H
+	LD	A,H
+	SUB	CRTBAS*2
+	SUB	C		;row = 23-(base-curh)
+	ADD	A,23
+GCP1:	SUB	24
+	JR	NC,GCP1
+	LD	C,A		;set row
+	LD	HL,'  '+24-100H	;offset for <esc>=
+	ADD	HL,BC
+	LD	(RCPA),HL
+	RET
+;
+;	RCP - Restore cursor position.
+;
+RCP:	CALL	PNEXT
+	DB	ESC,'='
+RCPA:	DB	'  '
+	DB	EOT
+	RET
+;
+;	SIO drivers.
+;
+SIOINS:	LD	BC,PORTS	;set status port to c
+PORTS	EQU	$-2
+	IN	A,(C)
+	BIT	0,A		;test rca
+	RET
+SIOINP:	CALL	SIOINS		;get status
+	JR	Z,SIOINP	;if not ready
+	LD	C,B		;set data port address
+	IN	A,(C)
+	RES	7,A		;pitch parity bit
+	RET
+SIORDT:	CALL	SIOINS		;get SIO status
+	BIT	2,A		;test TX empty
+	RET
+SIOOT:	EX	AF,AF'		;save char to send
+SIOOT1:	CALL	SIORDT		;test transmit ready status
+	JR	Z,SIOOT1	;if not ready
+	LD	C,B
+	EX	AF,AF'
+	OUT	(C),A
+	RET
+OUTCRT:	CALL	SIOPL		;poll for input before & after
+	CALL	FASTCRT
+	PUSH	AF		;save balcones gold
+	CALL	SIOPL
+	POP	AF
+	RET
+;
+;	SIOPL - SIO Poll Input Characters.
+;
+SIOPL:	PUSH	BC
+	CALL	SIOINS		;input SIO status
+	JR	Z,SIOPL3	;if input not ready
+	LD	C,B		;set data port address
+	IN	A,(C)
+	RES	7,A		;pitch parity bit
+	PUSH	HL
+	LD	HL,(IPOINT)	;set in pointer
+	LD	(HL),A		;store character in FIFO
+	INC	L
+	JR	NZ,SIOPL1
+	LD	L,LOW SIOBUF
+SIOPL1:	LD	A,(OPOINT)
+	SUB	L
+	JR	Z,SIOPL2	;if buffer full
+	LD	(IPOINT),HL
+SIOPL2:	POP	HL
+SIOPL3:	POP	BC
+	RET
+;
+;	SIOIST - SIO Input Status.
+;
+SIOIST:	CALL	SIOPL		;poll for input
+	LD	HL,(OPOINT)	;set out pointer
+	LD	A,(IPOINT)
+	SUB	L
+	RET	Z		;if data not ready
+	OR	-1
+	RET
+;
+;	SIOIN - SIO Input Character.
+;
+SIOINC:	CALL	SIOIST		;set input ready status
+	JR	Z,SIOINC
+	LD	A,(HL)
+	INC	L		;advance out
+	JR	NZ,SIOI1
+	LD	L,LOW SIOBUF
+SIOI1:	LD	(OPOINT),HL
+	RET
+STATUS:	DB	0
+BOTPTR:	DW	TRMBUF
+TOPPTR:	DW	TRMBUF
+IPOINT:	DW	SIOBUF
+OPOINT:	DW	SIOBUF
+	ELSE
+TERM	EQU	WHAT
+	ENDIF
+	IF	OPTIONS AND O.HELP
+;
+;	Help Key Command.
+;
+	OVERLAY	HELP
+	CALL	PNEXT
+	DEFB   'Baud		<rate> [B/A]',CR,LF
+;	DEFB   'Copy		<start> <end> <to>',cr,lf
+	DEFB   'Dump		[start] [end]',CR,LF
+;	DEFB   'Fill		<start> <end> <data>',cr,lf
+	DEFB   'Goto		<addr>',CR,LF
+;	DEFB   'Host terminal	[A/B]',cr,lf
+;	DEFB   'Input		<port>',cr,lf
+	DEFB   'Modify		<addr>',CR,LF
+;	DEFB   'Output		<port> <data>',cr,lf
+	DEFB   'Protocol	<xon> [msk val]',CR,LF
+;	DEFB   'Read		<unit> <trk> <sect> <addr>',cr,lf
+;	DEFB   'Verify		<start> <end> <with>',cr,lf
+;	DEFB   'Xtended test	<start> <end>',cr,lf,lf
+	DEFB	EOT
+	RET
+	ELSE
+HELP	EQU	WHAT
+	ENDIF
+	SUBTTL	SEGMENT SIZE INFORMATION
+	PAGE
+;
+;	Top of Overlay Area.
+;
+	OVERLAY	STOP
+TPAMAX	EQU	TPAL		;set length of transient move
+;
+;	Top of Resident Monitor.
+;
+	BELOW
+RBASE	EQU	$
+;
+;	Top of Non Resident Monitor.
+;
+	ABOVE
+RESTOP	EQU	$		;resident top
+RESLEN	EQU	$-MONITR	;length of resident monitor
+	UPDATE			;clear active segment
+;
+;	Top of Burned Rom Set.
+;
+ROMTOP	EQU	BLOC+DLOC+TLOC-MONITR
+;
+;	Fill Out Unused Rom Space.
+;
+	CSEG
+	IF	(ROM+ROMSIZ-ROMTOP) GT 0
+	DEFS	(ROM+ROMSIZ-ROMTOP),-1
+	ENDIF
+	SUBTTL	RESIDENT MONITOR SYSTEM RAM
+	PAGE
+	.PHASE	RAM
+;
+;	Start of Documented Storage Locations.
+;
+VECTAB:				;interrupt vector table starts here
+SIOVEC:	DEFS	16		;space for 8 vectors for SIO
+CTCVEC:	DEFS	8		;space for 4 vectors for CTC
+SYSVEC:	DEFS	4		;space for 2 vectors for system PIO
+GENVEC:	DEFS	4		;space for 2 vectors for general PIO
+;
+;	Keyboard data input FIFO variables
+;
+FIFO:	DEFS	16		;console input fifo
+FIFCNT:	DEFS	1		;fifo data counter
+FIFIN:	DEFS	1		;fifi input pointer
+FIFOUT:	DEFS	1		;fifo output pointer
+	DEFS	1		;round address
+;
+;	More interrupt vectors
+;
+EXPVEC:	DEFS	8		;space for 4 vectors for expansion slot
+;
+;	Available memory pointers.
+;
+AVAILB:	DEFS	2		;bottom of available memory
+AVAILT:	DEFS	2		;top of available memory
+;
+;
+;	End of documented storage locations.
+	DEFS	16		;local stack for interrupts
+INTSTK:
+;
+;	clock-timer interrupt variables
+;
+MILSEC:	DEFS	2		;One Millisecond timer, Enable int on CTC1
+TIKCNT:	DEFS	2		;16 bit seconds counter (18 hr, 12 min, 16 sec)
+STEPRT:	DEFS	1		;WD 1797 step rate
+TIMOUT:	DEFS	1		;time-out, decrements once per second
+;
+;	Getime entry returns the address of DAY
+;
+DAY:	DEFS	1		;calendar day		(01-31)
+MONTH:	DEFS	1		;	  month		(01-12)
+YEAR:	DEFS	1		;	  year-1970	(1970-2225)
+HRS:	DEFS	1		;clock hours		(00-23)
+MINS:	DEFS	1		;      minutes		(00-59)
+SECS:	DEFS	1		;      seconds		(00-59)
+;
+;	CRT output driver variables
+;
+LINBUF:	DEFS	80		;line buffer & Bcc gold mine
+CURSOR:	DEFS	2		;cursor pointer
+CSRCHR:	DEFS	1		;character used for a cursor
+DIRCUR:	DEFS	2		;cursor pointer for direct CRT display
+BASE:	DEFS	1		;current contents of scroll register
+LEADIN:	DEFS	1		;state of lead-in sequence handler
+ATTRIB:	DEFS	1		;attribute enable
+CHRSAV:	DEFS	1		;character under cusror
+;
+;	Console monitor program variables
+;
+PARAM1:	DEFS	2		;storage for numbers read
+PARAM2:	DEFS	2		; from line input buffer
+PARAM3:	DEFS	2		; by 'PARAMS' subroutine
+PARAM4:	DEFS	2		; for command processors
+LAST:	DEFS	2		;last address used by 'MEMDMP'
+;
+;	Configurable parameter address table
+;
+CONTBL:	DEFS	2*NUMCON
+SPARE1:	DEFS	1		;spare configuration byte
+SPARE2:	DEFS	1		;another spare byte
+SPARE:	DEFS	(RAM+100H-48)-$	;spare RAM space
+SPARND:				;end of spare RAM
+	DEFS	16		;CRT stack
+CRTSTK:
+RSTSP:	DEFS	2		;SP register on reset
+RSTHL:	DEFS	2		;HL register on reset
+RSTPC:	DEFS	2		;possible PC from top of stack
+	DEFS	26		;monitor stack
+STACK:
+	.DEPHASE
+	SUBTTL	CONSOLE MESSAGES
+	PAGE
+;
+;	Console Message Macros.
+;
+MESSAGE	MACRO	TEXT,H1,H2
+	IF1
+	.RADIX	16
+	PRINTX	<TEXT>,%(H1),%(H2-1),%((H2)-(H1))
+	.RADIX	10
+	ENDIF
+	ENDM
+PRINTX	MACRO	TEXT,H1,H2,H3
+	.PRINTX + TEXT H1 - H2 = H3 +
+	ENDM
+	IF	ROMTOP GE (ROM+ROMSIZ)
+	MESSAGE	<* THE ROM SET IS TFB *>,ROM+ROMSIZ,ROMTOP
+	ENDIF
+	IF	CLOC+TPAL GT RAM
+	MESSAGE	<* THE TPA SET IS TFB *>,RAM,CLOC+TPAL
+	ENDIF
+	MESSAGE	<NON-RESIDENT EXECUTES >,ROM,BLOC
+	MESSAGE	<ROM IS BURNED UP FROM >,ROM,ROMTOP
+	MESSAGE	<UNUSED ROM SPACE FROM >,ROMTOP,ROM+ROMSIZ-1
+	MESSAGE	<RESIDENT MONITOR NEEDS>,MONITR,RQTOP
+	MESSAGE	<SPACE WASTED TO DRIVER>,WASTED,SELTAB
+	MESSAGE <PHYSICAL DISK DRIVERS >,SELTAB,DVRLMT
+	MESSAGE <DRIVER OFFSET FOR ZSID>,200H+BLOC+SELTAB-MONITR,0
+	MESSAGE	<I/O BYTE DRIVERS FROM >,IOBLOC,IOBLOC+IOBDVS
+	MESSAGE	<COMMAND PROCESSOR AREA>,RQTOP,RESTOP
+	MESSAGE	<TRANSIENT OVERLAY ROM >,START,STOP
+	MESSAGE	<TRANSIENT COMMAND AREA>,CLOC,CLOC+TPAL
+	MESSAGE	<SPARE LOCATIONS IN RAM>,SPARE,SPARND
+	SUBTTL	THE*END
+	END	ENTRY

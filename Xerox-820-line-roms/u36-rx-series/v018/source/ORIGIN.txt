@@ -1,0 +1,1 @@
+LPKYBD.MAC + LPKYBD.PRN: from Don Maslin disk B16D40 (820ii_images), "ROM 5.0 MASTER 1-16-83 / LPKYBD ROM V.17" (the label's V.17 was superseded on the same disk) — LPKYBD ver 018 (20 Jan 1984), source of ../537p10831.u36.5.0.bin (MAME 537p10831.u36.5.0); needs the LPKTBL tables from ../../v012/source/ era to link.

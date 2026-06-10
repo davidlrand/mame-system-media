@@ -1,0 +1,1 @@
+No v4.04 monitor source snapshot recovered (rev 404 "Sign-on message change" survives only as a history line in the v5.0 XR.MAC — see ../../v5.00/source/). Look for a Balcones XR.MAC ending REV DEFL 404. The u36 here (RX ver 016) also has no source: see ../../../u36-rx-series/v016/source/NO-SOURCE.txt.

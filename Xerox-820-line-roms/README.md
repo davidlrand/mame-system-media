@@ -33,6 +33,12 @@ File naming: factory part numbers where known (`537p####`), MAME slot names
 where the file fills (or fillable) a MAME ROM slot (`v400.u33`, `v404.u36`),
 otherwise the original on-disk name (`rx006.com`, `patch.rom`).
 
+Each version directory carries a `source/` subdirectory holding the recovered
+assembler source for that firmware (copied byte-exact from the Maslin disks,
+original 8.3 names, provenance in a per-directory `ORIGIN.txt`) — or a
+`NO-SOURCE.txt` stating that no source is known. See "Recovered source code"
+below.
+
 ## Master table
 
 Validation status legend:
@@ -153,6 +159,31 @@ keystation tables. No LPK ROM file exists to include here.
 |---|---|---|---|---|---|
 | `824/537p3682.rom` | 4096 | `88f30a00` | `54d205e5a7ed80feb7cd06eddc863110fc655dde` | B18D9 `537P3682.ROM`, hex decode | master-disk image; the independent copy on B13D16 decodes byte-identical (verified); unidentified 4K Xerox part, possible 824 connection |
 | `824/8749.rom` | 2048 | `b5d2efe5` | `cb79f1ab72a9dad090b91f78e3b431b1b15531c6` | B18D9 `8749.ROM`, hex decode | master-disk image; 8749 MCU dump — possible keyboard-MCU variant (the 820-II keyboard is a 1K 8748) |
+
+## Recovered source code
+
+Every version directory has a `source/` subdirectory: either the recovered
+source (byte-exact copies from the Maslin disks — `.MAC`/`.ASM` source,
+`.PRN` MACRO-80 listings, `.REL` objects — with provenance in `ORIGIN.txt`)
+or a one-line `NO-SOURCE.txt` recording the gap and what to look for.
+
+| Directory | Source carried | Origin disk |
+|---|---|---|
+| `820-II/v4.00/source/` | `XR.MAC` (REV 400) + `XR.REL`; `lineage/xr-v390.mac` (v3.90) and `lineage/xr-v301.mac` (v3.01) earlier-revision references | B16D35 "SOURCE ROM 4.0 master 6/18/82"; lineage from B16D36 (+ its user area 1) |
+| `820-II/v4.01/source/` | `XROM.MAC` (REV 401) + `XROM.PRN` + `XROM.REL`; BCC patch kit `PATCH.MAC` + `PATCHROM.PRN` + `PATCH.SUB` + `401ROM.MEM` (for `../patch.rom`) | B11D7 (identical XROM.MAC also on B1D1/B1D13/B17D11); patch kit from B16D32 |
+| `820-II/v4.02/source/` | **none** — rev 402 survives only as history in the v5.0 XR.MAC; the set's u36 (RX 011) source is under `u36-rx-series/v011-rx11/source/` | — |
+| `820-II/v4.03-partial/source/` | **none** — rev 403 history only | — |
+| `820-II/v4.04/source/` | **none** — rev 404 history only (in the v5.0 XR.MAC) | — |
+| `820-II/v5.00/source/` | `XR.MAC` (rev 500) + pointer (`SEE-16-8-TREE.txt`) to the full curated build tree at `../Xerox-820-16-8/source/rom-v50/`, which reassembles `rom500.com` byte-exactly | B23D13 (= B16D40 copy) |
+| `u36-rx-series/v006/source/` | `RX1984.MAC` ver 006 | B16D29 (= B16D31 copy) |
+| `u36-rx-series/v011-rx11/source/` | `RX1984.MAC` ver 011 | B16D34 "RANK XEROX master 24-Sept-82" |
+| `u36-rx-series/v012/source/` | `LPKYBD.MAC` ver 012 + `LPKTBL.MAC` tables + `LPKYBD.PRN` + both `.REL`s | B16D30 |
+| `u36-rx-series/v016/source/` | **none** — LPKYBD vers 013-017 unrecovered | — |
+| `u36-rx-series/v018/source/` | `LPKYBD.MAC` ver 018 + `LPKYBD.PRN` | B16D40 |
+| `u36-rx-series/rx024/source/` | **none** — vers 019-024 absent from the Maslin set | — |
+| `820-I/community/source/` | Micro C #23 monitor: `ROM1.MAC` (+`ROM1.REL`) and its seven INCLUDEd modules `INIT/MON1/INTSRV/CRTOUT/DISKIO/MON2/MEMORY.ASM`; SWP `NEWMON.MAC` | B22D13 "BIG BOARD XEROX UTILITIES #23" master |
+| `820-I/factory/source/`, `820-I/third-party/source/` | **none** — no Xerox v1.0/v2.0, MICROCode, or X-8 source known | — |
+| `820-II/diagnostics-537p60xx/source/`, `824/source/` | **none** | — |
 
 ## Extraction methods
 

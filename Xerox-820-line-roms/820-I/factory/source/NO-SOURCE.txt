@@ -1,0 +1,1 @@
+No Xerox 820-I factory monitor source (v1.0/v2.0) recovered; the closest relative is the Balcones line, whose v0.00 history notes "The 820-2/4 monitor sources converted to M80 format". Look for the original 1980-81 Xerox/SDS monitor source (R. Smith / L. Tran).

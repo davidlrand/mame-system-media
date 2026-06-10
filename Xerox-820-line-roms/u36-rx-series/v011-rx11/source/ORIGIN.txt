@@ -1,0 +1,1 @@
+RX1984.MAC: from Don Maslin disk B16D34 (820ii_images), "820+II SOURCE CODE FILES MASTER 24-SEPT 82 / RANK XEROX" — ver 011 (15 Sep 1982), the source generation of ../u36.rx11.4.02.rom (MAME u36.rx11.4.02).

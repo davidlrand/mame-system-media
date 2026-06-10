@@ -1,0 +1,1 @@
+XR.MAC: from Don Maslin disk B23D13 (820ii_images), "5.0 ROM / Work Disk / G. Knapp" — Balcones XR.MAC ending rev DEFL 500 "Expansion Box II"; byte-identical copy (same md5) on B16D40 ("ROM 5.0 MASTER 1-16-83"). Identical in content to ../../../../Xerox-820-16-8/source/rom-v50/xr.mac (that copy retains 69 trailing CP/M ^Z padding bytes).

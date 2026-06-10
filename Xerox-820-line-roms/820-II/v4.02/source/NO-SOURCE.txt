@@ -1,0 +1,1 @@
+No v4.02 monitor source recovered (revs 402 "DTR settings restored to 820 mode" exist only as history lines inside the v5.0 XR.MAC). Look for a Balcones XR/XROM.MAC ending REV DEFL 402. The u36 in this set (RX ver 011) does have source: see ../../u36-rx-series/v011-rx11/source/.

@@ -1,0 +1,1 @@
+LPKYBD.MAC + LPKTBL.MAC + LPKYBD.PRN + LPKYBD.REL + LPKTBL.REL: from Don Maslin disk B16D30 (820ii_images), "LP/KB setup utility" — LPKYBD ver 012 (19 Jan 1983), first Low Profile Keyboard support (spec 156P82508), with the LPKTBL keystation tables. Builds ../lpkybd.com.

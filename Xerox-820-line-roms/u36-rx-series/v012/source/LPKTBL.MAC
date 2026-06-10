@@ -1,0 +1,946 @@
+	title	MN 820-II NATIONALIZATION --- MODULE 5
+;	version 10.4 February 28, 1982 - Modificaton of confmsgn.mac to
+;	incoproprate the Low Profile Keyboard.
+	aseg
+	org	x'6000'
+
+	global	lus00
+	global	luk01
+	global	lge02
+	global	lfr03
+	global	lnl04
+	global	lit05
+	global	lno06
+	global	lsp07
+	global	lsw08
+	global	lfi09
+	global	lda10
+	global	lsa11
+	global	lsg12
+	global	lsf13
+	global	lpo14
+	global	lla15
+	global	lfc16
+	global	lspec
+
+	global	lpkbsz
+
+	.radix	16
+mnkbtbl:
+;
+;	U. S. ASCII KEYBOARD TABLE
+;
+lus00:
+	db	00h,0e5,0e5,0e5
+
+ustb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h	;nul,esc,1,2,3,4,5,6
+	defb	37h,38h,39h,30h,2dh,3dh,08h,09h ;7,8,9,0,-,=,bs,tab
+	defb	71h,77h,65h,72h,74h,79h,75h,69h ;q,w,e,r,t,y,u,i
+	defb	6fh,70h,5bh,5dh,0dh,0ee,61h,73h ;o,p,[,],cr,lctrl,a,s
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,3bh ;d,f,g,h,j,k,l,;
+	defb	27h,0ah,0ec,2eh,7ah,78h,63h,76h ;',lf,lshift,.,z,x,c,v
+	defb	62h,6eh,6dh,2ch,2eh,2fh,0ed,1eh ;b,n,m,,,.,/,rshift,help
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5 ;rctrl,sp,f1,f2,f3,f4,f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h ;f6,f7,f8,f9,f10,f11,f12,7
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h ;8,9,,,4,5,6,=enter,1
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h ;2,3,0,next,darr,larr,rarr,home
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh ;uarr,prev,acc,del,+,-,mul,div
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4	;ins,can,msw1,msw2,rx1,rx2,rx3
+
+ussh:				;k/b shifted
+	defb	00h,1bh,21h,40h,23h,24h,25h,5eh ;nul,esc,!,@,#,$,%,^
+	defb	26h,2ah,28h,29h,5fh,2bh,08h,09h ;&,*,(,),_,+,bs,tab
+	defb	51h,57h,45h,52h,54h,59h,55h,49h ;Q,W,E,R,T,Y,U,I
+	defb	4fh,50h,7bh,7dh,0dh,0ee,41h,53h ;O,P,{,},cr,lcrtl,A,S
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,3ah ;D,F,G,H,J,K,L,:
+	defb	22h,0ah,0ec,2eh,5ah,58h,43h,56h ;",lf,lshift,.,Z,X,C,V
+	defb	42h,4eh,4dh,3ch,3eh,3fh,0ed,1eh ;B,N,M,<,>,?,rshift,help
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5 ;rctrl,sp,lock,f1,f2,f3,f4,f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h	;f6,f7,f8,f9,f10,f11,f12,7
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h ;8,9,,,4,5,6,=enter,1
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h ;2,3,0,next,darr,larr,rarr,home
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh ;uarr,prev,acc,del,+,-,mul,div
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5	;ins,can,msw1,msw2,rx1,rx2,rx3
+
+uscd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h ;nul,esc,1,2,3,4,5,6
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h ;7,8,9,0,-,=,bs,tab
+	defb	11h,17h,05h,12h,14h,19h,15h,09h ;q,w,e,r,t,y,u,i
+	defb	0fh,10h,1bh,1dh,8dh,0ee,01h,13h ;o,p,[,],cr,lctrl,a,s
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh ;d,f,g,h,j,k,l,~
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h ;`,lf,lshift,.,z,s,c,v
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh ;b,n,m,,,|,\,rshift,help
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5	;rctrl,sp,lock,f1,f2,f3,f4,f5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7	;f6,f7,f8,f9,f10,f11,f12,7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1 ;8,9,,,4,5,6,=enter,1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh ;2,3,0,next,darr,larr,rarr,home
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af ;uarr,prev,acc,del,+,-,mul,div
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca	;ins,can,msw1,msw2,rx1,rx2,rx3
+
+lpkbsz	equ	$-lus00				;table size
+
+captab:				;caps lock
+	db	5bh,3bh,27h,5bh,3bh,27h		;],;,',],;,'
+
+	db	'US-'				;Label for ID
+
+;
+;	ENGLISH KEYBOARD TABLES
+;
+luk01:
+	db	01h,0e5,0e5,0e5
+
+uktb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2dh,5dh,08h,09h	;,,,,]
+	defb	71h,77h,65h,72h,74h,79h,75h,69h
+	defb	6fh,70h,40h,7dh,0dh,0ee,61h,73h	;,,@,}
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,3bh
+	defb	3ah,0ah,0ec,2eh,7ah,78h,63h,76h	;:
+	defb	62h,6eh,6dh,2ch,2eh,2fh,0ed,1eh
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+uksh:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,#,,,,&
+	defb	27h,28h,29h,3dh,5fh,5bh,08h,09h	;',(,),=,_,[
+	defb	51h,57h,45h,52h,54h,59h,55h,49h
+	defb	4fh,50h,7ch,7bh,0dh,0ee,41h,53h	;,,|,{
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,2bh ;,,,,,,,+
+	defb	2ah,0ah,0ec,2eh,5ah,58h,43h,56h	;*
+	defb	42h,4eh,4dh,2ch,2eh,3fh,0ed,1eh	;,,,comma,.
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+ukcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,60h,5eh,8dh,0ee,01h,13h	;,,`,^
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,1ch	;,,,,,,,FS
+	defb	7eh,08a,0ec,1dh,1ah,18h,03h,16h	;~,,,GS
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	40h,3bh,3ah,40h,3bh,3ah
+
+	db	'UK-'				;Label for ID
+
+
+;
+;	GERMAN KEYBOARD TABLES
+;
+lge02:
+	db	02h,0e5,0e5,0e5
+
+getb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,3ch,3eh,08h,09h	;,,,,<,>
+	defb	71h,77h,65h,72h,74h,7ah,75h,69h	;,,,,,z
+	defb	6fh,70h,7dh,2bh,0dh,0ee,61h,73h	;,,},+
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	7bh,0ah,0ec,2eh,79h,78h,63h,76h	;{,,,,y
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+gesh:				;k/b shifted
+	defb	00h,1bh,21h,22h,40h,24h,25h,26h	;,,,",@,,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,5ah,55h,49h	;,,,,,Z
+	defb	4fh,50h,5dh,2ah,0dh,0ee,41h,53h	;,,],*
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5ch ;,,,,,,,\
+	defb	5bh,0ah,0ec,2eh,59h,58h,43h,56h	;[,,,,Y
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+gecd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,7eh,23h,8dh,0ee,01h,13h	;,,~,#
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,5eh	;,,,,,,,^
+	defb	27h,08a,0ec,0ae,1ah,18h,03h,16h	;'
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7dh,7ch,7bh,5dh,5ch,5bh
+
+	db	'DE-'				;Label for ID
+
+
+;
+;	FRENCH KEYBOARD TABLES
+;
+lfr03:
+	db	03h,0e5,0e5,0e5
+
+frtb:				;k/b unshifted table
+	defb	00h,1bh,26h,7bh,22h,27h,28h,2dh	;,,&,{,",',(,-
+	defb	7dh,5fh,5ch,40h,29h,21h,08h,09h	;},_,\,@,),!
+	defb	61h,7ah,65h,72h,74h,79h,75h,69h	;a,z
+	defb	6fh,70h,5eh,24h,0dh,0ee,71h,73h	;,,^,$,,q
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,6dh	;,,,,,,m
+	defb	7ch,0ah,0ec,2eh,77h,78h,63h,76h	;|,,,,w
+	defb	62h,6eh,2ch,3bh,3ah,3dh,0ed,1eh	;,,comma,;,:,=
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+frsh:				;k/b shifted
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h	;,,1,2,3,4,5,6
+	defb	37h,38h,39h,30h,5bh,5dh,08h,09h	;7,8,9,0,[,]
+	defb	41h,5ah,45h,52h,54h,59h,55h,49h	;A,Z
+	defb	4fh,50h,7eh,23h,0dh,0ee,51h,53h	;,,~,#,,,Q
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,4dh ;,,,,,,,M
+	defb	25h,0ah,0ec,2eh,57h,58h,43h,56h	;%,,,,W
+	defb	42h,4eh,3fh,2eh,2fh,2bh,0ed,1eh	;,,?,.,/,+
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+frcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,60h,2ah,8dh,0ee,01h,13h	;,,`,*
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	5eh,6dh,7ch,5eh,6dh,5eh
+
+	db	'FR-'				;Label for ID
+
+
+;
+;	DUTCH KEYBOARD TABLES
+;
+lnl04:
+	db	04h,0e5,0e5,0e5
+
+nltb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,3ch,3eh,08h,09h	;,,,<,>
+	defb	71h,77h,65h,72h,74h,79h,75h,69h
+	defb	6fh,70h,5dh,24h,0dh,0ee,61h,73h	;,,],$
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	3bh,0ah,0ec,2eh,7ah,78h,63h,76h	;;
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+nlsh:				;k/b shifted
+	defb	00h,1bh,21h,22h,3dh,25h,26h,28h	;,,,=,%,&,(
+	defb	29h,5fh,2bh,2fh,60h,5eh,08h,09h	;),_,+,/,`,^
+	defb	51h,57h,45h,52h,54h,59h,55h,49h
+	defb	4fh,50h,5bh,23h,0dh,0ee,41h,53h	;,,{,#
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5bh ;,,,,,,,[
+	defb	2ah,0ah,0ec,2eh,5ah,58h,43h,56h	;:
+	defb	42h,4eh,4dh,2eh,2ch,2dh,0ed,1eh	;,,,.,comma,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+nlcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,40h,60h,8dh,0ee,01h,13h	;,,@,`
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	7dh,08a,0ec,0ae,1ah,18h,03h,16h	;}
+	defb	02h,0eh,0dh,1ch,7ch,2ah,0ed,9eh	;,,,<,>,*
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	5dh,7ch,3bh,5dh,7ch,3bh
+
+	db	'NE-'				;Label for ID
+
+
+;
+;	ITALIAN KEYBOARD TABLES
+;
+lit05:
+	db	05h,0e5,0e5,0e5
+
+ittb:				;k/b unshifted table
+	defb	00h,1bh,23h,5dh,22h,27h,28h,2dh	;,,#,],",',(,-
+	defb	7dh,5fh,5ch,5bh,29h,5eh,08h,09h	;},_,\,{,),^
+	defb	71h,7ah,65h,72h,74h,79h,75h,69h	;q,z
+	defb	6fh,70h,7eh,3ch,0dh,0ee,61h,73h	;,,~,<
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,6dh	;,,,,,,m
+	defb	60h,0ah,0ec,2eh,77h,78h,63h,76h	;`,,,,w
+	defb	62h,6eh,2ch,3bh,3ah,3ch,0ed,1eh	;,,comma,;,:,|
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+itsh:				;k/b shifted
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h	;,,1,2,3,4,5,6
+	defb	37h,38h,39h,30h,5bh,3eh,08h,09h	;7,8,9,0,[,>
+	defb	51h,5ah,45h,52h,54h,59h,55h,49h	;,Z
+	defb	4fh,50h,3dh,2bh,0dh,0ee,41h,53h	;,,=,+
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,4dh ;,,,,,,,M
+	defb	25h,0ah,0ec,2eh,57h,58h,43h,56h	;%,,,,W
+	defb	42h,4eh,3fh,2eh,2fh,21h,0ed,1eh	;,,?,.,/,!
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+itcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,24h,40h,8dh,0ee,01h,13h	;,,$,@
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	26h,08a,0ec,0ae,1ah,18h,03h,16h	;&
+	defb	02h,0eh,0dh,1ch,7ch,2ah,0ed,9eh	;,,,,,*
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7eh,6dh,60h,7eh,6dh,60h
+
+	db	'IT-'				;Label for ID
+
+
+;
+;	NORWEGIAN KEYBOARD TABLES
+;
+lno06:
+	db	06h,0e5,0e5,0e5
+
+notb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2bh,40h,08h,09h	;,,,,+,@
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,7dh,7eh,0dh,0ee,61h,73h	;,,},~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	7bh,0ah,0ec,2eh,7ah,78h,63h,76h	;{
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+nosh:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,5dh,5eh,0dh,0ee,41h,53h	;,,],^
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5ch ;,,,,,,,\
+	defb	5bh,0ah,0ec,2eh,5ah,58h,43h,56h	;[
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+nocd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,2ah,27h,8dh,0ee,01h,13h	;,,*,'
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7dh,7ch,7bh,5dh,5ch,5bh
+
+	db	'NO-'				;Label for ID
+
+
+;
+;	SPANISH KEYBOARD TABLES
+;
+lsp07:
+	db	07h,0e5,0e5,0e5
+
+sptb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2bh,60h,08h,09h	;,,,,+,`
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,3eh,40h,0dh,0ee,61h,73h	;,,>,@
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7bh	;,,,,,,,{
+	defb	5ch,0ah,0ec,2eh,7ah,78h,63h,76h	;\
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+spsh:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,5eh,08h,09h	;/,(,),=,?,^
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,3ch,7eh,0dh,0ee,41h,53h	;,,<,~
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5bh ;,,,,,,,[
+	defb	27h,0ah,0ec,2eh,5ah,58h,43h,56h	;'
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+spcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,2ah,5dh,8dh,0ee,01h,13h	;,,*,}
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,1ch,7ch,5bh,0ed,9eh	;,,,,|,]
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	3eh,7bh,5ch,3eh,5bh,5ch
+
+	db	'ES-'				;Label for ID
+
+
+;
+;	SWEDISH KEYBOARD TABLES
+;
+lsw08:
+	db	08h,0e5,0e5,0e5
+
+swtb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2bh,40h,08h,09h	;,,,,+,@
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,7dh,7eh,0dh,0ee,61h,73h	;,,},~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	7bh,0ah,0ec,2eh,7ah,78h,63h,76h	;{
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+swsh:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,5dh,5eh,0dh,0ee,41h,53h	;,,],^
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5ch ;,,,,,,,\
+	defb	5bh,0ah,0ec,2eh,5ah,58h,43h,56h	;[
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+swcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,1bh,1dh,8dh,0ee,01h,13h
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,27h	;,,,,,,,'
+	defb	2ah,08a,0ec,0ae,1ah,18h,03h,16h	;*
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7dh,7ch,7bh,5dh,5ch,5bh
+
+	db	'SV-'				;Label for ID
+
+
+;
+;	FINNISH KEYBOARD TABLES
+;
+lfi09:
+	db	09h,0e5,0e5,0e5
+
+fitb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2bh,40h,08h,09h	;,,,,+,@
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,7dh,7eh,0dh,0ee,61h,73h	;,,},~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	7bh,0ah,0ec,2eh,7ah,78h,63h,76h	;{
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+fish:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,5dh,5eh,0dh,0ee,41h,53h	;,,],^
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5ch ;,,,,,,,\
+	defb	5bh,0ah,0ec,2eh,5ah,58h,43h,56h	;[
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+ficd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,1bh,1dh,8dh,0ee,01h,13h
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,27h	;,,,,,,,'
+	defb	2ah,08a,0ec,0ae,1ah,18h,03h,16h	;*
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7dh,7ch,7bh,5dh,5ch,5bh
+
+	db	'SU-'				;Label for ID
+
+
+;
+;	DANISH KEYBOARD TABLES
+;
+lda10:
+	db	0ah,0e5,0e5,0e5
+
+datb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2bh,40h,08h,09h	;,,,,+,@
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,7dh,7eh,0dh,0ee,61h,73h	;,,},~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7bh	;,,,,,,,{
+	defb	7ch,0ah,0ec,2eh,7ah,78h,63h,76h	;|
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+dash:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,5dh,5eh,0dh,0ee,41h,53h	;,,],^
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,5bh ;,,,,,,,[
+	defb	5ch,0ah,0ec,2eh,5ah,58h,43h,56h	;\
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+dacd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,2ah,27h,8dh,0ee,01h,13h	;,,*,'
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,3ch,3eh,5ch,0ed,9eh	;,,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	7dh,7ch,7bh,5dh,5ch,5bh
+
+	db	'DA-'				;Label for ID
+
+
+;
+;	SOUTH AFRICAN KEYBOARD TABLES
+;
+lsa11:
+	db	0bh,0e5,0e5,0e5
+
+satb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2fh,60h,08h,09h	;,,,,/,`
+	defb	71h,77h,65h,72h,74h,79h,75h,69h	;
+	defb	6fh,70h,5bh,21h,0dh,0ee,61h,73h	;,,[,!
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,3ch	;,,,,,,,<
+	defb	3eh,0ah,0ec,2eh,7ah,78h,63h,76h	;>
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+sash:				;k/b shifted
+	defb	00h,1bh,2bh,22h,23h,40h,25h,26h	;,,+,",,@,,&
+	defb	2ah,28h,29h,3dh,3fh,7eh,08h,09h	;*,(,),=,?,~
+	defb	51h,57h,45h,52h,54h,59h,55h,49h	;
+	defb	4fh,50h,5eh,24h,0dh,0ee,41h,53h	;,,^,$
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,27h ;,,,,,,,'
+	defb	5dh,0ah,0ec,2eh,5ah,58h,43h,56h	;]
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+sacd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,7ch,5ch,88h,89h	;,,,,|,\
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,7dh,7bh,8dh,0ee,01h,13h	;,,},{
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	5bh,3ch,3eh,5bh,3ch,3eh
+
+	db	'AF-'				;Label for ID
+
+
+;
+;	SWISS GERMAN KEYBOARD TABLES
+;
+lsg12:
+	db	0ch,0e5,0e5,0e5
+
+sgtb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,27h,5eh,08h,09h	;,,,,',^
+	defb	71h,77h,65h,72h,74h,7ah,75h,69h	;,,,,,z
+	defb	6fh,70h,21h,7eh,0dh,0ee,61h,73h	;,,!,~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7ch	;,,,,,,,|
+	defb	3ch,0ah,0ec,2eh,79h,78h,63h,76h	;<,,,,y
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+sgsh:				;k/b shifted
+	defb	00h,1bh,2bh,22h,2ah,5ch,25h,26h	;,,+,",*,\,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,5ah,55h,49h	;,,,,,Z
+	defb	4fh,50h,5dh,3eh,0dh,0ee,41h,53h	;,,},>
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,7bh ;,,,,,,,{
+	defb	40h,0ah,0ec,2eh,59h,58h,43h,56h	;@,,,,Y
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+sgcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,5bh,5dh,8dh,0ee,01h,13h	;,,[,]
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,24h	;,,,,,,,$
+	defb	23h,08a,0ec,0ae,1ah,18h,03h,16h	;#
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	21h,7ch,3ch,21h,7ch,3ch
+
+	db	'SG-'				;Label for ID
+
+
+;
+;	SWISS FRENCH KEYBOARD TABLES
+;
+lsf13:
+	db	0dh,0e5,0e5,0e5
+
+sftb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,27h,5eh,08h,09h	;,,,,',^
+	defb	71h,77h,65h,72h,74h,7ah,75h,69h	;,,,,,z
+	defb	6fh,70h,7dh,7eh,0dh,0ee,61h,73h	;,,},~
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,7bh	;,,,,,,,{
+	defb	40h,0ah,0ec,2eh,79h,78h,63h,76h	;@,,,,y
+	defb	62h,6eh,6dh,2ch,2eh,2dh,0ed,1eh	;,,,,,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+sfsh:				;k/b shifted
+	defb	00h,1bh,2bh,22h,2ah,5ch,25h,26h	;,,+,",*,\,,&
+	defb	2fh,28h,29h,3dh,3fh,60h,08h,09h	;/,(,),=,?,`
+	defb	51h,57h,45h,52h,54h,5ah,55h,49h	;,,,,,Z
+	defb	4fh,50h,21h,3eh,0dh,0ee,41h,53h	;,,!,>
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,7ch ;,,,,,,,|
+	defb	3ch,0ah,0ec,2eh,59h,58h,43h,56h	;<,,,,Y
+	defb	42h,4eh,4dh,3bh,3ah,5fh,0ed,1eh	;,,,;,:,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+sfcd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,5bh,5dh,8dh,0ee,01h,13h	;,,[,]
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,24h	;,,,,,,,$
+	defb	23h,08a,0ec,0ae,1ah,18h,03h,16h	;#
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	3eh,7dh,40h,3eh,7dh,40h
+
+	db	'SF-'				;Label for ID
+
+
+;
+;	PORTUGUESE KEYBOARD TABLES
+;
+lpo14:
+	db	0eh,0e5,0e5,0e5
+
+potb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,27h,2fh,08h,09h	;,,,,',/
+	defb	61h,7ah,65h,72h,74h,79h,75h,69h	;a,z,,,,y
+	defb	6fh,70h,7eh,7dh,0dh,0ee,71h,73h	;,,~,},,,q
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,6dh	;,,,,,,,m
+	defb	60h,0ah,0ec,2eh,77h,78h,63h,76h	;`,,,,w
+	defb	62h,6eh,5dh,2eh,2ch,2dh,0ed,1eh	;,,],.,comma,-
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+posh:				;k/b shifted
+	defb	00h,1bh,21h,22h,23h,24h,25h,26h	;,,,",,,,&
+	defb	2fh,28h,29h,3dh,3fh,5ch,08h,09h	;/,(,),=,?,\
+	defb	41h,5ah,45h,52h,54h,59h,55h,49h	;A,Z,,,,Y
+	defb	4fh,50h,5eh,7bh,0dh,0ee,41h,53h	;,,^,{
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,4dh ;,,,,,,,M
+	defb	40h,0ah,0ec,2eh,57h,58h,43h,56h	;@,,,,W
+	defb	42h,4eh,5bh,3ah,3bh,5fh,0ed,1eh	;,,[,:,;,_
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+pocd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,2ah,2bh,8dh,0ee,01h,13h	;,,*,+
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,3ch,3eh,7ch,5ch,0ed,9eh	;,,<,>
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	3eh,5dh,5ch,3eh,5bh,5ch
+
+	db	'PO-'				;Label for ID
+
+
+;
+;	SPECIAL KEYBOARD TABLE
+;
+lspec:
+	db	0fh,0e5,0e5,0e5
+
+spectb:				;k/b unshifted table
+	defb	00h,1bh,31h,32h,33h,34h,35h,36h
+	defb	37h,38h,39h,30h,2dh,3dh,08h,09h
+	defb	71h,77h,65h,72h,74h,79h,75h,69h
+	defb	6fh,70h,5bh,5dh,0dh,0ee,61h,73h
+	defb	64h,66h,67h,68h,6ah,6bh,6ch,3bh
+	defb	27h,0ah,0ec,2eh,7ah,78h,63h,76h
+	defb	62h,6eh,6dh,2ch,2eh,2fh,0ed,1eh
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a0,0a2,0a4
+
+specsh:				;k/b shifted
+	defb	00h,1bh,21h,40h,23h,24h,25h,5eh
+	defb	26h,2ah,28h,29h,5fh,2bh,08h,09h
+	defb	51h,57h,45h,52h,54h,59h,55h,49h
+	defb	4fh,50h,7bh,7dh,0dh,0ee,41h,53h
+	defb	44h,46h,47h,48h,4ah,4bh,4ch,3ah
+	defb	22h,0ah,0ec,2eh,5ah,58h,43h,56h
+	defb	42h,4eh,4dh,3ch,3eh,3fh,0ed,1eh
+	defb	0ef,20h,0eb,0f1,0f2,0f3,0f4,0f5
+	defb	0f6,0f7,0f8,0f9,0fa,0fb,0fc,37h
+	defb	38h,39h,2ch,34h,35h,36h,0bd,31h
+	defb	32h,33h,30h,0e7,82h,84h,83h,80h
+	defb	81h,0e6,0fd,7fh,2bh,2dh,2ah,2fh
+	defb	0f0,18h,8eh,8fh,0a1,0a3,0a5
+
+speccd:				;k/b coded
+	defb	00h,9bh,91h,92h,93h,94h,95h,96h
+	defb	97h,98h,99h,90h,1fh,9ah,88h,89h
+	defb	11h,17h,05h,12h,14h,19h,15h,09h
+	defb	0fh,10h,1bh,1dh,8dh,0ee,01h,13h
+	defb	04h,06h,07h,08h,0ah,0bh,0ch,7eh
+	defb	60h,08a,0ec,0ae,1ah,18h,03h,16h
+	defb	02h,0eh,0dh,1ch,7ch,5ch,0ed,9eh
+	defb	0ef,00h,0eb,0d1,0d2,0d3,0d4,0d5
+	defb	0d6,0d7,0d8,0d9,0da,0db,0dc,0b7
+	defb	0b8,0b9,0ac,0b4,0b5,0b6,0fe,0b1
+	defb	0b2,0b3,0b0,0c7,02h,04h,03h,1eh
+	defb	01h,0c6,0dd,0ff,0ab,0ad,0aa,0af
+	defb	0d0,0de,8eh,8fh,0c8,0c9,0ca
+
+				;caps lock
+	db	00h,00h,00h,00h,00h,00h
+
+	db	'SP-'				;Label for ID
+
+lla15:
+lfc16:
+	db	0
+
+	end
