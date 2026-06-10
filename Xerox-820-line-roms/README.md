@@ -626,3 +626,23 @@ Notes:
    v402's slot is bound to RX011), the v4.03-partial set (MAME `v403` slots
    stay NO_DUMP), the diagnostics 537p60xx set, the 824 material, and the
    expansion-box ROMs (undumped). 820-I Monitor v1.0 remains undumped.
+
+## Independent corroboration of the 820-I factory v2.0 set (2026-06-10)
+
+A community-supplied second dump of the v2.0 monitor ROMs (Intel HEX, saved at
+run-time addresses: the 16-byte relocation stub at 0x0000, the u64 body at
+0xF000-0xF7EF, u63 at 0xF7F0-0xFFEF) was decoded and compared against the
+archived images:
+
+- **u63**: byte-exact match (`bc11f834`), all 2048 bytes.
+- **u64**: identical in every functional byte (banner, code, tables); the only
+  differences are **3 spuriously-programmed bits in the unused 0xFF erase-fill**
+  near the chip's tail — offsets 0x7C0 (FF->FE), 0x7C1 (FF->FD), 0x7CD (FF->FE)
+  — a burn artifact on that chip or its master, not a revision.
+
+Two unrelated dumps agreeing in all 4093 meaningful bytes of 4096 promotes the
+v2.0 set to independently-corroborated status. The dump also confirms the
+factory monitor's structure: a 16-byte stub at physical 0 (`di; ld hl,0010h;
+ld de,0F000h; ld bc,1000h; ldir; jp 0F000h`) relocating the body to its F000
+link address at reset -- and explains the 0xF7F0 (not 0xF800) runtime base of
+the u63 half (the 16-byte stub skew).
