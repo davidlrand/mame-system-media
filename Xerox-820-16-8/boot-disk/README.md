@@ -62,3 +62,60 @@ boot ROM signature (0x0909 at 0xFFFFC), which the dumped 8086.u33 carries.
 Note: the 816 SYSTEM DISK (B16D38) carries a *different* LOAD86 expecting an
 earlier, undumped 8086-board ROM revision (9-byte ID 01..09 at 0xFCFF5) and
 cannot start the 8086 with the available ROM.
+
+## CP/M-86 media (added 2026-06-10)
+
+### x1685-cpm86-boot.imd — 5.25" CP/M-86-capable boot disk (`x1685`)
+
+`x1685-cpm22-boot.imd` plus the CP/M-86 tool chain, all taken from
+`16-8sys8-boot.imd` (the proven pair for the dumped 8086.u33):
+**LOAD86.COM, CPM86.COM, 86CON.COM** and **PIP/STAT/SUBMIT/HELP/GOBACK.CMD**.
+To make room, M80.COM, L80.COM, HELP.TXT, HELP.COM and D.COM were deleted, and
+the leftover 9×512 track (cyl 40 head 0, inherited from the donor) was
+normalized to formatted-empty E5 MFM 17×256. All injected blocks live on
+side 0. CPM86.COM is required: LOAD86's staged 2.2F system chains to it
+(`CPM86?` at the new prompt if absent) to load the CP/M-86 OS into the 8086.
+
+Recipe (`/tmp/c86build/inject.py` pattern): flatten the IMD to literal
+sectors, address records by sector ID (trk = cyl, FDC sec = rec/2+1, half =
+rec&1, 34 recs/track from cyl 3, 2K blocks, side 0 first), rewrite the
+directory (2 dir blocks, EXM=1 so every file here is a single extent).
+
+**Extraction warning**: `16-8sys8-boot.imd` carries damaged tracks (8, 54,
+66, 68, 72, 75, 76 have duplicate/missing sector IDs; 12, 60, 70 each miss
+one sector). Files must be extracted addressing sectors **by ID with a
+uniform 26-sector track**, not by position in the track record — a
+position-based read shifts everything after track 8 and yields silently
+corrupt files (LOAD86 then crashes back to the ROM monitor). The injected
+files were verified against a live-TPA dump of LOAD86 from a booted x168 and
+against the B16D38 copies (PIP/STAT/SUBMIT.CMD byte-identical). All injected
+files avoid the damaged sectors. ED.CMD spans the trk-12 hole and was left
+off.
+
+Verified (MAME headless, 2026-06-10): `x1685 -flop1` → `L` → CP/M 2.2C A> →
+`LOAD86` → "Xerox 16/8 PC 60k CP/M-80 vers 2.2F #2-294" → `86CON` →
+**"Xerox 16/8 PC 256k CP/M-86 vers 1.1F #2-294"** → `a>` DIR lists the disk,
+`STAT` (STAT.CMD) runs ("A: RW, Free Space: 170k").
+
+### x1685s-cpm86.chd — SA1004 rigid CHD with the CP/M-86 tool chain
+
+`sa1004.chd` (bootable CP/M 2.2 system + tools on partition E) with the same
+nine files PIPped onto E: from `16-8sys8-boot.imd`, done authentically inside
+the emulation: `x168s -flop1 16-8sys8-boot(copy) -hard this.chd`, boot `L`,
+then `PIP E:=A:<file>` one file at a time (ED.CMD skipped, damaged source),
+`DIR E:` verified. The LPK keyboard's natural-keyboard map types `:`/`=`
+correctly; the x820iis ASCII-keyboard HLE does not.
+
+Verified (2026-06-10):
+- **x168s** `-hard x1685s-cpm86.chd`, boot `LE` (rigid partition E → A:):
+  `LOAD86` → 2.2F banner → `86CON` → **CP/M-86 1.1F**, `DIR` lists the rigid
+  partition, `STAT` reports 3,304k free. Full CP/M-86 running from the rigid
+  disk.
+- **x1685s** same CHD, `LE`: boots CP/M-80 2.2 to A> (console comes up on
+  TTY: per the installed system's IOBYTE; poke 0003=01 or CONFIGUR for CRT).
+  `LOAD86` passes its 8086 sequence (stop, ROM signature 0909 at window
+  BFFC, start) but the staged 2.2F system signs on garbled
+  ("16/8 PC PXRZT\V^X`Zb\d^f") and drops back to the old system; `86CON`
+  then reports "This software requires co-processor CP/M." The identical
+  CHD rigid-booted on x168s works, so this is specific to the x1685s
+  (rgd5/sdvr reconstructed-driver) personality, not the media — open issue.
