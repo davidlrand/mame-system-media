@@ -547,3 +547,51 @@ From LPKYBD.MAC (B16D40, ver 018). Header:
   source (XR.MAC v5.0 baseline, LPKYBD, the SDVR/WDVR disk drivers, 8086
   disassembly), and docs. Its `roms/` subset is superseded by this repository.
 - MAME drivers: `src/mame/xerox/xerox820.cpp`, `x820kb.cpp`, `xerox_lpk.cpp`.
+
+## MAME functional test results 2026-06-10
+
+Headless MAME (Dave's tree), repo ROMs installed into the rompath under the
+MAME slot names, `-seconds_to_run` + Lua autoboot posting keys via the natural
+keyboard and dumping video RAM. Boot media: 8" = Maslin B1D18 (Xerox 60k CP/M
+2.2C, carries DDT.COM); 5.25" = `../Xerox-820-16-8/boot-disk/x1685-cpm22-boot.imd`;
+16/8 = 16-8SYS8 (track-8-repaired copy — the raw IMD is rejected by MAME's
+loader, a media issue, not ROM). Pass = boots CP/M **and** loads a program
+from disk. 820-I pass bar = monitor sign-on + keyboard echo (no bootable
+820-I single-density image available).
+
+| Set | Machine / `-bios` | Sign-on observed | CP/M boot | Program load | Result |
+|---|---|---|---|---|---|
+| v4.00 | `x820ii -bios v400` | `820-II v 4.00   1982 Xerox Corp` | 2.2C 8" | DDT VERS 2.2 | **PASS** |
+| v4.01 | `x820ii -bios v401` | `820-II v 4.01   1982 Xerox Corp` | 2.2C 8" | DDT VERS 2.2 | **PASS** |
+| v4.02 + RX011 | `x820ii -bios v402` | `820-II v 4.02   1982 Xerox Corp(RX v011)` | no (note 1) | — | PARTIAL |
+| v4.02 + RX011 | `x820iilp -bios v402` | same | no (note 1) | — | PARTIAL |
+| v4.04 + v016 u36 | `x820ii -bios v404` | `Xerox  v 4.04   1983 Xerox Corp (v016)` | no — std kb gated by LPK u36, expected | — | EXPECTED |
+| v4.04 + v016 u36 | `x820iilp -bios v404` | `Xerox  v 4.04   1983 Xerox Corp (v016)` | 2.2C 8" | DDT VERS 2.2 | **PASS** |
+| v5.00 (no u36) | `x820ii -bios v50` | `Xerox  v 5.00   1982 Xerox Corp` | 2.2C 8" | DDT VERS 2.2 | **PASS** |
+| v5.00 + v018 u36 | `x820iilp -bios v50v018` | `Xerox  v 5.00   1983 Xerox Corp (v018)` | 2.2C 8" | DDT VERS 2.2 | **PASS** |
+| v5.00, 5.25" | `x820ii5 -bios v50` | `Xerox  v 5.00   1982 Xerox Corp` | 2.2C 5.25" | DDT VERS 2.2 | **PASS** |
+| v5.00 + rx024 (16/8) | `x168 -bios v50` | `  1984 Xerox Corp v 5.00 (RX v024)` | 60k 2.2C 8" | DIR + STAT.COM | **PASS** |
+| 820-I v2.0 | `x820 -bios v20` | `...XEROX 820  VER. 2.0...` | n/a | monitor `D` dump runs, full echo | **PASS** (820-I bar) |
+| SmartROM v2.3 | `x820 -bios smart23` | `Monitor v2.3 for Xerox 820   1985 MICROCode Consulting` (+ live clock) | n/a | echo verified | **PASS** (820-I bar) |
+| Plus2 v0.2a | `x820 -bios plus2` | `Plus2 0.2a   1986 MICROCode` | n/a | echo verified | **PASS** (820-I bar) |
+
+Notes:
+
+1. **v4.02/RX011 keyboard:** under the RX v011 u36 overlay, keystrokes from
+   the standard G25 ASCII keyboard are consumed without echo (CR reaches the
+   command parser → `what?`); on the LPK machine the position codes garble
+   (RX011 predates LPK support, ver 012+). CP/M cannot be loaded from either
+   MAME keyboard, so only the monitor/banner is validated. The RX keyboard
+   patch likely expects a byte stream neither MAME keyboard produces;
+   same family as the documented v50v018 standard-keyboard gating.
+2. Implicitly exercised in the runs above: `hardware/chargen/*`,
+   `hardware/keyboard/820iikey.bin` (every x820/x820ii/x820ii5 run),
+   `16-8/8086/8086.u33` (x168 run), `u36-rx-series/` v016 (= `v404.u36`),
+   v018 (= `537p10831.u36.5.0.bin`), rx024.
+3. Not testable without MAME source changes — no BIOS slot or no machine:
+   820-I community/third-party images without slots (`xpro8u63/u64`,
+   `rom0.com`/`rom100.com`, `newmon10/15.com`), the v4.01 `patch.rom` and
+   `rx006.com`/`lpkybd.com` u36 options (no u36 slot under v400/v401, and
+   v402's slot is bound to RX011), the v4.03-partial set (MAME `v403` slots
+   stay NO_DUMP), the diagnostics 537p60xx set, the 824 material, and the
+   expansion-box ROMs (undumped). 820-I Monitor v1.0 remains undumped.
