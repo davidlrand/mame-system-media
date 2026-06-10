@@ -49,3 +49,16 @@ load lands at half its true offset ("Bdos Err on K:/P: select" while DIR
 still works). With them, DDT/INIT/MOVCPM load and run. Note the original
 side-1 *content* is lost in the dump; any donor file whose blocks lived on
 side 1 reads as E5 blanks.
+
+## 16-8sys8-boot.imd (added 2026-06-10)
+
+The genuine 16/8 8" system disk (Don Maslin's `16-8sys8.td0`, in `../disks/`),
+converted to IMD and repaired for MAME: six tracks (8, 54, 66, 68, 72, 75) in
+the raw TeleDisk conversion carried duplicate sector entries (42 declared on a
+26-sector MFM track), which MAME's IMD loader rejects ("Incorrect layout");
+the duplicates were trimmed. **This is the disk that boots x168 to CP/M-80
+and, via `LOAD86` + `86CON`, to CP/M-86 1.1F** — its LOAD86 probes the 8086
+boot ROM signature (0x0909 at 0xFFFFC), which the dumped 8086.u33 carries.
+Note: the 816 SYSTEM DISK (B16D38) carries a *different* LOAD86 expecting an
+earlier, undumped 8086-board ROM revision (9-byte ID 01..09 at 0xFCFF5) and
+cannot start the 8086 with the available ROM.
