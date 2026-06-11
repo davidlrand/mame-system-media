@@ -25,9 +25,12 @@ the MK3000 — to whom this preservation effort owes its existence. See
 
 ## MAME status
 
-`mk83` exists in MAME (ROMs dumped) with a known-incorrect memory model;
-a monitor-level bring-up using these materials is in progress. The maker
-attribution is being corrected from "Scomar" to ADE Elettronica.
+**Working.** The `mk83` driver was rewritten from these materials (monitor
+relocation to F800, 256K banked RAM, FD1797+FDC9229, memory-mapped video,
+console select) and the machine boots the reconstructed CP/M 2.2 disk in
+`boot-disk/` to an interactive A> (geometry `U21,27,A,2`, then `B1`).
+Submitted upstream as mamedev/mame PR #15489, maker attribution corrected
+to ADE Elettronica.
 
 Firmware copyright ADE Elettronica; preserved for emulation and historical
 reference.
