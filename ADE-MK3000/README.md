@@ -38,8 +38,11 @@ vector tables, and console variables.
 the MK84 (Z80A at 5 MHz, 256K with hardware bank switching, 2x2732A,
 FD1797+9229): hardware operational description, two schematic sets
 (with and without the PSU), the system monitor user manual (original
-scan and page-reconstructed editions), and a board photograph.  No ROM
-dumps or media yet -- a future driver candidate.
+scan and page-reconstructed editions), and a board photograph.  `mk84/roms/` has the system monitor
+EPROM ("MK-84 monitor 1.1 - ADE Elettronica", 4K, CRC e49f3c1b) in
+three concurring dumps (two of Enrico's plus Ferruccio's).  Media is
+still wanted; with ROMs, schematics, manuals, and the family
+comparison table, a MAME driver is now within reach.
 
 ## MAME status
 
