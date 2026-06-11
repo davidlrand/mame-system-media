@@ -32,6 +32,15 @@ Board, MK82, the SCOMAR and CNR MK83s, and the MK84 (5 MHz, 256K,
 video RAM, FDC, the per-machine F8xx monitor jump tables, interrupt
 vector tables, and console variables.
 
+## MK84
+
+`mk84/` holds Enrico's documentation for the family's next generation,
+the MK84 (Z80A at 5 MHz, 256K with hardware bank switching, 2x2732A,
+FD1797+9229): hardware operational description, two schematic sets
+(with and without the PSU), the system monitor user manual (original
+scan and page-reconstructed editions), and a board photograph.  No ROM
+dumps or media yet -- a future driver candidate.
+
 ## MAME status
 
 **Working.** The `mk83` driver was rewritten from these materials (monitor
