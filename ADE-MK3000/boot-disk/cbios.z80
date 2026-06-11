@@ -1,0 +1,341 @@
+; MK-83 (ADE MK3000) CP/M 2.2 CBIOS — Standard ADE 5.25" 40-track SS/DD
+;
+; Thin CBIOS over the MULTIPROG 2.00 monitor's RAM-resident BIOS services
+; (F800 jump table; monitor lives at F7F7-FD8A + FF00 vars and stays
+; resident).  Memory map:
+;   0100-DBFF  TPA                  (62k system)
+;   DC00-E3FF  CCP   (Xerox CP/M 2.2C #2-294, relocated)
+;   E400-F1FF  BDOS  (entry E406)
+;   F200-F5FF  CBIOS (loaded from disk: trk1 sec3-4)
+;   F600-F7F6  CBIOS uninitialized data tail + stack (never loaded)
+;   F7F7-FFFF  monitor (resident), keyboard FIFO, IM2 vectors, clock
+;
+; Disk: 40 trk x 10 x 512 MFM SS ("Standard ADE 5" 40 tr.", Tabella
+; Parametri 7/6/83): block 2K, dir track 3, 128 entries, skew 2 (baked
+; into the physical sector ID order on disk; SECTRAN is identity).
+; CP/M sees 40 x 128-byte records per track; the CBIOS deblocks via
+; read-modify-write through a single 512-byte host buffer (write-through,
+; no dirty cache: simple and always consistent).
+
+CCP	equ	0DC00h
+BDOSE	equ	0E406h		; BDOS entry
+NWSECT	equ	11		; CCP+BDOS sectors for warm boot reload
+
+; monitor services (MULTIPROG 2.00 dump)
+MCONST	equ	0F806h		; A=00/FF
+MCONIN	equ	0F809h		; -> A
+MCONOUT	equ	0F80Ch		; C=char (CRT or SIO per the C-command vector)
+MSIOIN	equ	0F812h		; -> A (bit 7 stripped)
+MSIOOUT	equ	0F815h		; C=char
+MSIOOST	equ	0F818h		; A=00/FF tx ready
+MSELECT	equ	0F81Bh		; C=unit, HL->geometry; NZ=error (A=80 not ready)
+MSEEK	equ	0F821h		; C=track; NZ=error
+MRDSCT	equ	0F824h		; C=sector, HL=buffer; NZ=error (A=status)
+MWRSCT	equ	0F827h		; C=sector, HL=buffer; NZ=error
+MPRINL	equ	0F836h		; HL -> '$'-terminated string
+
+	org	0F200h
+
+	jp	boot		; cold start (from the boot sector)
+wboote:	jp	wboot		; warm start
+	jp	MCONST		; console status
+	jp	MCONIN		; console input
+	jp	MCONOUT		; console output (C)
+	jp	MSIOOUT		; list -> serial
+	jp	MSIOOUT		; punch -> serial
+	jp	MSIOIN		; reader -> serial
+	jp	home		; home disk
+	jp	seldsk		; select disk
+	jp	settrk		; set track
+	jp	setsec		; set sector
+	jp	setdma		; set DMA address
+	jp	rdrec		; read 128-byte record
+	jp	wrrec		; write 128-byte record
+	jp	MSIOOST		; list status
+	jp	sectran		; sector translate (identity)
+
+; ---------------------------------------------------------------- cold boot
+boot:
+	ld	sp,stack
+	ld	a,(0004h)	; the monitor's B command left the boot unit here
+	and	03h
+	ld	(bunit),a
+	xor	a
+	ld	(0003h),a	; IOBYTE
+	ld	(0004h),a	; current disk = A:
+	call	cflush
+	ld	hl,signon
+	call	MPRINL
+	jr	gocpm
+
+; ---------------------------------------------------------------- warm boot
+wboot:
+	ld	sp,stack
+	call	cflush
+	call	doselect
+	jr	nz,wberr
+	ld	hl,CCP		; reload CCP+BDOS: trk0 sec2-10 + trk1 sec1-2
+	ld	de,0002h	; D = track, E = sector
+	ld	b,NWSECT
+wblp:
+	push	bc
+	push	de
+	push	hl
+	ld	c,d
+	call	MSEEK
+	jr	nz,wberrp
+	pop	hl		; the ROM calls clobber HL (RDSCT returns FF73)
+	pop	de
+	push	de
+	push	hl
+	ld	c,e
+	call	MRDSCT
+	jr	nz,wberrp
+	pop	hl
+	pop	de
+	pop	bc
+	ld	a,h
+	add	a,2		; HL += 512
+	ld	h,a
+	inc	e
+	ld	a,e
+	cp	11
+	jr	c,wbnx
+	ld	e,1
+	inc	d
+wbnx:
+	djnz	wblp
+gocpm:
+	ld	a,0C3h		; JP
+	ld	(0000h),a
+	ld	hl,wboote
+	ld	(0001h),hl
+	ld	(0005h),a
+	ld	hl,BDOSE
+	ld	(0006h),hl
+	ld	bc,0080h
+	call	setdma
+	ld	a,(0004h)
+	ld	c,a
+	jp	CCP
+
+wberrp:
+	pop	hl
+	pop	de
+	pop	bc
+wberr:
+	ld	hl,wbmsg
+	call	MPRINL
+	jr	wboot
+
+; ---------------------------------------------------------------- disk: bdos
+home:
+	ld	bc,0
+	; fall into settrk
+settrk:
+	ld	a,c
+	ld	(track),a	; 0-39 (BDOS includes the 3 reserved tracks)
+	ret
+
+setsec:
+	ld	a,c
+	ld	(sector),a	; 0-39 logical 128-byte record on the track
+	ret
+
+setdma:
+	ld	(dma),bc
+	ret
+
+sectran:
+	ld	h,b		; identity: the 2:1 skew is baked into the
+	ld	l,c		; physical sector ID order on the disk
+	ret
+
+seldsk:
+	ld	hl,0
+	ld	a,c
+	or	a		; drive A: only
+	ret	nz
+	call	cflush		; media may have changed at login
+	ld	hl,dph
+	ret
+
+; invalidate the host-sector cache and the seek shortcut
+cflush:
+	xor	a
+	ld	(cvalid),a
+	ld	a,0FFh
+	ld	(phytrk),a
+	ret
+
+; read one 128-byte record: read host sector (cached), copy out
+rdrec:
+	call	hstrd
+	jr	nz,ioerr
+	call	bufptr		; HL = hstbuf + offset
+	ld	de,(dma)
+	jr	move
+
+; write one 128-byte record: read-modify-write the host sector, write-through
+wrrec:
+	call	hstrd		; pre-read (RMW; every sector exists, E5-formatted)
+	jr	nz,ioerr
+	call	bufptr
+	ex	de,hl
+	ld	hl,(dma)
+	ld	bc,128
+	ldir
+	call	doselect
+	jr	nz,inval
+	call	seek		; no-op when already on track
+	jr	nz,inval
+	ld	a,(hsec)
+	ld	c,a
+	ld	hl,hstbuf
+	call	MWRSCT
+	jr	nz,inval
+	xor	a		; buffer still mirrors the disk: cache stays valid
+	ret
+
+move:
+	ld	bc,128
+	ldir
+	xor	a
+	ret
+
+inval:
+	xor	a
+	ld	(cvalid),a
+ioerr:
+	ld	a,1
+	ret
+
+; read the host sector containing (track),(sector) into hstbuf, through the
+; one-sector cache (sequential 128-byte records hit the same host sector 4x)
+hstrd:
+	ld	a,(sector)
+	srl	a
+	srl	a
+	inc	a		; host sector 1-10
+	ld	(hsec),a
+	ld	c,a
+	ld	a,(cvalid)
+	or	a
+	jr	z,hstrd1
+	ld	a,(ctrk)
+	ld	hl,track
+	cp	(hl)
+	jr	nz,hstrd1
+	ld	a,(csec)
+	cp	c
+	ret	z		; cache hit (Z, A=0... A==csec==hsec: force A=0)
+hstrd1:
+	xor	a
+	ld	(cvalid),a
+	call	doselect
+	ret	nz
+	call	seek
+	ret	nz
+	ld	a,(hsec)
+	ld	c,a
+	ld	hl,hstbuf
+	call	MRDSCT
+	ret	nz
+	ld	a,(track)	; tag the cache
+	ld	(ctrk),a
+	ld	a,(hsec)
+	ld	(csec),a
+	ld	a,1
+	ld	(cvalid),a
+	xor	a
+	ret
+
+; physical seek, skipped when the head is already there (the ROM's SEEK
+; verify costs up to a revolution; READ/WRITE match IDs themselves)
+seek:
+	ld	a,(track)
+	ld	hl,phytrk
+	cp	(hl)
+	ret	z		; A=track==phytrk -> but Z is what callers test
+	ld	c,a
+	ld	(hl),a
+	call	MSEEK
+	ret	z
+	ld	a,0FFh		; seek failed: force re-seek next time
+	ld	(phytrk),a
+	or	a
+	ret
+
+; HL = hstbuf + 128 * (sector & 3)
+bufptr:
+	ld	a,(sector)
+	and	03h
+	rrca			; A*128 -> B:A style via 9-bit trick
+	ld	l,a
+	and	80h
+	ld	l,a
+	ld	a,(sector)
+	and	03h
+	srl	a		; high bit of *128
+	ld	h,a
+	ld	de,hstbuf
+	add	hl,de
+	ret
+
+doselect:
+	ld	a,(bunit)
+	ld	c,a
+	ld	hl,geom
+	jp	MSELECT		; motor on, geometry -> FF6B, track restore
+
+; ---------------------------------------------------------------- data
+signon:
+	defb	13,10,'MK-83 62k CP/M vers 2.2',13,10,'$'
+wbmsg:
+	defb	13,10,'Warm boot error - retrying',13,10,'$'
+
+geom:
+	defb	21h		; tipo: 5.25", MFM, 12 ms step
+	defb	27h		; last track 39
+	defb	0Ah		; last sector 10
+	defb	02h		; 512 bytes/sector
+
+dph:
+	defw	0		; XLT: none (identity sectran)
+	defw	0,0,0		; BDOS scratch
+	defw	dirbuf
+	defw	dpb
+	defw	csv
+	defw	alv
+
+; Standard ADE 5" 40 tr. SS/DD: 40x10x512, 2K blocks, dir trk 3, 128 entries
+dpb:
+	defw	40		; SPT: 128-byte records per track
+	defb	4		; BSH: 2K blocks
+	defb	15		; BLM
+	defb	1		; EXM (DSM < 256, 2K)
+	defw	91		; DSM: 37 tracks * 5K = 92 blocks, 0..91
+	defw	127		; DRM: 128 directory entries
+	defb	0C0h		; AL0: dir = 2 blocks
+	defb	0		; AL1
+	defw	32		; CKS (removable)
+	defw	3		; OFF: 3 reserved tracks
+
+; --- uninitialized tail (extends past the 2 loaded sectors, < F7F7) ---
+bunit:	defs	1
+track:	defs	1
+sector:	defs	1
+hsec:	defs	1
+dma:	defs	2
+cvalid:	defs	1		; host buffer holds (ctrk,csec)
+ctrk:	defs	1
+csec:	defs	1
+phytrk:	defs	1		; physical head position (FF = unknown)
+hstbuf:	defs	512
+dirbuf:	defs	128
+alv:	defs	12		; (91/8)+1
+csv:	defs	32
+	defs	32		; BIOS stack
+stack:
+
+	end

@@ -1,0 +1,84 @@
+; MK-83 (ADE MK3000, Scomar MULTIPROG 2.00 monitor) CP/M 2.2 boot sector
+; Standard ADE 5.25" 40-track SS/DD format: 40 trk x 10 sec x 512 B, MFM.
+;
+; The monitor's B command reads track 0 sector 1 (one full physical sector,
+; 512 bytes via the DRQ->NMI INI loop) to 0080 and jumps to it, with the
+; boot unit number stored at 0004 (it also seeds CP/M's current-disk byte).
+; Geometry must already be set: U21,27,A,2 then B1 from the m> prompt.
+;
+; Loads CCP+BDOS+CBIOS (13 sectors: trk0 sec2-10, trk1 sec1-4) to DC00-F5FF
+; and jumps to the CBIOS cold entry at F200.  Uses the monitor's RAM-resident
+; disk services via the F800 jump table (MULTIPROG 2.00 dump addresses).
+
+MSELECT	equ	0F81Bh		; C=unit 0-3, HL->4-byte geometry {tipo,lsttrk,lstsec,lencode}
+MSEEK	equ	0F821h		; C=track (verified, auto re-home+retry)
+MRDSCT	equ	0F824h		; C=sector, HL=buffer; full physical sector; 10 retries
+MPRINL	equ	0F836h		; print '$'-terminated string at HL on the console
+
+CBIOS	equ	0F200h
+LOADBAS	equ	0DC00h		; CCP
+NSECTS	equ	13		; CCP(4) + BDOS(7) + CBIOS(2) 512-byte sectors
+
+	org	0080h
+
+boot:
+	ld	sp,0F7E0h	; private stack in the free F600-F7F6 hole
+retry:
+	ld	a,(0004h)	; boot unit (stored by the monitor's B command)
+	and	03h
+	ld	c,a
+	ld	hl,geom
+	call	MSELECT		; motor on, geometry -> FF6B, track restore/home
+	jr	nz,err
+	ld	hl,LOADBAS
+	ld	de,0002h	; D = track 0, E = sector 2
+	ld	b,NSECTS
+ldlp:
+	push	bc
+	push	de
+	push	hl
+	ld	c,d
+	call	MSEEK
+	jr	nz,errp
+	pop	hl		; load address (the ROM calls clobber HL:
+	pop	de		; RDSCT returns with HL = FF73)
+	push	de
+	push	hl
+	ld	c,e
+	call	MRDSCT		; reads one 512-byte sector to (HL)
+	jr	nz,errp
+	pop	hl
+	pop	de
+	pop	bc
+	ld	a,h		; HL += 512
+	add	a,2
+	ld	h,a
+	inc	e		; next sector, 1..10 then next track
+	ld	a,e
+	cp	11
+	jr	c,nxt
+	ld	e,1
+	inc	d
+nxt:
+	djnz	ldlp
+	jp	CBIOS		; cold boot
+
+errp:
+	pop	hl
+	pop	de
+	pop	bc
+err:
+	ld	hl,emsg
+	call	MPRINL
+	jr	retry		; insert-disk-and-retry, by design
+
+emsg:
+	defb	13,10,'Boot error - retrying',13,10,'$'
+
+geom:
+	defb	21h		; tipo: 5.25" (SIZE=0) MFM (DENS=1), step rate 01 = 12 ms
+	defb	27h		; last track  = 39
+	defb	0Ah		; last sector = 10
+	defb	02h		; length code = 512 bytes/sector
+
+	end
