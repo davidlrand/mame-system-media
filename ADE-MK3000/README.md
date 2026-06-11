@@ -23,6 +23,15 @@ the MK3000 — to whom this preservation effort owes its existence. See
 | `boot-disk/` | Reserved: the reconstructed bootable CP/M disk (in progress — no original MK3000 media is known to survive; the disk is being rebuilt from the BIOS listing and the disk-format tables, by the same byte-provenance method as the Xerox-820-16-8 boot disk) |
 | `INDEX.md`, `MK83-MEMORY.md` | Document index and the living bring-up notes for the MAME `mk83` driver |
 
+## Family comparison
+
+`docs/Ferguson-MK-Comparazione-board.numbers` (with a JPEG preview) is
+Enrico's systematic comparison of the whole family -- Ferguson Big
+Board, MK82, the SCOMAR and CNR MK83s, and the MK84 (5 MHz, 256K,
+2x2732A, hardware bank switching) -- covering clocks, EPROM sets,
+video RAM, FDC, the per-machine F8xx monitor jump tables, interrupt
+vector tables, and console variables.
+
 ## MAME status
 
 **Working.** The `mk83` driver was rewritten from these materials (monitor
