@@ -1,0 +1,68 @@
+	title	"Sample test program"
+	;
+	; This is a sample program to open a file and then
+	; to display the contents of the file on the console
+	; Note that this program reads and writes a single character
+	; at a time and is slow.
+	;
+	; ****** Hint, increase the 'inbuf' size to 10k or
+	; so and then see how quick it is. 
+	;
+	static
+argbuf:	blkb	132		;command line buffer
+fileid:	blkw	1		;file id
+inbuf:	blkb	10		;file buffer
+inbufl:	equ	$-inbuf		;length of buffer
+	endseg
+	;
+type:	movw	132,r1		;maximum length of command line
+	addr	argbuf:w,r2	;buffer for command line
+	movw	14,r0		;get argument list request #14
+	svc
+	cmpqw	2,r0		;want only one argument, 1st arg is command
+	bne	error1:w
+	movd	argbuf:w+8,r1	;get the first argument pointer
+	movqw	0,r2		;read request
+	movqw	5,r0		;open request #5
+	svc
+	cmpqw	-1,r0		;error ?
+	beq	error2:w
+	movw	r0,fileid	;save the file id returned from open
+loop:	movw	fileid,r1	;get file id
+	addr	inbuf,r2	;the buffer for reading data from file
+	movw	inbufl,r3	;get one character at a time
+	movw	8,r0		;read request #8
+	svc
+	cmpqw	0,r0		;all done ?
+	beq	done:b
+	movqw	1,r1		;to stdout
+	addr	inbuf,r2
+	movw	r0,r3		;write the same length as returned by read
+	movw	9,r0		;write request #9
+	svc
+	cmpqw	0,r0
+	bne	loop		;put it out to the console
+	;
+	addr	mess3,r2	;message start
+	movd	mess3l,r3
+	br	putmsg:b
+	;
+error1:	addr	mess1:b,r2	;message start
+	movd	mess1l,r3	;message length
+putmsg:	movqd	2,r1		;stderr
+	movw	9,r0		;write request #9
+	svc
+done:	movw	15,r0		;return to dos
+	svc
+	;
+error2:	addr	mess2:b,r2	;message start
+	movd	mess2l,r3	;message length
+	br	putmsg
+	;
+mess1:	byte	"Filename only expected", h'0a
+mess1l:	equ	$-mess1
+mess2:	byte	"Could not find file", h'0a
+mess2l:	equ	$-mess2
+mess3:	byte	"Error in writing to console", h'0a
+mess3l:	equ	$-mess3
+

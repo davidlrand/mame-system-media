@@ -1,0 +1,75 @@
+Hi all,
+
+This is a set of old files that I retrieved from floppy.  As best I can
+remember, they were created in February 1987, and were what I think
+were executables from some of the last code I worked on at Definicon.
+I make no representations on the accuracy of any of this code, or
+what's left of my memory :-)
+
+The DSI environment was written for the DOS and CCPM operating systems,
+which were case insensitive.  You _will_ run into problems with that,
+if you are compiling on Unix today.  I've kind of just ignored it for now.
+
+To compile the emulator, you can use the makefile I have generated.  Not
+all of my compilers support link time optimization, so I generate both
+versions.  Once you have the emulator compiled, you can try it by
+
+emu mon
+
+Which will load George's debugger (well, it will load 32io.e32, then 
+mon.e32).  You can dump memory with the d command, dissasemble 
+with the l command:
+
+*l 2200
+002200  ADDR    H'2C00{PC},R0
+002204  LPRD    INTBASE,R0
+002206  SETCFG  [I,F,M]
+002209  ADDR    H'150(SB),H'150(SB)
+00220F  CMPW    H'1,H'4(SB)
+002214  BNE     H'220F
+002216  BR      H'2AA1
+002219  MOVQW   H'0,H'4(SB)
+00221C  CMPQD   H'0,@H'5C
+002220  BEQ     H'2233
+002222  ADDR    H'2233{PC},TOS
+002225  LPRD    SB,@H'50
+
+and quit with the q command.
+
+Once you have that working, you can compile programs.   
+
+emu cc -a -O -ge -X88 dhrystone.c
+
+which should create dhrystone.a32.  If you are on unix, you will need 
+to:
+
+mv dhrystone.a32 DHRYSTONE.A32  (yes, I know - sorry about that) then:
+
+emu as -a DHRYSTONE.A32
+
+The assembler will run, and create DHRYSTONE.O32.  To link it:
+
+emu ln -a FILE=DHRYSTONE
+
+and that will create DHRYSTONE.E32,  which you can fix by:
+
+mv DHRYSTONE.E32 dhrystone.e32
+
+Then, last
+
+emu dhrystone
+
+Series 32000 Emulator Version 1.0 of 5 May 2016
+Starting execution
+199014059 instructions executed in 13.590703 seconds (14.64 MIPS).
+
+R0=0000000F R1=00000000 R2=0000AF89 R3=00003ABA
+R4=00000014 R5=000000C0 R6=ED20AD6F R7=00000000
+PC=00002706 SB=00002000 SP=00002140 FP=003F7FCC
+Traps=00000000 INTBASE=00002C00 PSR=0040 MOD=0020
+
+F0=0.000000 F1=0.000000 F2=0.000000 F3=0.000000
+F4=0.000000 F5=0.000000 F6=0.000000 F7=0.000000
+D0=0.000000 D1=0.000000 D2=0.000000 D3=0.000000
+D4=0.000000 D5=0.000000 D6=0.000000 D7=0.000000
+

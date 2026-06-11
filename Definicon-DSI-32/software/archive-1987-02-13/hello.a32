@@ -1,0 +1,22 @@
+.module	hello.c
+.program
+.endseg
+.program
+_main:-
+
+	addrd	L4,tos
+	cxp	_printf
+	cmpqd	0,tos
+
+	rxp	0
+.endseg
+.static
+L4:	.byte	87,101,108,99,111,109,101,32,116,111
+	.byte	32,116,104,101,32,119,111,114,108,100
+	.byte	32,111,102,32,51,50,32,98,105,116
+	.byte	32,99,111,109,112,117,116,101,114,115
+	.byte	10,0
+.endseg
+.static
+.endseg
+	.importp	_printf

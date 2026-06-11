@@ -1,0 +1,1150 @@
+	TITLE	'DSI-32000 I/O KERNEL'
+	start
+
+VIRT:	equ	1
+
+EXEC:	EQU	1
+CMOD:	EQU	H'20
+VMOD:	EQU	H'5C
+DBGMOD:	EQU	H'1F80
+DBG:	EQU	DBGMOD+H'C	;DEBUGGER MODULE ENTRY
+PRGM:	EQU	H'8C		;PROGRAM'S MAIN MODULE offset
+MPRGM:	equ	h'9c		;Program's main module number (offset zero)
+
+;	if	aduart = 1
+;DUARCNT:EQU	H'F7FE38
+;	endif
+;	if	aduart = 0
+;DUARCNT:equ	h'200138
+;	endif
+
+	;
+	;-----------------------------------------------------------------;
+	;								  ;
+	;  Copyright (C) 1985 by Definicon Systems Inc.			  ;
+	;								  ; 
+	;   Definicon Systems Inc.					  ;
+	;   31324 Via Colinas, #108/109					  ;
+	;   WestLake Village. California. U.S.A				  ;
+	;								  ;
+	;   All Rights Reserved						  ;
+	;								  ;
+	;   This software is furnished under a license and may be used    ;
+	;   and copied only in accordance with the terms of such license  ;
+	;   and with the inclusion of the above copyright notice. This    ;
+	;   software or any other copies thereof may not be provided or   ;
+	;   otherwise made available to any other person. No title to and ;
+	;   ownership of the software is hereby transferred.              ;
+	;								  ;
+	;   The information in this software is subject to change without ;
+	;   notice and should not be construed as a commitment by	  ;
+	;   Definicon Systems Inc.					  ;
+ 	;								  ;
+ 	;-----------------------------------------------------------------;
+	;
+	; 32000 MEMORY MAP
+	;
+	;	0000		BOOTSTRAP CODE
+	;	0020		I/O KERNEL MODULE TABLE
+	;	0030		CLIBR MODULE TABLE
+	;	0040		CRTLIB MODULE TABLE
+	;	0050		VIRTUAL HANDLER MODULE TABLE
+	;	0080		PROGRAM'S MODULE TABLE(S)
+	;	1F80		DEBUGGER MODULE TABLE
+	;	2000		I/O SPACE FOR 8086/32000 COMMUNICATION
+	;	2200		KERNEL
+	;
+	;----------------------------------------------------------------
+	;
+	MODULE	KERNEL
+	;
+	EXPORTP	KERNEL
+	;
+	STATIC
+SW86:	BLKW	1		;8086 SERVICE REQUEST WORD 
+RC86:	BLKW	1		;8086 COMPLETION CODE
+SW32:	BLKW	1		;32032 SERVICE REQUEST WORD
+RC32:	BLKW	1		;32032 COMPLETION CODE
+	;
+QIN86:	BLKW	1		;8086 QUEUE POINTER
+QIN32:	BLKW	1		;32032 QUEUE POINTER
+	;
+QOUT86:	BLKW	1		;8086 QUEUE POINTER
+QOUT32:	BLKW	1		;32032 QUEUE POINTER
+	;
+QPR86:	BLKW	1		;8086 QUEUE POINTER
+QPR32:	BLKW	1		;32032 QUEUE POINTER
+	;
+DSKRW:	BLKW	1		;DISK SERVICE REQUEST
+DSKID:	BLKW	1		;CURRENT FILE ID
+DSKLN:	BLKW	1		;# OF BYTES TO TRANSFER
+DSKDTA:	BLKD	1		;POINTER TO DISK DTA
+DSKRC:	BLKW	1		;DISK COMPLETION CODE
+	;
+HEAPL:	BLKD	1		;HEAP LOW
+HEAPH:	BLKD	1		;HEAP HIGH
+STACKL:	BLKD	1		;STACK LOW
+STACKH:	BLKD	1		;STACK HIGH
+	;
+DSKERR:	blkw	1		;local disk errorno variable
+VAR1:	blkd	1		;general variable passing variables
+VAR2:	blkd	1
+VAR3:	blkd	1
+VAR4:	blkd	1
+VAR5:	blkd	1
+VAR6:	blkd	1
+VAR7:	blkd	1
+VAR8:	blkw	1
+LOCBUF:	blkd	1		;local buffer pointer
+MEMTOP:	BLKD	1		;TOP OF MEMORY
+DUARCNT:blkd	1		;actual duart base
+EXIT:	blkd	1		;exit from 32io to multi-task
+
+	blkb	160
+	BLKB	80		;FOR STACK
+STACKEN:EQU	$
+	;
+KERSTK:	BLKD	1		;THE KERNEL STACK
+USRSTK:	BLKD	1		;THE USER STACK
+	ENDSEG
+	;
+	;
+ROPEN:	EQU	1
+RCREAT:	EQU	2
+RCLOSE:	EQU	3
+RRENAM:	EQU	4
+RREAD:	EQU	5
+RWRITE:	EQU	6
+RSEEK:	EQU	7
+RFTELL:	EQU	8
+RERASE:	EQU	9
+	;
+START:
+INIT:	ADDR	INTTAB:W,R0	;INTERRUPT TABLE
+	LPRD	INTBASE,R0	;BASE FOR INTERRUPTS
+cnfg:	SETCFG	[F]		;WE HAVE AN FPU
+	ADDR	STACKEN,KERSTK	;THE STACK FOR SYSTEM CALLS & OTHER TRAPS
+INI1:	CMPW	EXEC,SW32	;CHECK FOR EXECUTE COMMAND
+	BNE	INI1
+	BR	sizemem:w
+	;
+INIR:	MOVQW	0,SW32
+	CMPQD	0,@VMOD		;RUNNING THE VIRTUAL MODULE?
+	BEQ	INI3:B
+	ADDR	INI3:B,TOS	;THE RETURN ADDRESS
+	LPRD	SB,@H'50
+	LPRW	MOD,H'50
+	MOVD	@VMOD,R0
+	JUMP	R0
+	;
+INI3:	movd	@DBG,r0		;get the debugger start address
+	CMPQD	0,r0		;0 => NO DEBUGGER PRESENT
+	BEQ	INI2:B
+	LPRD	SB,@DBGMOD
+	LPRW	MOD,DBGMOD
+	MOVW	H'100,R7	;FORCE USER PROGRAM INTO USER MODE
+	JUMP	R0		;EXECUTE THE DEBUGGER
+	;
+INI2:	MOVD	@MPRGM,R0	;get the main module number
+	ashd	4,r0		;offset to main module table
+	addr	h'80(r0),r0	;point to main module table entry
+	LPRD	SB,0(R0)
+	LPRW	MOD,R0
+	movd	@PRGM,r0 
+	BISPSRW	H'100		;INTO USER MODE
+	JUMP	R0		;EXECUTE THE PROGRAM IN USER MODE
+	;
+	BYTE	'(C) 1985 Definicon Systems Inc. Version 2.22****'
+	;
+SVCLM:	BYTE	SVCL,0
+SVC:
+KERNEL:	ADDQD	1,0(SP)		;the actual return address
+	SAVE	[R2,R3]
+	sprd	sp,USRSTK
+	ANDD	H'FF,R0
+	CHECKB	R0,SVCLM,R0
+	BFS	SVC4:W		;ERROR IN REQUEST
+	;
+SVCS:	CASEW	SVCTB:B[R0:W]	;GO TO APPROPRIATE HANDLER
+SVCTB:	WORD	SVC0-SVCS
+	WORD	SVC1-SVCS	;Call BDOS
+	WORD	SVC2-SVCS	;**NOT SUPPORTED ** WRITE A CHARACTER TO PRINT
+	WORD	SVC3-SVCS	;**NOT SUPPORTED ** READ A LINE
+	WORD	SVC4-SVCS	;**NOT SUPPORTED ** WRITE A LINE
+	WORD	SVC5-SVCS	;OPEN FILE
+	WORD	SVC6-SVCS	;CLOSE FILE
+	WORD	SVC7-SVCS	;CREATE FILE
+	WORD	SVC8-SVCS	;READ DATA FROM FILE
+	WORD	SVC9-SVCS	;WRITE DATA TO FILE
+	WORD	SVC10-SVCS	;ERASE FILE
+	WORD	SVC11-SVCS	;RENAME FILE
+	WORD	SVC12-SVCS	;SEEK TO BYTE IN FILE
+	WORD	SVC13-SVCS	;DETERMINE CURRENT BYTE OFFSET IN FILE
+	WORD	SVC14-SVCS	;GET THE COMMAND LINE ARGUMENTS
+	WORD	SVC15-SVCS	;TERMINATE COMMAND
+	WORD	SVC16-SVCS	;Move to 8086 memory
+	WORD	SVC17-SVCS	;Move from 8086 memory
+	WORD	SVC18-SVCS	;Move to 8086 memory, background
+	WORD	SVC19-SVCS	;Move from 8086 memory, background
+	WORD	SVC20-SVCS	;Read from 8086 io port
+	WORD	SVC21-SVCS	;Write to 8086 io port
+	WORD	SVC22-SVCS	;read the config information
+	word	SVC23-SVCS	;allocate 8086 memory
+	word	SVC24-SVCS	;free 8086 memory
+	word	SVC25-SVCS	;do 8086 interrupt
+	word	SVC26-SVCS	;fix interrupt base
+	word	SVC27-SVCS	;get 8086 time
+	word	SVC28-SVCS	;get environment variable
+	word	SVC29-SVCS	;SYSTEM call
+	word	SVC30-SVCS	;EXEC system call
+	word	SVC31-SVCS	;(sort of) SIGNAL call
+	word	SVC32-SVCS	;PATH system call
+	;
+SVCL:	EQU	($-SVCTB)/2+1
+	;
+MS1:	BYTE	'Non-vectored Interrupt Trap',0
+MS2:	BYTE	'Non-maskable Interrupt Trap',0
+MS3:	BYTE	'Abort Trap',0
+MS4:	BYTE	'FPU Trap',0
+MS5:	BYTE	'Illegal Instruction Trap',0
+MS6:	BYTE	'Integer Divide by Zero Trap',0
+MS7:	BYTE	'Flag Trap',0
+MS8:	BYTE	'Breakpoint Flag',0
+MS9:	BYTE	'Trace Flag',0
+MS10:	BYTE	'Undefined Instruction Trap',0
+MS11:	BYTE	'Non-supported System Request, #'
+MS11O:	BLKB	10
+	;
+MS12:	BYTE	' from '
+OBUF:	BLKB	10
+	;
+fputbl:	double	fpum0-fputbl	;no exception
+	double	fpum1-fputbl	;underflow
+	double	fpum2-fputbl	;overflow
+	double	fpum3-fputbl	;divide by zero
+	double	fpum4-fputbl	;illegal instruction
+	double	fpum5-fputbl	;invalid operation
+	double	fpum6-fputbl	;inexact result
+	double	fpum7-fputbl	;reserved
+	;
+fpum0:	byte	': No exception.',10,0
+fpum1:	byte	': Underflow.',10,0
+fpum2:	byte	': Overflow.',10,0
+fpum3:	byte	': Division by zero.',10,0
+fpum4:	byte	': Illegal FPU instruction.',10,0
+fpum5:	byte	': Invalid operation attempted, 0/0 or not a number.',10,0
+fpum6:	byte	': Inexact result occured.',10,0
+fpum7:	byte	': Reserved trap.',10,0
+	;
+
+SVEX:	RESTORE	[R2,R3]
+	ALIGN	4		;for 32032 bug
+	RETT	0
+
+SVC1:	cmpqw	0,SW86		;if busy, loop
+	bne	SVC1
+	movb	r1,VAR1		;store bdos request
+	movw	r2,VAR2		;and dx arg
+	movqw	1,SW86		;do it please
+	bsr	setint:w	;set the interrupt
+svc1a:	cmpqw	0,SW86		;are we done?
+	bne	svc1a		;no, loop
+	movzbd	VAR1,r0		;return appropriate argument in r0
+	br	SVEX
+	;
+SVC0:
+SVC2:
+SVC3:
+SVC4:	ADDR	MS11O,R5
+	MOVD	R0,R1		;REQUEST NUMBER
+	BSR	PUTHEX
+	ADDR	MS11,R2
+	BSR	PUTS:W
+	MOVD	8(SP),R1
+	ADDQD	-1,R1		;POINT TO THE ACTUAL SVC INSTRUCTION
+	BR	ERRX:W
+	;
+	;
+	; Open disk file
+	; Pass:		R1 = Filename
+	;		R2 = Open Mode, 0 = read, 1 = write, 2 = create
+	; Return:	R0 = File id, (-1 => error)
+	;
+SVC5:	CMPQW	0,SW86
+	BNE	SVC5		;WAIT TILL DISK NOT BUSY
+	MOVW	R2,DSKID
+	movd	LOCBUF,r2	;prep to copy
+	MOVD	r2,DSKDTA	;THE FILENAME
+	bsr	movsz:w		;move until zero
+	MOVQW	ROPEN,DSKRW	;THE OPEN REQUEST
+	MOVQW	4,SW86		;DISK REQUEST
+	bsr	setint:w	;set the interrupt
+S55:	CMPQW	0,SW86		;WAIT FOR COMPLETION
+	BNE	S55
+	MOVXWD	DSKID,R0	;GET THE FILE ID
+	BR	SVEX
+	;
+	; Close disk file
+	; Pass:		R1 = File id to close
+	; Return:	R0 = Return status (0 = good, -1 = error)
+	;
+SVC6:	CMPQW	0,SW86
+	BNE	SVC6		;WAIT FOR DISK NOT BUSY
+	MOVW	R1,DSKID	;THE FILE TO CLOSE
+	MOVQW	0,DSKLN
+	MOVQW	RCLOSE,DSKRW	;CLOSE THE FILE
+S61:	MOVQW	4,SW86
+	bsr	setint:w	;set the interrupt
+S62:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+	BNE	S62
+	MOVXWD	DSKRC,R0	;STATUS
+	BR	SVEX
+	;
+	; Create a file
+	; Pass:		R1 = Filename pointer
+	;		R2 = Create mode (0 = ascii, 1 = binary)
+	; Returns:	R0 = File id (-1 = error)
+	;
+SVC7:
+	MOVW	R2,DSKID
+	movd	LOCBUF,r2	;prep to copy
+	MOVD	r2,DSKDTA	;THE FILENAME
+	bsr	movsz:w		;move until zero
+	MOVQW	RCREAT,DSKRW	;CREATE FILE REQUEST
+S71:	CMPQW	0,SW86
+	BNE	S71		;WAIT TILL NOT BUSY
+	MOVQW	4,SW86
+	bsr	setint:w	;set the interrupt
+S72:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+	BNE	S72
+	MOVXWD	DSKID,R0	;FILE ID
+	BR	SVEX
+	;
+	; Read from disk file
+	; Pass:		R1 = File id to read from
+	;		R2 = DTA for read
+	;		R3 = Length to read (16 BITS)
+	; Return:	R0 = Length actually read (0 = error)
+	;
+
+SVC8:	CMPQW	0,SW86
+	BNE	SVC8		;WAIT TILL DISK READY
+	save	[r4,r5]		;get a couple of registers
+	movqd	0,r5		;we have read zero bytes.
+svc8c:	MOVW	R1,DSKID	;FILE ID
+	MOVD	LOCBUF,DSKDTA	;DATA AREA
+	addr	@32640,r4	;max number of bytes to xfer
+	cmpd	r3,r4		;are we over limit?
+	ble	sv8a:b		;no, is ok
+	movw	r4,DSKLN	;is too long. use limit
+	br	sv8b:b		;and skip it
+sv8a:	movd	r3,r4		;make sure we know limit
+	MOVW	R3,DSKLN
+sv8b:	MOVQW	RREAD,DSKRW	;READ DATA REQUEST
+	MOVQW	4,SW86
+	bsr	setint:w	;set the interrupt
+S82:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+	BNE	S82
+	save	[r1,r2]		;save these for a bit
+	movd	r4,r0		;length to move
+	movd	LOCBUF,r1	;source
+	bsr	movsx:w		;move it please
+	restore	[r1,r2]		;and restore the world
+	MOVXWD	DSKRC,R0	;STATUS
+	addd	r0,r5		;sum number of bytes read
+	cmpd	r4,r0		;did we read ok?
+	bne	sv8d:b		;no, so we are done.
+	subd	r4,r3		;subtract current number of bytes from org
+	addd	r4,r2		;point to next block of memory
+	cmpqd	0,r3		;are we done?
+	bne	svc8c		;and branch if not done
+sv8d:	movd	r5,r0
+	restore	[r4,r5]
+	BR	SVEX
+	;
+	; Write to disk file
+	; Pass:		R1 = File id to read from
+	;		R2 = DTA for write
+	;		R3 = Length to write (16 BITS)
+	; Return:	R0 = Length actually written (0 = error)
+	;
+SVC9:	CMPQW	0,SW86
+	BNE	SVC9		;WAIT TILL DISK READY	
+	save	[r4,r5]		;get a couple of registers
+	movqd	0,r5		;start at zero bytes written
+svc9c:	MOVW	R1,DSKID	;FILE ID
+	MOVD	LOCBUF,DSKDTA	;DATA AREA
+	addr	@32640,r4	;max number of bytes to xfer
+	cmpd	r3,r4		;are we over limit?
+	ble	sv9a:b		;no, is ok
+	movw	r4,DSKLN	;is too long. use limit
+	br	sv9b:b		;and skip it
+sv9a:	movd	r3,r4		;make sure we know limit
+	MOVW	R3,DSKLN
+sv9b:	save	[r1,r2]		;save these for a bit
+	movd	r4,r0		;length to move
+	movd	r2,r1		;source please
+	movd	LOCBUF,r2	;destination
+	bsr	movs:w		;move it please
+	restore	[r1,r2]		;and restore the world
+	MOVQW	RWRITE,DSKRW	;WRITE DATA REQUEST
+	MOVQW	4,SW86
+	bsr	setint:w	;set the interrupt
+S92:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+	BNE	S92
+	MOVXWD	DSKRC,R0	;STATUS
+	addd	r0,r5		;sum number of bytes written
+	cmpd	r0,r4		;did we write what we thought?
+	bne	sv9d:b
+	subd	r4,r3		;subtract current number of bytes from org
+	addd	r4,r2		;add to point to next area
+	cmpqd	0,r3		;are we done?
+	bne	svc9c:w		;and branch if not done
+sv9d:	movd	r5,r0		;get true count
+	restore	[r4,r5]		;and restore the lot
+	BR	SVEX
+	;
+	; Erase disk file
+	; Pass:		R1 = Filename to erase
+	; Return:	R0 = Status (0 = good, -1 = error)
+	;
+SVC10:	CMPQW	0,SW86
+	BNE	SVC10		;WAIT TILL DISK NOT BUSY
+	movd	LOCBUF,r2	;prep to copy
+	MOVD	r2,DSKDTA	;THE FILENAME
+	bsr	movsz:w		;move until zero
+	MOVW	R3,DSKLN
+	MOVZBW	RERASE,DSKRW	;THE ERASE REQUEST
+	MOVQW	4,SW86		;A DISK REQUEST
+	bsr	setint:w	;set the interrupt
+S104:	CMPQW	0,SW86
+	BNE	S104		;WAIT FOR COMPLETION
+	MOVXWD	DSKRC,R0
+	BR	SVEX
+	;
+	; Rename a file
+	;
+	; Pass:		R1 = Source file string pointer
+	;		R2 = Destination file string pointer
+	; Returns:	R0 = returns 0 if OK, non-zero if error
+	;
+
+SVC11:	CMPQW	0,SW86
+	BNE	SVC11
+	movd	r2,tos
+	movd	LOCBUF,r2	;prep to copy
+	MOVD	r2,VAR1		;THE FILENAME
+	bsr	movsz:w		;move until zero
+	movd	tos,r1
+	movd	r2,VAR2
+	bsr	movsz:w		;move the second filename
+	MOVZBW	RRENAM,DSKRW	;SEEK COMMAND
+	MOVQW	4,SW86		;DISK REQUEST
+	bsr	setint:w	;set the interrupt
+V1x2:	CMPQW	0,SW86
+	BNE	V1x2
+	MOVD	DSKDTA,R0
+	BR	SVEX
+
+	;
+	; Seek to a byte within a file
+	; Pass:		R1 = File id
+	;		R2 = Byte to seek to
+	;		R3 = Base (0 = from BOF, 1 = current pos., 2 = EOF)
+	; Returns:	R0 = Current position (-1 = error)
+	;
+SVC12:
+V121:	CMPQW	0,SW86
+	BNE	V121
+	MOVW	R1,DSKID
+	MOVD	R2,DSKDTA
+	MOVW	R3,DSKLN
+	MOVZBW	RSEEK,DSKRW	;SEEK COMMAND
+	MOVQW	4,SW86		;DISK REQUEST
+	bsr	setint:w	;set the interrupt
+V122:	CMPQW	0,SW86
+	BNE	V122
+	MOVD	DSKDTA,R0
+	BR	SVEX
+	;
+	; Determine current byte offset within file
+	; Pass:		R1 = File id
+	; Returns:	R0 = Current position (or -1 if error)
+	;
+SVC13:	MOVW	R1,DSKID
+	MOVZBW	RFTELL,DSKRW	;SEEK COMMAND
+V131:	CMPQW	0,SW86
+	BNE	V131
+	MOVQW	4,SW86		;DISK REQUEST
+	bsr	setint:w	;set the interrupt
+V132:	CMPQW	0,SW86
+	BNE	V132
+	MOVD	DSKDTA,R0
+	BR	SVEX
+	;
+	; Get command line arguments
+	; Pass:		R1 = Length of command buffer
+	;		R2 = Location to store the data
+	; Returns:	R0 = Number of commands (argc)
+	;
+SVC14:	MOVW	R1,DSKLN
+	MOVD	R2,DSKDTA
+	MOVD	R2,R3
+V141:	CMPQW	0,SW86
+	BNE	V141		;WAIT TILL NOT BUSY
+	MOVQW	5,SW86
+	bsr	setint:w	;set the interrupt
+V142:	CMPQW	0,SW86
+	BNE	V142		;WAIT FOR COMPLETION
+	MOVD	0(R2),R0	;# OF COMMANDS
+	CMPQD	0,R0
+	BEQ	SVEX		;NO COMMANDS
+	MOVD	R0,R1
+	ASHD	2,R1		; * 4
+	ADDD	R2,R1
+	ADDQD	4,R1		;OVER THE RETURNED ARGC
+V143:	ADDD	R1,0(R3)[R0:D]	;ADJUST THE ADDRESS OF THE STRINGS (ARGV)
+	ACBD	-1,R0,V143
+	MOVD	0(R2),R0	;ARGC
+	BR	SVEX
+	;
+SVC15:	CMPQW	0,SW86
+	BNE	SVC15
+	movd	r1,VAR1		;set the return code
+	MOVQB	6,SW86
+	bsr	setint:w	;set the interrupt
+	BR	$		;THAT'S ALL
+	;
+	;
+	; Move memory to 8086 from 32032
+	; Pass:		R1 = Source address in 32032 address space
+	;		R2 = Destination address in 8086 address space
+	;		R3 = (UWORD) count
+	; Returns:	nothing
+	;
+SVC16:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC16		;if pending, loop
+	movzwd	r3,r3		;zero extend count
+	movd	LOCBUF,VAR1	;source in VAR1
+	movd	r2,VAR2		;destination in VAR2
+	movd	r3,VAR3		;sign-extend count to VAR3
+	movd	r3,r0		;and to r0
+	movd	LOCBUF,r2	;destination is in r2
+	bsr	movs
+	addr	@7,SW86		;do it
+	bsr	setint:w	;and set an interrupt as well
+SVC16A:	cmpqw	0,SW86		;spin until done
+	bne	SVC16A
+	BR	SVEX		;and exit
+	;
+	; Move memory to 32032 from 8086
+	; Pass:		R1 = Source address in 8086 address space
+	;		R2 = Destination address in 32032 address space
+	;		R3 = (UWORD) count
+	; Returns:	nothing
+	;
+SVC17:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC17		;if pending, loop
+	movzwd	r3,r3		;zero extend count
+	movd	r1,VAR1		;source in VAR1
+	movd	LOCBUF,VAR2		;destination in VAR2
+	movd	r3,VAR3		;sign-extend count to VAR3
+	addr	@8,SW86		;do it
+	bsr	setint:w	;and set an interrupt as well
+SVC17A:	cmpqw	0,SW86		;spin until done
+	bne	SVC17A
+	movd	r3,r0		;count in r0
+	movd	LOCBUF,r1
+	bsr	movsx
+	BR	SVEX		;and exit
+	;
+	;
+	; Move memory to 8086 from 32032, in background mode
+	; Pass:		R1 = Source address in 8086 address space
+	;		R2 = Destination address in 32032 address space
+	;		R3 = (UWORD) count
+	; Returns:	nothing
+	;
+SVC18:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC18		;if pending, loop
+	movd	r1,VAR1		;source in VAR1
+	movd	r2,VAR2		;destination in VAR2
+	movzwd	r3,VAR3		;sign-extend count to VAR3
+	addr	@7,SW86		;do it
+	bsr	setint:w	;and set an interrupt as well
+	
+	BR	SVEX		;and exit
+	;
+	; Move memory to 32032 from 8086, in background mode
+	; Pass:		R1 = Source address in 32032 address space
+	;		R2 = Destination address in 8086 address space
+	;		R3 = (UWORD) count
+	; Returns:	nothing
+	;
+SVC19:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC19		;if pending, loop
+	movd	r1,VAR1		;source in VAR1
+	movd	r2,VAR2		;destination in VAR2
+	movxwd	r3,VAR3		;sign-extend count to VAR3
+	addr	@8,SW86		;do it
+	bsr	setint:w	;and set an interrupt as well
+	BR	SVEX		;and exit
+	;
+	; Read 8086 port location
+	; Pass:		R1 = Port address (word)
+	; Returns:	R0 = returned value
+	;
+SVC20:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC20		;if pending, loop
+	movd	r1,VAR1		;port address in var1
+	addr	@9,SW86		;do it
+	bsr	setint:w	;and set an interrupt as well
+SVC20a:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC20a		;if pending, loop
+	movzwd	VAR2,r0		;return the port's value
+	BR	SVEX		;and exit
+	;
+	; Write 8086 port location
+	; Pass:		R1 = Port address (word)
+	;		R2 = Data value
+	; Returns:	nothing
+	;
+SVC21:	cmpqw	0,SW86		;make sure no pending request
+	bne	SVC21		;if pending, loop
+	movd	r1,VAR1		;port address in var1
+	movd	r2,VAR2		;data value in var2
+	addr	@10,SW86	;do it
+	bsr	setint:w	;and set an interrupt as well
+	BR	SVEX		;and exit
+	;
+	;Read config register.
+	;Pass:		nothing
+	;		
+	;Returns:	r0 = config register
+	;	     bit 0 = Interrupt
+	;	     bit 1 = FPU
+	;	     bit 2 = MMU
+	;	     bit 3 = custom
+	;
+SVC22:	addr	@15,r0
+	extd	r0,cnfg,r0,4
+	br	SVEX		;and that be it
+	;
+	;Allocate DSEG memory on 8086
+	;Pass:		r1 = size to allocate (long, max 65535)
+	;		
+	;Returns:	r0 = pointer to available memory
+	;		high word of r0 is DS, low word is offset
+	;		return of zero means could not allocate
+	;	     
+SVC23:	cmpqw	0,SW86		;if busy, loop
+	bne	SVC23
+	movd	r1,VAR1		;place size in request area
+	addr	@11,SW86	;ask for memory
+	bsr	setint:w	;set the interrupt
+svc23a:	cmpqw	0,SW86		;are we done?
+	bne	svc23a		;no, loop
+	movd	VAR1,r0		;get the returned values
+	br	SVEX		;and that be it
+	;
+	;Free DSEG memory on 8086
+	;Pass:		r1 = pointer to available memory
+	;		
+	;Returns:	r0 = free return
+	;	     
+SVC24:	cmpqw	0,SW86		;if busy, loop
+	bne	SVC24
+	movd	r1,VAR1		;place size in request area
+	addr	@12,SW86	;ask for memory
+	bsr	setint:w	;set the interrupt
+svc24a:	cmpqw	0,SW86		;are we done?
+	bne	svc24a		;no, loop
+	movd	VAR1,r0		;get the returned values
+	br	SVEX		;and that be it
+	;
+	;Do any 8086 interrupt
+	;Pass:		r1 = interrupt number
+	;		r2 = pointer to input structure for 8086 regs
+	;
+	;Returns	     structure filled with new values
+	;
+SVC25:	cmpqw	0,SW86		;if busy, loop
+	bne	SVC24
+	save	[r1,r2]
+	movd	r2,tos		;save destination for a moment
+	movd	r1,VAR1		;stuff request number
+	movd	r2,r1
+	movd	LOCBUF,r2
+	addrd	@20,r0		;move 20 bytes to local
+	movd	r2,VAR2		;stuff structure pointer
+	bsr	movs:w		;move it to local memory
+	addr	@13,SW86	;do the interrupt
+	bsr	setint:w	;set the interrupt
+svc25a:	cmpqw	0,SW86		;are we done?
+	bne	svc25a		;no, loop
+	movd	tos,r2		;get back pointer
+	movd	LOCBUF,r1	;get back source pointer
+	addrd	@20,r0		;move 20 bytes from local
+	bsr	movsx:w		;move it back
+	restore	[r1,r2]
+	br	SVEX		;and return
+	;
+	;Fix up the interrupt base for ICU and so on
+	;Pass:		r1 = interrupt base (offset zero, by ones)
+	;		r2 = mod/offset combination
+	;
+	;Returns:		nothing
+	;
+SVC26:	movd	r2,INTTAB[r1:d]
+	cmpqw	0,r1			;is it the NVI?
+	beq	svc26a			;yes, enable
+	cmpw	16,r1			;if it was over interrupt 16
+	blt	svc26x:b		;it was not, so just exit
+svc26a:	orw	h'800,14(sp)		;fix passed PSR
+svc26x:	br	SVEX
+	;
+	;Get the 8086 time
+	;Pass:		r1 = pointer to struct tm
+	;
+	;Returns:	structure filled in
+	;
+SVC27:	cmpqw	0,SW86			;are we busy?
+	bne	SVC27			;yes, hang
+	movd	LOCBUF,VAR1		;pass it in VAR1
+	addrd	@14,SW86		;get the time
+	bsr	setint:w
+SVC27a:	cmpqw	0,SW86			;are we done?
+	bne	SVC27a			;no, loop
+	save	[r1,r2]
+	movd	r1,r2			;destination is structure
+	movd	LOCBUF,r1		;source is local buffer
+	addrd	@20,r0			;20 bytes please
+	bsr	movsx:w			;move it
+	restore [r1,r2]
+	br	SVEX
+	;
+	;Get the 8086 environment
+	;Pass:		r1 = pointer to 512 bytes of memory
+	;
+	;Returns:	environment filled in, in char** format
+	;
+SVC28:	cmpqw	0,SW86		;are we busy
+	bne	SVC28		;yes, hang
+	movd	LOCBUF,r2	;get address of local buffer
+	addrd	1024(r2),VAR1	;put new address into var1
+	addrd	@15,SW86	;get the environment
+	bsr	setint:w
+SVC28a:	cmpqw	0,SW86		;are we done?
+	bne	SVC28a		;no, loop
+	movd	r1,tos		;save our pointer for a second
+	movd	r2,tos		;save the current destination pointer
+	movd	r2,r3		;get pointer to pointers
+	addrd	1024(r1),r1	;increment r1 to point to right area
+	addrd	1024(r2),r2	;get pointer to right area
+loop:	cmpqb	0,0(r2)		;is this string null?
+	movd	r1,0(r3)	;no, store this pointer
+	addqd	4,r3		;to next pointer
+	beq	last:b		;yes, it is the last
+l1:	cmpqb	0,0(r2)		;are we at the end yet?
+	addqd	1,r2		;point to psuedo arg area
+	addqd	1,r1		;point to next real arg
+	bne	l1		;no, loop for more
+	br	loop		; and back for more
+last:	movqd	0,0(r3)		;stuff a null *, just in case
+	addrd	1(r2),r0	;point to the end
+	subd	tos,r0		;subtract from the beginning
+	movd	tos,r2		;get back our pointer
+	movd	r2,tos		;save it again
+	movd	LOCBUF,r1	;get our local buffer
+	movd	r0,tos		;save the count
+	bsr	movsx:w		;and move it
+	movd	tos,r0		;get back the count
+	movd	tos,r1		;get back the pointer
+	br	SVEX
+	;
+	;do a SYSTEM call
+	;Pass:		r1 = pointer to command line
+	;
+	;Returns:	r0 = result of system (nz if error)
+	;
+SVC29:	cmpqw	0,SW86			;are we busy?
+	bne	SVC29			;yes, hang
+	movd	r1,tos
+	movd	LOCBUF,r2
+	movd	r2,VAR1			;pass it in VAR1
+	bsr	movsz:w			;move until null
+	movd	tos,r1
+	addrd	@16,SW86		;system call
+	bsr	setint:w
+SVC29a:	cmpqw	0,SW86			;are we done?
+	bne	SVC29a			;no, loop
+	movxwd	VAR1,r0			;get the result
+	br	SVEX
+	;
+	;do an EXEC call
+	;Pass:		r1 = pointer to name of file
+	;		r2 = pointer to pointer to command line args
+	;
+	;Returns:	r0 = -1 if failure.
+	;
+SVC30:	cmpqw	0,SW86			;are we busy?
+	bne	SVC30			;yes, hang
+	movd	r2,tos
+	movd	LOCBUF,r2
+	movd	r2,VAR1			;pass it in VAR1
+	bsr	movsz:w			;move until null
+	movd	r2,r3			;keep a pointer to com args
+	movd	tos,r1			;get back pointer to com line
+svc30b:	movusd	0(r1),0(r2)		;copy pointer
+	cmpqd	0,0(r2)			;is it zero?
+	addqd	4,r1			;bump pointer
+	addqd	4,r2			;bump destination
+	bne	svc30b			;loop until last
+					;r2 points to free mem
+	movd	r3,VAR2			;r3 points to com line args
+svc30c:	movd	0(r3),r1		;source pointer in r1
+	bsr	movsz:w			;move the string
+	addqd	4,r3			;move to next pointer
+	cmpqd	0,0(r3)			;is it the last one?
+	bne	svc30c			;no, keep going
+	addrd	@17,SW86		;EXEC call
+	bsr	setint:w
+SVC30a:	cmpqw	0,SW86			;are we done?
+	bne	SVC30a			;no, loop
+	movxwd	VAR1,r0			;did we fail?
+	cmpqd	0,r0			;is it non-zero
+	bne	SVEX			;yes, go
+	jump	@0			;'reboot!'
+	;
+	;do a (sort of) SIGNAL call
+	;Pass:		nothing
+	;		
+	;
+	;Returns:	nothing, but keyboard break disabled
+	;
+SVC31:	cmpqw	0,SW86			;are we busy?
+	bne	SVC31			;yes, hang
+	movqd	1,VAR1
+	movqd	1,VAR2			;pass SIGINT and SIGIGN
+	addrd	@18,SW86		;signal call
+	bsr	setint:w
+SVC31a:	cmpqw	0,SW86			;are we done?
+	bne	SVC31a			;no, loop
+	br	SVEX
+	;
+	;path system call
+	;Pass:		r1 = pointer to string
+	;		r2 = 1 for mkdir
+	;		   = 2 for rmdir
+	;		   = 3 for chdir
+	;		   = 4 for getcwd
+	;		
+	;Returns:	r0 = return
+	;
+SVC32:	cmpqw	0,SW86			;are we busy?
+	bne	SVC32			;yes, hang
+	movd	r2,tos			;save function id
+	movd	r2,VAR2			;pass function id
+	movd	LOCBUF,r2		;save pointer to destination
+	movd	r2,VAR1			;pass pointer
+	cmpqd	4,r2			;is this a getcwd?
+	beq	svc32b			;yes, so no moving
+	movd	r1,tos			;save our pointer
+	bsr	movsz:w			;move until null terminated
+	movd	tos,r1			;get pointer back	
+svc32b:	addrd	@19,SW86		;path call
+	bsr	setint:w
+SVC32a:	cmpqw	0,SW86			;are we done?
+	bne	SVC32a			;no, loop
+	movxwd	VAR1,r0			;get the return code
+	movd	tos,r2			;get function id
+	cmpqd	4,r2			;is this a getcwd?
+	bne	svc32c			;no, so exit
+	cmpqd	0,r0			;is the return code zero?
+	beq	svc32c
+	movd	r1,tos			;save pointer
+	movd	r1,r2			;destination is pointer
+	movd	LOCBUF,r1		;source is locbuf
+	bsr	movszx:w			;move string zero back
+	movd	tos,r1			;get pointer
+	movd	r1,r0
+svc32c:	br	SVEX
+
+
+
+	
+	;
+	; Internal message output routine
+	; R2 -> NULL delimited string
+	;
+PUTS:	CMPQW	0,SW86
+	BNE	PUTS		;WAIT TILL READY
+	MOVQW	0,R0
+	MOVD	R2,DSKDTA	;THE START OF THE STRING
+PUTS1:	CMPQB	0,0(R2)
+	BEQ	PUTS3:B		;FOUND THE END OF THE STRING
+	ADDQD	1,R2
+	ADDQW	1,R0
+	BR	PUTS1
+	;
+PUTS3:	MOVQW	1,DSKID		;STDOUT
+	MOVW	R0,DSKLN	;MESSAGE LENGTH
+	MOVQW	RWRITE,DSKRW	;WRITE DATA REQUEST
+	MOVQW	4,SW86
+	bsr	setint:W	;set the interrupt
+PUTS2:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+	BNE	PUTS2
+	RET	0
+	;
+	; Convert the 32 binary number to hexadecimal ascii
+	; R1 =  32 BIT NUMBER
+	; R5 -> OUTPUT BUFFER
+	;
+PUTHEX:	MOVQB	0,R0		;NO SIGNIF DIGITS YET
+	MOVB	8,R2		;8 BYTES MAX
+PUTH:	ROTD	4,R1
+	MOVB	R1,R3
+	ANDB	H'0F,R3		;LEAVE BOTTOM BITS
+	ADDB	R3,R0		;CHECK FOR LEADING ZEROES
+	ADDB	'0',R3		;TO ASCII
+	CMPB	'9',R3
+	BHS	PUT1:B		;MUST BE ALPHA
+	ADDB	'A'-'9'-1,R3
+PUT1:	MOVB	R3,0(R5)
+	CMPQB	0,R0		;STILL NO SIGNIF DIGITS
+	BEQ	PUT2:B
+	ADDQD	1,R5
+PUT2:	ACBB	-1,R2,PUTH
+	CMPQB	0,R0
+	BNE	PUTEX:B		;GOT SIGNIF DIGITS
+	ADDQD	1,R5		;ELSE LEAVE JUST A ZERO
+PUTEX:	MOVQB	0,0(R5)
+	RET	0
+	;
+	; Error trap handlers. The 32032 vectors to these handlers directly
+	; from the INTBASE table.
+	;
+NVI:	ADDR	MS1,R2
+	BR	ERR:W
+	;
+NMI:	ADDR	MS2,R2
+	BR	ERR:W
+	;
+ABT:	ADDR	MS3,R2
+	BR	ERR:W
+	;
+	;
+FPU:	movd	0(sp),R1	;get the address of the break
+	ADDR	OBUF,R5
+	BSR	PUTHEX		;DISPLAY THE ERROR ADDRESS	
+	ADDR	MS4,R2
+	BSR	PUTS		;FLOATING POINT TRAP
+	ADDR	MS12,R2
+	BSR	PUTS		;THE ADDRESS
+	sfsr	r4		;get the current FP status
+	movd	r4,r5		;copy to r1
+	andd	7,r5		;mask it off
+	movd	fputbl[r5:d],R2 ;tell the world what it is
+	addr	fputbl,r0
+	addd	r0,R2
+	BSR	PUTS
+	BR	TERMIN:W
+	;
+ILL:	ADDR	MS5,R2
+	BR	ERR:B
+	;
+DVZ:	ADDR	MS6,R2
+	BR	ERR:B
+	;
+FLG:	ADDR	MS7,R2
+	BR	ERR:B
+	;
+BPT:	ADDR	MS8,R2
+	BR	ERR:B
+	;
+TRC:	ADDR	MS9,R2
+	BR	ERR:B
+	;
+UND:	ADDR	MS10,R2
+	;
+ERR:	BSR	PUTS
+	MOVD	0(SP),R1	;THE TRAP ADDRESS
+ERRX:	ADDR	OBUF,R5
+	BSR	PUTHEX
+	ADDR	MS12,R2
+	BSR	PUTS
+TERMIN:	MOVQB	6,SW86		;TERMINATE REQUEST TO 8088/8086
+	bsr	setint:b	;set the interrupt
+	BR	$		;THAT'S ALL
+	;
+
+setint:	movb	h'20,h'38(DUARCNT)	;set the interrupt to the 8088
+	cmpqd	0,EXIT			;are we going to exit?
+	beq	setint1
+	cxpd	EXIT			;do the exit
+setint1:
+	ret	0			;return
+
+	;
+sizemem:
+	movqd	0,EXIT		;make SURE we don't multi-task
+	addr	@h'10000,r0	;start at the 1st 64K boundary
+	movqd	0,r3		;point to the 0'th 64K boundary
+	movd	0(r3),r4	;save the current value
+
+size1:	movd	0(r0),r1	;save the current value
+	comd	r1,r2		;complement the dword
+	movd	r2,0(r0)	;store the result back
+	movd	0(r0),r5	;get the 'new' result back in r5
+	comd	r4,0(r0)	;just to be sure, complement zero dword
+	movd	0(r3),r6	;and get the dword at zero as well
+	movd	r1,0(r0)	;restore the value
+	cmpd	r2,r5		;are we out of memory?
+	bne	size2:b		;yes, get out
+	cmpd	r4,r6		;did we wrap on a boundary?
+	bne	size2:b		;yes, get out
+	addd	h'10000,r0	;go to next 64K page
+	br	size1:b		;and loop until done
+	;
+size2:	MOVD	R0,MEMTOP	;TOP OF MEMORY
+	subd	32768,r0	;32k buffer for local buffer
+	movd	r0,LOCBUF	;save it
+	movd	@DBG,r1		;is there a debugger?
+	cmpqd	0,r1		;0 means no debugger
+	BEQ	size3:b		;no monitor, skip this
+	movd	r1,r0		;now the monitor is the true top of mem
+size3:
+	addqd	-1,r0		;always one less than the max
+				; r0 = true top of memory
+	movd	r0,HEAPH	;HEAPH now has the correct value for any card
+	andd	h'ffffff0,r0	;mask to get an even boundary
+	LPRD	SP,KERSTK	;LOAD THE KERNEL STACK IN THE INTERRUPT STACK
+	bispsrw	h'200		;point to user stack
+	lprd	sp,r0		;initialize user stack
+	cmpqb	7,@h'f7fe00	;do we have a high duart?
+	movd	h'f7fe00,DUARCNT;assume so
+	beq	size4:b
+	movd	h'200100,DUARCNT;no, it is the low duart
+size4:	br	INIR:W		;back to the egg
+
+movs:
+	movd	r0,tos		;save r0
+	ashd	-2,r0		;shift it right
+	tbitw	8,14(USRSTK)	;are we running supervisor?
+	bfs	movs1:b		;no, use the user/supervisor mode
+	movsd			;move the number of doubles
+	movqd	3,r0		;get three
+	andd	tos,r0		;and and it
+	movsb			;move the rest of the bytes
+	br	movs3:b
+
+movs1:	cmpqd	0,r0		;are we done?
+	beq	movs1a:b
+	movusd	0(r1),0(r2)	;use the move user/supervisor
+	addqd	4,r1
+	addqd	4,r2
+	addqd	-1,r0
+	br	movs1
+movs1a:	movqd	3,r0		;move the remaining stuff
+	andd	tos,r0
+movs2:	cmpqd	0,r0		;are we done?
+	beq	movs3:b
+	movusb	0(r1),0(r2)	;by copying from user to supervisor
+	addqd	1,r1
+	addqd	1,r2
+	addqd	-1,r0
+	br	movs2
+movs3:	ret	0		;and return
+	;
+movsx:
+	movd	r0,tos		;save r0
+	ashd	-2,r0		;shift it right
+	tbitw	8,14(USRSTK)	;are we running supervisor?
+	bfs	movsx1:b	;no, use the user/supervisor mode
+	movsd			;move the number of doubles
+	movqd	3,r0		;get three
+	andd	tos,r0		;and and it
+	movsb			;move the rest of the bytes
+	br	movsx3:b
+
+movsx1:	cmpqd	0,r0		;are we done?
+	beq	mvsx1a:b
+	movsud	0(r1),0(r2)	;use the move user/supervisor
+	addqd	4,r1
+	addqd	4,r2
+	addqd	-1,r0
+	br	movsx1
+mvsx1a:	movqd	3,r0		;move the remaining stuff
+	andd	tos,r0
+movsx2:	cmpqd	0,r0		;are we done
+	beq	movsx3:b
+	movsub	0(r1),0(r2)	;by copying from user to supervisor
+	addqd	1,r1
+	addqd	1,r2
+	addqd	-1,r0
+	br	movsx2
+movsx3:	ret	0		;and return
+	;
+
+movsz:	tbitw	8,14(USRSTK)	;are we running supervisor?
+	bfs	movsz1		;no, so programmed loop
+	save	[r0,r4]		;save a few registers
+	movqd	0,r4		;we terminate on a null
+	movqd	-1,r0		;not on length
+	movsb	U		;move until zero
+	movqb	0,0(r2)		;move the last byte
+	addqd	1,r2		;correct position
+	addqd	1,r1
+	restore	[r0,r4]		;restore registers
+	br	movsz2:b	;and exit		
+
+movsz1:	movusb	0(r1),0(r2)	;copy the byte
+	cmpqb	0,0(r2)		;are we done?
+	addqd	1,r1		;move the pointers
+	addqd	1,r2
+	bne	movsz1		;no, keep looking
+movsz2:	ret	0		;and we are done
+
+movszx:	tbitw	8,14(USRSTK)	;are we running supervisor?
+	bfs	movszx1		;no, so programmed loop
+	save	[r0,r4]		;save a few registers
+	movqd	0,r4		;we terminate on a null
+	movqd	-1,r0		;not on length
+	movsb	U		;move until zero
+	movqb	0,0(r2)		;move the last byte
+	addqd	1,r2		;correct position
+	addqd	1,r1
+	restore	[r0,r4]		;restore registers
+	br	movszx2:b	;and exit		
+
+movszx1:movsub	0(r1),0(r2)	;copy the byte
+	cmpqb	0,0(r1)		;are we done?
+	addqd	1,r1		;move the pointers
+	addqd	1,r2
+	bne	movszx1		;no, keep looking
+movszx2:ret	0		;and we are done
+
+	
+	.align	4
+INTTAB:	WORD	CMOD,NVI-START
+	WORD	CMOD,NMI-START
+	WORD	CMOD,ABT-START
+	WORD	CMOD,FPU-START
+	WORD	CMOD,ILL-START
+	WORD	CMOD,SVC-START
+	WORD	CMOD,DVZ-START
+	WORD	CMOD,FLG-START
+	WORD	CMOD,BPT-START
+	WORD	CMOD,TRC-START
+	WORD	CMOD,UND-START
+	word	0,0
+	word	0,0
+	word	0,0
+	word	0,0
+	word	0,0
+	word	0,0		;first reserved interrupt
+	word	0,0		;#2
+	word	0,0		;#3
+	word	0,0		;#4
+	word	0,0		;#5
+

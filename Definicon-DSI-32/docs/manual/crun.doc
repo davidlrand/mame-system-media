@@ -1,0 +1,1142 @@
+.pl 66
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                     DEFINICON SYSTEMS, INC.
+
+
+
+                    DSI-32 COPROCESSOR BOARD
+                   & MS/PC DOS SYSTEM SOFTWARE
+
+
+
+
+
+
+
+
+
+        
+
+     C RUNTIME LIBRARY     
+
+     and
+
+     COMPILER REFERENCE MANUAL
+
+
+
+
+
+
+
+
+
+
+
+
+                                        part# DOC20060-1.1
+.pa
+                            SECTION 1
+                     Getting Started with C
+
+1.1 System Requirements
+
+To  operate the Definicon Systems' C compiler,  your system  must 
+satisfy the following requirements:
+
+ o   A DSI-32000 coprocessor card,  with a minimum of 256K  bytes 
+     of memory.
+
+ o   An IBM compatible clone with a minimum of 96K bytes of  free 
+     memory  exclusive  of  operating system  requirements  (256K 
+     minimum of memory recommended).
+
+ o   Enough  disk space to contain the compiler,  the program  to      
+     compile  and the output file (can be run  from  floppy,  but 
+     hard disk highly recommended).
+
+1.2 Runtime Requirements
+
+To execute the compiled,  assembled and linked programs you  will 
+need the following computer resources.
+
+ o   A DSI-32000 coprocessor card,  with a minimum of 256K  bytes 
+     of memory.
+
+ o   An IBM compatible clone  with a minimum of 96K bytes of free 
+     memory exclusive of operating system requirements.
+
+Note   that   both  the  system  requirements  and  the   runtime 
+requirements are for an absolutely minimum system.  A DSI-32 card 
+with only 256K bytes of memory will severely restrict the size of 
+functions  that  can be compiled.  1M byte of memory will  enable 
+very large functions to be compiled.  Also due to the size of the 
+C  compiler (around 200k bytes of executable code),  a hard  disk 
+drive,  or  at  the very least two floppy disk  drives,  will  be 
+particularly useful in retaining your sanity.
+
+1.3 C Components
+
+The  Definicon  Systems' C compiler package consists  of  several 
+components, some executable.  The executable components are the C 
+compiler,  the  assembler  and  the linker.  The  C  system  also 
+includes  six  special files that you can include in a C  program 
+with  the  C '#include' directive.  These  special  files  enable 
+programs  to be developed in a more portable fashion.   Table 1.1 
+details the various components that are a part of the C system.
+.pa
+               Table 1.1 C System components
+-----------------------------------------------------------------
+|  Component  |  Disk File  |           Description             |
+-----------------------------------------------------------------
+|  compiler      CC.E32        the compiler module              |
+|                CC.CMD        the CP/M command parser          |
+|                CC.EXE        the MS/DOS command parser        |
+|                LOAD.CMD      the CP/M program loader          |
+|                LOAD.EXE      the MS/DOS program loader        |
+|                                                               |
+|  assembler     AS.E32 &      the enhanced compiler compatible |
+|                AS.CMD/AS.EXE assembler                        |
+|                AS32032.OPC   the opcode file for the assembler|
+|                                                               |
+|  linker        LN.E32 &      the enhanced compiler compatible |
+|                LN.CMD/LN.EXE linker                           |
+|                                                               |
+|  #include      STDIO.H       various system dependent equates |
+|  files         PORTAB.H      various portable definitions     |
+|                ERRNO.H       definitions of various errors    |
+|                MTH.H         definitions of various numbers   |
+|                SETJMP.H      non-local program jump routine   |
+|                CTYPE.H       various ASCII routines           |
+|                                                               |
+|  libraries     CRTLIB.O32    standard C functions (see runtime|
+|                              section)                         |
+|                CLIB.O32      low level C routines             |
+|                MATH.O32      C math functions                 |
+|                                                               |
+|  sample        HELLO.C       simple program                   |
+|  programs      README.DOC    updated notes on C system and    |
+|                              documentation                    |
+-----------------------------------------------------------------
+.pa
+1.4 Minimum Working Disk
+
+To  compile  a program,  a diskette with the  following  programs 
+forms a minimum configuration:
+
+ o   CC.E32                 the compiler
+ o   CC.EXE or CC.CMD       the command parser for MS/DOS or C/PM
+ o   LOAD.EXE or LOAD.CMD   the DSI-32 program loader
+ o   32IO.E32               the DSI-32 communications module
+ o   any required .H files
+
+To  assemble  and  link  the  program  ready  for  execution  the 
+following programs form a minimum configuration:
+
+ o   AS.E32                 the assembler  
+ o   AS.CMD or AS.EXE       the command parser for the assembler
+ o   AS32032.OPC            the opcode file for the assembler  
+ o   LN.E32                 the linker
+ o   LN.CMD or LN.EXE       the command parser for the linker
+ o   CRTLIB.O32             C runtime library
+ o   CLIB.O32               low level C functions
+ o   MATH.O32               C math functions
+ o   LOAD.EXE or LOAD.CMD   the DSI-32 program loader
+ o   32IO.E32               the DSI-32 communications module
+ o   LNC.D32                default file that controls the linker 
+                            and   specifies  the   libraries   to 
+                            search.
+.pa
+1.5 Compiling the demonstration program
+
+The  following  section describes how to  compile,  assemble  and 
+link  the  demonstration  program  supplied  on  the  C  Language 
+diskette.  The instructions assume that you are familiar with the 
+operation of your operating system whether it is CP/M or MS/DOS.
+
+Prior to following these instructions be sure to make a backup of 
+your  master  C diskette(s) and store the original(s) in  a  safe 
+place.
+
+1)   Create  a C working disk,  and an  assembler/linker  working      
+     disk with the files as shown in Section 1.4.  If your system      
+     has  a  hard disk then just move all the files  from  the  C 
+     system diskette(s) to an area on the hard disk.
+     
+     With  your operating system disk in drive A and your C  work      
+     disk  in  drive  B  which contains a  copy  of  the  HELLO.C 
+     program,  you  are  ready  to compile and test  your  sample 
+     program.  To look at the program you can type the program as 
+     follows:
+
+     B>TYPE HELLO.C
+
+     main()
+     {
+          printf("Welcome to the world of 32 bit computers");
+     }
+2)  Now we are ready to compile the program.
+
+     B>CC HELLO
+
+     Note that it is not necessary to enter the .C extension when      
+     invoking the compiler, the command parser performs that task      
+     automatically. When the compiler has loaded and successfully 
+     started  compiling your program it will display  its  signon 
+     message.  At  the  end of the compilation the compiler  will 
+     display any errors that have occurred and then return you to 
+     the  operating  system prompt.  If no errors  have  occurred  
+     then you are ready to assemble and link the program.
+
+3)  Now we are ready to assemble the program.
+
+     B>AS HELLO
+
+     Note that as for the compiler,  the assembler  automatically      
+     searches  for  the .A32 extension.  Once the  assembler  has      
+     successfully loaded,  it will display its signon message. As      
+     each assembly pass progresses, the pass will be displayed on 
+     the  console.  Any errors that are detected are displayed on 
+     the console as they occur.
+.pa
+4)  Now we are ready to link the program.
+
+     B>LN FILE=HELLO
+
+     The  linker  will link the program with the C libraries  and 
+     produce a file that is executable on the DSI-32  board.  The 
+     executable file will have a .E32 extension.
+
+5)  Now we can load and run the program.
+
+     B>LOAD HELLO
+
+     Welcome to the world of 32 bit computers
+
+     B>
+
+     Note  that this example concentrated on linking a  single  C 
+     program,  but  in  the  real world a typical C  program  may 
+     consist of several separately compiled modules.  Below is an 
+     example  of  how to link several modules to  form  a  single 
+     executable  module.  In addition we will assume that we have 
+     our own library, mylib.o32, that we want to search.
+
+     A>LN FILE=file1,file2,file3,file4 LIB=mylib
+
+     The linker will first read all the symbol information  about 
+     the  files into its tables and then after satisfying as many 
+     of  the symbols as possible it will then search any  of  the 
+     user   specified  libraries  to  resolve  any  import/export 
+     references that have been left unresolved.
+     Note  that to build a user library you must have  access  to 
+     the Definicon librarian, LIB.
+
+.pa
+                            SECTION 2
+                    Operating the C compiler
+
+2.1 General Overview
+
+The  Definicon  Systems' C compiler is a single  pass  optimizing 
+compiler.  It  performs automatic register optimization and  will 
+put  variables and pointers into registers depending  on  various 
+parameters  such  as the lifetime of a variable and its  intended 
+use (e.g.  if the address of a variable is taken at some stage in 
+a  module,  then  the compiler will not place the variable  in  a 
+register).  The C compiler supports all the standard features  of 
+Berkley 4.2 Unix portable C,  including bit fields and enumerated 
+data types.
+
+- The sizes of various C variables are listed below:
+
+     unsigned char            8 bits
+              char            8 bits
+     unsigned short int      16 bits
+              short int      16 bits
+     unsigned int            32 bits
+              int            32 bits
+     unsigned long           32 bits
+              long           32 bits
+              pointer        32 bits
+              float          32 bits
+              double         64 bits
+
+- Program  size and data size are limited only by  the  available 
+memory;  small model, medium model, large model, etc. limitations 
+of  8088/8086/80286  IBM-PC clone systems do not exist  with  the 
+National Semiconductor's 32000 series of 32 bit microprocessors. 
+2.2 Compiler Command Line
+
+The  command line invokes the C compiler,  specifies  the  source 
+file  to  compile  and  passes any special  instructions  to  the 
+compiler.  The maximum compiler command line is 128 characters in 
+length.  The form of the command line is shown below:
+
+     B>CC    option_switches    source_filename
+
+Note that the .C filetype extension does not have to be  supplied 
+since the parser will automatically append the correct extension. 
+If  an  extension is supplied in the command line then that  file 
+will  be  compiled regardless of the .C convention.  Also  if  no 
+extension is supplied on the command line and a file that has  no 
+extension  but  has  the  right name  exists,  then  it  will  be 
+compiled.
+.pa
+2.3 Stopping the Compiler
+
+The  C  compiler  may be stopped at any stage of  compilation  by 
+entering a <CTRL>C at the console (hold the CTRL key down and hit 
+the C key). The compiler will immediately terminate and exit back 
+to the operating system.  Note that all programs that run on  the 
+DSI-32  card  can be aborted in this way,  as well as  assembler, 
+linker and user programs.  Upon termination,  all files that  are 
+open  are automatically closed.  Note also that any output  files 
+that  were open will be closed in whatever state they were in  at 
+the time <CTRL>C was entered. The output files will not be erased 
+but they will probably contain incomplete data.
+
+2.4 Error Messages
+
+All  error  messages are displayed during the  compilation.   The 
+line number in which the error was detected and the type of error 
+are displayed on the console.
+
+2.5 Compiler Command Line Options
+
+Command  line option switches enable the user to control  certain 
+functions of the compiler.  An option switch always starts with a 
+minus  sign  and  follows with  certain  alphanumeric  sequences. 
+Spaces  must  not be left between the any of the characters  that 
+make up an option switch but at least one space must separate  an 
+option  switch from any other parameter.  Table 2.1  details  the 
+available options and their function.
+
+Command line options are entered as follows:
+
+     B>CC -O1 -O2 -DDEBUG=OFF PROGRAM
+
+Note 
+      There is no case sensitivity for the command line  options. 
+The command line parser CC.CMD or CC.EXE converts symbol names to 
+lowercase,  this  means that the above command line will  produce 
+the  directive  to the compiler "#define debug =  off",  NOT  the 
+desired directive "#define DEBUG = OFF". 
+.pa
+-----------------------------------------------------------------
+|    Option    |              Description                       |
+-----------------------------------------------------------------
+|    -c            causes comments to be output with the pre-   |
+|                  processor output                             |
+|                                                               |
+|    -dname        define "name" to the preprocessor with the   |
+|                  value 1.  Equivalent to "#define name 1"     |
+|                                                               |
+|    -dname=string define "name" to the preprocessor with the   |
+|                  value "string".  Equivalent to entering      |
+|                  "#define name string" at the top of the file |
+|                                                               |
+|    -e            do not compile the program, just place the   |
+|                  output from the preprocessor onto the console|
+|                                                               |
+|    -istring      included filenames that do not start with "/"|
+|                  are searched for in the directory "string"   |
+|                                                               |
+|    -o1           attempt to optimize the program to be as fast|
+|                  possible.  The Definicon System's C compiler |
+|                  generally performs many optimizations that   |
+|                  are normally options on other compilers, so  |
+|                  it may be counter productive to use this     |
+|                  optimization switch as the code produced is  |
+|                  around 10% larger.  Experimenting with this  |
+|                  option will allow you to determine when it   |
+|                  will prove to be useful                      |
+|                                                               |
+|    -o2           allow the optimizer to assume that memory    |
+|                  locations do not change except by explicit   |
+|                  stores.  That is, the optimizer is guaranteed|
+|                  that no memory locations are I/O device      |
+|                  registers that can change asynchronously     |
+|                                                               |
+|    -uname        undefine the predefined preprocessor symbol  |
+|                  "name".  Equivalent to "#undef name".        |
+|                                                               |
+|    -x55          make bit fields of int, short and char be    |
+|                  signed.  The default is unsigned.            |
+|                                                               |
+|    -x56          allocate each enum type as the smallest size |
+|                  which allows representation of all listed    |
+|                  values (i.e. from the list "char", "short",  |
+|                  "int", "unsigned char", "unsigned short" or  |
+|                  "unsigned"). The default is to allocate "int"|
+-----------------------------------------------------------------
+.pa
+Note.  For  information  on the C compiler and runtime  libraries 
+refer to the Definicon C reference manual.
+nted in STDIO.H, therefore it must not 
+be  declared in the user source.
+
+Declarations
+     int       num;       -- can be any number.
+     int       aret;      -- may be of any type.
+
+Syntax
+     aret  =   abs(num);
+
+.pa
+atoi,_atof,_atol
+
+The   atoi,   atof  and  atol  functions  take  an  ASCII  string 
+representing  a  number and convert the string into  an  integer, 
+double floating point or long integer number, respectively.
+
+Declarations
+     char      *string;    -- pointer to a null terminated string 
+                              of  digits.    Leading  blanks  are 
+                              ignored.    A leading sign (+,-) is 
+                              allowed.
+     int       iret;       -- atoi returns the string in integer                          
+                              representation.
+     long      lret;       -- atol returns the string  in  long 
+                              representation.
+     double    fret;       -- atof returns the string in double 
+                              floating representation.
+     int       atoi(), atol()
+     double    atof();
+
+Syntax
+     iret   =  atoi(string);
+     lret   =  atol(string);
+     fret   =  atof(string);
+
+Notes
+     Checking for overflow condition is not handled by atoi, atof 
+or atol.
+
+.pa
+brk,_sbrk
+
+The brk and sbrk functions set the top of the program heap.   brk 
+sets  the upper bound (above the current upper bound and referred 
+to  as  the break) of the program heap to  a  specified  address.  
+sbrk increases the heap by a specified number of bytes.
+
+Declarations
+     char      *addr;      -- the new break address
+     int       incr;       -- amount to  increase  heap by  using
+                              sbrk.
+     int       bret;       -- 0 if brk is successful, -1 if not.
+     char      *bheap      -- pointer   to   beginning   of  heap 
+                              extension,    -1    if   sbrk    is 
+                              unsuccessful.
+     int       brk();
+     char      *sbrk;
+
+Syntax
+     bret = brk(addr);
+     bheap = sbrk(incr);
+
+.pa
+calloc,_malloc,_realloc,_free
+
+The  calloc,  malloc,  realloc  and  free functions are  used  to 
+manipulate the allocation and deallocation of blocks (spaces)  of 
+memory  in  the  heap.   calloc (chunk  allocation)  returns  the 
+starting  address  of  a space allocated for  an  array.   malloc 
+(memory  allocation)  returns the starting address  for  a  space 
+allocated  on a word boundary.    realloc (re-allocation) returns 
+the starting address of a space that has been changed in size  by 
+the  specified amount.   free returns the specified space to  the 
+heap.
+
+Declarations
+     int       size        -- the number of bytes to allocate for 
+                              the space.
+     int       asize;      --  the  size  in bytes of  one  array 
+                              element.
+     int       narray;     -- the  number of array  elements  to 
+                              allocate for the space.
+     char      *sret       -- pointer to the allocated space.
+     char      *addr       -- pointer  to the beginning  of  an 
+                              existing space.
+     char      *calloc(); *malloc(); *realloc();
+
+Syntax
+     sret   =  calloc(narray, asize);
+     sret   =  malloc(size);
+     sret   =  realloc(addr, size);
+     free(addr);
+
+Notes
+     When  realloc  is called,  the information in  the  original 
+space is copied (if necessary) to the newly allocated space.   If 
+there  is sufficient adjacent space,  realloc uses it as part  of 
+the original space,  avoiding the costly copy operation.  Realloc 
+frees the old space if it is not part of the new space.
+
+.pa
+close
+
+The close function closes an open (opened via open or creat) file 
+or  device.   Note,  you  must specify a file descriptor for  the 
+close function, not a stream address.  To close a stream file use 
+the fclose function. 
+
+Declarations
+     int       fd;         -- file  descriptor of a  valid  open 
+                              file.
+     int       ret;        -- 0 if close succeeds, -1 if it fails
+     int       close();
+
+Syntax
+     ret   =   close(fd);
+.pa
+cos,_sin,_tan,_atan,_exp,_log,_log10,_sqrt
+
+The math functions consist of cos,  sin,  tan,  atan,  exp,  log, 
+log10   and  sqrt.    Each  function  returns  their   respective 
+mathematical values.
+
+Declarations
+     double    num;        -- a  double precision floating  point 
+                              number  that expresses the angle in 
+                              radians.
+     double    fret;       -- the  returned value of one  of  the 
+                              following functions.
+     double    sin():      -- trigonometric  sine   of  an  angle 
+                              expressed in radians.
+     double    cos();      -- trigonometric  cosine  of an  angle 
+                              expressed in radians.
+     double    tan();      -- trigonometric  tangent of an  angle 
+                              expressed in radians.
+     double    atan();     -- trigonometric   arc  tangent  of  a 
+                              number.
+     double    exp();      -- the  value of the constant e raised 
+                              to   the   specified  argument   (e
+                              = 2.7182812845905)
+     double    log();      -- the  logarithm  base e of a  number 
+                              (natural logarithm).
+     double    log10();    -- the logarithm base 10 of a number.
+     double    sqrt();     -- the square root of a number.
+
+Syntax
+     fret   =  sin(num);
+     fret   =  cos(num);
+     fret   =  tan(num);
+     fret   =  atan(num);
+     fret   =  exp(num);
+     fret   =  log(num);
+     fret   =  log10(num);
+     fret   =  sqrt(num);
+
+.pa
+creat,_creata,_creatb
+
+The creat,  creata and creatb functions create new files.   creat 
+and  creata  both create ASCII files.   creatb creates  a  binary 
+file.  Binary  files  are generally faster to access  than  ASCII 
+files  because of computational overheads in handling the CR  and 
+LF characters.
+
+Declarations
+     char      *filename;  -- filename of file to create.
+     int       mode;       -- access mode, not used by the DSI-32 
+                              interface (for UNIX compatibility).
+     int       fd;         -- file  descriptor returned by creat, 
+                              creata and creatb.
+     int       creat(); creata(); creatb();
+
+Syntax
+     fd    =   creat(filename, mode);
+     fd    =   creata(filename, mode);
+     fd    =   creatb(filename, mode);
+
+Notes
+     creat  and  creata are functionally  equivalent.  Additional 
+information  on  the creat,  creata and creatb functions  may  be 
+found in The_C_Programming_Language by Kernighan and Ritchie.
+
+.pa
+isalpha,_isupper,_islower,_isdigit,_isalnum,_isspace,_ispunct, 
+isprint,_iscntrl,_isascii
+
+These  functions return true or false if the condition  specified 
+by their name is or is not met, respectively.
+
+Declarations
+     #include  <ctype.h>
+     char      c;          -- character to be checked.
+     int       cret;       -- 0  if condition is met,  -1 if  it 
+                              fails.
+
+Syntax
+     cret   =  isalpha(c); -- is c an alpha character (a-z, A-Z)
+     cret   =  isupper(c); -- is c uppercase (A-Z)
+     cret   =  islower(c); -- is c lowercase (a-z)
+     cret   =  isdigit(c); -- is c a digit (0-9)
+     cret   =  isalnum(c); -- is c alphanumeric (a-z, A-Z, 0-9)
+     cret   =  isspace(c); -- is c a white space character  (SP, 
+                               TAB, CR, LF, FF)
+     cret   =  ispunct(c); -- is  c  a  punctuation  character 
+                               (.,;,!, etc)
+     cret   =  isprint(c); -- is c a printable character
+     cret   =  iscntrl(c); -- is c a control character
+     cret   =  isascii(c); -- is c an ASCII character (between 0 
+                              and 128)
+
+Notes
+     These are macros defined in CTYPE.H and therefore,  must not 
+be declared in the user source.
+.pa
+exit
+
+The exit function returns control to the operating system.   exit 
+flushes  all  buffers,   closes  all  open  files  and  sets  the 
+completion code.
+
+Declarations
+     int        code;    -- completion  code returned to  the 
+                            operating system.
+
+Syntax
+     exit(code);
+
+Notes
+     exit  does not return a value and therefore does not need to 
+be declared.
+.pa
+fclose,_fflush
+
+The fflush function writes out to disk any data in a stream file.  
+fclose does the same, but closes the file.
+
+Declarations
+     FILE      *stream;  -- pointer to a stream file.
+     int       fret;     -- 0 if flush succeeds, -1 if it fails.
+     int       fclose(), fflush();
+
+Syntax
+     fret   =  fclose(stream);
+     fret   =  fflush(stream);
+
+Notes
+     Additional  information  on  streams is available  in  The_C 
+Programming_Language by Kernighan and Ritchie.
+.pa
+ferror,_clearerr,_feof,_fileno
+
+The  feof,  ferror,  clearerr  and fileno are used to  manipulate 
+stream  files.   They  are macros  defined  in  STDIO.H.   ferror 
+returns an error status on a stream.   clearerr clears any errors 
+on the specified stream.   feof determines whether an end of file 
+has  been  reached  on a stream or not.   fileno returns  a  file 
+descriptor associated with the specified stream.
+
+Declarations
+     FILE      *stream;  -- stream to operate on.
+     int       fret;     -- Non zero if at end of file, 0 if not.
+     int       eret;     -- Non zero if error, 0 if no error.
+     int       fd;       -- file  descriptor  associated  with  a                                                 
+                            stream.
+
+Syntax
+     fret   =  feof(stream);
+     eret   =  ferror(stream);
+     fd     =  fileno(stream);
+     clearerr(stream);
+
+Notes
+     As with all other macros they must not be defined to  return 
+anything.   Additional information on streams is available in The 
+C_Programming_Language by Kernighan and Ritchie.  Also see fopen.
+.pa
+fopen,_fopena,_fopenb
+
+The fopen, fopena, fopenb functions create an association between 
+a  file or device and a stream.   fopen and fopena both associate 
+streams  with  ASCII files.   fopenb associates a stream  with  a 
+binary  file.  Note  that  binary files are generally  faster  to 
+access  than  ASCII  files  due  to  computational  overheads  in 
+processing the CR and LF characters.
+
+Declarations
+     char      *filename; -- pointer  to  a  null  terminated 
+                             filename.
+     char      *access;   -- a  character  with  one  of  the 
+                             following values:
+                                   r - read access
+                                   w - write access
+                                   a - append access
+     int       fd;        -- file descriptor associated with an 
+                             existing open file.
+     FILE      *stream;
+     FILE      *fopen(), *fopena(), *fopenb();
+
+Syntax
+     stream  = fopen(filename, access);
+     stream  = fopena(filename, access);
+     stream  = fopenb(filename, access);
+.pa
+fread,_fwrite
+
+The fread and fwrite functions are used to move byte data between 
+a  stream  and  memory.   fread reads from a  stream  to  memory.  
+fwrite writes from memory to a stream.
+
+Declarations
+     char      *buffer;  -- pointer to a memory buffer.
+     int       size;     -- size  in bytes of an item  in  the 
+                            stream.
+     int       rnitems;  -- requested number of items read  or 
+                            written in the stream.
+     int       nitems;   -- actual  number of items  read  or 
+                            written in the stream.
+     FILE      *stream;  -- stream to read from and write to.
+     int       fread(), fwrite();
+
+Syntax
+     nitems  = fread(buffer, size, rnitems, stream);
+     nitems  = fwrite(buffer, size, rnitems, stream);
+
+Notes
+     The  requested  number of items read or written may  not  be 
+equal to the actual number of items read or written.   A value of 
+0 is returned if an error or EOF occurs.
+.pa
+fseek,_ftell,_rewind
+
+The  fseek,  ftell and rewind functions allow positioning of  the 
+read/write  pointer in a stream.   fseek sets the pointer to  the 
+specified  location.   ftell returns the current position of  the 
+pointer  in  the  stream.   rewind  places  the  pointer  at  the 
+beginning of the stream.
+
+Declarations
+     long      offset;   -- number of bytes to move pointer from
+                            current position (signed value).
+     int       offtype;  -- type of offset:
+                                   0 - offset from start of file
+                                   1 - offset from current location
+                                   2 - offset from end of file
+     FILE      *stream;  -- stream to position
+     int       fret;     -- 0 if positioning succeeds,  -1 if it 
+                            fails.
+     int       fseek(), rewind();
+     long      ftell();
+
+Syntax
+     fret   =  fseek(stream, offset, offtype);
+     offset =  ftell(stream);
+     fret   =  rewind(stream);
+
+.pa
+getc,_getchar,_fgetc,_getw,_getl
+
+getc  and  getchar are macros that  read  characters.   They  are 
+defined in STDIO.H.  fgetc, getw and getl are functions that read 
+characters,  words and long integers from a stream.  getc reads a 
+character from a stream.  getw reads a 16-bit word from a stream.  
+getl reads a 32-bit long integer from a stream.   getchar reads a 
+character  from  stdin  (the  standard  input).   fgetc  reads  a 
+character  from  a stream.   getc is a macro and is  functionally 
+equivalent to fgetc, which is a function.
+
+Declarations
+     FILE      *stream;  -- stream to read from.
+     int       cret;     -- character returned from getc, fgetc 
+                            and getchar.
+     int       wret;     -- word returned from getw.
+     long      lret;     -- 32-bit long integer  returned  from 
+                            getl.
+     int       fgetc(), getw();
+     long      getl;
+
+Syntax
+     cret   =  getc(stream);
+     cret   =  fgetc(stream);
+     cret   =  getchar();
+     wret   =  getw(stream);
+     lret   =  getl(stream);
+
+Notes
+     Errors  returned  by the stream read functions may be  valid 
+values.  Use feof and ferror to detect errors when using streams.  
+Also  as in all other case of macros,  do not declare the  macros 
+getc() and getchar().
+getpid
+
+The  getpid  function  is included for compatibility  with  UNIX.  
+Under  UNIX,  getpid  returns  the  process  id.  In  the  DSI-32 
+implementation a random number is returned.
+
+Declarations
+     int       pid, getpid();
+
+Syntax
+     pid   =   getpid();
+
+.pa
+gets,_fgets
+
+The  gets and fgets functions read strings from a  stream.   gets 
+reads  a  string from stdin (the standard  input),  removing  the 
+newline character at the end of the string.  fgets reads a string 
+from  a stream and leaves the newline character in  the  returned 
+string.
+
+Declarations
+     char      *cstring; -- pointer to a null terminated string.
+     int       maxc;     -- maximum character count for fgets.
+     FILE      *stream;  -- stream to read from.
+     char      *rstring  -- return string (= cstring) if gets or fgets 
+                            succeeds, null if fails.
+     char      *gets(), *fgets();
+
+Syntax
+     rstring = gets(cstring);
+     rstring = fgets(cstring, maxc, stream);
+
+Notes
+     The  string cstring holds the input string in both gets  and 
+fgets.   Adequate space for an input line must be provided for by 
+the  string  cstring.   Maxc  specifies  the  maximum  number  of 
+characters  to  be  returned  in  fgets,  including  the  newline 
+character.
+.pa
+index,_rindex,_strchr,_strrchr
+
+The  index,  rindex,  strchr  and  strrchr functions  return  the 
+location of a specified character in a string.   index and rindex 
+search for the first and last occurrence of a substring within  a 
+string respectively.  strchr and strrchr search for the first and 
+last occurrence of a character within a string respectively.
+
+Declarations
+     char      c;          -- character to locate in string.
+     char      *sbstring;  -- pointer to substring to search for.
+     char      *cstring;   -- pointer to null terminated  string     
+                              to search.
+     int       rchar;      -- offset corresponding to position of 
+                              substring  or character with string 
+                              or -1 if no match.
+     char      *index(), *rindex(), *strchr(), strrchr();
+
+Syntax
+     rchar  =  index(cstring, sbstring);
+     rchar  =  strchr(cstring, c);
+     rchar  =  rindex(cstring, sbstring);
+     rchar  =  strrchr(cstring, c);
+.pa
+lseek,_tell
+
+lseek  and  tell are similar to fseek and ftell except that  they 
+function on file descriptors instead of streams.
+
+Declarations
+     long      offset;    -- number of bytes to move pointer from 
+                             current position (signed value).
+     int       offtype;   -- type of offset:
+                                   0 - offset from start of file
+                                   1 - offset from current location
+                                   2 - offset from end of file
+     int       fd;        -- file to position
+     long      fret;      -- 0 if positioning succeeds, -1 if it 
+                             fails.
+     long      lseek(), tell();
+
+Syntax
+     fret   =  lseek(fd, offset, offtype);
+     offset =  tell(fd);
+.pa
+mktemp
+
+The  mktemp  function makes a temporary filename.   Use  this  in 
+conjunction  with  creat,  creata  or creatb to create  a  unique 
+temporary file.   The template is a character string containing a 
+user  defined prefix followed by six x characters (upper case  or 
+lower  case).   The  x's  are replaced by  a  unique  number  and 
+returned in the original template character string.
+
+Declarations
+     char      *fstring;   -- pointer  to  a  null   terminated             
+                              filename template.
+     char      *mktemp;
+
+Syntax
+     fstring = mktemp(fstring);
+.pa
+open,_opena,_openb
+
+The open and opena functions open existing ASCII files and return 
+a  file  descriptor for the opened file.   openb  opens  existing 
+binary files and return a file descriptor for the opened file.
+
+Declarations
+     char      *filename;  -- pointer  to a null  terminated 
+                              filename.
+     int       mode;       -- access mode which is one  of  the 
+                              following:
+                                   0 - read access
+                                   1 - write access
+                                   2 - read/write access
+     int       fd;         -- file descriptor returned by open, 
+                              opena or openb -1 if it fails.
+     int       open(), opena(), openb();
+
+Syntax
+     fd    =   open(filename, mode);
+     fd    =   opena(filename, mode);
+     fd    =   openb(filename, mode);
+.pa
+perror
+
+The  perror function writes an error message corresponding to the 
+last  system  error  to  stderr  (the  standard  error   output).  
+External  variable  errno contains the value of the  last  system 
+error  code which is used by perror to determine the last  system 
+error message.
+
+Declarations
+     include   <errno.h>
+     char      *pstring; -- pointer to a null terminated prefix.
+
+Syntax
+     perror(pstring);
+
+Notes
+     pstring  is  a string which is written prior  to  the  error 
+message.   See  ERRNO.H  for a description of the  defined  error 
+codes and messages.
+.pa
+printf,_fprintf,_sprintf
+
+The  printf,  fprintf and sprintf interpret a format  string  and 
+arguments to output to the standard output,  a stream and memory, 
+respectively.   The  number  of  arguments must be  equal  to  or 
+greater  to the number of format operators in the format  string, 
+otherwise  undefined  results may occur.   Format  operators  are 
+represented  as  a  %  (percent)  sign,   followed  by   optional 
+formatting  symbols,  followed  by  a single  character  operator 
+designator.    A  space  or  equivalent  white  space   character 
+separates character operator designators.
+
+Formatting symbols consist of the following:
+     -          - (minus sign) left justify conversion in field
+     w.p        - (w,   p  =  decimal  digit)  field  width   and 
+                  precision. precision is optional
+     L or l     - specifies a 32-bit value
+     
+Format operator designators consist of the following:
+     d    - convert binary argument to decimal
+     o    - convert binary argument to octal
+     x    - convert binary argument to hexadecimal
+     X    - convert binary argument to uppercase hexadecimal
+     u    - convert binary argument to unsigned decimal
+     s    - argument is a string
+     c    - argument is a single character
+     e    - convert floating argument to scientific notation
+     f    - convert  floating  argument  to  standard   numeric 
+            notation
+     g    - convert  floating  argument  to  %e  of  %f  format, 
+            whichever is shortest
+.pa
+Declarations
+     char      *format;    -- pointer to a null terminated format 
+                              descriptor string.
+     char      *dstring;   -- pointer  to  a  null   terminated 
+                              destination string for sprintf.
+     FILE      *stream;    -- destination stream for fprintf.
+     int       nret;       -- number of characters output.
+     int       arg1, arg2,..., argN;
+                           -- N  arguments of type  corresponding 
+                              to  respective  character  operator 
+                              designator.
+
+Syntax
+     nret   =  printf(format, arg1, arg2,..., argN);
+     nret   =  fprintf(stream, format, arg1, arg2,..., argN);
+     nret   =  sprintf(dstring, format, arg1, arg2,..., argN);
+
+Notes
+     A complete discussion of printf, fprintf and sprintf appears 
+in The_C_Programming_language by Kernighan and Ritchie.
+.pa
+putc,_putchar,_fputc,_putw,_putl
+
+putc  and  putchar  are  macros defined  in  STDIO.H  that  write 
+characters to a stream.  fputc,  putw and putl are functions that 
+write  characters,  words and long integers to  a  stream.   putc 
+writes  a character to a stream.   putw writes a 16-bit word to a 
+stream.   putl writes a 32-bit long integer to a stream.  putchar 
+writes a character to stdout (the standard output).  fputc writes 
+a  character to a stream.   putc is a macro and  is  functionally 
+identical to fputc, which is a function.
+
+Declarations
+     char      c;          -- character to write to stream.
+     int       w;          -- word to write to stream.
+     long      l;          -- 32-bit  long  integer to  write  to 
+                              stream.
+     FILE      *stream;    -- stream to write to.
+     int       cret;       -- character written by putc, fputc or 
+                              putchar, -1 if an error occurs.
+     int       wret;       -- word  written by putw,  -1  if  an      
+                              error occurs.
+     long      lret;       -- 32-bit  long integer  written  by 
+                              putl, -1 if an error occurs.
+     int       putchar(), fputc(), putw();
+     long      putl;
+
+Syntax
+     cret   =  putc(c, stream);
+     cret   =  fputc(c, stream);
+     cret   =  putchar(c);
+     wret   =  putw(w, stream);
+     lret   =  putl(l, stream);
+.pa
+Notes
+     Errors  returned by the stream write functions may be  valid 
+values.  Use feof and ferror to detect errors when using streams.
+
+.pa
+puts,_fputs
+
+The  puts  and fputs functions write strings out to  stdout  (the 
+standard  output)  and a specified output  stream,  respectively.  
+puts appends a newline character at the end of the output  string 
+whereas fputs does not.
+
+Declarations
+     char     *cstring;  -- pointer to null terminated  character 
+                            string.
+     FILE      *stream;
+     int       sret;     -- last  character output,  or -1  if 
+                            output fails.
+     int       puts(), fputs();
+
+Syntax
+     sret   =  puts(cstring);
+     sret   =  fputs(stream, cstring);
+.pa
+rand,_srand
+
+The rand and srand functions return pseudo-random numbers.  srand 
+initializes  the random number generator with the  user  supplied 
+seed value and returns a random number.   rand returns subsequent 
+random numbers.
+
+Declarations
+     int       seed;      -- initial seed value chosen by user.
+     int       rret;      -- random value returned by generator.
+     int       rand(), srand();
+
+Syntax
+     rret   =  srand(seed);
+     rret   =  rand(seed);
+
+Note
+     The rand function returns and pseudo random number between 0 
+and 2029052025-1.
+.pa
+read
+
+The  read  function reads input from an open file specified by  a 
+file descriptor.
+
+Declarations
+     int       fd;        -- the  file  descriptor  defining  the
+                             file to read from.
+     char      *mbuffer;  -- pointer to memory buffer to  receive 
+                             the input data.
+     unsigned  n;         -- number of bytes to read.
+     int       rret;      -- number of bytes read,  -1 if an error 
+                             occurs.
+     int       read();
+
+Syntax
+     rret   =  read(fd, mbuffer, n);
+.pa
+scanf,_fscanf,_sscanf
+
+The scanf, fscanf and sscanf functions read input from stdin (the 
+standard   input),   a  stream  and  a  null  terminated  string, 
+respectively.    The  input  is  interpreted  according  to   the 
+specified  format descriptor string and placed into the remaining 
+arguments to the function.
+
+The  arguments may be of any type corresponding to the conversion 
+specifications  in the format descriptor string.   The number  of 
+conversion specifications in the format descriptor string must be 
+less  than  or equal to the number of arguments that  follow  the 
+descriptor.
+
+A conversion specification consists of a percent  sign,  followed 
+by  an  optional  * (asterisk),  followed by  a  format  operator 
+designator.   The * specifies that the data is not to be assigned 
+to the argument.   Format specification designators are separated 
+by a space or equivalent white space character.
+
+Format operator designators consist of the following:
+     h  -  convert short ASCII integer string to binary
+     d  -  convert decimal ASCII integer string to binary
+     o  -  convert octal ASCII integer string to binary
+     x  -  convert hexadecimal ASCII integer string to binary
+     s  -  output a (space terminated) string
+     c  -  output a character
+     e  -  convert scientific notation ASCII string to binary
+     f  -  convert  standard  numeric notation ASCII  string  to 
+           binary
+.pa
+Declarations
+     char      *format;   -- pointer to a null terminated  format 
+                             descriptor string.
+     char      *sstring;  -- pointer to a null terminated source 
+                             string for sscanf.
+     FILE      *stream;   -- source stream for fscanf.
+     int       nret;      -- number of conversion specifications 
+                             converted.
+     int       *arg1,*arg2,...,*argN;
+                          -- pointers  to  arguments of any  type 
+                             corresponding  to format descriptors 
+                             string.
+     int       scanf(), fscanf(), sscanf();
+
+Syntax
+     nret   =  scanf(format, arg1, arg2,..., argN);
+     nret   =  fscanf(stream, format, arg1, arg2,..., argN);
+     nret   =  sscanf(sstring, format, arg1, arg2,..., argN);
+
+Notes
+     Additional  information on scanf,  fscanf and sscanf can  be 
+found in The_C_Programming_Language by Kernighan and Ritchie.
+.pa
+setjump,_longjmp
+
+The setjump and longjmp functions are used in programs which  use 
+nonlocal  goto  statements.   setjump stores the  existing  local 
+program  environment prior to a nonlocal goto statement.  setjump 
+also stores the location at which execution is to continue  after 
+a longjmp call.   longjmp simulates a return from a nonlocal goto 
+statement to the location saved when setjump was called.  longjmp 
+returns a status value to setjump upon return.
+
+Declarations
+     #include  <setjump.h>
+     jmp_buf   env;      -- environment saved by setjump.
+     int       sret;     -- returned  value  after  a  return  to 
+                            setjump environment.  Initially, this 
+                            value  is  0

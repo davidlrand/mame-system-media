@@ -1,0 +1,548 @@
+.pl 62
+                            Chapter 6
+
+                           PROCEDURES
+
+6.1  INTRODUCTION
+
+A  DSI-32  Assembler  procedure is a set of  statements  that  is 
+bounded  by a PROC and ENDPROC pseudo-op.  The statements between 
+the two pseudo-ops are executed when the procedure is invoked  by 
+a  call  procedure  instruction.   Control  is  returned  to  the 
+statement  after  the  calling statement on  termination  of  the 
+procedure.  A procedure invocation has the following format:
+
+     Block               Description
+     -----	         -----------
+     Call Block          any parameters required by the procedure 
+                         are pushed onto the current  stack.  The 
+                         procedure is then called.
+
+     Parameter Block     allocates  storage  for  the  parameters 
+                         which  have  been pushed onto the  stack 
+                         from the Call Block.
+		
+     Return Value Block	 allocates  storage  for  any  parameters 
+                         which  are  to  be  returned  from   the 
+                         procedure.
+
+     Local Variable Block
+                         allocates   storage  on  the  stack  for 
+                         temporary  data  which is local  to  the 
+                         procedure. Any General-Purpose registers 
+                         which   need   to  be  saved  prior   to 
+                         executing   the  Procedure   Instruction 
+                         Block may be saved.
+
+     Procedure Instruction Block
+                       the instructions which form the procedure.
+
+The  following procedure management pseudo-ops are  supported  by 
+the Assembler:
+
+Pseudo-op             Description		          Section
+-----------------------------------------------------------------
+PROC	    specifies the start of a procedure block	     6.2
+PROCF       specifies the start of a global procedure block  6.2
+RETURNS     specifies the start of the return value block    6.3
+VAR         specifies the General-Purpose registers to       6.4
+	    save and the start of the local variable block
+BEGIN       specifies the start of the procedure             6.5
+	    instruction block
+ENDPROC     terminates the procedure definition              6.6
+6.1.1  Procedure Operation
+
+A detailed description of invocation and execution of a procedure 
+is shown below:
+
+   - Parameters  required  by the procedure are pushed  onto  the 
+     stack by the calling routine.  The parameters are stored  in 
+     the Parameter Block.
+
+   - The   calling  routine  executes  the  appropriate   NS32000 
+     instruction which either pushes a 32-bit return address onto 
+     the  stack,  or if the calling routine is in another module, 
+     pushes  a  16-bit  module descriptor address  and  a  32-bit 
+     return  address onto the stack.   The procedure then  begins 
+     execution.
+
+   - The  procedure  executes  an  ENTER  instruction  (which  is 
+     implicitly  generated via the invocation of the VAR  pseudo-
+     op).  The  ENTER instruction allocates any required  storage 
+     for  temporary  data and then saves the  specified  General-
+     Purpose registers onto the stack.
+
+   - The  procedure executes the instructions in the  Instruction 
+     Block.
+
+   - The  General-Purpose registers are restored off  the  stack, 
+     and  then  control  returns to the  calling  routine's  next 
+     instruction.
+
+.pa
+6.1.2  Procedure Types
+
+Two types of procedures are implemented:
+
+   - Local Procedures (or Subroutines)
+
+   - External Procedures
+
+Procedures   which  have  local  scope  are  assigned  the  Local 
+Procedure  type.  They  may be called from  anywhere  within  the 
+module in which they are defined.
+
+Procedures  which  have  public scope are assigned  the  External 
+Procedure type.   They may be called from any module in which the 
+procedure's  name has been defined with an IMPORTP  directive  or 
+colon minus (:-) as well as from within the module in which it is 
+defined. When an External Procedure is invoked the current module 
+is exited and the new module in which the procedure is defined in 
+entered.  Control returns to the calling procedure on termination 
+of the External Procedure.
+
+
+NOTE:     A  recursive procedure is a procedure which contains  a 
+          call  block to itself.  Since all parameter storage  is 
+          allocated  on  the  stack  and  each  invocation  of  a 
+          procedure  automatically reserves  storage,  procedures 
+          may  recursively  call themselves as long as  there  is 
+          sufficient stack space available. A recursive procedure 
+          may  be  either  a  Local  or  External  Procedure.  (A 
+          recursive  External  Procedure must be  defined  either 
+          with a colon minus (:-) or must be specified in both an 
+          IMPORTP and EXPORTP operand list.)
+.pa
+6.1.3  Procedure Format
+
+A procedure has the following form:
+
+	<label>		PROC
+	[<label>]	BLKx
+			 .		Parameter Block
+                         .
+			BLKx
+			[RETURNS]
+	[<label>]	BLKx
+			 .		Return Value Block
+                         .
+			BLKx
+			VAR [reglist]
+	[<label>]	BLKx
+			 .		Local Variable Block
+                         .
+			BLKx
+			BEGIN
+			statement-1
+			 .		Procedure Instruc. Block
+                         .
+			statement-n
+			ENDPROC
+
+The  PROC pseudo-op defines the start of a procedure.  The  label 
+which  becomes  the procedure name may be a local label (:) or  a 
+public label specified by (::) or (:-). A public procedure may be 
+called  by  any module in the program in  which  the  procedure's 
+label  has  been  imported by an IMPORTP pseudo-op  or  from  the 
+module it is defined in.
+
+The  Parameter  Block  is  optional.   If  a  procedure  requires 
+parameters,   storage   for   them  must  be  reserved   by   the 
+appropriately labeled storage allocation pseudo-ops, in the order 
+in which the call block pushes them onto the stack.
+
+The  Return Value Block is optional.  If a procedure has a Return 
+Value Block, it may be no larger than the space allocated for the 
+parameters since the same storage area is used by both blocks.
+
+The  Local  Variable  Block  is  optional.   The  VAR  pseudo-op, 
+however, must be specified. The register list to save and restore 
+is optional.
+.pa
+A  procedure must contain a BEGIN pseudo-op to specify the  start 
+of   the  Procedure  Instruction  Block.   An   empty   Procedure 
+Instruction  Block  is legal as long as it is terminated  by  the 
+ENDPROC  pseudo-op.  The BEGIN pseudo-op causes the assembler  to 
+generates  an ENTER instruction which allocates the storage   for 
+the  run-time  variables and saves the General-Purpose  registers 
+specified by the VAR pseudo-op.  The ENDPROC pseudo-op causes the 
+assembler  to generate an EXIT instruction which deallocates  the 
+local  variable storage and restores the registers saved  by  the 
+ENTER  pseudo-op.  A RET or RXP instruction depending on  whether 
+the procedure is local or external, is also generated.
+
+The   procedure  management  pseudo-ops  and  the  various  block 
+structures  are described in Sections 6.2 through 6.7.  A  sample 
+procedure is described in Section 6.8.
+
+To  assist  the  programmer in visualising  the  structure  of  a 
+procedure below is an exploded view of a procedure.
+
+                     ADDP:: PROC
+00000009 FP          X:     BLKB    1
+00000008 FP          Y:     BLKB    1
+                            RETURNS
+00000009 FP          Z:     BLKB    1
+                            VAR     [R0,R1] ;PRESERVE REGISTERS
+FFFFFFFF FP          A:     BLKB   1
+00000000 PC 820301          BEGIN
+00000003 PC 14C009          MOVB    X,R0    ;GET FIRST VARIABLE
+00000006 PC 54C008          MOVB    Y,R1    ;AND SECOND VARIABLE
+00000009 PC 4000            ADDB    R0,R1   ;ADD THEM
+0000000B PC 140E09          MOVB    R1,Z    ;STORE THE RESULT
+0000000E PC 14C6097F        MOVB    Z,A     ;JUST FOR EXAMPLE
+00000012 PC 92C01201        ENDPROC
+
+From the above example it can easily be seen that the X, Y, and Z 
+variables are not PC relocation but are FP relocation type.  This 
+means  that  a routine that wants to call the ADDP  routine  must 
+pass the X and Y variables on the stack prior to calling ADDP and 
+obtain  the result Y off stack on return from ADDP.  Below is  an 
+example of a fragment of code that would be used to call ADDP:
+
+     MOVB      10,TOS         ;PASS THE X VARIABLE FIRST
+     MOVB      20,TOS         ;AND THE Y VARIABLE SECOND
+     CXP       ADDP           ;CALL THE ADDP PROCEDURE
+     MOVB      TOS,R0         ;THE RESULT
+.pa
+Also  from  the example it can be seen that the  BEGIN  pseudo-op 
+causes the ENTER intruction to be generated.  In fact the  actual 
+instruction that is generated is:
+
+     ENTER     [R0,R1],1
+
+The  intruction causes 1 byte of local stack space to be reserved 
+for the A variable.  The variable A is a local variable that only 
+is active while the ADDP procedure is active. Local variables are 
+very  useful  in recursive procedures and  whenever  a  temporary 
+memory variable is required.
+
+The  ENDPROC  instruction  causes  the assembler  to  output  two 
+instructions:
+
+     EXIT      [R0,R1]        ;restore the original R0 and R1
+     RXP        1             ;remove only 1 byte of stack 
+
+Note that only one byte of stack is removed,  this is because the 
+calling routine removes the final byte of stack.
+.pa
+6.2  PROC and PROCF Pseudo-op      (PROCF enhanced assembler)
+
+Format:   <label>   PROC | PROCF
+
+description:
+          <label>        is the required label.   It defines  the 
+                         procedure's  name.   The  scope  of  the 
+                         procedure  is  defined as local  (:)  or 
+                         public (::, :-) unless PROCF is used.
+
+          PROC | PROCF   is the pseudo-op.
+
+The PROC pseudo-op defines the start of a procedure and the start 
+of  the Parameter Block.  The Parameter Block defines the storage 
+required  for the parameters to be passed to the  procedure  from 
+the calling routine.  The pseudo-op enters the FP relocation mode 
+and sets the location counter to 00000000.
+
+The PROCF (Far procedure access) pseudo-op performs all the  same 
+functions  as the PROC pseudo-op except that it offers a  special 
+feature.  It enables the procedure to be defined as if it was  to 
+be  called  via  a CXP instruction without having to  export  the 
+procedure label. 
+
+This feature enables a jump table to be constructed such that its 
+labels are exported. An example of this feature is shown below:
+.uj 0
+
+     CHARIN::    BR   _CHARIN
+     CHAROUT::   BR   _CHAROUT
+     PRNTOUT::   BR   _PRNTOUT
+               .
+               .
+              etc
+
+     _CHARIN:    PROC           equivalent to  CHARIN::  PROC
+               .
+               .                except that the label _CHARIN
+                 ENDPROC        doesn't have to be exported.
+
+     _CHAROUT:   PROC
+               .
+               .
+                 ENDPROC
+.uj 1
+.pa
+If  parameters  are  to  be  passed  to  the  procedure,  storage 
+allocation  pseudo-ops must follow the PROC pseudo-op,  and  they 
+must  allocate  the appropriate number of bytes per parameter  in 
+the same sequence as the parameters are to be passed.
+
+The  symbols defined in the Parameter Block are assigned FP  type 
+and they must be local symbols i.e.,  a single colon must  follow 
+the symbol name and it must not be imported or exported.
+
+Example:
+          MASSUB::  PROC
+          WIDTH:    BLKW      1
+          HEIGHT:   BLKW      1
+          DEPTH:    BLKW      1
+
+In  the example,  PROC specifies the start of a public  procedure 
+which  is assigned the name MASSUB.  The Parameter Block  defines 
+storage for three parameters:  WIDTH, HEIGHT, DEPTH. Since MASSUB 
+is  a public procedure the initial offset is 12 (0C hex) and  the 
+relocation type is FP.
+
+Symbol values and type:
+
+          WIDTH     00000010  FP
+          HEIGHT    0000000E  FP
+          DEPTH     0000000C  FP
+
+NOTE:  Since the FP addressing mode is relative to the stack, the 
+symbols are assigned increasing addresses last symbol first. Thus 
+the last symbol,  DEPTH, is assigned the lowest available address 
+(FP  0000000C),  while the second to last symbol is assigned  the 
+next  lowest  available address.  The allocation of addresses  to 
+symbols continues until all the parameters are processed.
+.pa
+6.3  RETURNS Pseudo-op
+
+Format:   RETURNS
+
+description:
+          RETURNS        is the pseudo-op.
+
+The  RETURNS  pseudo-op specifies the start of the  Return  Value 
+Block.  The  Return Value Block defines the storage required  for 
+the parameters to be returned to the calling routine. The pseudo-
+op  enters  the  the  FP relocation mode and  sets  the  location 
+counter to 00000000. Since the Return Value Block shares the same 
+storage  as the Parameter Block,  the assembler ensures that  the 
+Return Value Block is no larger than the Parameter Block.
+
+If  parameters  are to be returned to the  calling  routine,  the 
+RETURNS  pseudo-op  must be followed by the  appropriate  storage 
+allocation  pseudo-ops.  The symbols defined in the Return  Value 
+Block  are assigned FP type.  The symbols must be local  symbols. 
+I.e.,  a  single colon must follow the symbol names and they must 
+not be imported or exported.
+
+NOTE:     Since the Return Value Block shares the same storage as 
+          the Parameter Block, writing to one of the Return Value 
+          Block  parameters  will  over-write  the  corresponding 
+          passed   parameter  for  the  duration  of  the  called 
+          procedure.
+
+Example:
+
+		RETURNS
+	MASS:	BLKD	1
+	WEIGHT:	BLKD	1
+
+In the example,  RETURNS specifies the start of the Return  Value 
+Block. The Return Value Block defines storage for two parameters: 
+MASS  and  WEIGHT.  Since the procedure is  public,  the  initial 
+location counter is 0000000C FP.
+
+Symbol values and type:
+
+	MASS	0000000C  FP
+	WEIGHT	00000010  FP
+
+The  Return Value Block assigns addresses to symbols in the  same 
+way  as the Parameter Block does,  i.e.,  the last symbol in  the 
+block  is  assigned the lowest available address  and  the  first 
+parameter  the  highest  used address.   This method  of  address 
+allocation  is  compatible with the order in  which  the  calling 
+routine pops the return parameters off the stack.
+.pa
+6.4  VAR Pseudo-op
+
+Format:   VAR [ <reglist> ]
+
+description:
+          VAR            is the pseudo-op.
+
+          <reglist>      is  the optional list of General-Purpose 
+                         registers  which are to be saved in  the 
+                         stack.  The <reglist> field may  contain 
+                         one  or  more register names as long  as 
+                         they  are  separated  by   commas.   The 
+                         <reglist>  field  must  be  enclosed  in 
+                         brackets "[ ]".  The registers may be R0 
+                         through  R7 or a symbol which  has  been 
+                         assigned  the register type (see Section 
+                         2.6.3).
+
+The VAR pseudo-op specifies the start of the Local Variable Block 
+and  defines  which of the General-Purpose registers are  to   be 
+saved.  The VAR pseudo-op  enters the FP relocation mode and sets 
+the location counter to FFFFFFFF.
+
+If  local parameters are required,  the VAR pseudo-op  should  be 
+followed by the appropriate storage allocation pseudo-ops.  Prior 
+to allocating an address to a symbol in the Local Variable Block, 
+the  location counter is decremented by the appropriate number of 
+bytes  as specified by the respective storage allocation  pseudo-
+op.  The symbols must be local symbols i.e.,  a single colon must 
+follow the symbol name and it must not be imported or exported.
+
+Example:
+
+		VAR
+	DATA1:	BLKD	1
+	DATA2:	BLKD	1
+	DATA3:	BLKD	1
+
+In  the example,  VAR specifies the start of the  Local  Variable 
+Block.  The  location  counter is set to FFFFFFFF FP.  The  Local 
+Variable Block defines storage for three  symbols:  DATA1,  DATA2 
+and DATA3. The initial location counter is FFFFFFFF FP.
+
+Symbol values and type:
+
+	DATA1	FFFFFFFFC  FP
+	DATA2	FFFFFFFF8  FP
+	DATA3	FFFFFFFF4  FP
+
+.pa
+6.5  BEGIN Pseudo-op
+
+Format:   BEGIN
+
+description:
+          BEGIN          is the pseudo-op.
+
+The   BEGIN  pseudo-op  specifies  the  start  of  the  Procedure 
+Instruction  Block  and  sets the location counter  to  the  next 
+available PC value.  The pseudo-op causes the assembler to output 
+an  ENTER  instruction  which saves any  of  the  General-Purpose 
+registers  specified  in  the VAR pseudo-op  and  then  allocates 
+storage for the procedure's Local Variables Block (if any).
+
+The   Procedure   Instruction  Block  contains   the   executable 
+instructions for the procedure.  The Procedure Instruction  Block 
+must end with the ENDPROC pseudo-op (see Section 6.6).
+
+Procedures must not be nested, any attempt to do so will cause an 
+error to be reported by the assembler.
+
+Example:
+
+	BEGIN
+	MOVXWD	WIDTH,DATA1
+	MOVXWD	HEIGHT,DATA2
+	MOVXWD	LENGTH,DATA3
+	MULD    DATA2,DATA1
+	MULD    DATA3,DATA1
+	MULD	DENSITY,DATA1
+	MOVD	DATA1,DATA2
+	MULD	GFORCE,DATA2
+	MOVD	DATA1,MASS
+	MOVD	DATA2,WEIGHT
+	ENDPROC
+
+In  the  example,  BEGIN  specifies the start  of  the  Procedure 
+Instruction Block and the ENDPROC pseudo-op terminates it.
+.pa
+6.6  ENDPROC Pseudo-op
+
+Format:   ENDPROC
+
+description:
+          ENDPROC        is the pseudo-op.
+
+The   ENDPROC  pseudo-op  specifies  the  end  of  the  Procedure 
+Instruction  Block.    An  EXIT  instruction  is  output  by  the 
+assembler which restores the General Purpose registers which were 
+specified by the VAR pseudo-op.  Either a return from  subroutine 
+(RET)  instruction  or  a Return from  External  Procedure  (RXP) 
+instruction is also output depending on whether the procedure was 
+local or public.
+
+The location counter is restored to the relocation mode and value 
+it had prior to the PROC pseudo-op.
+
+Example:
+
+NULL:	PROC
+	VAR
+	BEGIN
+	ENDPROC
+
+In the example ENDPROC defines the end of the procedure NULL.
+.pa
+6.7  CALL BLOCK
+
+The  Call  Block  consists of the  instructions  which  move  the 
+parameters  required  by  the procedure onto the  stack  and  the 
+instruction which invokes the procedure.
+
+The  parameters can be passed by value or by reference either  by 
+the use of move instructions or ADDR instructions respectively.
+
+If  the procedure is local,  either a branch or jump  instruction 
+may be used to pass control to the procedure. If the procedure is 
+public a CXP instruction may be used.
+
+Example:
+
+	MOVW	WIDTH,TOS	;pass WIDTH by value
+	MOVW	HEIGHT,TOS	; and HEIGHT
+	MOVW	DEPTH,TOS	; and DEPTH last
+	CXP	MASSUB		;Invoke the external procedure 
+                                 MASS
+
+In  the  example,  the  parameters are passed by  value  by  move 
+instructions.   The  procedure may then modify the passed  values 
+without  affecting  the  original parameters.  The  procedure  is 
+invoked by the CXP instruction since it is an external procedure.
+.pa
+6.8  SAMPLE PROCEDURE
+
+In  the following example a complete procedure and calling  block 
+is  shown.  The procedure has been defined as a public  procedure 
+which is thus available to any other module in the program as  an 
+external  procedure.  The  Call Block passes three parameters  by 
+value via the stack:   WIDTH,  HEIGHT and DEPTH.   Two values are 
+returned by the procedure: MASS and WEIGHT.
+
+	Call Block (in current module)
+
+	MOVW	WIDTH,TOS	;pass WIDTH by value
+	MOVW	HEIGHT,TOS	; and HEIGHT
+	MOVW	DEPTH,TOS	; and DEPTH last
+	CXP	MASSUB		;Invoke the external procedure
+                                 MASS
+
+	Procedure (in some other module)
+
+MASSUB::	PROC		;The start of the public 
+                                 procedure MASSUB
+WIDTH:	BLKW	1		;parameter 1
+HEIGH:	BLKW	1		;parameter 2
+DEPTH:	BLKW	1		;parameter 3
+
+	RETURNS			;define the Return Value Block
+MASS:	BLKD	1		;the return mass
+WEIGHT:	BLKD	1		;the return weight
+
+	VAR			;define the Local Variable Block
+DATA1:	BLKD	1		;local variable 1
+DATA2:	BLKD	1		;local variable 2
+
+	BEGIN
+	MOVXWD	WIDTH,DATA1	;sign extend parameters
+	MOVXWD	HEIGHT,DATA2
+	MOVXWD	LENGTH,DATA3
+	MULD    DATA2,DATA1	;compute volume
+	MULD    DATA3,DATA1
+	MULD	DENSITY,DATA1	;mass
+	MOVD	DATA1,DATA2
+	MULD	GFORCE,DATA2	;weight
+	MOVD	DATA1,MASS	;store return parameters
+	MOVD	DATA2,WEIGHT
+	ENDPROC			;terminate procedure and return
+                                 to caller
+

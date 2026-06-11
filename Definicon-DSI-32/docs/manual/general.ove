@@ -1,0 +1,376 @@
+.pl 44
+
+
+
+
+
+
+
+
+
+             Definicon Systems Compiler Users' Guide
+                            Overview
+
+                         October 1, 1984
+
+  This document describes general characteristics of Definicon 
+                       Systems' compilers
+
+               (c) 1984 Green Hills Software, Inc.
+                (c) 1985 Definicon Systems, Inc.
+
+
+
+
+
+
+
+The  Definicon  Systems Compilers are a ported version  of  Green 
+Hills Compilers for the DSI-32 coprocessor board.  All references 
+to  Definicon  Systems compilers for the  National  Semiconductor 
+32032 are references to the ported version of the compilers.
+
+                                        part# DOC20010-1.1
+.pa
+1    Compatibility	
+
+All subroutines, routines, procedures, and functions use the same 
+calling   conventions   in  all  Definicon   Systems   Languages.  
+Therefore,  code  from any of these languages can be freely mixed 
+in any program.
+
+The  Language  supported by each implementation  of  a  Definicon 
+Systems  Language is the same.   Therefore,  code written in  any 
+Definicon  Systems language can be moved to any Definicon Systems 
+Target.
+
+Each  Definicon Systems compiler is available on every  Definicon 
+Systems  Host.   Therefore,  program development can be  done  on 
+diverse Hosts and moving to a new Host system is easy.
+
+
+2    Memory Requirements
+
+The   Definicon   Systems  compilers  are   advanced   optimizing 
+compilers.   They  are  a  major  improvement  over  the  current 
+generation of microprocessor compilers.  In accordance with their 
+complexity they require lots of memory.   These compilers require 
+up to 200,000 bytes just for the program (and that is after using 
+a Definicon Systems compiler to compile them).  They are designed 
+to  work  best  when they have at least 400,000 bytes  of  memory 
+available.    They  will  run  in  less  memory  but  with   some 
+degradation of performance or capability.
+
+The  compilers'  primary  use of memory is for  the  program  and 
+static  data structures,  global declarations,  parse trees,  and 
+generated machine code.
+
+The  program  and static data structures  consume  about  250,000 
+bytes.
+
+Global  declarations  consist  of  the  global  constant,   type, 
+variable,  and  procedure declarations.   This is a major use  of 
+memory  when  large numbers of declarations are included  into  a 
+compilation, since even unused global declarations must be stored 
+throughout the compilation.  If memory size problems exist try to 
+reduce  the  size  of  the include files by  including  just  the 
+declarations that are needed.
+
+The Definicon Systems compilers are one pass.  That is, they read 
+the source program only once.  Each procedure is converted into a 
+parse  tree  as it is read.   When the end of  the  procedure  is 
+reached  the  optimizer is called with the parse tree  as  input.  
+The  optimizer  modifies the parse tree and then passes it on  to 
+the  code  generator.   The code generator produces  an  internal 
+representation  of  the  machine  code  to  be  output  for   the 
+procedure.  Another optimizer phase is then called to modify this 
+machine  code,  then the final machine code for the procedure  is 
+output.   After  the machine code is output the memory being used 
+for  the  parse  tree and machine code is reclaimed  for  use  in 
+compiling the next procedure.
+
+The  memory usage for parse trees and machine code is  determined 
+by the size of the largest procedure in the program.   If  memory 
+size  problems exist,  turn off the optimizer and reduce the size 
+of  the largest procedures.   Simple procedures of less than  100 
+lines  should not cause memory size problems.   Procedures  which 
+are  more  than 1000 lines can require more than  a  megabyte  of 
+memory to compile.
+
+
+3    Memory Allocation
+
+Memory  is  allocated  by  the Definicon Systems  compiler  in  a 
+different way than by PCC and other compilers.  Definicon Systems 
+compilers perform a number of optimizations which other compilers 
+do  not do.   This can lead to problems in porting some  programs 
+from  other compilers to the Definicon Systems compilers  if  the 
+programs  depend  on  memory allocation  peculiarities  of  other 
+compilers.
+
+The  Definicon Systems Pascal compiler allocates variables  based 
+on  their  size,   frequency  of  use,  and  other  factors.   No 
+assumptions regarding the contiguousness of variables can be made 
+safely   (except  where  the  language  standard  specifies  it).  
+Programs that otherwise rely on the ordering of variables  within 
+memory may not work.   Variables may be reordered, some may be in 
+registers, others may be eliminated altogether.
+
+3.1  Local variables
+
+Unlike  in many other compilers (including PCC),  local variables 
+(automatic  variables  in  C) may be put into  registers  by  the 
+Definicon  Systems compiler even if a "register"  declaration  is 
+not used.   In addition,  the lifetimes of each local variable is 
+studied,  and  if possible several variables will share the  same 
+register  in one routine.   By default there is no upper limit on 
+how  many  variables will be allocated to a  register.   That  is 
+determined by how their lifetimes conflict.
+
+A scalar, pointer, or floating point variable generally qualifies 
+for allocation to a register unless it is passed by reference  or 
+its  address is taken.   A Floating point variable will generally 
+not  qualify for allocation to a register unless an  architecture 
+directly supports floating point arithmetic.   The compiler  will 
+by  default  try  to  allocate all eligible  local  variables  to 
+registers.  In most routines it will succeed.
+
+When a variable is allocated to a register it will always  reside 
+in that register.   However,  since other variables may share the 
+register,  the  value of the register may not always contain  the 
+value of the variable.
+
+Variables  which  are  declared in  "register"  declarations  are 
+allocated  to  registers  before any non-register  variables  are 
+allocated  to registers.   This allows the programmer to  specify 
+which variables are the most important.
+
+3.2  Static and Global Variables
+
+A static variable may be allocated to a register if the  compiler 
+can  determine  that the variable can never hold a  value  across 
+invocations  of the routine in which it is declared (i.e.  it  is 
+always assigned in the subroutine before it is referenced).  This 
+optimization is particularly important to Fortran,  in which most 
+variables  are  static.   A  static variable may have  no  memory 
+allocated to it if it is never used.
+
+
+4    Converting Programs Developed with Other Compilers
+
+There are a number of general problems involved with transporting 
+programs  from  other compilers to Definicon  Systems  compilers.  
+The most common problems to watch out for are explained below.
+.pa
+4.1  Byte Ordering
+
+Most machines today are byte oriented.   That is,  they address 8 
+bit bytes.   They have operations which operate on 8,  16, 32, 64 
+and 128 bit quantities.   Most older machines are word  oriented.  
+That is, they address words of a standard size varying from 16 to 
+64 bits.
+
+The   word  size  of  a  machine  has  several  effects  on   the 
+transportability of programs.   The standard integer and floating 
+point data types of C,  Pascal, and Fortran are generally defined 
+by the word size.  In particular, the word size affects the range 
+of numbers implemented by the integer data type and the precision 
+and  range  of  the  standard  floating  point  datatypes.   Most 
+programs  expect  the  size of the integer and  single  precision 
+floating  point data type to be 32 bits and the double  precision 
+floating point data type to be 64 bits.   This assumption is true 
+for most Definicon Systems implementations.
+
+The most common word size problems are (often undetected) integer 
+overflows  and  floating point  underflows  and  overflows.   The 
+layout  of bit aligned data structures in C and Pascal will  vary 
+with  the  word size.   Overlaying structures in memory  (with  C 
+union  types and Pascal unchecked variant records) makes programs 
+difficult  to  transport.   Doing pointer arithmetic  in  integer 
+variables  is generally not transportable between  machines  with 
+different word sizes.   C provides portable pointer arithmetic if 
+it is used correctly.
+
+Programs  which are designed for maximum portability should  only 
+assume 16 bit integers and 32 bit floating point.
+.pa
+4.2  Byte Machine Portability
+
+Since  the success of the IBM/360 and its many  decendents,  byte 
+machines  have  been  more  popular  than  word  machines.    The 
+advantage  of  byte  machines is their  efficient  processing  of 
+character data.   The general acceptance of byte machines has led 
+to easier program portability between machines.
+
+There  is,  however,  one major portability problem amongst  byte 
+machines.  The first successful byte machine, the IBM/360, placed 
+the  most  significant byte of a multi-byte integer value at  the 
+lowest address.  Most byte machines such as the MC68000 and Z8000 
+have  followed the IBM convention.   The second  successful  byte 
+machine,  the  PDP-11,  placed  the least significant byte  of  a 
+multi-byte  integer  value at the lowest  address.   Intellectual 
+decendents of the PDP-11, such as the VAX, 8086, and NS32000 have 
+followed the DEC convention.  These two groups seem to be so well 
+entrenched that no agreement on byte ordering is possible.
+
+Programs which overlay characters and integers in memory or which 
+use  character  pointers to integer variables and vice versa  are 
+generally  not  portable  between machines  with  different  byte 
+ordering.
+
+4.3  Alignment Requirements
+
+Some machines,  such as the MC68000 and Z8000,  require that 2, 4 
+and 8 byte values only be accessed on even byte addresses.   Some 
+other  machines have similar restrictions on 4 and 8 byte values.  
+Definicon  Systems  compilers  are always  designed  to  allocate 
+structures  and  variables  so that  alignment  restrictions  are 
+respected.   It  is possible for the compiler to  guarantee  that 
+.pa
+there  will  be no illegal references if the  programmer  follows 
+simple rules.
+
+The  size of all complex data types are rounded up to a  multiple 
+of  the  maximum alignment required by any component  data  type.  
+The  compiler always aligns parameters and local variable  within 
+the stack at an allowable offset from the beginning of the frame.  
+The  compiler  always  rounds  up the size of the  frame  to  the 
+maximum alignment demanded by the machine.   If the initial stack 
+pointer  is  aligned  to the maximum alignment  demanded  by  the 
+machine and if the program involves no explicit (or only correct) 
+manipulation  of  the  stack pointer,  no stack  references  will 
+generate illegal references.
+
+All  variables  within  the  global frame  are  allocated  at  an 
+allowable offset from the base of the global frame.  Therefore if 
+the  assembler  and/or linker allocate the global frame with  the 
+maximum  alignment  that  the machine  demands,  no  global  data 
+references will generate alignment errors.
+
+The  compiler will always ensure that components of a  data  type 
+requiring  alignment will appear only at an allowable offset from 
+the beginning of a complex data type.  If all allocation routines 
+always return pointers which are aligned to the maximum alignment 
+requirement demanded by the machine and the program does not  use 
+(or  correctly uses) integer arithmetic for pointer computations, 
+alignment errors will not occur in dynamically allocated memory.
+
+Variables  within a frame or components within larger data  types 
+are  packed together in memory as closely as  possible.   When  a 
+data type has an alignment requirement, the least possible unused 
+space  is  left  between  the end of the previous  item  and  the 
+.pa
+aligned  item so that the aligned item can satisfy its  alignment 
+requirement.
+
+In  order to satisfy different  alignment  requirements,  complex 
+data  types  may be allocated differently on different  machines.  
+This will lead to the usual problems with programs which rely  on 
+memory  overlays.   It  will also lead to problems with  programs 
+which  make  implicit assumptions about the size  and  offset  of 
+objects.
+
+4.4  Floating Point
+
+One  of  the  most  variable aspects  of  different  machines  is 
+floating  point.   The range,  precision,  accuracy and base vary 
+widely.   This  can lead to many portability problems  which  can 
+only be addressed numerically.
+
+4.5  Implied register usage
+
+The  Definicon Systems compiler register allocation algorithm  is 
+completely  unlike that of most other compilers.  While this will 
+have  no effect on  semantically correct programs,  some programs 
+rely on certain aspects of the particular allocation scheme.
+
+4.6  Assembly Code
+
+Programs  which  use  embedded  assembly  code  or  interface  to 
+external  assembly  will require all of the assembly code  to  be 
+redone when the program is transported to a new machine.
+.pa
+4.7  Evaluation Order
+
+The Definicon Systems compiler expression evaluation order is not 
+identical to the expression ordering of other compilers, although 
+it  may appear similar.   In particular,  each  Target  evaluates 
+expressions  differently  within  the  scope  of  the  applicable 
+standard.
+
+Most  Targets evaluate arguments to procedure calls from right to 
+left,  but  some  evaluate from left to right.   See  the  Target 
+documentation for specifics of the calling sequence.
+
+Expressions  with side effects such as function calls and  the  C 
+operators "++",  "--",  "+=", etc. may be executed in a different 
+order  by the Definicon Systems compiler from that of  some other 
+compiler.   When  a variable is modified as a side effect  of  an 
+expression  and  its value is also used at another point  in  the 
+expression,  it  is  not defined whether the value used  at  each 
+point   in   the  expression  is  the  value  before   or   after 
+modification.    Potentially,   different  values  for  the  same 
+variable  could  be  used at different place  in  the  expression 
+depending on the order the compiler chose for evaluation.
+
+.pa
+5    Compile Time Options
+
+Some  compile time options are implemented in all versions of the 
+compilers.   These  general  purpose  compile  time  options  are 
+explained below.
+
+     -g   Generate  debug  information and a  frame  pointer  for 
+          stack traces.  The amount and form of debug information 
+          varies with the capabilities of the target system.
+     -ga  Generate a frame pointer for stack traces.
+     -w   Suppress warning diagnostics.
+     -p   Generate  calls  for  execution  profiling.   Currently 
+          supported only on UNIX.
+     -O1  Optimize  the program to be as fast as possible even if 
+          it is necessary to make the program bigger.   This flag 
+          often causes confusion among people familiar with  PCC.  
+          Under  PCC,  -O  means  make the  program  smaller  and 
+          faster.   One wonders why this is not the default since 
+          the  -O compile time option only slows down compilation 
+          by 10%.   Under Definicon Systems Pascal the default is 
+          to  perform all of the optimizations performed by  PCC.  
+          The -O option will perform further optimizations  which 
+          may make the program faster but larger.   It is counter 
+          productive  to  specify  -O  on code  which  is  rarely 
+          executed  as it will make the whole program larger  but 
+          no faster.  Therefore, when converting to the Definicon 
+          Systems  compiler remove the -O option  from  makefiles 
+          and command files!   After experimenting with a program 
+          it is possible to discover which modules benefit from -
+          O and which do not.
+     -O2  Allow  the optimizer to assume that memory locations do 
+          not  change except by explicit stores.   That  is,  the 
+          optimizer  is guaranteed that no memory  locations  are 
+          I/O  device  registers that can be changed by  external 
+          hardware and no memory locations are being shared  with 
+          other  processes  which can change them  asynchronously 
+          with respect to the current process.  This compile time 
+          option  must  be used with extreme caution (or  not  at 
+          all)  in  device  drivers,  operating  systems,  shared 
+          memory  environments,  and  when  interrupts  (or  UNIX 
+          signals) are present.
+     -R   In  the Motorola assembly code version of  the  MC68000 
+          compiler,   place  explicitly  initialized  data  in  a 
+          separate  section so that it can be placed in ROM.   In 
+          the VAX and NS32000 compilers this compile time  option 
+          is  passed  on to the assembler and it places all  data 
+          into the text section.
+     -Istring  Include file names which do not start with "/" are 
+          searched  for  in  the  directory  "string"  before   a 
+          standard list of directories.   Multiple -I options can 
+          be  specified.   They  will  be searched in  the  order 
+          encountered.
+     -Xn  Where n is an integer constant.   Turn on option number 
+          n.  The options for Pascal are listed below.  There are 
+          also  additional options available for  various  target 
+          and host systems.  Descriptions of these options can be 
+          found in the associated documentation.
+     -Zn  Turn off option number n.  This is the reverse of the X 
+          option.   This  option  is useful if a version  of  the 
+          compiler has some options turned on by default.

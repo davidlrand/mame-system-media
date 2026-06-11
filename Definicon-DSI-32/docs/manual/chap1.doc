@@ -1,0 +1,358 @@
+.pl 62
+                            Chapter 1
+
+
+                    Introduction and Overview
+
+
+1.1 INTRODUCTION
+
+The  DSI-32  Assembler  enables  the  user  to  assemble  NS32000 
+assembly  language statements.  The Assembler produces an  object 
+file  that may then be linked by the DSI-32 Linker to produce  an 
+executable program.  It is recommended that the user have a  copy 
+of  the  National  Semiconductor Instruction Set manual  for  the 
+32000 series of microprocessors. (Order from Definicon Systems or 
+National Semiconductors: Document NSP-INST-REF-M).
+
+The   manual  contains  a  detailed  description  of  the  DSI-32 
+Assembler  language.  The  various chapters  that  comprise  this 
+manual contain the following information:
+
+   - Chapter  1,  Introduction and Overview.  Introduces the DSI-
+     32 and lists its features.
+
+   - Chapter  2,  DSI-32 Language Elements.  Defines the form  of 
+     DSI-32 Assembler statements,  constants,  terms, symbols and 
+     expression syntax.
+
+   - Chapter  3,  DSI-32  Programs.  Describes  the  support  for 
+     modules,  segments,  relocation modes,  the various location 
+     counters and the various assembly modes.
+	
+   - Chapter  4,  Instruction  Operands.  The  syntax  of  DSI-32 
+     operands is described.
+
+   - Chapter 5,  DSI-32 Assembler Pseudo-Operands.  The syntax of 
+     the DSI-32 pseudo-ops is described.
+
+   - Chapter 6, Procedures. Defines the format of a procedure and 
+     the syntax of procedure control pseudo-ops.
+
+   - Chapter  7,  Invocation and Operation.  The operation of the 
+     Assembly is described as well as options and error messages.
+
+   - Appendix  A,  Reserved Symbols.  The DSI-32 reserved symbols 
+     are defined.
+.pa
+1.2  OVERVIEW OF THE DSI-32 ASSEMBLER
+
+The  DSI-32  Assembler provides a variety of features  which  aid 
+assembly language programming.
+
+ - Assembler Input  and  Output  Files.
+An object code file and an optional listing file are produced  by 
+the  DSI-32  Assembler.  The object code file once linked by  the 
+DSI-32  Linker forms an executable file which may then be  loaded 
+by  the  Definicon  Systems' LOAD program.  The listing  file  is 
+formed  from  the assembled code,  the source  line  number,  the 
+source statements and any error messages. Input and Output files, 
+listing file format,  and error messages are described in Chapter 
+7.
+ - Instruction  Set.
+The  complete NS32032 instruction set is supported by the  DSI-32 
+Assembler.    All   the  memory-management   and   floating-point 
+instructions are also supported by the Assembler.
+
+ - Addressing  Modes.
+The Assembler supports the nine general addressing modes:
+
+  (1)  register
+  (2)  register relative
+  (3)  memory
+  (4)  immediate
+  (5)  absolute
+  (6)  top of stack
+  (7)  external
+  (8)  memory relative
+  (9)  scaled index
+
+ - Data  Types.
+The  Assembler supports the following data  types:  byte,  signed 
+byte,  word,  signed  word and  double-word,  signed  double-word 
+integers  single  and  double-precision  floating-point  numbers, 
+packed decimal numbers, bits, and bit fields.
+
+ - Assembler Pseudo Opcodes.
+The Assembler provides a variety of pseudo-ops to define symbols, 
+allocate  storage,  allocate  constants,  manage  procedures  and 
+control program segments.
+
+ - Procedures.
+A  special  set of pseudo-ops,  called the  procedure  management 
+pseudo-ops,  are  supported by the assembler to make the creation 
+of  program  procedures  simple.   These  pseudo-ops  enable  the 
+programmer  to  write modular routines that may recursively  call 
+themselves.  The pseudo-ops create a frame on stack for temporary 
+data  storage  of  the  parameters,   return  values,  and  local 
+variables of the procedure.
+1.3  NS32000 REGISTERS
+
+The  NS32000 system consists of four sets of register types which 
+are detailed below:
+
+  - General-Purpose registers (on the CPU)
+  - Dedicated registers (on the CPU)
+  - Floating-Point registers (on the FPU)
+  - Memory-Management registers (on the MMU)
+
+
+1.3.1  General-Purpose Registers
+
+The eight General-Purpose registers are:  R0, R1, R2, R3, R4, R5, 
+R6 and R7.
+
+Each  general purpose register is 32 bits long and may be used in 
+byte,  word,  and  double word operations.  Only the bits in  the 
+length specified by the instruction type are affected.
+
+General  purpose  registers  may  be combined  to  form  even/odd 
+register pairs as follows:   R0/R1,  R2/R3,  R4/R5, R6/R7. The 64 
+bit  register  pairs  are used  by  various  extended  arithmetic 
+instructions which produce a 64 bit result.  Register pair  names 
+are: R0, R2, R4, and R6.
+
+.pa
+1.3.2  Dedicated Registers
+
+The   eight  dedicated  registers  contain  pointers  to   memory 
+locations and status information.
+
+ Register                Name      Contents
+ --------                ----      --------
+
+ Program Counter          PC       pointer to current instruction
+ Interrupt Stack Pointer  SP0      pointer to top Interrupt Stack
+ User Stack Pointer       SP1      pointer to top of User Stack
+ Frame Pointer            FP       pointer to current Frame
+ Static Base              SB       pointer to current Static Base 
+                                   Area
+ Interrupt Base           INTBASE  pointer  to Exception Dispatch 
+                                   Table
+ Module                   MOD      pointer   to  current   Module 
+                                   Descriptor
+ Processor Status         PSR      processor status flags
+
+The  PC, SP0, SP1, FP, SB and INTBASE registers are 32 bits long. 
+However, since these registers contain memory addresses, and only 
+the  low-order  24 bits are used in the NS32032 the high-order  8 
+bits are zeroed by the processor, the assembler treats them as 32 
+bit registers.  The MOD and PSR registers are 16 bits  long.  The 
+MOD  register  contains a memory pointer,  and the  PSR  register 
+contains  the  processor  status flags.  Even  though  two  stack 
+pointers have been described a program uses only one of the stack 
+registers  at any given time.  The particular register in use  is 
+determined by the context of the processor.
+
+The  CPU selects SP0 as the current stack pointer if the 'S'  bit 
+in the PSR is 0, and SP1 if the 'S' bit is 1. This enables 'user' 
+and 'supervisor' stacks to be separated.
+
+The  currently selected stack is referenced via the SP symbol.  A 
+program may only change which stack will be accessed, by changing 
+the  'S' bit.  The Assembler does  not,  therefore,  support  the 
+symbols SP0 and SP1. 
+
+The  PSR  status  flags  define the current CPU  status  and  the 
+results  of  previous instruction(s).  The layout of the  PSR  is 
+shown below:
+.pa
+      Supervisor Flags                   User Flags
++-------------------------------+-------------------------------+
+| x   x   x   x | I | P | S | U | N | Z | F | x   x | L | T | C |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+15                                                              0
+x - reserved
+
+The status flags have the following functions:
+
+  User Flags (available in both user and supervisor modes)
+  ----------
+
+  C       is  the carry flag.  The 'C' bit indicates a  carry  or 
+          borrow   occurred  after  an  addition  or  subtraction 
+          instruction. 'C' is used in the calculation of multiple 
+          precision arithmetic.  A value of '1' means a carry  or 
+          borrow, a value of '0' means no carry or borrow.
+
+  T       is  the  Trace Trap flag.  The 'T' bit enables  program 
+          tracing.  If  this bit is a '1' a TRC trap is  executed 
+          after each instruction.  See also 'P' flag.
+
+  L       is  the  Low flag.  The 'L' bit is  set  by  comparison 
+          instructions.   In a comparison instruction the 'L' bit 
+          is  set to '1' if the second  operand is less than  the 
+          first,  when  both operands are interpreted as unsigned 
+          integers, otherwise it is set to '0'.
+
+  F       is the General Condition flag. The 'F' bit is a general 
+          flag which is used by many instructions. 
+
+  Z       is  the Zero flag.   The 'Z' flag is set by  comparison 
+          instructions.   In a comparison instruction the 'Z' bit 
+          is  set to a '1' if the second operand is equal to  the 
+          first operand, otherwise it is set to '0'.
+
+  N       is the Negative flag. The 'N' flag is set by comparison 
+          instructions.   In a comparison instruction the 'N' bit 
+          is  set  to '1' if the second operand is less than  the 
+          first  operand,  when both operands are interpreted  as 
+          signed integers, otherwise it is set to '0'.
+
+  Supervisor Flags (available to supervisor program only)
+  ----------------
+
+  U       is  the  user Mode flag.  The User Mode flag  sets  the 
+          current mode of system operation.  If 'U' bit is set to 
+          '1'   no  privileged  instructions  may   be   executed 
+          otherwise            if 'U' is 0,  the system is in the 
+          supervisor mode and all instructions may be executed.
+.pa
+  S       is  the Stack flag.  The 'S' bit specifies whether  the 
+          SP0  or  the SP1 register is to be used  as  the  stack 
+          pointer.  The  'S'  bit  is  automatically  cleared  on 
+          interrupts  and  traps.  It may have a setting  of  '0' 
+          (SP0) or '1' (SP1).
+
+  P       is  the Trace Pending flag.  The 'P' bit prevents a TRC 
+          trap from occurring more than once for an  instruction. 
+          The 'T' flag contents are copied to the 'P' flag at the 
+          start of an instruction. At the end of the instruction, 
+          if  P is 1,  a trace trap is taken otherwise if P is 0, 
+          no trace trap is taken.  The 'P' flag is cleared when a 
+          trace  is  taken to prevent a second  trace  trap  from 
+          occurring.
+
+  I       is the Interrupt flag. Interrupts are enabled If 'I' is 
+          '1' otherwise if 'I' is '0', then all interrupts except 
+          the Non-Maskable Interrupt are disabled.
+
+.pa
+1.3.3  Floating-Point Registers
+
+The  Floating-Point  registers are primarily intended to  provide 
+fast  temporary  storage  for  floating  point  operations.   The 
+eight floating point registers are:  F0,  F1,  F2, F3, F4, F5, F6 
+and  F7.   The  registers are 32 bits long and may  hold  single-
+precision ieee floating-point numbers.
+
+The  Floating-Point  registers  may be combined to  form  64  bit 
+even/odd register pairs: F0/F1, F2/F3, F4/F5, F6/F7.  Each of the 
+register  pairs may hold a double-precision  ieee  floating-point 
+number.  The high order part of the floating point number is held 
+in  the   odd  register and the low order part  is  in  the  even 
+register.  Register pair names are: F0, F2, F4, and F6.
+
+The  Floating-Point  Status Register (FSR) describes the  current 
+mode of the FPU as well as any error status due to the  execution 
+of the last floating point instruction.
+
+
+1.3.4  Memory-Management Registers
+
+The  Memory  Management  registers  enable  the  various  options 
+available  in  the  MMU to be manipulated.  The  various  Memory-
+Management registers are described below.  All  Memory-Management 
+registers, except SC0 and SC1, are 32 bits long.  The SC0 and SC1 
+logical  registers are 16 bits long and occupy a single  physical 
+32 bit register within the MMU.
+
+Register                     Name       Function
+--------                     ----       --------
+
+Page  Table  Register  0     PTB0       Specifies  the current
+                                        base address of the Level
+                                        1 Page Table.
+
+Page Table Register 1        PTB1       Specifies the current
+                                        base address of the  user
+                                        mode Level  1 Page Table.
+
+Error/Invalidate Address     EIA        When an error  occurs, it
+                                        contains   the    virtual
+                                        address that  caused  the
+                                        exception to occur.  When 
+                                        the register  is  written
+                                        to it informs the MMU  to
+                                        remove the entry from the 
+                                        cache in the MMU.
+.pa
+Breakpoint  Register  0      BPR0       Specifies  the address at
+                                        which a  breakpoint is to
+                                        occur. 
+
+Breakpoint Register 1        BPR1       Specifies the  address at 
+                                        which a breakpoint  is to  
+                                        occur.
+
+Breakpoint Count             BCNT       Specifies the  number  of
+                                        breakpoints   that   have
+                                        occurred      at      the  
+                                        BPR0
+
+                                        address.  Once the  count
+                                        reached zero then a break 
+                                        will be generated.
+
+Program Flow 0               PF0        Contains  the address  of 
+                                        the  previous  nonsequen-
+                                        tial instruction.
+
+Program Flow 1               PF1        Contains  the address  of 
+                                        the   last  nonsequential 
+                                        instruction.
+
+Sequential Count 0           SC0        The count of instructions
+                                        executed  since the  last 
+                                        nonsequential instruction
+Sequential Count 1           SC1        The count  of  sequential 
+                                        instructions     executed 
+                                        prior  to   the last non-
+                                        sequential instruction
+
+Memory Status Register       MSR        Contains  the status  and 
+                                        mode of the MMU.
+
+.pa
+1.4  DOCUMENTATION CONVENTIONS
+
+The  following documentation conventions are used  in  describing 
+the DSI-32 Assembler.
+
+          Upper-case  letters show the instruction and pseudo  op 
+          mnemonics.   The  mnemonics must be entered exactly  as 
+          shown.
+
+          Spaces or blanks,  when present,  are significant; they 
+          must   be  entered  as  shown.    Multiple  blanks   or 
+          horizontal tabs may be used in place of a single blank.
+
+     <> - angle  brackets  enclose  descriptive names  (in  lower 
+          case) for user-supplied operands.
+
+     {} - braces enclose two or more items of which one, and only 
+          one,  must be used.   The items are separated from each 
+          other by a logical OR sign "|".
+
+     [] - brackets enclose optional item(s).
+
+      | - logical OR sign separates items of which one,  and only 
+          one, may be used.
+
+    ... - three consecutive periods indicate optional  repetition 
+          of the preceding item.
+
+    ,,, - three  consecutive commas indicate optional  repetition 
+          of  the  preceding item.   Items must be  separated  by 
+          commas.
+

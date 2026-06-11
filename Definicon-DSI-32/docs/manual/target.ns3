@@ -1,0 +1,208 @@
+.pl 44
+
+
+
+
+
+
+
+
+
+             Definicon Systems Compiler Users' Guide
+                         NS32000 Target
+
+                         October 1, 1984
+
+  This document describes general characteristics of Definicon
+                       Systems' compilers
+
+               (c) 1984 Green Hills Software, Inc.
+                (c) 1985 Definicon Systems, Inc.
+
+
+
+
+
+
+
+The  Definicon  Systems Compilers are a ported version  of  Green 
+Hills Compilers for the DSI-32 coprocessor board.  All references 
+to  Definicon  Systems compilers for the  National  Semiconductor 
+32032 are references to the ported version of the compilers.
+
+                                        part# DOC20050-1.1
+.pa
+1    Introduction
+
+There are two variants of the NS32000 compiler,  called Genix and 
+Avalon.   Genix  is the National Semiconductor  operating  system 
+derived from UNIX BSD 4.1.  Avalon is the Avalon Computer Systems 
+operating  system derived from UNIX BSD 4.2.   Selection  between 
+Genix and Avalon is a compile time option.   The Genix version is 
+supported by the Definicon DSI-32 system software and hardware.
+
+There  are three sets of differences between the Genix and Avalon 
+versions  of  the  compiler:  the  calling  conventions,  modular 
+software  support,  and  assembler  pseudo-ops.   Each  of  these 
+differences is individually selectable by a compile time option.
+
+2    NS32000 General Characteristics
+
+The memory is byte addressed with 32 bit addresses (some versions 
+of  the  chips  only support 24 bit addresses  but  the  compiler 
+doesn't  know  about  it).   Bytes are  ordered  with  the  least 
+significant  byte  of  a multi-byte value stored  at  the  lowest 
+address,  as  on  the  VAX and 8086,  opposite  of  the  IBM/370, 
+MC68000, and Z8000.  Bits are numbered with bit zero as the least 
+significant bit.
+
+Floating point is IEEE format (32 and 64 bits), least significant 
+byte at the lowest address.
+
+Character encoding is ASCII.
+
+All  4  byte scalars are allocated on 4 byte boundaries.   All  2 
+byte  scalars are allocated on 2 byte boundaries.   All  floating 
+point  values  are stored on 4 byte  boundaries.   The  stack  is 
+always  four  byte  aligned.   Every packed field must  be  fully 
+contained  in  four or fewer bytes.   All complex data  types  in 
+memory are aligned to the maximum alignment requirement of any of 
+its  components.   Packed  fields are allocated starting  at  bit 
+zero.
+
+When  a floating point number is converted to an integer  a  trap 
+will  occur  if the value of the floating point number cannot  be 
+represented  in  the integer type.   On the VAX  and  many  other 
+machines,  the  conversion will not trap,  instead it will  store 
+only the low order bits of the mathematically correct result.
+.pa
+2.1  C Parameters
+
+     int				32
+     long				32
+     *				        32
+     short				16
+     char				 8
+     float				32
+     double				64
+     unsigned			        32
+     unsigned char			 8
+     unsigned short			16
+     enum				32
+
+2.2  Fortran Parameters
+
+     integer				32
+     logical				32
+     real				32
+     double precision		        64
+     character*1			 8
+     integer*1			         8
+     integer*2			        16
+     integer*4			        32
+     logical*1			         8
+     logical*2			        16
+     logical*4			        32
+     complex				64
+     double complex		       128
+.pa
+2.3  Pascal Parameters
+
+     integer				32
+     real				64
+     maxint			   2**31-1
+     minint			    -2**31
+
+2.4  Calling conventions
+
+Parameters  are evaluated from right to left.   Each parameter is 
+pushed on the stack after it is evaluated.  All scalar values are 
+extended  to a 32 bit value which is pushed on  the  stack.   All 
+floating  point  values are extended to a 64 bit value  which  is 
+pushed on the stack.  All other values are extended to a multiple 
+of  4  bytes and pushed on the stack (the extra bytes are at  the 
+high addresses).
+
+Scalar  values are returned in r0.   When the size of the  return 
+value is specified as less than 32 bits only the required  number 
+of  bits can be depended on in r0.   For instance,  a char return 
+value  in Pascal has only the low 8 bits of r0 valid,  the  other 
+bits are undefined.
+
+Floating point values are returned in f0 (either 32 or 64  bits).  
+Calls  to  routines  use  either the  cxp  or  cxpd  instruction.  
+Returns from routines use the "rxp 0" instruction.
+
+Procedures are assumed to destroy r0, r1, r2, f0, f1, f2, and f3. 
+The  condition codes are undefined at the return of a  procedure. 
+All other registers are saved and restored by a procedure if they 
+are used.
+.pa
+The  compiler has several options for generating the local  frame 
+for  procedures.   By default,  if a procedure requires no  local 
+storage and saves zero or one general register,  no enter or exit 
+instruction is generated, all accesses to parameters on the stack 
+are done with the sp relative and sp memory addressing modes, and 
+fp is not used.  If one general register is saved it is pushed on 
+the stack at the entry to the routine and popped at the exit.
+
+If the procedure requires local stack storage,  saves two or more 
+general  registers,  or  the -g or -ga switch to the compiler  is 
+specified  then  the procedure will do an  enter  instruction  on 
+procedure  entry and an exit instruction on procedure  exit,  and 
+accesses  to parameters or local stack storage will be made  with 
+fp relative or fp memory addressing modes.
+
+Following the return of the procedure any arguments pushed on the 
+stack are removed.   If four bytes must be removed from the stack 
+a  "cmpqd  0,tos" instruction is used.   If eight bytes  must  be 
+removed from the stack a "cmpd tos,tos" instruction is used.   If 
+other  than four or eight bytes must be removed from the stack it 
+is done with an "adjsp" instruction.
+
+
+3    Compile Time Options
+     -ge
+          DSI-32   Target  environment.    Default   is   Avalon.  
+          Equivalent to -X50 -X51 -X52
+     -X50
+          Push the first two arguments on the stack.   Default is 
+          to  pass  the  first  two  arguments  in  registers  as 
+          explained in the Avalon calling convention.
+.pa
+     -X51
+          Generate  the  Genix  pseudo-ops.   The default  is  to 
+          generate Avalon pseudo-ops,  which are compatible  with 
+          UNIX.
+     -X52
+          Generate modular software calls: cxp,cxpd,lxpd,...  The 
+          default is relocatable calls: bsr,jsr,addr.
+     -X58
+          Do  not put an underscore in front of the names of  all 
+          global  variables and procedures.   This is  compatible 
+          with  the  NSX package from National.   The default  is 
+          for DSI-32 and Avalon.
+     -X60
+          Before each multiply to memory instruction add a memory 
+          read  instruction for the second operand.   This avoids 
+          having a page fault on the second operand,  which  will 
+          lock up NS32000 processors made before revision N.
+     -X64
+          Defines   the   preprocessor  symbols   "ns16000"   and 
+          "ns32000" to be 1.   If this flag is not set, "MC68000" 
+          is defined to be 1!
+     -X67
+          Modifies the generation of common variables.   Intended 
+          for cross software support only.
+     -X72
+          Generates OPUS style pseudo-ops.
+     -X74
+          Generates System V stabs.
+
+.pa
+4    Differences from PCC
+
+Unlike  some  versions  of  PCC,  eight  and  sixteen  bit  local 
+variables  may be allocated to registers.   In this case only the 
+low order bits of the register are valid, the high order bits are 
+undefined.

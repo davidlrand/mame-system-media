@@ -1,0 +1,1212 @@
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 1
+DSI-32000 I/O KERNEL
+
+				     2  	start
+				     3  
+				     4  VIRT:	equ	1
+				     5  
+				     6  EXEC:	EQU	1
+				     7  CMOD:	EQU	H'20
+				     8  VMOD:	EQU	H'5C
+				     9  DBGMOD:	EQU	H'1F80
+				    10  DBG:	EQU	DBGMOD+H'C	;DEBUGGER MODULE ENTRY
+				    11  PRGM:	EQU	H'8C		;PROGRAM'S MAIN MODULE offset
+				    12  MPRGM:	equ	h'9c		;Program's main module number (offset zero)
+				    13  
+				    14  ;	if	aduart = 1
+				    15  ;DUARCNT:EQU	H'F7FE38
+				    16  ;	endif
+				    17  ;	if	aduart = 0
+				    18  ;DUARCNT:equ	h'200138
+				    19  ;	endif
+				    20  
+				    21  	;
+				    22  	;-----------------------------------------------------------------;
+				    23  	;								  ;
+				    24  	;  Copyright (C) 1985 by Definicon Systems Inc.			  ;
+				    25  	;								  ; 
+				    26  	;   Definicon Systems Inc.					  ;
+				    27  	;   31324 Via Colinas, #108/109					  ;
+				    28  	;   WestLake Village. California. U.S.A				  ;
+				    29  	;								  ;
+				    30  	;   All Rights Reserved						  ;
+				    31  	;								  ;
+				    32  	;   This software is furnished under a license and may be used    ;
+				    33  	;   and copied only in accordance with the terms of such license  ;
+				    34  	;   and with the inclusion of the above copyright notice. This    ;
+				    35  	;   software or any other copies thereof may not be provided or   ;
+				    36  	;   otherwise made available to any other person. No title to and ;
+				    37  	;   ownership of the software is hereby transferred.              ;
+				    38  	;								  ;
+				    39  	;   The information in this software is subject to change without ;
+				    40  	;   notice and should not be construed as a commitment by	  ;
+				    41  	;   Definicon Systems Inc.					  ;
+				    42   	;								  ;
+				    43   	;-----------------------------------------------------------------;
+				    44  	;
+				    45  	; 32000 MEMORY MAP
+				    46  	;
+				    47  	;	0000		BOOTSTRAP CODE
+				    48  	;	0020		I/O KERNEL MODULE TABLE
+				    49  	;	0030		CLIBR MODULE TABLE
+				    50  	;	0040		CRTLIB MODULE TABLE
+				    51  	;	0050		VIRTUAL HANDLER MODULE TABLE
+				    52  	;	0080		PROGRAM'S MODULE TABLE(S)
+				    53  	;	1F80		DEBUGGER MODULE TABLE
+				    54  	;	2000		I/O SPACE FOR 8086/32000 COMMUNICATION
+				    55  	;	2200		KERNEL
+				    56  	;
+				    57  	;----------------------------------------------------------------
+				    58  	;
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 2
+DSI-32000 I/O KERNEL
+
+				    59  	MODULE	KERNEL
+				    60  	;
+				    61  	EXPORTP	KERNEL
+				    62  	;
+00000000 SB			    63  	STATIC
+00000000 SB			    64  SW86:	BLKW	1		;8086 SERVICE REQUEST WORD 
+00000002 SB			    65  RC86:	BLKW	1		;8086 COMPLETION CODE
+00000004 SB			    66  SW32:	BLKW	1		;32032 SERVICE REQUEST WORD
+00000006 SB			    67  RC32:	BLKW	1		;32032 COMPLETION CODE
+				    68  	;
+00000008 SB			    69  QIN86:	BLKW	1		;8086 QUEUE POINTER
+0000000a SB			    70  QIN32:	BLKW	1		;32032 QUEUE POINTER
+				    71  	;
+0000000c SB			    72  QOUT86:	BLKW	1		;8086 QUEUE POINTER
+0000000e SB			    73  QOUT32:	BLKW	1		;32032 QUEUE POINTER
+				    74  	;
+00000010 SB			    75  QPR86:	BLKW	1		;8086 QUEUE POINTER
+00000012 SB			    76  QPR32:	BLKW	1		;32032 QUEUE POINTER
+				    77  	;
+00000014 SB			    78  DSKRW:	BLKW	1		;DISK SERVICE REQUEST
+00000016 SB			    79  DSKID:	BLKW	1		;CURRENT FILE ID
+00000018 SB			    80  DSKLN:	BLKW	1		;# OF BYTES TO TRANSFER
+0000001a SB			    81  DSKDTA:	BLKD	1		;POINTER TO DISK DTA
+0000001e SB			    82  DSKRC:	BLKW	1		;DISK COMPLETION CODE
+				    83  	;
+00000020 SB			    84  HEAPL:	BLKD	1		;HEAP LOW
+00000024 SB			    85  HEAPH:	BLKD	1		;HEAP HIGH
+00000028 SB			    86  STACKL:	BLKD	1		;STACK LOW
+0000002c SB			    87  STACKH:	BLKD	1		;STACK HIGH
+				    88  	;
+00000030 SB			    89  DSKERR:	blkw	1		;local disk errorno variable
+00000032 SB			    90  VAR1:	blkd	1		;general variable passing variables
+00000036 SB			    91  VAR2:	blkd	1
+0000003a SB			    92  VAR3:	blkd	1
+0000003e SB			    93  VAR4:	blkd	1
+00000042 SB			    94  VAR5:	blkd	1
+00000046 SB			    95  VAR6:	blkd	1
+0000004a SB			    96  VAR7:	blkd	1
+0000004e SB			    97  VAR8:	blkw	1
+00000050 SB			    98  LOCBUF:	blkd	1		;local buffer pointer
+00000054 SB			    99  MEMTOP:	BLKD	1		;TOP OF MEMORY
+00000058 SB			   100  DUARCNT:blkd	1		;actual duart base
+0000005c SB			   101  EXIT:	blkd	1		;exit from 32io to multi-task
+				   102  
+00000060 SB			   103  	blkb	160
+00000100 SB			   104  	BLKB	80		;FOR STACK
+				   105  STACKEN:EQU	$
+				   106  	;
+00000150 SB			   107  KERSTK:	BLKD	1		;THE KERNEL STACK
+00000154 SB			   108  USRSTK:	BLKD	1		;THE USER STACK
+00000158 SB 			   109  	ENDSEG
+				   110  	;
+				   111  	;
+				   112  ROPEN:	EQU	1
+				   113  RCREAT:	EQU	2
+				   114  RCLOSE:	EQU	3
+				   115  RRENAM:	EQU	4
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 3
+DSI-32000 I/O KERNEL
+
+				   116  RREAD:	EQU	5
+				   117  RWRITE:	EQU	6
+				   118  RSEEK:	EQU	7
+				   119  RFTELL:	EQU	8
+				   120  RERASE:	EQU	9
+				   121  	;
+				   122  START:
+00000000 PC 27d88a18		   123  INIT:	ADDR	INTTAB:W,R0	;INTERRUPT TABLE
+00000004 PC 6f07		   124  	LPRD	INTBASE,R0	;BASE FOR INTERRUPTS
+00000006 PC 0e0b01		   125  cnfg:	SETCFG	[F]		;WE HAVE AN FPU
+00000009 PC a7d681508150	   126  	ADDR	STACKEN,KERSTK	;THE STACK FOR SYSTEM CALLS & OTHER TRAPS
+0000000f PC 85a6000104		   127  INI1:	CMPW	EXEC,SW32	;CHECK FOR EXECUTE COMMAND
+00000014 PC 1a7b		   128  	BNE	INI1
+00000016 PC ea889d		   129  	BR	sizemem:w
+				   130  	;
+00000019 PC 5dd004		   131  INIR:	MOVQW	0,SW32
+0000001c PC 1fa8805c		   132  	CMPQD	0,@VMOD		;RUNNING THE VIRTUAL MODULE?
+00000020 PC 0a13		   133  	BEQ	INI3:B
+00000022 PC e7dd11		   134  	ADDR	INI3:B,TOS	;THE RETURN ADDRESS
+00000025 PC 6fad8050		   135  	LPRD	SB,@H'50
+00000029 PC eda70050		   136  	LPRW	MOD,H'50
+0000002d PC 17a8805c		   137  	MOVD	@VMOD,R0
+00000031 PC 7f02		   138  	JUMP	R0
+				   139  	;
+00000033 PC 17a89f8c		   140  INI3:	movd	@DBG,r0		;get the debugger start address
+00000037 PC 1f00		   141  	CMPQD	0,r0		;0 => NO DEBUGGER PRESENT
+00000039 PC 0a10		   142  	BEQ	INI2:B
+0000003b PC 6fad9f80		   143  	LPRD	SB,@DBGMOD
+0000003f PC eda71f80		   144  	LPRW	MOD,DBGMOD
+00000043 PC d5a10100		   145  	MOVW	H'100,R7	;FORCE USER PROGRAM INTO USER MODE
+00000047 PC 7f02		   146  	JUMP	R0		;EXECUTE THE DEBUGGER
+				   147  	;
+00000049 PC 17a8809c		   148  INI2:	MOVD	@MPRGM,R0	;get the main module number
+0000004d PC 4e07a004		   149  	ashd	4,r0		;offset to main module table
+00000051 PC 27408080		   150  	addr	h'80(r0),r0	;point to main module table entry
+00000055 PC 6f4500		   151  	LPRD	SB,0(R0)
+00000058 PC ed07		   152  	LPRW	MOD,R0
+0000005a PC 17a8808c		   153  	movd	@PRGM,r0 
+0000005e PC 7da30100		   154  	BISPSRW	H'100		;INTO USER MODE
+00000062 PC 7f02		   155  	JUMP	R0		;EXECUTE THE PROGRAM IN USER MODE
+				   156  	;
+00000064 PC 28432920313938352044   157  	BYTE	'(C) 1985 Definicon Systems Inc. Version 2.22****'
+				   158  	;
+00000094 PC 2200		   159  SVCLM:	BYTE	SVCL,0
+				   160  SVC:
+00000096 PC 8fc800		   161  KERNEL:	ADDQD	1,0(SP)		;the actual return address
+00000099 PC 620c		   162  	SAVE	[R2,R3]
+0000009b PC afd48154		   163  	sprd	sp,USRSTK
+0000009f PC 2ba0000000ff	   164  	ANDD	H'FF,R0
+000000a5 PC ee00d86f		   165  	CHECKB	R0,SVCLM,R0
+000000a9 PC 8a8245		   166  	BFS	SVC4:W		;ERROR IN REQUEST
+				   167  	;
+000000ac PC 7defd804		   168  SVCS:	CASEW	SVCTB:B[R0:W]	;GO TO APPROPRIATE HANDLER
+000000b0 PC 4202		   169  SVCTB:	WORD	SVC0-SVCS
+000000b2 PC 2602		   170  	WORD	SVC1-SVCS	;Call BDOS
+000000b4 PC 4202		   171  	WORD	SVC2-SVCS	;**NOT SUPPORTED ** WRITE A CHARACTER TO PRINT
+000000b6 PC 4202		   172  	WORD	SVC3-SVCS	;**NOT SUPPORTED ** READ A LINE
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 4
+DSI-32000 I/O KERNEL
+
+000000b8 PC 4202		   173  	WORD	SVC4-SVCS	;**NOT SUPPORTED ** WRITE A LINE
+000000ba PC 5c02		   174  	WORD	SVC5-SVCS	;OPEN FILE
+000000bc PC 8302		   175  	WORD	SVC6-SVCS	;CLOSE FILE
+000000be PC a302		   176  	WORD	SVC7-SVCS	;CREATE FILE
+000000c0 PC ca02		   177  	WORD	SVC8-SVCS	;READ DATA FROM FILE
+000000c2 PC 2403		   178  	WORD	SVC9-SVCS	;WRITE DATA TO FILE
+000000c4 PC 8003		   179  	WORD	SVC10-SVCS	;ERASE FILE
+000000c6 PC a903		   180  	WORD	SVC11-SVCS	;RENAME FILE
+000000c8 PC d803		   181  	WORD	SVC12-SVCS	;SEEK TO BYTE IN FILE
+000000ca PC fc03		   182  	WORD	SVC13-SVCS	;DETERMINE CURRENT BYTE OFFSET IN FILE
+000000cc PC 1a04		   183  	WORD	SVC14-SVCS	;GET THE COMMAND LINE ARGUMENTS
+000000ce PC 5104		   184  	WORD	SVC15-SVCS	;TERMINATE COMMAND
+000000d0 PC 6104		   185  	WORD	SVC16-SVCS	;Move to 8086 memory
+000000d2 PC 8e04		   186  	WORD	SVC17-SVCS	;Move from 8086 memory
+000000d4 PC bb04		   187  	WORD	SVC18-SVCS	;Move to 8086 memory, background
+000000d6 PC d404		   188  	WORD	SVC19-SVCS	;Move from 8086 memory, background
+000000d8 PC ed04		   189  	WORD	SVC20-SVCS	;Read from 8086 io port
+000000da PC 0805		   190  	WORD	SVC21-SVCS	;Write to 8086 io port
+000000dc PC 1d05		   191  	WORD	SVC22-SVCS	;read the config information
+000000de PC 2905		   192  	word	SVC23-SVCS	;allocate 8086 memory
+000000e0 PC 4305		   193  	word	SVC24-SVCS	;free 8086 memory
+000000e2 PC 5d05		   194  	word	SVC25-SVCS	;do 8086 interrupt
+000000e4 PC 9505		   195  	word	SVC26-SVCS	;fix interrupt base
+000000e6 PC b105		   196  	word	SVC27-SVCS	;get 8086 time
+000000e8 PC da05		   197  	word	SVC28-SVCS	;get environment variable
+000000ea PC 3306		   198  	word	SVC29-SVCS	;SYSTEM call
+000000ec PC 5906		   199  	word	SVC30-SVCS	;EXEC system call
+000000ee PC a406		   200  	word	SVC31-SVCS	;(sort of) SIGNAL call
+000000f0 PC be06		   201  	word	SVC32-SVCS	;PATH system call
+				   202  	;
+				   203  SVCL:	EQU	($-SVCTB)/2+1
+				   204  	;
+000000f2 PC 4e6f6e2d766563746f72   205  MS1:	BYTE	'Non-vectored Interrupt Trap',0
+0000010e PC 4e6f6e2d6d61736b6162   206  MS2:	BYTE	'Non-maskable Interrupt Trap',0
+0000012a PC 41626f72742054726170   207  MS3:	BYTE	'Abort Trap',0
+00000135 PC 465055205472617000	   208  MS4:	BYTE	'FPU Trap',0
+0000013e PC 496c6c6567616c20496e   209  MS5:	BYTE	'Illegal Instruction Trap',0
+00000157 PC 496e7465676572204469   210  MS6:	BYTE	'Integer Divide by Zero Trap',0
+00000173 PC 466c6167205472617000   211  MS7:	BYTE	'Flag Trap',0
+0000017d PC 427265616b706f696e74   212  MS8:	BYTE	'Breakpoint Flag',0
+0000018d PC 547261636520466c6167   213  MS9:	BYTE	'Trace Flag',0
+00000198 PC 556e646566696e656420   214  MS10:	BYTE	'Undefined Instruction Trap',0
+000001b3 PC 4e6f6e2d737570706f72   215  MS11:	BYTE	'Non-supported System Request, #'
+000001d2 PC			   216  MS11O:	BLKB	10
+				   217  	;
+000001dc PC 2066726f6d20	   218  MS12:	BYTE	' from '
+000001e2 PC			   219  OBUF:	BLKB	10
+				   220  	;
+000001ec PC 20000000		   221  fputbl:	double	fpum0-fputbl	;no exception
+000001f0 PC 31000000		   222  	double	fpum1-fputbl	;underflow
+000001f4 PC 3f000000		   223  	double	fpum2-fputbl	;overflow
+000001f8 PC 4c000000		   224  	double	fpum3-fputbl	;divide by zero
+000001fc PC 61000000		   225  	double	fpum4-fputbl	;illegal instruction
+00000200 PC 7d000000		   226  	double	fpum5-fputbl	;invalid operation
+00000204 PC b2000000		   227  	double	fpum6-fputbl	;inexact result
+00000208 PC cd000000		   228  	double	fpum7-fputbl	;reserved
+				   229  	;
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 5
+DSI-32000 I/O KERNEL
+
+0000020c PC 3a204e6f206578636570   230  fpum0:	byte	': No exception.',10,0
+0000021d PC 3a20556e646572666c6f   231  fpum1:	byte	': Underflow.',10,0
+0000022b PC 3a204f766572666c6f77   232  fpum2:	byte	': Overflow.',10,0
+00000238 PC 3a204469766973696f6e   233  fpum3:	byte	': Division by zero.',10,0
+0000024d PC 3a20496c6c6567616c20   234  fpum4:	byte	': Illegal FPU instruction.',10,0
+00000269 PC 3a20496e76616c696420   235  fpum5:	byte	': Invalid operation attempted, 0/0 or not a number.',10,0
+0000029e PC 3a20496e657861637420   236  fpum6:	byte	': Inexact result occured.',10,0
+000002b9 PC 3a205265736572766564   237  fpum7:	byte	': Reserved trap.',10,0
+				   238  	;
+				   239  
+000002cb PC 7230		   240  SVEX:	RESTORE	[R2,R3]
+000002cd PC			   241  	ALIGN	4		;for 32032 bug
+000002d0 PC 4200		   242  	RETT	0
+				   243  
+000002d2 PC 1dd000		   244  SVC1:	cmpqw	0,SW86		;if busy, loop
+000002d5 PC 1a7d		   245  	bne	SVC1
+000002d7 PC 940e32		   246  	movb	r1,VAR1		;store bdos request
+000002da PC 951636		   247  	movw	r2,VAR2		;and dx arg
+000002dd PC ddd000		   248  	movqw	1,SW86		;do it please
+000002e0 PC 0285be		   249  	bsr	setint:w	;set the interrupt
+000002e3 PC 1dd000		   250  svc1a:	cmpqw	0,SW86		;are we done?
+000002e6 PC 1a7d		   251  	bne	svc1a		;no, loop
+000002e8 PC ce18d032		   252  	movzbd	VAR1,r0		;return appropriate argument in r0
+000002ec PC ea5f		   253  	br	SVEX
+				   254  	;
+				   255  SVC0:
+				   256  SVC2:
+				   257  SVC3:
+000002ee PC 67d9bee4		   258  SVC4:	ADDR	MS11O,R5
+000002f2 PC 5700		   259  	MOVD	R0,R1		;REQUEST NUMBER
+000002f4 PC 02c00004f2		   260  	BSR	PUTHEX
+000002f9 PC a7d8beba		   261  	ADDR	MS11,R2
+000002fd PC 0284be		   262  	BSR	PUTS:W
+00000300 PC 57c808		   263  	MOVD	8(SP),R1
+00000303 PC 8f0f		   264  	ADDQD	-1,R1		;POINT TO THE ACTUAL SVC INSTRUCTION
+00000305 PC ea8584		   265  	BR	ERRX:W
+				   266  	;
+				   267  	;
+				   268  	; Open disk file
+				   269  	; Pass:		R1 = Filename
+				   270  	;		R2 = Open Mode, 0 = read, 1 = write, 2 = create
+				   271  	; Return:	R0 = File id, (-1 => error)
+				   272  	;
+00000308 PC 1dd000		   273  SVC5:	CMPQW	0,SW86
+0000030b PC 1a7d		   274  	BNE	SVC5		;WAIT TILL DISK NOT BUSY
+0000030d PC 951616		   275  	MOVW	R2,DSKID
+00000310 PC 97d08050		   276  	movd	LOCBUF,r2	;prep to copy
+00000314 PC 97161a		   277  	MOVD	r2,DSKDTA	;THE FILENAME
+00000317 PC 02869f		   278  	bsr	movsz:w		;move until zero
+0000031a PC ddd014		   279  	MOVQW	ROPEN,DSKRW	;THE OPEN REQUEST
+0000031d PC 5dd200		   280  	MOVQW	4,SW86		;DISK REQUEST
+00000320 PC 02857e		   281  	bsr	setint:w	;set the interrupt
+00000323 PC 1dd000		   282  S55:	CMPQW	0,SW86		;WAIT FOR COMPLETION
+00000326 PC 1a7d		   283  	BNE	S55
+00000328 PC ce1dd016		   284  	MOVXWD	DSKID,R0	;GET THE FILE ID
+0000032c PC eabf9f		   285  	BR	SVEX
+				   286  	;
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 6
+DSI-32000 I/O KERNEL
+
+				   287  	; Close disk file
+				   288  	; Pass:		R1 = File id to close
+				   289  	; Return:	R0 = Return status (0 = good, -1 = error)
+				   290  	;
+0000032f PC 1dd000		   291  SVC6:	CMPQW	0,SW86
+00000332 PC 1a7d		   292  	BNE	SVC6		;WAIT FOR DISK NOT BUSY
+00000334 PC 950e16		   293  	MOVW	R1,DSKID	;THE FILE TO CLOSE
+00000337 PC 5dd018		   294  	MOVQW	0,DSKLN
+0000033a PC ddd114		   295  	MOVQW	RCLOSE,DSKRW	;CLOSE THE FILE
+0000033d PC 5dd200		   296  S61:	MOVQW	4,SW86
+00000340 PC 02855e		   297  	bsr	setint:w	;set the interrupt
+00000343 PC 1dd000		   298  S62:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+00000346 PC 1a7d		   299  	BNE	S62
+00000348 PC ce1dd01e		   300  	MOVXWD	DSKRC,R0	;STATUS
+0000034c PC eabf7f		   301  	BR	SVEX
+				   302  	;
+				   303  	; Create a file
+				   304  	; Pass:		R1 = Filename pointer
+				   305  	;		R2 = Create mode (0 = ascii, 1 = binary)
+				   306  	; Returns:	R0 = File id (-1 = error)
+				   307  	;
+				   308  SVC7:
+0000034f PC 951616		   309  	MOVW	R2,DSKID
+00000352 PC 97d08050		   310  	movd	LOCBUF,r2	;prep to copy
+00000356 PC 97161a		   311  	MOVD	r2,DSKDTA	;THE FILENAME
+00000359 PC 02865d		   312  	bsr	movsz:w		;move until zero
+0000035c PC 5dd114		   313  	MOVQW	RCREAT,DSKRW	;CREATE FILE REQUEST
+0000035f PC 1dd000		   314  S71:	CMPQW	0,SW86
+00000362 PC 1a7d		   315  	BNE	S71		;WAIT TILL NOT BUSY
+00000364 PC 5dd200		   316  	MOVQW	4,SW86
+00000367 PC 028537		   317  	bsr	setint:w	;set the interrupt
+0000036a PC 1dd000		   318  S72:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+0000036d PC 1a7d		   319  	BNE	S72
+0000036f PC ce1dd016		   320  	MOVXWD	DSKID,R0	;FILE ID
+00000373 PC eabf58		   321  	BR	SVEX
+				   322  	;
+				   323  	; Read from disk file
+				   324  	; Pass:		R1 = File id to read from
+				   325  	;		R2 = DTA for read
+				   326  	;		R3 = Length to read (16 BITS)
+				   327  	; Return:	R0 = Length actually read (0 = error)
+				   328  	;
+				   329  
+00000376 PC 1dd000		   330  SVC8:	CMPQW	0,SW86
+00000379 PC 1a7d		   331  	BNE	SVC8		;WAIT TILL DISK READY
+0000037b PC 6230		   332  	save	[r4,r5]		;get a couple of registers
+0000037d PC 5f28		   333  	movqd	0,r5		;we have read zero bytes.
+0000037f PC 950e16		   334  svc8c:	MOVW	R1,DSKID	;FILE ID
+00000382 PC 97d680501a		   335  	MOVD	LOCBUF,DSKDTA	;DATA AREA
+00000387 PC 27a9c0007f80	   336  	addr	@32640,r4	;max number of bytes to xfer
+0000038d PC 0719		   337  	cmpd	r3,r4		;are we over limit?
+0000038f PC 7a07		   338  	ble	sv8a:b		;no, is ok
+00000391 PC 952618		   339  	movw	r4,DSKLN	;is too long. use limit
+00000394 PC ea07		   340  	br	sv8b:b		;and skip it
+00000396 PC 1719		   341  sv8a:	movd	r3,r4		;make sure we know limit
+00000398 PC 951e18		   342  	MOVW	R3,DSKLN
+0000039b PC ddd214		   343  sv8b:	MOVQW	RREAD,DSKRW	;READ DATA REQUEST
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 7
+DSI-32000 I/O KERNEL
+
+0000039e PC 5dd200		   344  	MOVQW	4,SW86
+000003a1 PC 0284fd		   345  	bsr	setint:w	;set the interrupt
+000003a4 PC 1dd000		   346  S82:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+000003a7 PC 1a7d		   347  	BNE	S82
+000003a9 PC 6206		   348  	save	[r1,r2]		;save these for a bit
+000003ab PC 1720		   349  	movd	r4,r0		;length to move
+000003ad PC 57d08050		   350  	movd	LOCBUF,r1	;source
+000003b1 PC 0285c2		   351  	bsr	movsx:w		;move it please
+000003b4 PC 7260		   352  	restore	[r1,r2]		;and restore the world
+000003b6 PC ce1dd01e		   353  	MOVXWD	DSKRC,R0	;STATUS
+000003ba PC 4301		   354  	addd	r0,r5		;sum number of bytes read
+000003bc PC 0720		   355  	cmpd	r4,r0		;did we read ok?
+000003be PC 1a0b		   356  	bne	sv8d:b		;no, so we are done.
+000003c0 PC e320		   357  	subd	r4,r3		;subtract current number of bytes from org
+000003c2 PC 8320		   358  	addd	r4,r2		;point to next block of memory
+000003c4 PC 1f18		   359  	cmpqd	0,r3		;are we done?
+000003c6 PC 1abfb9		   360  	bne	svc8c		;and branch if not done
+000003c9 PC 1728		   361  sv8d:	movd	r5,r0
+000003cb PC 720c		   362  	restore	[r4,r5]
+000003cd PC eabefe		   363  	BR	SVEX
+				   364  	;
+				   365  	; Write to disk file
+				   366  	; Pass:		R1 = File id to read from
+				   367  	;		R2 = DTA for write
+				   368  	;		R3 = Length to write (16 BITS)
+				   369  	; Return:	R0 = Length actually written (0 = error)
+				   370  	;
+000003d0 PC 1dd000		   371  SVC9:	CMPQW	0,SW86
+000003d3 PC 1a7d		   372  	BNE	SVC9		;WAIT TILL DISK READY	
+000003d5 PC 6230		   373  	save	[r4,r5]		;get a couple of registers
+000003d7 PC 5f28		   374  	movqd	0,r5		;start at zero bytes written
+000003d9 PC 950e16		   375  svc9c:	MOVW	R1,DSKID	;FILE ID
+000003dc PC 97d680501a		   376  	MOVD	LOCBUF,DSKDTA	;DATA AREA
+000003e1 PC 27a9c0007f80	   377  	addr	@32640,r4	;max number of bytes to xfer
+000003e7 PC 0719		   378  	cmpd	r3,r4		;are we over limit?
+000003e9 PC 7a07		   379  	ble	sv9a:b		;no, is ok
+000003eb PC 952618		   380  	movw	r4,DSKLN	;is too long. use limit
+000003ee PC ea07		   381  	br	sv9b:b		;and skip it
+000003f0 PC 1719		   382  sv9a:	movd	r3,r4		;make sure we know limit
+000003f2 PC 951e18		   383  	MOVW	R3,DSKLN
+000003f5 PC 6206		   384  sv9b:	save	[r1,r2]		;save these for a bit
+000003f7 PC 1720		   385  	movd	r4,r0		;length to move
+000003f9 PC 5710		   386  	movd	r2,r1		;source please
+000003fb PC 97d08050		   387  	movd	LOCBUF,r2	;destination
+000003ff PC 028531		   388  	bsr	movs:w		;move it please
+00000402 PC 7260		   389  	restore	[r1,r2]		;and restore the world
+00000404 PC 5dd314		   390  	MOVQW	RWRITE,DSKRW	;WRITE DATA REQUEST
+00000407 PC 5dd200		   391  	MOVQW	4,SW86
+0000040a PC 028494		   392  	bsr	setint:w	;set the interrupt
+0000040d PC 1dd000		   393  S92:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+00000410 PC 1a7d		   394  	BNE	S92
+00000412 PC ce1dd01e		   395  	MOVXWD	DSKRC,R0	;STATUS
+00000416 PC 4301		   396  	addd	r0,r5		;sum number of bytes written
+00000418 PC 0701		   397  	cmpd	r0,r4		;did we write what we thought?
+0000041a PC 1a0b		   398  	bne	sv9d:b
+0000041c PC e320		   399  	subd	r4,r3		;subtract current number of bytes from org
+0000041e PC 8320		   400  	addd	r4,r2		;add to point to next area
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 8
+DSI-32000 I/O KERNEL
+
+00000420 PC 1f18		   401  	cmpqd	0,r3		;are we done?
+00000422 PC 1abfb7		   402  	bne	svc9c:w		;and branch if not done
+00000425 PC 1728		   403  sv9d:	movd	r5,r0		;get true count
+00000427 PC 720c		   404  	restore	[r4,r5]		;and restore the lot
+00000429 PC eabea2		   405  	BR	SVEX
+				   406  	;
+				   407  	; Erase disk file
+				   408  	; Pass:		R1 = Filename to erase
+				   409  	; Return:	R0 = Status (0 = good, -1 = error)
+				   410  	;
+0000042c PC 1dd000		   411  SVC10:	CMPQW	0,SW86
+0000042f PC 1a7d		   412  	BNE	SVC10		;WAIT TILL DISK NOT BUSY
+00000431 PC 97d08050		   413  	movd	LOCBUF,r2	;prep to copy
+00000435 PC 97161a		   414  	MOVD	r2,DSKDTA	;THE FILENAME
+00000438 PC 02857e		   415  	bsr	movsz:w		;move until zero
+0000043b PC 951e18		   416  	MOVW	R3,DSKLN
+0000043e PC ce94a60914		   417  	MOVZBW	RERASE,DSKRW	;THE ERASE REQUEST
+00000443 PC 5dd200		   418  	MOVQW	4,SW86		;A DISK REQUEST
+00000446 PC 028458		   419  	bsr	setint:w	;set the interrupt
+00000449 PC 1dd000		   420  S104:	CMPQW	0,SW86
+0000044c PC 1a7d		   421  	BNE	S104		;WAIT FOR COMPLETION
+0000044e PC ce1dd01e		   422  	MOVXWD	DSKRC,R0
+00000452 PC eabe79		   423  	BR	SVEX
+				   424  	;
+				   425  	; Rename a file
+				   426  	;
+				   427  	; Pass:		R1 = Source file string pointer
+				   428  	;		R2 = Destination file string pointer
+				   429  	; Returns:	R0 = returns 0 if OK, non-zero if error
+				   430  	;
+				   431  
+00000455 PC 1dd000		   432  SVC11:	CMPQW	0,SW86
+00000458 PC 1a7d		   433  	BNE	SVC11
+0000045a PC d715		   434  	movd	r2,tos
+0000045c PC 97d08050		   435  	movd	LOCBUF,r2	;prep to copy
+00000460 PC 971632		   436  	MOVD	r2,VAR1		;THE FILENAME
+00000463 PC 028553		   437  	bsr	movsz:w		;move until zero
+00000466 PC 57b8		   438  	movd	tos,r1
+00000468 PC 971636		   439  	movd	r2,VAR2
+0000046b PC 02854b		   440  	bsr	movsz:w		;move the second filename
+0000046e PC ce94a60414		   441  	MOVZBW	RRENAM,DSKRW	;SEEK COMMAND
+00000473 PC 5dd200		   442  	MOVQW	4,SW86		;DISK REQUEST
+00000476 PC 028428		   443  	bsr	setint:w	;set the interrupt
+00000479 PC 1dd000		   444  V1x2:	CMPQW	0,SW86
+0000047c PC 1a7d		   445  	BNE	V1x2
+0000047e PC 17d01a		   446  	MOVD	DSKDTA,R0
+00000481 PC eabe4a		   447  	BR	SVEX
+				   448  
+				   449  	;
+				   450  	; Seek to a byte within a file
+				   451  	; Pass:		R1 = File id
+				   452  	;		R2 = Byte to seek to
+				   453  	;		R3 = Base (0 = from BOF, 1 = current pos., 2 = EOF)
+				   454  	; Returns:	R0 = Current position (-1 = error)
+				   455  	;
+				   456  SVC12:
+00000484 PC 1dd000		   457  V121:	CMPQW	0,SW86
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 9
+DSI-32000 I/O KERNEL
+
+00000487 PC 1a7d		   458  	BNE	V121
+00000489 PC 950e16		   459  	MOVW	R1,DSKID
+0000048c PC 97161a		   460  	MOVD	R2,DSKDTA
+0000048f PC 951e18		   461  	MOVW	R3,DSKLN
+00000492 PC ce94a60714		   462  	MOVZBW	RSEEK,DSKRW	;SEEK COMMAND
+00000497 PC 5dd200		   463  	MOVQW	4,SW86		;DISK REQUEST
+0000049a PC 028404		   464  	bsr	setint:w	;set the interrupt
+0000049d PC 1dd000		   465  V122:	CMPQW	0,SW86
+000004a0 PC 1a7d		   466  	BNE	V122
+000004a2 PC 17d01a		   467  	MOVD	DSKDTA,R0
+000004a5 PC eabe26		   468  	BR	SVEX
+				   469  	;
+				   470  	; Determine current byte offset within file
+				   471  	; Pass:		R1 = File id
+				   472  	; Returns:	R0 = Current position (or -1 if error)
+				   473  	;
+000004a8 PC 950e16		   474  SVC13:	MOVW	R1,DSKID
+000004ab PC ce94a60814		   475  	MOVZBW	RFTELL,DSKRW	;SEEK COMMAND
+000004b0 PC 1dd000		   476  V131:	CMPQW	0,SW86
+000004b3 PC 1a7d		   477  	BNE	V131
+000004b5 PC 5dd200		   478  	MOVQW	4,SW86		;DISK REQUEST
+000004b8 PC 0283e6		   479  	bsr	setint:w	;set the interrupt
+000004bb PC 1dd000		   480  V132:	CMPQW	0,SW86
+000004be PC 1a7d		   481  	BNE	V132
+000004c0 PC 17d01a		   482  	MOVD	DSKDTA,R0
+000004c3 PC eabe08		   483  	BR	SVEX
+				   484  	;
+				   485  	; Get command line arguments
+				   486  	; Pass:		R1 = Length of command buffer
+				   487  	;		R2 = Location to store the data
+				   488  	; Returns:	R0 = Number of commands (argc)
+				   489  	;
+000004c6 PC 950e18		   490  SVC14:	MOVW	R1,DSKLN
+000004c9 PC 97161a		   491  	MOVD	R2,DSKDTA
+000004cc PC d710		   492  	MOVD	R2,R3
+000004ce PC 1dd000		   493  V141:	CMPQW	0,SW86
+000004d1 PC 1a7d		   494  	BNE	V141		;WAIT TILL NOT BUSY
+000004d3 PC ddd200		   495  	MOVQW	5,SW86
+000004d6 PC 0283c8		   496  	bsr	setint:w	;set the interrupt
+000004d9 PC 1dd000		   497  V142:	CMPQW	0,SW86
+000004dc PC 1a7d		   498  	BNE	V142		;WAIT FOR COMPLETION
+000004de PC 175000		   499  	MOVD	0(R2),R0	;# OF COMMANDS
+000004e1 PC 1f00		   500  	CMPQD	0,R0
+000004e3 PC 0abde8		   501  	BEQ	SVEX		;NO COMMANDS
+000004e6 PC 5700		   502  	MOVD	R0,R1
+000004e8 PC 4e47a002		   503  	ASHD	2,R1		; * 4
+000004ec PC 4310		   504  	ADDD	R2,R1
+000004ee PC 0f0a		   505  	ADDQD	4,R1		;OVER THE RETURNED ARGC
+000004f0 PC 830f5800		   506  V143:	ADDD	R1,0(R3)[R0:D]	;ADJUST THE ADDRESS OF THE STRINGS (ARGV)
+000004f4 PC cf077c		   507  	ACBD	-1,R0,V143
+000004f7 PC 175000		   508  	MOVD	0(R2),R0	;ARGC
+000004fa PC eabdd1		   509  	BR	SVEX
+				   510  	;
+000004fd PC 1dd000		   511  SVC15:	CMPQW	0,SW86
+00000500 PC 1a7d		   512  	BNE	SVC15
+00000502 PC 970e32		   513  	movd	r1,VAR1		;set the return code
+00000505 PC 5cd300		   514  	MOVQB	6,SW86
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 10
+DSI-32000 I/O KERNEL
+
+00000508 PC 028396		   515  	bsr	setint:w	;set the interrupt
+0000050b PC ea00		   516  	BR	$		;THAT'S ALL
+				   517  	;
+				   518  	;
+				   519  	; Move memory to 8086 from 32032
+				   520  	; Pass:		R1 = Source address in 32032 address space
+				   521  	;		R2 = Destination address in 8086 address space
+				   522  	;		R3 = (UWORD) count
+				   523  	; Returns:	nothing
+				   524  	;
+0000050d PC 1dd000		   525  SVC16:	cmpqw	0,SW86		;make sure no pending request
+00000510 PC 1a7d		   526  	bne	SVC16		;if pending, loop
+00000512 PC ced918		   527  	movzwd	r3,r3		;zero extend count
+00000515 PC 97d6805032		   528  	movd	LOCBUF,VAR1	;source in VAR1
+0000051a PC 971636		   529  	movd	r2,VAR2		;destination in VAR2
+0000051d PC 971e3a		   530  	movd	r3,VAR3		;sign-extend count to VAR3
+00000520 PC 1718		   531  	movd	r3,r0		;and to r0
+00000522 PC 97d08050		   532  	movd	LOCBUF,r2	;destination is in r2
+00000526 PC 02c000040a		   533  	bsr	movs
+0000052b PC a7ae0700		   534  	addr	@7,SW86		;do it
+0000052f PC 02836f		   535  	bsr	setint:w	;and set an interrupt as well
+00000532 PC 1dd000		   536  SVC16A:	cmpqw	0,SW86		;spin until done
+00000535 PC 1a7d		   537  	bne	SVC16A
+00000537 PC eabd94		   538  	BR	SVEX		;and exit
+				   539  	;
+				   540  	; Move memory to 32032 from 8086
+				   541  	; Pass:		R1 = Source address in 8086 address space
+				   542  	;		R2 = Destination address in 32032 address space
+				   543  	;		R3 = (UWORD) count
+				   544  	; Returns:	nothing
+				   545  	;
+0000053a PC 1dd000		   546  SVC17:	cmpqw	0,SW86		;make sure no pending request
+0000053d PC 1a7d		   547  	bne	SVC17		;if pending, loop
+0000053f PC ced918		   548  	movzwd	r3,r3		;zero extend count
+00000542 PC 970e32		   549  	movd	r1,VAR1		;source in VAR1
+00000545 PC 97d6805036		   550  	movd	LOCBUF,VAR2		;destination in VAR2
+0000054a PC 971e3a		   551  	movd	r3,VAR3		;sign-extend count to VAR3
+0000054d PC a7ae0800		   552  	addr	@8,SW86		;do it
+00000551 PC 02834d		   553  	bsr	setint:w	;and set an interrupt as well
+00000554 PC 1dd000		   554  SVC17A:	cmpqw	0,SW86		;spin until done
+00000557 PC 1a7d		   555  	bne	SVC17A
+00000559 PC 1718		   556  	movd	r3,r0		;count in r0
+0000055b PC 57d08050		   557  	movd	LOCBUF,r1
+0000055f PC 02c0000414		   558  	bsr	movsx
+00000564 PC eabd67		   559  	BR	SVEX		;and exit
+				   560  	;
+				   561  	;
+				   562  	; Move memory to 8086 from 32032, in background mode
+				   563  	; Pass:		R1 = Source address in 8086 address space
+				   564  	;		R2 = Destination address in 32032 address space
+				   565  	;		R3 = (UWORD) count
+				   566  	; Returns:	nothing
+				   567  	;
+00000567 PC 1dd000		   568  SVC18:	cmpqw	0,SW86		;make sure no pending request
+0000056a PC 1a7d		   569  	bne	SVC18		;if pending, loop
+0000056c PC 970e32		   570  	movd	r1,VAR1		;source in VAR1
+0000056f PC 971636		   571  	movd	r2,VAR2		;destination in VAR2
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 11
+DSI-32000 I/O KERNEL
+
+00000572 PC ce991e3a		   572  	movzwd	r3,VAR3		;sign-extend count to VAR3
+00000576 PC a7ae0700		   573  	addr	@7,SW86		;do it
+0000057a PC 028324		   574  	bsr	setint:w	;and set an interrupt as well
+				   575  	
+0000057d PC eabd4e		   576  	BR	SVEX		;and exit
+				   577  	;
+				   578  	; Move memory to 32032 from 8086, in background mode
+				   579  	; Pass:		R1 = Source address in 32032 address space
+				   580  	;		R2 = Destination address in 8086 address space
+				   581  	;		R3 = (UWORD) count
+				   582  	; Returns:	nothing
+				   583  	;
+00000580 PC 1dd000		   584  SVC19:	cmpqw	0,SW86		;make sure no pending request
+00000583 PC 1a7d		   585  	bne	SVC19		;if pending, loop
+00000585 PC 970e32		   586  	movd	r1,VAR1		;source in VAR1
+00000588 PC 971636		   587  	movd	r2,VAR2		;destination in VAR2
+0000058b PC ce9d1e3a		   588  	movxwd	r3,VAR3		;sign-extend count to VAR3
+0000058f PC a7ae0800		   589  	addr	@8,SW86		;do it
+00000593 PC 02830b		   590  	bsr	setint:w	;and set an interrupt as well
+00000596 PC eabd35		   591  	BR	SVEX		;and exit
+				   592  	;
+				   593  	; Read 8086 port location
+				   594  	; Pass:		R1 = Port address (word)
+				   595  	; Returns:	R0 = returned value
+				   596  	;
+00000599 PC 1dd000		   597  SVC20:	cmpqw	0,SW86		;make sure no pending request
+0000059c PC 1a7d		   598  	bne	SVC20		;if pending, loop
+0000059e PC 970e32		   599  	movd	r1,VAR1		;port address in var1
+000005a1 PC a7ae0900		   600  	addr	@9,SW86		;do it
+000005a5 PC 0282f9		   601  	bsr	setint:w	;and set an interrupt as well
+000005a8 PC 1dd000		   602  SVC20a:	cmpqw	0,SW86		;make sure no pending request
+000005ab PC 1a7d		   603  	bne	SVC20a		;if pending, loop
+000005ad PC ce19d036		   604  	movzwd	VAR2,r0		;return the port's value
+000005b1 PC eabd1a		   605  	BR	SVEX		;and exit
+				   606  	;
+				   607  	; Write 8086 port location
+				   608  	; Pass:		R1 = Port address (word)
+				   609  	;		R2 = Data value
+				   610  	; Returns:	nothing
+				   611  	;
+000005b4 PC 1dd000		   612  SVC21:	cmpqw	0,SW86		;make sure no pending request
+000005b7 PC 1a7d		   613  	bne	SVC21		;if pending, loop
+000005b9 PC 970e32		   614  	movd	r1,VAR1		;port address in var1
+000005bc PC 971636		   615  	movd	r2,VAR2		;data value in var2
+000005bf PC a7ae0a00		   616  	addr	@10,SW86	;do it
+000005c3 PC 0282db		   617  	bsr	setint:w	;and set an interrupt as well
+000005c6 PC eabd05		   618  	BR	SVEX		;and exit
+				   619  	;
+				   620  	;Read config register.
+				   621  	;Pass:		nothing
+				   622  	;		
+				   623  	;Returns:	r0 = config register
+				   624  	;	     bit 0 = Interrupt
+				   625  	;	     bit 1 = FPU
+				   626  	;	     bit 2 = MMU
+				   627  	;	     bit 3 = custom
+				   628  	;
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 12
+DSI-32000 I/O KERNEL
+
+000005c9 PC 27a80f		   629  SVC22:	addr	@15,r0
+000005cc PC 2e03d8ba3a04	   630  	extd	r0,cnfg,r0,4
+000005d2 PC eabcf9		   631  	br	SVEX		;and that be it
+				   632  	;
+				   633  	;Allocate DSEG memory on 8086
+				   634  	;Pass:		r1 = size to allocate (long, max 65535)
+				   635  	;		
+				   636  	;Returns:	r0 = pointer to available memory
+				   637  	;		high word of r0 is DS, low word is offset
+				   638  	;		return of zero means could not allocate
+				   639  	;	     
+000005d5 PC 1dd000		   640  SVC23:	cmpqw	0,SW86		;if busy, loop
+000005d8 PC 1a7d		   641  	bne	SVC23
+000005da PC 970e32		   642  	movd	r1,VAR1		;place size in request area
+000005dd PC a7ae0b00		   643  	addr	@11,SW86	;ask for memory
+000005e1 PC 0282bd		   644  	bsr	setint:w	;set the interrupt
+000005e4 PC 1dd000		   645  svc23a:	cmpqw	0,SW86		;are we done?
+000005e7 PC 1a7d		   646  	bne	svc23a		;no, loop
+000005e9 PC 17d032		   647  	movd	VAR1,r0		;get the returned values
+000005ec PC eabcdf		   648  	br	SVEX		;and that be it
+				   649  	;
+				   650  	;Free DSEG memory on 8086
+				   651  	;Pass:		r1 = pointer to available memory
+				   652  	;		
+				   653  	;Returns:	r0 = free return
+				   654  	;	     
+000005ef PC 1dd000		   655  SVC24:	cmpqw	0,SW86		;if busy, loop
+000005f2 PC 1a7d		   656  	bne	SVC24
+000005f4 PC 970e32		   657  	movd	r1,VAR1		;place size in request area
+000005f7 PC a7ae0c00		   658  	addr	@12,SW86	;ask for memory
+000005fb PC 0282a3		   659  	bsr	setint:w	;set the interrupt
+000005fe PC 1dd000		   660  svc24a:	cmpqw	0,SW86		;are we done?
+00000601 PC 1a7d		   661  	bne	svc24a		;no, loop
+00000603 PC 17d032		   662  	movd	VAR1,r0		;get the returned values
+00000606 PC eabcc5		   663  	br	SVEX		;and that be it
+				   664  	;
+				   665  	;Do any 8086 interrupt
+				   666  	;Pass:		r1 = interrupt number
+				   667  	;		r2 = pointer to input structure for 8086 regs
+				   668  	;
+				   669  	;Returns	     structure filled with new values
+				   670  	;
+00000609 PC 1dd000		   671  SVC25:	cmpqw	0,SW86		;if busy, loop
+0000060c PC 1a63		   672  	bne	SVC24
+0000060e PC 6206		   673  	save	[r1,r2]
+00000610 PC d715		   674  	movd	r2,tos		;save destination for a moment
+00000612 PC 970e32		   675  	movd	r1,VAR1		;stuff request number
+00000615 PC 5710		   676  	movd	r2,r1
+00000617 PC 97d08050		   677  	movd	LOCBUF,r2
+0000061b PC 27a814		   678  	addrd	@20,r0		;move 20 bytes to local
+0000061e PC 971636		   679  	movd	r2,VAR2		;stuff structure pointer
+00000621 PC 02830f		   680  	bsr	movs:w		;move it to local memory
+00000624 PC a7ae0d00		   681  	addr	@13,SW86	;do the interrupt
+00000628 PC 028276		   682  	bsr	setint:w	;set the interrupt
+0000062b PC 1dd000		   683  svc25a:	cmpqw	0,SW86		;are we done?
+0000062e PC 1a7d		   684  	bne	svc25a		;no, loop
+00000630 PC 97b8		   685  	movd	tos,r2		;get back pointer
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 13
+DSI-32000 I/O KERNEL
+
+00000632 PC 57d08050		   686  	movd	LOCBUF,r1	;get back source pointer
+00000636 PC 27a814		   687  	addrd	@20,r0		;move 20 bytes from local
+00000639 PC 02833a		   688  	bsr	movsx:w		;move it back
+0000063c PC 7260		   689  	restore	[r1,r2]
+0000063e PC eabc8d		   690  	br	SVEX		;and return
+				   691  	;
+				   692  	;Fix up the interrupt base for ICU and so on
+				   693  	;Pass:		r1 = interrupt base (offset zero, by ones)
+				   694  	;		r2 = mod/offset combination
+				   695  	;
+				   696  	;Returns:		nothing
+				   697  	;
+00000641 PC 9717d9c00003d7	   698  SVC26:	movd	r2,INTTAB[r1:d]
+00000648 PC 1d08		   699  	cmpqw	0,r1			;is it the NVI?
+0000064a PC 0ac000000b		   700  	beq	svc26a			;yes, enable
+0000064f PC 45a00010		   701  	cmpw	16,r1			;if it was over interrupt 16
+00000653 PC ca07		   702  	blt	svc26x:b		;it was not, so just exit
+00000655 PC 59a608000e		   703  svc26a:	orw	h'800,14(sp)		;fix passed PSR
+0000065a PC eabc71		   704  svc26x:	br	SVEX
+				   705  	;
+				   706  	;Get the 8086 time
+				   707  	;Pass:		r1 = pointer to struct tm
+				   708  	;
+				   709  	;Returns:	structure filled in
+				   710  	;
+0000065d PC 1dd000		   711  SVC27:	cmpqw	0,SW86			;are we busy?
+00000660 PC 1a7d		   712  	bne	SVC27			;yes, hang
+00000662 PC 97d6805032		   713  	movd	LOCBUF,VAR1		;pass it in VAR1
+00000667 PC a7ae0e00		   714  	addrd	@14,SW86		;get the time
+0000066b PC 028233		   715  	bsr	setint:w
+0000066e PC 1dd000		   716  SVC27a:	cmpqw	0,SW86			;are we done?
+00000671 PC 1a7d		   717  	bne	SVC27a			;no, loop
+00000673 PC 6206		   718  	save	[r1,r2]
+00000675 PC 9708		   719  	movd	r1,r2			;destination is structure
+00000677 PC 57d08050		   720  	movd	LOCBUF,r1		;source is local buffer
+0000067b PC 27a814		   721  	addrd	@20,r0			;20 bytes please
+0000067e PC 0282f5		   722  	bsr	movsx:w			;move it
+00000681 PC 7260		   723  	restore [r1,r2]
+00000683 PC eabc48		   724  	br	SVEX
+				   725  	;
+				   726  	;Get the 8086 environment
+				   727  	;Pass:		r1 = pointer to 512 bytes of memory
+				   728  	;
+				   729  	;Returns:	environment filled in, in char** format
+				   730  	;
+00000686 PC 1dd000		   731  SVC28:	cmpqw	0,SW86		;are we busy
+00000689 PC 1a7d		   732  	bne	SVC28		;yes, hang
+0000068b PC 97d08050		   733  	movd	LOCBUF,r2	;get address of local buffer
+0000068f PC a756840032		   734  	addrd	1024(r2),VAR1	;put new address into var1
+00000694 PC a7ae0f00		   735  	addrd	@15,SW86	;get the environment
+00000698 PC 028206		   736  	bsr	setint:w
+0000069b PC 1dd000		   737  SVC28a:	cmpqw	0,SW86		;are we done?
+0000069e PC 1a7d		   738  	bne	SVC28a		;no, loop
+000006a0 PC d70d		   739  	movd	r1,tos		;save our pointer for a second
+000006a2 PC d715		   740  	movd	r2,tos		;save the current destination pointer
+000006a4 PC d710		   741  	movd	r2,r3		;get pointer to pointers
+000006a6 PC 67488400		   742  	addrd	1024(r1),r1	;increment r1 to point to right area
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 14
+DSI-32000 I/O KERNEL
+
+000006aa PC a7508400		   743  	addrd	1024(r2),r2	;get pointer to right area
+000006ae PC 1c5000		   744  loop:	cmpqb	0,0(r2)		;is this string null?
+000006b1 PC d70a00		   745  	movd	r1,0(r3)	;no, store this pointer
+000006b4 PC 0f1a		   746  	addqd	4,r3		;to next pointer
+000006b6 PC 0a0d		   747  	beq	last:b		;yes, it is the last
+000006b8 PC 1c5000		   748  l1:	cmpqb	0,0(r2)		;are we at the end yet?
+000006bb PC 8f10		   749  	addqd	1,r2		;point to psuedo arg area
+000006bd PC 8f08		   750  	addqd	1,r1		;point to next real arg
+000006bf PC 1a79		   751  	bne	l1		;no, loop for more
+000006c1 PC ea6d		   752  	br	loop		; and back for more
+000006c3 PC 5f5800		   753  last:	movqd	0,0(r3)		;stuff a null *, just in case
+000006c6 PC 275001		   754  	addrd	1(r2),r0	;point to the end
+000006c9 PC 23b8		   755  	subd	tos,r0		;subtract from the beginning
+000006cb PC 97b8		   756  	movd	tos,r2		;get back our pointer
+000006cd PC d715		   757  	movd	r2,tos		;save it again
+000006cf PC 57d08050		   758  	movd	LOCBUF,r1	;get our local buffer
+000006d3 PC d705		   759  	movd	r0,tos		;save the count
+000006d5 PC 02829e		   760  	bsr	movsx:w		;and move it
+000006d8 PC 17b8		   761  	movd	tos,r0		;get back the count
+000006da PC 57b8		   762  	movd	tos,r1		;get back the pointer
+000006dc PC eabbef		   763  	br	SVEX
+				   764  	;
+				   765  	;do a SYSTEM call
+				   766  	;Pass:		r1 = pointer to command line
+				   767  	;
+				   768  	;Returns:	r0 = result of system (nz if error)
+				   769  	;
+000006df PC 1dd000		   770  SVC29:	cmpqw	0,SW86			;are we busy?
+000006e2 PC 1a7d		   771  	bne	SVC29			;yes, hang
+000006e4 PC d70d		   772  	movd	r1,tos
+000006e6 PC 97d08050		   773  	movd	LOCBUF,r2
+000006ea PC 971632		   774  	movd	r2,VAR1			;pass it in VAR1
+000006ed PC 0282c9		   775  	bsr	movsz:w			;move until null
+000006f0 PC 57b8		   776  	movd	tos,r1
+000006f2 PC a7ae1000		   777  	addrd	@16,SW86		;system call
+000006f6 PC 0281a8		   778  	bsr	setint:w
+000006f9 PC 1dd000		   779  SVC29a:	cmpqw	0,SW86			;are we done?
+000006fc PC 1a7d		   780  	bne	SVC29a			;no, loop
+000006fe PC ce1dd032		   781  	movxwd	VAR1,r0			;get the result
+00000702 PC eabbc9		   782  	br	SVEX
+				   783  	;
+				   784  	;do an EXEC call
+				   785  	;Pass:		r1 = pointer to name of file
+				   786  	;		r2 = pointer to pointer to command line args
+				   787  	;
+				   788  	;Returns:	r0 = -1 if failure.
+				   789  	;
+00000705 PC 1dd000		   790  SVC30:	cmpqw	0,SW86			;are we busy?
+00000708 PC 1a7d		   791  	bne	SVC30			;yes, hang
+0000070a PC d715		   792  	movd	r2,tos
+0000070c PC 97d08050		   793  	movd	LOCBUF,r2
+00000710 PC 971632		   794  	movd	r2,VAR1			;pass it in VAR1
+00000713 PC 0282a3		   795  	bsr	movsz:w			;move until null
+00000716 PC d710		   796  	movd	r2,r3			;keep a pointer to com args
+00000718 PC 57b8		   797  	movd	tos,r1			;get back pointer to com line
+0000071a PC ae9f4a0000		   798  svc30b:	movusd	0(r1),0(r2)		;copy pointer
+0000071f PC 1f5000		   799  	cmpqd	0,0(r2)			;is it zero?
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 15
+DSI-32000 I/O KERNEL
+
+00000722 PC 0f0a		   800  	addqd	4,r1			;bump pointer
+00000724 PC 0f12		   801  	addqd	4,r2			;bump destination
+00000726 PC 1a74		   802  	bne	svc30b			;loop until last
+				   803  					;r2 points to free mem
+00000728 PC 971e36		   804  	movd	r3,VAR2			;r3 points to com line args
+0000072b PC 575800		   805  svc30c:	movd	0(r3),r1		;source pointer in r1
+0000072e PC 028288		   806  	bsr	movsz:w			;move the string
+00000731 PC 0f1a		   807  	addqd	4,r3			;move to next pointer
+00000733 PC 1f5800		   808  	cmpqd	0,0(r3)			;is it the last one?
+00000736 PC 1a75		   809  	bne	svc30c			;no, keep going
+00000738 PC a7ae1100		   810  	addrd	@17,SW86		;EXEC call
+0000073c PC 028162		   811  	bsr	setint:w
+0000073f PC 1dd000		   812  SVC30a:	cmpqw	0,SW86			;are we done?
+00000742 PC 1a7d		   813  	bne	SVC30a			;no, loop
+00000744 PC ce1dd032		   814  	movxwd	VAR1,r0			;did we fail?
+00000748 PC 1f00		   815  	cmpqd	0,r0			;is it non-zero
+0000074a PC 1abb81		   816  	bne	SVEX			;yes, go
+0000074d PC 7faa00		   817  	jump	@0			;'reboot!'
+				   818  	;
+				   819  	;do a (sort of) SIGNAL call
+				   820  	;Pass:		nothing
+				   821  	;		
+				   822  	;
+				   823  	;Returns:	nothing, but keyboard break disabled
+				   824  	;
+00000750 PC 1dd000		   825  SVC31:	cmpqw	0,SW86			;are we busy?
+00000753 PC 1a7d		   826  	bne	SVC31			;yes, hang
+00000755 PC dfd032		   827  	movqd	1,VAR1
+00000758 PC dfd036		   828  	movqd	1,VAR2			;pass SIGINT and SIGIGN
+0000075b PC a7ae1200		   829  	addrd	@18,SW86		;signal call
+0000075f PC 02813f		   830  	bsr	setint:w
+00000762 PC 1dd000		   831  SVC31a:	cmpqw	0,SW86			;are we done?
+00000765 PC 1a7d		   832  	bne	SVC31a			;no, loop
+00000767 PC eabb64		   833  	br	SVEX
+				   834  	;
+				   835  	;path system call
+				   836  	;Pass:		r1 = pointer to string
+				   837  	;		r2 = 1 for mkdir
+				   838  	;		   = 2 for rmdir
+				   839  	;		   = 3 for chdir
+				   840  	;		   = 4 for getcwd
+				   841  	;		
+				   842  	;Returns:	r0 = return
+				   843  	;
+0000076a PC 1dd000		   844  SVC32:	cmpqw	0,SW86			;are we busy?
+0000076d PC 1a7d		   845  	bne	SVC32			;yes, hang
+0000076f PC d715		   846  	movd	r2,tos			;save function id
+00000771 PC 971636		   847  	movd	r2,VAR2			;pass function id
+00000774 PC 97d08050		   848  	movd	LOCBUF,r2		;save pointer to destination
+00000778 PC 971632		   849  	movd	r2,VAR1			;pass pointer
+0000077b PC 1f12		   850  	cmpqd	4,r2			;is this a getcwd?
+0000077d PC 0ac000000c		   851  	beq	svc32b			;yes, so no moving
+00000782 PC d70d		   852  	movd	r1,tos			;save our pointer
+00000784 PC 028232		   853  	bsr	movsz:w			;move until null terminated
+00000787 PC 57b8		   854  	movd	tos,r1			;get pointer back	
+00000789 PC a7ae1300		   855  svc32b:	addrd	@19,SW86		;path call
+0000078d PC 028111		   856  	bsr	setint:w
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 16
+DSI-32000 I/O KERNEL
+
+00000790 PC 1dd000		   857  SVC32a:	cmpqw	0,SW86			;are we done?
+00000793 PC 1a7d		   858  	bne	SVC32a			;no, loop
+00000795 PC ce1dd032		   859  	movxwd	VAR1,r0			;get the return code
+00000799 PC 97b8		   860  	movd	tos,r2			;get function id
+0000079b PC 1f12		   861  	cmpqd	4,r2			;is this a getcwd?
+0000079d PC 1ac000001b		   862  	bne	svc32c			;no, so exit
+000007a2 PC 1f00		   863  	cmpqd	0,r0			;is the return code zero?
+000007a4 PC 0ac0000014		   864  	beq	svc32c
+000007a9 PC d70d		   865  	movd	r1,tos			;save pointer
+000007ab PC 9708		   866  	movd	r1,r2			;destination is pointer
+000007ad PC 57d08050		   867  	movd	LOCBUF,r1		;source is locbuf
+000007b1 PC 028235		   868  	bsr	movszx:w			;move string zero back
+000007b4 PC 57b8		   869  	movd	tos,r1			;get pointer
+000007b6 PC 1708		   870  	movd	r1,r0
+000007b8 PC eabb13		   871  svc32c:	br	SVEX
+				   872  
+				   873  
+				   874  
+				   875  	
+				   876  	;
+				   877  	; Internal message output routine
+				   878  	; R2 -> NULL delimited string
+				   879  	;
+000007bb PC 1dd000		   880  PUTS:	CMPQW	0,SW86
+000007be PC 1a7d		   881  	BNE	PUTS		;WAIT TILL READY
+000007c0 PC 5d00		   882  	MOVQW	0,R0
+000007c2 PC 97161a		   883  	MOVD	R2,DSKDTA	;THE START OF THE STRING
+000007c5 PC 1c5000		   884  PUTS1:	CMPQB	0,0(R2)
+000007c8 PC 0a08		   885  	BEQ	PUTS3:B		;FOUND THE END OF THE STRING
+000007ca PC 8f10		   886  	ADDQD	1,R2
+000007cc PC 8d00		   887  	ADDQW	1,R0
+000007ce PC ea77		   888  	BR	PUTS1
+				   889  	;
+000007d0 PC ddd016		   890  PUTS3:	MOVQW	1,DSKID		;STDOUT
+000007d3 PC 950618		   891  	MOVW	R0,DSKLN	;MESSAGE LENGTH
+000007d6 PC 5dd314		   892  	MOVQW	RWRITE,DSKRW	;WRITE DATA REQUEST
+000007d9 PC 5dd200		   893  	MOVQW	4,SW86
+000007dc PC 0280c2		   894  	bsr	setint:W	;set the interrupt
+000007df PC 1dd000		   895  PUTS2:	CMPQW	0,SW86		;WAIT TILL COMPLETE
+000007e2 PC 1a7d		   896  	BNE	PUTS2
+000007e4 PC 1200		   897  	RET	0
+				   898  	;
+				   899  	; Convert the 32 binary number to hexadecimal ascii
+				   900  	; R1 =  32 BIT NUMBER
+				   901  	; R5 -> OUTPUT BUFFER
+				   902  	;
+000007e6 PC 5c00		   903  PUTHEX:	MOVQB	0,R0		;NO SIGNIF DIGITS YET
+000007e8 PC 94a008		   904  	MOVB	8,R2		;8 BYTES MAX
+000007eb PC 4e43a004		   905  PUTH:	ROTD	4,R1
+000007ef PC d408		   906  	MOVB	R1,R3
+000007f1 PC e8a00f		   907  	ANDB	H'0F,R3		;LEAVE BOTTOM BITS
+000007f4 PC 0018		   908  	ADDB	R3,R0		;CHECK FOR LEADING ZEROES
+000007f6 PC c0a030		   909  	ADDB	'0',R3		;TO ASCII
+000007f9 PC c4a039		   910  	CMPB	'9',R3
+000007fc PC ba05		   911  	BHS	PUT1:B		;MUST BE ALPHA
+000007fe PC c0a007		   912  	ADDB	'A'-'9'-1,R3
+00000801 PC 541b00		   913  PUT1:	MOVB	R3,0(R5)
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 17
+DSI-32000 I/O KERNEL
+
+00000804 PC 1c00		   914  	CMPQB	0,R0		;STILL NO SIGNIF DIGITS
+00000806 PC 0a04		   915  	BEQ	PUT2:B
+00000808 PC 8f28		   916  	ADDQD	1,R5
+0000080a PC cc1761		   917  PUT2:	ACBB	-1,R2,PUTH
+0000080d PC 1c00		   918  	CMPQB	0,R0
+0000080f PC 1a04		   919  	BNE	PUTEX:B		;GOT SIGNIF DIGITS
+00000811 PC 8f28		   920  	ADDQD	1,R5		;ELSE LEAVE JUST A ZERO
+00000813 PC 5c6800		   921  PUTEX:	MOVQB	0,0(R5)
+00000816 PC 1200		   922  	RET	0
+				   923  	;
+				   924  	; Error trap handlers. The 32032 vectors to these handlers directly
+				   925  	; from the INTBASE table.
+				   926  	;
+00000818 PC a7d8b8da		   927  NVI:	ADDR	MS1,R2
+0000081c PC ea8067		   928  	BR	ERR:W
+				   929  	;
+0000081f PC a7d8b8ef		   930  NMI:	ADDR	MS2,R2
+00000823 PC ea8060		   931  	BR	ERR:W
+				   932  	;
+00000826 PC a7d8b904		   933  ABT:	ADDR	MS3,R2
+0000082a PC ea8059		   934  	BR	ERR:W
+				   935  	;
+				   936  	;
+0000082d PC 57c800		   937  FPU:	movd	0(sp),R1	;get the address of the break
+00000830 PC 67d9b9b2		   938  	ADDR	OBUF,R5
+00000834 PC 02bfb2		   939  	BSR	PUTHEX		;DISPLAY THE ERROR ADDRESS	
+00000837 PC a7d8b8fe		   940  	ADDR	MS4,R2
+0000083b PC 02bf80		   941  	BSR	PUTS		;FLOATING POINT TRAP
+0000083e PC a7d8b99e		   942  	ADDR	MS12,R2
+00000842 PC 02bf79		   943  	BSR	PUTS		;THE ADDRESS
+00000845 PC 3e3701		   944  	sfsr	r4		;get the current FP status
+00000848 PC 5721		   945  	movd	r4,r5		;copy to r1
+0000084a PC 6ba100000007	   946  	andd	7,r5		;mask it off
+00000850 PC 97f0ddb99c		   947  	movd	fputbl[r5:d],R2 ;tell the world what it is
+00000855 PC 27d8b997		   948  	addr	fputbl,r0
+00000859 PC 8300		   949  	addd	r0,R2
+0000085b PC 02bf60		   950  	BSR	PUTS
+0000085e PC ea8039		   951  	BR	TERMIN:W
+				   952  	;
+00000861 PC a7d8b8dd		   953  ILL:	ADDR	MS5,R2
+00000865 PC ea1e		   954  	BR	ERR:B
+				   955  	;
+00000867 PC a7d8b8f0		   956  DVZ:	ADDR	MS6,R2
+0000086b PC ea18		   957  	BR	ERR:B
+				   958  	;
+0000086d PC a7d8b906		   959  FLG:	ADDR	MS7,R2
+00000871 PC ea12		   960  	BR	ERR:B
+				   961  	;
+00000873 PC a7d8b90a		   962  BPT:	ADDR	MS8,R2
+00000877 PC ea0c		   963  	BR	ERR:B
+				   964  	;
+00000879 PC a7d8b914		   965  TRC:	ADDR	MS9,R2
+0000087d PC ea06		   966  	BR	ERR:B
+				   967  	;
+0000087f PC a7d8b919		   968  UND:	ADDR	MS10,R2
+				   969  	;
+00000883 PC 02bf38		   970  ERR:	BSR	PUTS
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 18
+DSI-32000 I/O KERNEL
+
+00000886 PC 57c800		   971  	MOVD	0(SP),R1	;THE TRAP ADDRESS
+00000889 PC 67d9b959		   972  ERRX:	ADDR	OBUF,R5
+0000088d PC 02bf59		   973  	BSR	PUTHEX
+00000890 PC a7d8b94c		   974  	ADDR	MS12,R2
+00000894 PC 02bf27		   975  	BSR	PUTS
+00000897 PC 5cd300		   976  TERMIN:	MOVQB	6,SW86		;TERMINATE REQUEST TO 8088/8086
+0000089a PC 0204		   977  	bsr	setint:b	;set the interrupt
+0000089c PC ea00		   978  	BR	$		;THAT'S ALL
+				   979  	;
+				   980  
+0000089e PC 94a420805838	   981  setint:	movb	h'20,h'38(DUARCNT)	;set the interrupt to the 8088
+000008a4 PC 1fd0805c		   982  	cmpqd	0,EXIT			;are we going to exit?
+000008a8 PC 0ac0000009		   983  	beq	setint1
+000008ad PC 7fd0805c		   984  	cxpd	EXIT			;do the exit
+				   985  setint1:
+000008b1 PC 1200		   986  	ret	0			;return
+				   987  
+				   988  	;
+				   989  sizemem:
+000008b3 PC 5fd0805c		   990  	movqd	0,EXIT		;make SURE we don't multi-task
+000008b7 PC 27a8c0010000	   991  	addr	@h'10000,r0	;start at the 1st 64K boundary
+000008bd PC 5f18		   992  	movqd	0,r3		;point to the 0'th 64K boundary
+000008bf PC 175900		   993  	movd	0(r3),r4	;save the current value
+				   994  
+000008c2 PC 574000		   995  size1:	movd	0(r0),r1	;save the current value
+000008c5 PC 4eb708		   996  	comd	r1,r2		;complement the dword
+000008c8 PC 171200		   997  	movd	r2,0(r0)	;store the result back
+000008cb PC 574100		   998  	movd	0(r0),r5	;get the 'new' result back in r5
+000008ce PC 4e372200		   999  	comd	r4,0(r0)	;just to be sure, complement zero dword
+000008d2 PC 975900		  1000  	movd	0(r3),r6	;and get the dword at zero as well
+000008d5 PC 170a00		  1001  	movd	r1,0(r0)	;restore the value
+000008d8 PC 4711		  1002  	cmpd	r2,r5		;are we out of memory?
+000008da PC 1a0e		  1003  	bne	size2:b		;yes, get out
+000008dc PC 8721		  1004  	cmpd	r4,r6		;did we wrap on a boundary?
+000008de PC 1a0a		  1005  	bne	size2:b		;yes, get out
+000008e0 PC 03a000010000	  1006  	addd	h'10000,r0	;go to next 64K page
+000008e6 PC ea5c		  1007  	br	size1:b		;and loop until done
+				  1008  	;
+000008e8 PC 97068054		  1009  size2:	MOVD	R0,MEMTOP	;TOP OF MEMORY
+000008ec PC 23a000008000	  1010  	subd	32768,r0	;32k buffer for local buffer
+000008f2 PC 97068050		  1011  	movd	r0,LOCBUF	;save it
+000008f6 PC 57a89f8c		  1012  	movd	@DBG,r1		;is there a debugger?
+000008fa PC 1f08		  1013  	cmpqd	0,r1		;0 means no debugger
+000008fc PC 0a04		  1014  	BEQ	size3:b		;no monitor, skip this
+000008fe PC 1708		  1015  	movd	r1,r0		;now the monitor is the true top of mem
+				  1016  size3:
+00000900 PC 8f07		  1017  	addqd	-1,r0		;always one less than the max
+				  1018  				; r0 = true top of memory
+00000902 PC 970624		  1019  	movd	r0,HEAPH	;HEAPH now has the correct value for any card
+00000905 PC 2ba00ffffff0	  1020  	andd	h'ffffff0,r0	;mask to get an even boundary
+0000090b PC efd48150		  1021  	LPRD	SP,KERSTK	;LOAD THE KERNEL STACK IN THE INTERRUPT STACK
+0000090f PC 7da30200		  1022  	bispsrw	h'200		;point to user stack
+00000913 PC ef04		  1023  	lprd	sp,r0		;initialize user stack
+00000915 PC 9cabc0f7fe00	  1024  	cmpqb	7,@h'f7fe00	;do we have a high duart?
+0000091b PC 97a600f7fe008058	  1025  	movd	h'f7fe00,DUARCNT;assume so
+00000923 PC 0a0a		  1026  	beq	size4:b
+00000925 PC 97a6002001008058	  1027  	movd	h'200100,DUARCNT;no, it is the low duart
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 19
+DSI-32000 I/O KERNEL
+
+0000092d PC eab6ec		  1028  size4:	br	INIR:W		;back to the egg
+				  1029  
+				  1030  movs:
+00000930 PC d705		  1031  	movd	r0,tos		;save r0
+00000932 PC 4e07a0fe		  1032  	ashd	-2,r0		;shift it right
+00000936 PC b5a4000881540e	  1033  	tbitw	8,14(USRSTK)	;are we running supervisor?
+0000093d PC 8a0e		  1034  	bfs	movs1:b		;no, use the user/supervisor mode
+0000093f PC 0e0300		  1035  	movsd			;move the number of doubles
+00000942 PC df01		  1036  	movqd	3,r0		;get three
+00000944 PC 2bb8		  1037  	andd	tos,r0		;and and it
+00000946 PC 0e0000		  1038  	movsb			;move the rest of the bytes
+00000949 PC ea28		  1039  	br	movs3:b
+				  1040  
+0000094b PC 1f00		  1041  movs1:	cmpqd	0,r0		;are we done?
+0000094d PC 0a0f		  1042  	beq	movs1a:b
+0000094f PC ae9f4a0000		  1043  	movusd	0(r1),0(r2)	;use the move user/supervisor
+00000954 PC 0f0a		  1044  	addqd	4,r1
+00000956 PC 0f12		  1045  	addqd	4,r2
+00000958 PC 8f07		  1046  	addqd	-1,r0
+0000095a PC ea71		  1047  	br	movs1
+0000095c PC df01		  1048  movs1a:	movqd	3,r0		;move the remaining stuff
+0000095e PC 2bb8		  1049  	andd	tos,r0
+00000960 PC 1f00		  1050  movs2:	cmpqd	0,r0		;are we done?
+00000962 PC 0a0f		  1051  	beq	movs3:b
+00000964 PC ae9c4a0000		  1052  	movusb	0(r1),0(r2)	;by copying from user to supervisor
+00000969 PC 8f08		  1053  	addqd	1,r1
+0000096b PC 8f10		  1054  	addqd	1,r2
+0000096d PC 8f07		  1055  	addqd	-1,r0
+0000096f PC ea71		  1056  	br	movs2
+00000971 PC 1200		  1057  movs3:	ret	0		;and return
+				  1058  	;
+				  1059  movsx:
+00000973 PC d705		  1060  	movd	r0,tos		;save r0
+00000975 PC 4e07a0fe		  1061  	ashd	-2,r0		;shift it right
+00000979 PC b5a4000881540e	  1062  	tbitw	8,14(USRSTK)	;are we running supervisor?
+00000980 PC 8a0e		  1063  	bfs	movsx1:b	;no, use the user/supervisor mode
+00000982 PC 0e0300		  1064  	movsd			;move the number of doubles
+00000985 PC df01		  1065  	movqd	3,r0		;get three
+00000987 PC 2bb8		  1066  	andd	tos,r0		;and and it
+00000989 PC 0e0000		  1067  	movsb			;move the rest of the bytes
+0000098c PC ea28		  1068  	br	movsx3:b
+				  1069  
+0000098e PC 1f00		  1070  movsx1:	cmpqd	0,r0		;are we done?
+00000990 PC 0a0f		  1071  	beq	mvsx1a:b
+00000992 PC ae8f4a0000		  1072  	movsud	0(r1),0(r2)	;use the move user/supervisor
+00000997 PC 0f0a		  1073  	addqd	4,r1
+00000999 PC 0f12		  1074  	addqd	4,r2
+0000099b PC 8f07		  1075  	addqd	-1,r0
+0000099d PC ea71		  1076  	br	movsx1
+0000099f PC df01		  1077  mvsx1a:	movqd	3,r0		;move the remaining stuff
+000009a1 PC 2bb8		  1078  	andd	tos,r0
+000009a3 PC 1f00		  1079  movsx2:	cmpqd	0,r0		;are we done
+000009a5 PC 0a0f		  1080  	beq	movsx3:b
+000009a7 PC ae8c4a0000		  1081  	movsub	0(r1),0(r2)	;by copying from user to supervisor
+000009ac PC 8f08		  1082  	addqd	1,r1
+000009ae PC 8f10		  1083  	addqd	1,r2
+000009b0 PC 8f07		  1084  	addqd	-1,r0
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 20
+DSI-32000 I/O KERNEL
+
+000009b2 PC ea71		  1085  	br	movsx2
+000009b4 PC 1200		  1086  movsx3:	ret	0		;and return
+				  1087  	;
+				  1088  
+000009b6 PC b5a4000881540e	  1089  movsz:	tbitw	8,14(USRSTK)	;are we running supervisor?
+000009bd PC 8ac0000019		  1090  	bfs	movsz1		;no, so programmed loop
+000009c2 PC 6211		  1091  	save	[r0,r4]		;save a few registers
+000009c4 PC 5f20		  1092  	movqd	0,r4		;we terminate on a null
+000009c6 PC df07		  1093  	movqd	-1,r0		;not on length
+000009c8 PC 0e0006		  1094  	movsb	U		;move until zero
+000009cb PC 5c5000		  1095  	movqb	0,0(r2)		;move the last byte
+000009ce PC 8f10		  1096  	addqd	1,r2		;correct position
+000009d0 PC 8f08		  1097  	addqd	1,r1
+000009d2 PC 7288		  1098  	restore	[r0,r4]		;restore registers
+000009d4 PC ea10		  1099  	br	movsz2:b	;and exit		
+				  1100  
+000009d6 PC ae9c4a0000		  1101  movsz1:	movusb	0(r1),0(r2)	;copy the byte
+000009db PC 1c5000		  1102  	cmpqb	0,0(r2)		;are we done?
+000009de PC 8f08		  1103  	addqd	1,r1		;move the pointers
+000009e0 PC 8f10		  1104  	addqd	1,r2
+000009e2 PC 1a74		  1105  	bne	movsz1		;no, keep looking
+000009e4 PC 1200		  1106  movsz2:	ret	0		;and we are done
+				  1107  
+000009e6 PC b5a4000881540e	  1108  movszx:	tbitw	8,14(USRSTK)	;are we running supervisor?
+000009ed PC 8ac0000019		  1109  	bfs	movszx1		;no, so programmed loop
+000009f2 PC 6211		  1110  	save	[r0,r4]		;save a few registers
+000009f4 PC 5f20		  1111  	movqd	0,r4		;we terminate on a null
+000009f6 PC df07		  1112  	movqd	-1,r0		;not on length
+000009f8 PC 0e0006		  1113  	movsb	U		;move until zero
+000009fb PC 5c5000		  1114  	movqb	0,0(r2)		;move the last byte
+000009fe PC 8f10		  1115  	addqd	1,r2		;correct position
+00000a00 PC 8f08		  1116  	addqd	1,r1
+00000a02 PC 7288		  1117  	restore	[r0,r4]		;restore registers
+00000a04 PC ea10		  1118  	br	movszx2:b	;and exit		
+				  1119  
+00000a06 PC ae8c4a0000		  1120  movszx1:movsub	0(r1),0(r2)	;copy the byte
+00000a0b PC 1c4800		  1121  	cmpqb	0,0(r1)		;are we done?
+00000a0e PC 8f08		  1122  	addqd	1,r1		;move the pointers
+00000a10 PC 8f10		  1123  	addqd	1,r2
+00000a12 PC 1a74		  1124  	bne	movszx1		;no, keep looking
+00000a14 PC 1200		  1125  movszx2:ret	0		;and we are done
+				  1126  
+				  1127  	
+00000a16 PC			  1128  	.align	4
+00000a18 PC 20001808		  1129  INTTAB:	WORD	CMOD,NVI-START
+00000a1c PC 20001f08		  1130  	WORD	CMOD,NMI-START
+00000a20 PC 20002608		  1131  	WORD	CMOD,ABT-START
+00000a24 PC 20002d08		  1132  	WORD	CMOD,FPU-START
+00000a28 PC 20006108		  1133  	WORD	CMOD,ILL-START
+00000a2c PC 20009600		  1134  	WORD	CMOD,SVC-START
+00000a30 PC 20006708		  1135  	WORD	CMOD,DVZ-START
+00000a34 PC 20006d08		  1136  	WORD	CMOD,FLG-START
+00000a38 PC 20007308		  1137  	WORD	CMOD,BPT-START
+00000a3c PC 20007908		  1138  	WORD	CMOD,TRC-START
+00000a40 PC 20007f08		  1139  	WORD	CMOD,UND-START
+00000a44 PC 00000000		  1140  	word	0,0
+00000a48 PC 00000000		  1141  	word	0,0
+DSI-32000 Assembler V1.03m, Definicon Systems Inc. LISTING OF: 32IO.A32			PAGE 21
+DSI-32000 I/O KERNEL
+
+00000a4c PC 00000000		  1142  	word	0,0
+00000a50 PC 00000000		  1143  	word	0,0
+00000a54 PC 00000000		  1144  	word	0,0
+00000a58 PC 00000000		  1145  	word	0,0		;first reserved interrupt
+00000a5c PC 00000000		  1146  	word	0,0		;#2
+00000a60 PC 00000000		  1147  	word	0,0		;#3
+00000a64 PC 00000000		  1148  	word	0,0		;#4
+00000a68 PC 00000000		  1149  	word	0,0		;#5
+0 Assembly error(s) detected. 

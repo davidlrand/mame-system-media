@@ -1,0 +1,1579 @@
+.pl 62
+                            Chapter 5
+
+
+                 DSI-32 ASSEMBLER PSEUDO OPCODES
+
+
+5.1  INTRODUCTION
+
+The  DSI-32  Assembler has a variety of pseudo opcodes to  enable 
+the programmer to control aspects of data and code storage.
+
+  Pseudo-op			Description		 Section
+  ---------			-----------		 -------
+Symbol Creation      create a symbol, and specifies its	    5.2
+		     type and value
+Data generation	     controls the output of code and data   5.3
+		     constants
+Storage Allocation   allocates storage for run-time data    5.4
+Listing Control	     controls the format of list-file	    5.5
+Linkage Control	     manages the external addressing modes  5.6
+Segment Control	     defines the different module segments  5.7
+Module Control	     defines the module name and execution  5.8
+		     address
+Procedure Management defines the procedure structure       Ch. 6
+
+pseudo-ops  are Assembler commands which may be embedded into the 
+source statements of a program. There are several types of DSI-32 
+assembler  pseudo-ops as can be seen from  above.  Some  generate 
+data,  some  generate  code  while others  only  control  listing 
+formats  or  how code or data is to be generated.  The  following 
+sections detail how the various pseudo-ops perform their tasks.
+DSI-32  Assembler pseudo-ops may optionally be preceded by a  dot 
+(e.g. .BYTE) to conform with other 32000 assemblers.
+.pa
+5.2  SYMBOL CREATION PSEUDO-OP (EQU)
+
+Format:   <symbol>:[: | -]  EQU  <expression>
+
+description:
+          <symbol>       is  a symbol name.  The symbol name must 
+                         be followed by one colon (:), two colons 
+                         (::), or colon minus (:-).
+
+          EQU            is the pseudo-op.
+
+          <expression>   is a constant or an expression.   It may 
+                         evaluate to any type and value.  Forward 
+                         references to symbols are not permitted.
+
+The  EQU  pseudo-op creates a symbol.  The pseudo-op  causes  the 
+Assembler to evaluate the expression and assign the value to  the 
+symbol.  The  expression  must  evaluate  to  one  of  the  types 
+described  in Section 2.5.   The symbol's scope may be local (:), 
+exported (::) or imported/exported (:-).
+
+Once  a  symbol  has been defined,  subsequent  portions  of  the 
+program  may  reference that symbol directly or as a term  in  an 
+expression.  The  type  of the symbol restricts  the  permissible 
+places where it may referenced.  The first eight characters of  a 
+symbol's  name must be unique.  Note that in the extended version 
+of  the DSI-32 the first 29 characters of a symbol name  must  be 
+unique.  Note a  symbol's name is case dependent,  thus LABEL and 
+Label are different symbols.
+
+Examples:
+
+  1  LABELA:  .EQU   12
+  2  LABELB::  EQU   10(FP) + LABELA
+  3  LABELC:  .EQU   'ABCD'
+
+Example 1 defines the symbol LABELA. The pseudo-op assigns LABELA 
+the value 0000000C and the Immediate type.
+
+Example 2 defines the global symbol LABELB. The pseudo-op assigns 
+LABELB the value of the expression  10(FP)+LABELA.  If LABELA has 
+value IM  0000000C, LABELB is assigned the value FP 00000016.
+
+Example 3 defines the symbol LABELC. The pseudo-op assigns LABELC 
+the Immediate type with a value of 41424344
+.pa
+5.3  DATA GENERATION PSEUDO-OPS
+
+The  data  generation pseudo-ops store data  in  the  instruction 
+stream during assembly time.
+
+   Pseudo-op     Description
+   ---------     -----------
+     BYTE	 store byte-long data
+     SBYTE	 store signed byte-long data
+     WORD	 store word-long data
+     SWORD	 store signed word-long data
+     DOUBLE	 store double word-long data
+     SDOUBLE	 store signed double word-long data
+     FLOAT	 store single-precision floating point number
+     LONG	 store double-precision floating point number
+     FIELD	 store bit field
+     IF          conditional assembly of the following code
+     ENDIF       terminate appropriate IF condition
+.pa
+5.3.1  BYTE pseudo-op
+
+Format:   [<label>] BYTE [[<repetition-factor>]] {<expression> | 
+                                                  <string> } ,,,
+
+description:
+          <label>        an optional label.
+
+          BYTE           is the pseudo opcode.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified data byte.   It 
+                         must be an expression which evaluates to 
+                         a    non-negative    immediate     type. 
+                         <repetition  factor> must be enclosed in 
+                         square brackets "[]".
+
+          <expression>   specifies the value of the data byte. It 
+                         must evaluate to an immediate type  with 
+                         a value in the range -128 to 255.
+
+          <string>       specifies a string.  A string is entered 
+                         in  memory left to right.  A string must 
+                         fit on a single assembler line.
+
+The  BYTE   pseudo-op generates  byte  constants.  The  Assembler 
+stores  the  bytes  in  the object file at  the  current  address 
+specified  by the Location Counter.   If  <repetition-factor>  is 
+greater  than one,  or more than one  expression  is   specified, 
+the  bytes are stored in consecutive ascending sequence  starting 
+at the current address.
+
+If <string> is specified,  the ASCII contents are stored left  to 
+right with each character occupying one byte.
+
+NOTE:     <expression>  may  have string constants as  terms.  In 
+          this  case the assembler treats the ASCII value of  the 
+          string  as a double-word integer.   The  expression  is 
+          evaluated and the result is stored in a single byte.  A 
+          string  used  in  a  term  may be  no  more  than  four 
+          characters  in  length,  otherwise  an  error  will  be 
+          reported.
+.pa
+Examples:
+
+  1.  0000000  PC  0C		BYTE   12
+  2.  0000001  PC  010101010101	BYTE   [6]  1
+  3.  0000007  PC  434241414243	BYTE   'CBAABC'
+  4.  000000D  PC  41420D	BYTE   'AB',H'0D
+  5.  0000010  PC  20		BYTE   '@'/2
+
+Example 1 places 0C in a byte at address 00000000 PC.
+
+Example  2 places 1  (repeated 6 times) in six consecutive  bytes 
+starting at 00000001 PC.
+
+Example  3 places the ASCII values of 'CBAABC' in six consecutive 
+bytes starting at 00000007 PC.
+
+Example 4 places the ASCII values of 'AB' starting at 0000000D PC 
+followed by a 0D byte.
+
+Example  5 places the value of the expression '@'/2  at  location 
+00000010 PC.
+.pa
+5.3.2  SBYTE pseudo-op
+
+Format:   [<label>] SBYTE [[<repetition-factor>]] {<expression> |
+                                                   <string> } ,,,
+
+description:
+          <label>        an optional label.
+
+          SBYTE          is the pseudo opcode.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified data byte.   It 
+                         must be an expression which evaluates to 
+                         a    non-negative    immediate     type. 
+                         <repetition-factor>  must be enclosed in 
+                         square brackets "[]".
+
+          <expression>   specifies the value of the data byte. It 
+                         must  evaluate to an immediate type with 
+                         a value in the range -128 to 127.
+
+          <string>       specifies a string.  A string is entered 
+                         in memory left to right.  A string  must 
+                         fit on a single assembler line.
+
+The   SBYTE  pseudo-op  generates  signed  byte  constants.   The 
+Assembler  stores  the bytes in the object file  at  the  current 
+address  specified  by the  Location  Counter.   If  <repetition-
+factor>  is greater than one,  or more than one   expression   is  
+specified, the bytes are stored in consecutive ascending sequence 
+starting at the current address.
+
+NOTE:     <expression>  may  have string constants as  terms.  In 
+          this  case the assembler treats the ASCII value of  the 
+          string  as  a double-word integer.   The expression  is 
+          evaluated and the result is stored in a single byte.  A 
+          string  used  in  a  term may  be  no  more  than  four 
+          characters  in  length,  otherwise  an  error  will  be 
+          reported.
+.pa
+Examples:
+
+  1.  0000000  PC  FE		SBYTE   -2
+  2.  0000001  PC  010101010101	SBYTE   [6]  1
+  3.  0000007  PC  434241414243	SBYTE   'CBAABC'
+  4.  000000D  PC  41420D	SBYTE   'AB',H'0D
+  5.  0000010  PC  20		SBYTE   '@'/2
+
+Example 1 places FE in a byte at address 00000000 PC.
+
+Example  2 places 1  (repeated 6 times) in six consecutive  bytes 
+starting at 00000001 PC.
+
+Example 3 places the ASCII values of 'CBAABC' in six  consecutive 
+bytes starting at 00000007 PC.
+
+Example 4 places the ASCII values of 'AB' starting at 0000000D PC 
+followed by a 0D byte.
+
+Example  5  places the value of the expression '@'/2 at  location 
+00000010 PC.
+.pa
+5.3.3  WORD pseudo-op
+
+Format:   [<label>] WORD [[<repetition-factor]] {<expression> |
+                                                 <string>},,,
+
+description:
+          <label>        is an optional label.
+
+          WORD           is the pseudo-op name.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified data word.   It 
+                         must be an expression which evaluates to 
+                         a    non-negative    immediate     type. 
+                         <repetition-factor>  must be enclosed in 
+                         square brackets "[]".
+
+          <expression>   specifies the value of the data word. It 
+                         must evaluate to an immediate type  with 
+                         a value in the range -128 to 65535
+
+          <string>       specifies a string constant.  Unless the 
+                         string is a term in an expression it may 
+                         be no longer than two characters.
+
+The WORD pseudo-op generates word length constants. The Assembler 
+stores  the  words  in the object file  at  the  current  address 
+specified  by  the Location Counter.   If <repetition-factor>  is 
+greater  than one,  or more than one  expression  is   specified, 
+the  words are stored in consecutive ascending sequence  starting 
+at the current address.  The least significant byte of a word  is 
+stored at first and the most significant next.
+NOTE:  <expression>  may have string constants as terms.  In this 
+     case the assembler treats the ASCII value of the string as a 
+     double-word  integer.   The expression is evaluated and  the 
+     result is stored in a single word.   A string used in a term 
+     may be no more than four characters in length,  otherwise an 
+     error will be reported.
+
+Examples:
+
+  1.  00000000  PC  0200		WORD  8/4
+  2.  00000002  PC  76987698		WORD  [2] X'9876
+
+Example  1  stores  the value of the 8/4 in a  word  starting  at 
+00000000 PC.
+
+Example 2 stores the value X'9876 (repeated twice).
+.pa
+5.3.4  SWORD pseudo-op
+
+Format:   [<label>] SWORD [[<repetition-factor]] {<expression> |
+                                                  <string>},,,
+
+description:
+          <label>        is an optional label.
+
+          SWORD          is the pseudo-op.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified data word.   It 
+                         must be an expression which evaluates to 
+                         a    non-negative    immediate     type. 
+                         <repetition-factor>  must be enclosed in 
+                         square brackets "[]".
+
+          <expression>   specifies the value of the data word. It 
+                         must evaluate to an immediate type  with 
+                         a value in the range -32768 to 32767.
+
+          <string>       specifies a string constant.  Unless the 
+                         string is a term in an expression it may 
+                         be no longer than two characters.
+
+The SWORD pseudo-op generates word length signed  constants.  The 
+assembler  stores  the  words in the object file at  the  current 
+address specified by the Location Counter. If <repetition-factor> 
+is greater than one, or more than one  expression  is  specified, 
+the  words are stored in consecutive ascending sequence  starting 
+at the current address.  The least significant byte of a word  is 
+stored at first and the most significant next.
+NOTE:     <expression>  may have string constants  as  terms.  In 
+          this  case the assembler treats the ASCII value of  the 
+          string  as  a double-word integer.   The expression  is 
+          evaluated and the result is stored in a single word.  A 
+          string  used  in  a  term may  be  no  more  than  four 
+          characters  in  length,  otherwise  an  error  will  be 
+          reported.
+
+Examples:
+
+  1.  00000000  PC  FEFF		SWORD  -8/4
+  2.  00000002  PC  76987698		SWORD  [2] X'9876
+
+Example  1  stores the value of the -8/4 in a  word  starting  at 
+00000000 PC.
+
+Example 2 stores the value X'9876 (repeated twice).
+.pa
+5.3.5  DOUBLE pseudo-op
+
+Format:   [<label>] DOUBLE [[<repetition-factor>]] {<expression> |
+                                                    <string> },,,
+
+description:
+          <label>        is an optional label.
+
+          DOUBLE         is the pseudo-op.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to repeat the specified double-word.  It 
+                         must be an expression which evaluates to 
+                         a     non-negative    immediate    type. 
+                         <repetition-factor> must be enclosed  in 
+                         square brackets "[]".
+
+          <expression>   specifies the value of the  double-word. 
+                         It  must  evaluate to an immediate  type 
+                         with a value in the range -2147483648 to 
+                         2147483647.
+
+          <string>       specifies  a string  constant.  No  more 
+                         than  four  characters are allowed in  a 
+                         string constant.
+
+The DOUBLE pseudo-op generates double-word length constants.  The 
+assembler  stores  the  double-words in the object  file  at  the 
+current   address   specified  by  the   Location   Counter.   If 
+<repetition-factor>  is  greater  than  one,  or  more  than  one  
+expression    is  specified,   the  double-words  are  stored  in 
+consecutive  ascending sequence starting at the current  address. 
+The  least significant byte of a word is stored at first and  the 
+most significant next.
+NOTE:  <expression> may have string constants as terms.  In  this 
+     case  the  assembler treats the ASCII value of the string as 
+     a double-word integer.   The expression is evaluated and the 
+     result  is stored in a word.  A string used in a term may be 
+     no more than four characters in length,  otherwise an  error 
+     will be reported.
+
+Examples:
+
+1. 00000000 PC 7654321001234567    DOUBLE  X'01234567, X'76543210
+2. 00000008 PC 0505000050500000    DOUBLE  [2] 5
+
+Example 1 stores the values X'01234567 and X'76543210 starting at 
+00000000 PC.
+
+Example 2 stores the value 5 (repeated twice).
+5.3.6  SDOUBLE pseudo-op
+
+Format:   [<label>] SDOUBLE [[<repetition-factor>]] {<expression> |
+                                                     <string> },,,
+
+description:
+          <label>        is an optional label.
+
+          SDOUBLE        is the pseudo-op.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to repeat the specified double-word.  It 
+                         must be an expression which evaluates to 
+                         a     non-negative    immediate    type. 
+                         <repetition-factor> must be enclosed  in 
+                         square brackets "[]".
+
+          <expression>   specifies  the value of the double-word. 
+                         It  must evaluate to an  immediate  type 
+                         with a value in the range -2147483648 to 
+                         2147483647.
+
+          <string>       specifies  a  string constant.  No  more 
+                         than  four characters are allowed  in  a 
+                         string constant.
+
+The SDOUBLE pseudo-op generates double-word length constants. The 
+Assembler  stores  the  double-words in the object  file  at  the 
+current   address   specified  by  the   Location   Counter.   If 
+<repetition-factor>  is  greater  than  one,  or  more  than  one  
+expression    is  specified,   the  double-words  are  stored  in 
+consecutive  ascending sequence starting at the current  address. 
+The  least significant byte of a word is stored at first and  the 
+most significant next.
+
+NOTE: <expression>  may have string constants as terms.  In  this 
+     case the assembler treats the ASCII value of the string as a 
+     double-word  integer.   The expression is evaluated and  the 
+     result is stored in a word.   A string used in a term may be 
+     no  more than four characters in length,  otherwise an error 
+     will be reported.
+
+Examples:
+
+  1.  00000000  PC  9CFFFFFF64000000	SDOUBLE  -100,100
+  2.  00000008  PC  0505000050500000	SDOUBLE  [2] 5
+
+Example 1 stores the values -100 and 100 starting at 00000000 PC.
+
+Example 2 stores the value 5 (repeated twice).
+5.3.7  FLOAT pseudo-op
+
+Format:   [<label>]  FLOAT  [[<repetition-factor>]] {<expression>},,,
+
+description:
+          <label>        is an optional label.
+
+          FLOAT          is the pseudo-op.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified floating  point 
+                         number.  It  must be an expression which 
+                         evaluates  to a  non-negative  immediate 
+                         type.    <repetition-factor>   must   be 
+                         enclosed in square brackets "[]".
+
+          <expression>   specifies the value of a single floating 
+                         point   number.     Strings   are    not 
+                         permitted.  The  expression must specify 
+                         the   number  only.   No   brackets   or 
+                         operators are permissible.
+
+The FLOAT pseudo-op generates only one single-precision floating-
+point  constant per invocation.  The constants are stored at  the 
+current  location counter.  Symbols assigned floating point  type 
+are  stored internally in the assembler's symbol table as  double 
+precision (32 bit) numbers until they are required. Conversion to 
+single  precision  if necessary for a particular  instruction  is 
+performed automatically by the assembler.
+
+Examples:
+
+  1  00000000 PC  DA0F4940		FLOAT  3.1415926
+  2  00000004 PC  00007A4600007A46	FLOAT  [2] 16000.0
+
+Example  1   stores  the floating-point constant  3.141526  in  a 
+double-word starting at 00000000 PC.
+
+Example  2  stores the floating-point constant 16000.0  (repeated 
+twice).
+.pa
+5.3.8  LONG pseudo-op
+
+Format: [<label>] LONG [[<repetition-factor>]] {<expression>},,,
+
+description:
+          <label>        is an optional label.
+
+          LONG           is the pseudo-op.
+
+          <repetition-factor>
+                         (optional) specifies the number of times 
+                         to  repeat the specified floating  point 
+                         number.  It  must be an expression which 
+                         evaluates  to  a non-negative  immediate 
+                         type.    <repetition-factor>   must   be 
+                         enclosed in square brackets "[]".
+
+          <expression>   specifies the value of a single floating 
+                         point number. Strings are not permitted. 
+                         The  expression must specify the  number 
+                         only.   No  brackets  or  operators  are 
+                         permissible.
+
+The  LONG pseudo-op generates only one double-precision floating-
+point  constant per invocation.  The constants are stored at  the 
+current  location counter.  Symbols assigned floating point  type 
+are  stored internally in the Assembler's symbol table as  double 
+precision (32 bit) numbers until they are required.
+
+Examples:
+
+  1.  00000000 PC  48D8124DFB210940	LONG	3.1415926
+  2.  00000008 PC  000000000040CF40	LONG	[2] 16000.0
+		   000000000040CF40
+
+Example  1 stores the floating-point constant 3.141526 in  a  two 
+double-words starting at 00000000 PC.
+
+Example  2  stores the floating-point constant 16000.0  (repeated 
+twice).
+.pa
+5.3.9  FIELD pseudo-op
+
+Format:   [<label>] FIELD [<subfield-size>]<subfield-value>,,,
+
+description:
+          <label>        is an optional label.
+
+          FIELD          is the pseudo-op.
+
+          [<subfield-size>]
+                         specifies  the length of the  bit  field 
+                         being   generated.   It   may   be   any 
+                         expression  which  evaluates to  a  non-
+                         negative  immediate  type.   No  forward 
+                         referenced   symbols   are    permitted.  
+                         <subfield-size>   must  be  enclosed  in 
+                         brackets  "[]".   The subfield  size  is 
+                         required.
+
+          <subfield-value>
+                         specifies the field value. It may be any 
+                         expression  which  evaluates to  a  non-
+                         negative immediate type with a value  in 
+                         the  range  specified by the field  size 
+                         (e.g.,  0 to 15 for a 4-bit field,  0 to 
+                         31  for  a 5-bit  field).  The  subfield 
+                         value is required.
+
+The FIELD pseudo-op generates one or more bit fields.  The fields 
+are  stored  at  the current address specified  by  the  location 
+counter.   Fields  are stored contiguously if there is more  than 
+one   <subfield-size>  <subfield-value>  pair.  Zero  filling  of 
+
+unused  bits  is performed by the assembler to the  nearest  byte 
+boundary.
+
+Multiple <subfield-size> <subfield-value> pairs must be separated 
+by commas.
+
+Examples:
+
+  1.  00000000 PC 0B		FIELD  [5] 11
+  2.  00000001 PC EB00		FIELD  [5] 11, [5] 7
+
+Example  1 places 11 in a 5-bit field at address 00000000 PC  and 
+zero fills the four high orders bits.
+
+Example  2  places  11 and 7 in two consecutive 5-bit  fields  at 
+address 00000001 PC and zero fills the 6 high order bits.
+.pa
+5.3.10  IF pseudo-op (Enhanced assembler only)
+
+Format:   [<label>] IF <expression1> [<operator> <expression2>] 
+
+description:
+          <label>        is an optional label.
+
+          IF             is the pseudo-op.
+
+          <expression1>  the first expression which may  evaluate
+                         to any type and a value. The value  must
+                         not have any forward referenced symbols.
+
+          <operator>     an   operator  that   separates  the two
+                         expressions.
+
+          <expression2>  the second expression which may evaluate
+                         to any type and a value. The value  must
+                         not have any forward referenced symbols.
+
+The  IF pseudo-op enables the user to optional assemble  portions 
+of  the  source.  If  only <expression1>  is  supplied  then  the 
+assembler will evaluate the expression and if it is zero then the 
+all  the code until an ENDIF pseudo-op is found will be  ignored. 
+If  <expression1> <operator> <expression2> are all supplied  then 
+the  assembler will evaluate <expression1> and <expression2>  and 
+then  perform  the  magnitude test with the  <operator>.  If  the 
+result is false then the assembler will ignore all the  following 
+code until the corresponding ENDIF pseudo-op if found. IF - ENDIF 
+pairs may be nested up to 15 deep.
+Note. <operator> may be one of the following: <, >, <=, >=, or =.
+
+Examples:
+
+1. 00000000 PC         IF   4           ;This condition true
+2. 00000000 PC 1400    MOVB R0,R0
+3. 00000002            IF   23+5 > 23+5 ;This is false
+4.                     MOVB R0,R0       ;Don't generate code
+5.                     ENDIF            ;ENDIF for second IF
+6. 00000002 PC 1400    MOVB R0,R0       ;Start generating code
+7. 00000004 PC         ENDIF            ;Last ENDIF for first IF
+.pa
+5.3.11 ENDIF pseudo-op (Enhanced assembler only)
+
+Format:   [<label>] ENDIF
+
+description:
+          <label>        is an optional label.
+
+          ENDIF          is the pseudo-op.
+
+The  ENDIF  pseudo-op  terminates an IF  invocation.  Each  ENDIF 
+pseudo-op must be matched with one IF pseudo-op.  Thus,  they act 
+as  a  pair  of markers that denote the beginning and  end  of  a 
+portion  of  source code that is to be  conditionally  assembled. 
+
+     The IF ENDIF pseudo ops ease the development of source  code 
+that has various different modules that are to be included in the 
+final product depending on various assembly time parameters.
+
+     For examples of their use see Sec 5.3.10  above.  Note  that 
+once  an IF is assembled that causes the code to follow it to not 
+be  assembled it can only be terminated by its ENDIF pair.  IF  - 
+ENDIF pairs may be nested up to 15 levels deep.
+.pa
+5.4  STORAGE ALLOCATION DIRECTIVES
+
+There are five storage allocation pseudo-ops:
+
+    Pseudo-op     Description
+    ---------     -----------
+      BLKB	  allocate byte storage
+      BLKW	  allocate word storage
+      BLKD	  allocate double-word storage
+      BLKF	  allocate double-word(s) for floating-point
+                  storage
+      BLKL	  allocate quad-word(s) for long floating-point
+                  storage
+
+Storage allocation pseudo-ops have the following form:
+
+     [<label>] <pseudo-op> [<expression>]
+
+<expression>  specifies  the number of elements of the  specified 
+length  to be allocated.   <expression> must evaluate to  a  non-
+negative value of Immediate type. If symbols are used as terms in 
+the expression they may not be forward referenced.  No storage is 
+allocated  if the expression evaluates to zero.  If no expression 
+is specified the assembler assigns a default value of 1.
+Note. The storage allocation pseudo-ops generate zero initialised 
+storage  in either PC relocation or SB relocation (only with  the 
+enhanced version of the assembler). In all other relocation modes 
+the space is reserved but not initialised.
+
+The  form  of the storage allocation pseudo-ops is  described  in 
+subsections 5.4.1 through 5.4.5.
+.pa
+5.4.1  BLKB pseudo-op
+
+Format:   [<label>]  BLKB  [<expression>]
+
+description:
+          <label>        is an optional label.
+
+          BLKB           is the pseudo-op.
+
+          <expression>   specifies  the  number  of bytes  to  be 
+                         allocated.  It  must  be  an  expression 
+                         which  evaluates to a non-negative value 
+                         with Immediate type.
+
+The  BLKB pseudo-op allocates <expression> bytes of  storage  for 
+data.  The storage is allocated from the current location counter 
+address.  The  storage  is  initialised to zero  if  the  current 
+segment is PC relocation or SB relocation (only with the enhanced 
+version of the assembler), otherwise the storage is allocated but 
+not initialised.
+
+Examples:
+
+  1.  00000000 SB	 	BLKB   5
+  2.  00000005 SB	HERE:	BLKB   11
+  3.  00000010 SB		BLKB
+  4.  00000011 SB		BLKB	($-HERE)/3
+
+In  example 1,  five bytes of storage are allocated.  The storage 
+starts at 00000000 SB.
+
+In  example 2,  15 bytes of storage are  allocated.  The  storage 
+starts at 00000005 SB.
+
+In  example  3,  one  byte of storage is  allocated  starting  at 
+address 00000010 SB.
+
+In  example  4,  (17(SB)-5(SB))  bytes of storage  are  allocated 
+starting at address 00000011 SB.
+.pa
+5.4.2  BLKW pseudo-op
+
+Format:   [<label>]  BLKW  [<expression>]
+
+description:
+          <label>        is an optional label.
+
+          BLKW           is the pseudo-op.
+
+          <expression>   specifies  the  number of  words  to  be 
+                         allocated.   It  must  be an  expression 
+                         which evaluates to a non-negative  value 
+                         with Immediate type.
+
+The  BLKW  pseudo-op allocates <expression> words of storage  for 
+data.  The storage is allocated from the current location counter 
+address.  The  storage  is  initialised to zero  if  the  current 
+segment is PC relocation or SB relocation (only with the enhanced 
+version of the assembler), otherwise the storage is allocated but 
+not initialised.
+
+Examples:
+
+  1.  00000000 SB	 	BLKW   5
+  2.  0000000A SB	HERE:	BLKW   11
+  3.  00000020 SB		BLKW
+  4.  00000022 SB		BLKW	($-HERE)/3
+
+In example 1,  five words of storage are allocated.  The  storage 
+starts at 00000000 SB.
+
+In  example  2,  15 words of storage are allocated.  The  storage 
+starts at 0000000A SB.
+
+In  example  3,  one  word of storage is  allocated  starting  at 
+address 00000020 SB.
+
+In  example  4,  (22(SB)-10(SB)) words of storage  are  allocated 
+starting at address 00000022 SB.
+.pa
+5.4.3  BLKD pseudo-op
+
+Format:   [<label>]  BLKD  [<expression>]
+
+description:
+          <label>        is an optional label.
+
+          BLKD           is the pseudo-op.
+
+          <expression>   specifies the number of double-words  to 
+                         be allocated.   It must be an expression 
+                         which  evaluates to a non-negative value 
+                         with Immediate type.
+
+The BLKD pseudo-op allocates <expression> double-words of storage 
+for  data.  The  storage is allocated from the  current  location 
+counter  address.  The  storage is initialised to  zeros  if  the 
+current  segment is PC relocation or SB relocation (only with the 
+enhanced  version  of the assembler),  otherwise the  storage  is 
+allocated but not initialised.
+
+Examples:
+
+  1.  00000000 SB	 	BLKD   5
+  2.  00000014 SB	HERE:	BLKD   11
+  3.  00000040 SB		BLKD
+  4.  00000044 SB		BLKD	($-HERE)/3
+
+In  example 1,  five double-words of storage are  allocated.  The 
+storage starts at 00000000 SB.
+
+In  example  2,  15 double-words of storage  are  allocated.  The 
+storage starts at 00000014 SB.
+
+In example 3, one double-word of storage is allocated starting at 
+address 00000040 SB.
+
+In  example  4,   (44(SB)-14(SB))  double-words  of  storage  are 
+allocated starting at address 00000044 SB.
+.pa
+5.4.4  BLKF pseudo-op
+
+Format:   [<label>]  BLKF  [<expression>]
+
+description:
+          <label>        is an optional label.
+
+          BLKF           is the pseudo-op.
+
+          <expression>   specifies  the number of double-words to 
+                         be allocated.   It must be an expression 
+                         which evaluates to a non-negative  value 
+                         with Immediate type.
+
+The BLKF pseudo-op allocates <expression> double-words of storage 
+for  single  precision  floating  point  data.   The  storage  is 
+allocated from the current location counter address.  The storage 
+is  initialised to zeros if the current segment is PC  relocation 
+or  SB  relocation  (only  with  the  enhanced  version  of   the 
+assembler),   otherwise   the   storage  is  allocated  but   not 
+initialised.
+
+Examples:
+
+  1.  00000000 SB	 	BLKF   5
+  2.  00000014 SB	HERE:	BLKF   11
+  3.  00000040 SB		BLKF
+  4.  00000044 SB		BLKF	($-HERE)/3
+
+In  example 1,  five double-words of storage are  allocated.  The 
+storage starts at 00000000 SB.
+In  example  2,  15 double-words of storage  are  allocated.  The 
+storage starts at 00000014 SB.
+
+In example 3, one double-word of storage is allocated starting at 
+address 00000040 SB.
+
+In  example  4,   (44(SB)-14(SB))  double-words  of  storage  are 
+allocated starting at address 00000011 SB.
+.pa
+5.4.5  BLKL pseudo-op
+
+Format:   [<label>]  BLKL  [<expression>]
+
+description:
+          <label>        is an optional label.
+
+          BLKL           is the pseudo-op.
+
+          <expression>   specifies the number of quad-words to be 
+                         allocated.   It  must  be an  expression 
+                         which evaluates to a non-negative  value 
+                         with Immediate type.
+
+The  BLKL pseudo-op allocates <expression> quad-words of  storage 
+for  double  precision  floating  point  data.   The  storage  is 
+allocated from the current location counter address.  The storage 
+is  initialised to zeros if the current segment is PC  relocation 
+or  SB  relocation  (only  with  the  enhanced  version  of   the 
+assembler),   otherwise   the   storage  is  allocated  but   not 
+initialised.
+
+Examples:
+
+  1.  00000000 SB	 	BLKF   5
+  2.  00000028 SB	HERE:	BLKF   11
+  3.  00000080 SB		BLKF
+  4.  00000088 SB		BLKF	($-HERE)/3
+
+In  example  1,  five quad-words of storage  are  allocated.  The 
+storage starts at 00000000 SB.
+In example 2, 15 quad-words of storage are allocated. The storage 
+starts at 00000028 SB.
+
+In  example 3,  one quad-word of storage is allocated starting at 
+address 00000080 SB.
+
+In example 4, (88(SB)-28(SB)) quad-words of storage are allocated 
+starting at address 00000088 SB.
+.pa
+5.5  LISTING CONTROL PSEUDO-OPS
+
+The  listing control pseudo-ops do not affect code generation  in 
+any way.   They are purely for controlling the format of the list 
+file produced by the DSI-32 Assembler.
+
+    Pseudo-op       Description
+    ---------       -----------
+    TITLE	    defines the title to place at the top of each 
+                    listing page
+    SUBTITLE	    defines  the subtitle to be placed  one  line 
+                    below the title
+    NOLIST	    all  lines until the next LIST pseudo-op  are 
+                    not listed
+    LIST            restarts the listing of all lines
+    EJECT           force a form feed in the list file
+    WIDTH	    performs no function (only for compatibility)
+
+The listing control pseudo-ops are described in subsections 5.5.1 
+through 5.5.6.
+.pa
+5.5.1  TITLE pseudo-ops
+
+Format:   [<label>]  TITLE <string>
+
+description:
+          <label>        is an option label.
+
+          TITLE          is the pseudo-op.
+
+          <string>       may be up to eighty characters long. The 
+                         string must be enclosed in quotes (which 
+                         are  not  printed).   The  format  of  a 
+                         string  is  the  same  as  described  in 
+                         subsection 2.4.3. The title is displayed 
+                         at the top of each listing page.
+
+The  TITLE  pseudo-op  allows  the user  supplied  string  to  be 
+displayed at the top of each page of the program listing.
+
+If  the more than one TITLE pseudo-op occurs in a program the new 
+string will be displayed at the top of each subsequent page.
+
+No title is printed if no TITLE pseudo-op is specified.
+
+Example:
+
+	TITLE  "Floating point subroutines"
+
+The example causes the string "Floating point subroutines" to  be 
+displayed at the top of the current page of the program listing.
+.pa
+5.5.2  SUBTITLE pseudo-op
+
+Format:   [<label>]  SUBTITLE <string>
+
+description:
+          <label>        is an optional label.
+
+          SUBTITLE       is the pseudo-op.
+
+          <string>       may   be  up  to  eighty  characters  in 
+                         length.  The string must be enclosed  in 
+                         quotes  (which  are not  printed).   The 
+                         format  of  the string is  the  same  as 
+                         described   in  subsection  2.4.3.   The 
+                         subtitle is displayed at the top of each 
+                         page after the title (if there is one).
+
+The SUBTITLE pseudo-op enables the user to specify a string to be 
+displayed  at the top of each page of the  program  listing.  The 
+subtitle will be displayed below the title, if specified.
+The  SUBTITLE pseudo-op will cause the string to be displayed  at 
+the  top of the current page if it is the first statement on  the 
+line, otherwise only subsequent page are affected.
+If  more  than  one SUBTITLE pseudo-op occurs in a  program  each 
+occurrence will affect only the subsequent pages.
+No subtitle is displayed if no SUBTITLE pseudo-op is specified.
+Example:
+
+	SUBTITLE  "Subroutine divide"
+
+The  example causes the string "Subroutine divide" to be  printed 
+at  the top of the current page if it is the first  statement  on 
+the page, otherwise it is printed at the top of the next page.
+.pa
+5.5.3  NOLIST pseudo-op
+
+Format:   [<label>]  NOLIST
+
+description:
+          <label>        is an optional label.
+
+          NOLIST         is the pseudo-op.
+
+The  NOLIST  pseudo-op causes the assembler to stop  listing  all 
+subsequent  lines.  The lines are assembled,  but not directed to 
+the listing file.  Error messages will still be displayed.
+
+Example:
+
+	NOLIST
+	ADDB	0(SB),R5
+	MULW	R3,MATHS
+	JSR	SPECIAL
+	LIST
+
+In  the  example the NOLIST pseudo-op suppresses the printing  of 
+three  lines of text.  Listing of text is restarted by  the  LIST 
+pseudo-op.
+.pa
+5.5.4  LIST pseudo-op
+
+Format:   [<label>]  LIST
+
+description:
+          <label>        is an optional label.
+
+          LIST           is the pseudo-op.
+
+The  LIST  pseudo-op  restarts the listing  of  assembler  source 
+lines.   The listings of source lines is suppressed by the NOLIST 
+pseudo-op.
+
+Example:
+
+	NOLIST
+	ADDB	0(SB),R5
+	MULW	R3,MATHS
+	JSR	SPECIAL
+	LIST
+NXT:	BEQ	DONE
+
+In the example the LIST pseudo-op restarts the listing after  the 
+which was stopped by the NOLIST pseudo-op.
+.pa
+5.5.5  EJECT pseudo-op
+
+Format:   [<label>]  EJECT
+
+description:
+          <label>        is an optional label.
+
+          EJECT          is the pseudo-op.
+
+The  EJECT pseudo-op causes the assembler to force a form feed to 
+a  new page.   The statement containing the EJECT pseudo-op  does 
+not appear on the listing.
+.pa
+5.5.6  WIDTH pseudo-op
+
+Format:   [<label>]  WIDTH  <expression>
+
+description:
+          <label>        is an optional label.
+
+          WIDTH          is the pseudo-op.
+
+          <expression>   must evaluate to an immediate type.
+
+Note.  This  pseudo-op performs no function and is  included  for 
+compatibility with other 32000 assemblers.
+.pa
+5.6  LINKAGE CONTROL PSEUDO-OPS
+
+The  linkage control pseudo-ops enable the programmer to  specify 
+which  symbols  are global and which symbols are external to  the 
+module being assembled.
+
+   Pseudo-op	Description
+   ---------	-----------
+   IMPORT	specifies external symbols
+   IMPORTP	specifies external procedure symbols
+   EXPORT	specifies public symbols
+   EXPORTP	specifies public procedure symbols
+   COMM         specifies public symbol of given length
+
+A  public symbol is a symbol that has been defined by  an  EXPORT 
+pseudo-op,  or an EXPORTP pseudo-op or double colon (::). It must 
+have PC, ABS or SB relocation type.
+
+An  external  symbol  is a symbol that has been defined  with  an 
+IMPORT pseudo-op,  IMPORTP pseudo-op or colon minus (:-).  It  is 
+assigned  EXT relocation type,  and refers to a symbol in another 
+module.  Every  external  symbol must correspond to  exactly  one 
+public symbol.
+
+A public symbol with a specific name may be exported by only  one 
+module.   The  same symbol may be imported by many  modules.  The 
+linker  satisfies  the public and external symbol  references  at 
+link time.  An error occurs if an imported symbol has no matching 
+exported symbol.
+
+A symbol may be both exported and imported by the same module. To 
+all  other  modules the symbol behaves as though it was  exported 
+only.  To the module in which it was exported, though, the linker 
+builds  a link table entry for the symbol in the  current  module 
+table.  This  allows  the  symbol to be recursively  called  from 
+the module in which it is defined.
+
+Subsections  5.6.1  through 5.6.4 describe  the  linkage  control 
+pseudo-ops.
+.pa
+5.6.1  IMPORT pseudo-op
+
+Format:   IMPORT <symbol>,,,
+
+description:
+          IMPORT         is the pseudo-op.
+
+          <symbol>       is  the  name of a  public  symbol.  The 
+                         symbol must be defined in another module 
+                         and  it  must  have  PC,   SB,   or  ABS 
+                         relocation  type.  More than one  symbol 
+                         may be specified per line,  each  symbol 
+                         must be separated by a comma.
+
+The  IMPORT  pseudo-op defines external symbols  which  reference 
+data in some other module.  The IMPORT pseudo-op must not be used 
+to  import  external  procedures,   the  IMPORTP  pseudo-op  (see 
+subsection 5.6.2) should be used.
+
+The  symbol  is  entered  into the assembler's  symbol  table  at 
+assembly time.   It is assigned EXT type, an offset of zero and a 
+Link  Table number which starts at zero and increments  for  each 
+imported  symbol whether it is imported by the IMPORT or  IMPORTP 
+pseudo-ops.
+NOTE:     The  line on which the symbol is imported  must  appear 
+          before  any  other statement which references the  same 
+          symbol.  Otherwise,  an  error will be reported by  the 
+          assembler.
+
+          Since  the external symbol references are only resolved 
+          at link time,  only then will an error be reported  for 
+          mismatched symbols.
+
+Example:
+
+	IMPORT	ONE, TWO, THREE
+
+In  the example if the symbols are the first imported symbols  in 
+the program then,  ONE is assigned link table entry zero,  TWO is 
+assigned one and THREE is assigned two.
+.pa
+5.6.2  IMPORTP pseudo-op
+
+Format:   IMPORTP <symbol>,,,
+
+description:
+          IMPORTP        is the pseudo-op.
+
+          <symbol>       is  the  name of a  public  symbol.  The 
+                         symbol must be defined in another module 
+                         and  it  must  have  PC,   SB,   or  ABS 
+                         relocation  type.  More than one  symbol 
+                         may be specified per line,  each  symbol 
+                         must be separated by a comma.
+
+The  IMPORTP  pseudo-op defines external symbols which  reference 
+external procedures in some other module.  The IMPORTP  pseudo-op 
+must  not  be  used to import data,  the  IMPORT  pseudo-op  (see 
+subsection 5.6.1) should be used.
+
+The  symbol  is  entered into the  assembler's  symbol  table  at 
+assembly time.   It is assigned EXT type, an offset of zero and a 
+Link  Table  number which starts at zero and increments for  each 
+imported  symbol whether it is imported by the IMPORT or  IMPORTP 
+pseudo-ops.
+
+NOTE:     The  line  on which the symbol is imported must  appear 
+          before  any other statement which references  the  same 
+          symbol.   Otherwise  an  error will be reported by  the 
+          assembler.
+
+          Since the external symbol references are only  resolved 
+          at  link  time,only then will an error be reported  for 
+          mismatched symbols.
+
+Example:
+
+	IMPORT	ONE, TWO, THREE
+
+In  the example if the symbols are the first imported symbols  in 
+the program then,  ONE is assigned link table entry zero,  TWO is 
+assigned one and THREE is assigned two.
+.pa
+5.6.3  EXPORT pseudo-op
+
+Format:   EXPORT <symbol>,,,
+
+description:
+          EXPORT         is the pseudo-op.
+
+          <symbol>       is the name of a symbol which is defined 
+                         in the current module.  It must have one 
+                         of the following relocation  types:  PC, 
+                         ABS,  or SB. More than one symbol may be 
+                         exported  per line,  each symbol must be 
+                         separated by a comma.
+
+The  EXPORT pseudo-op enables a symbol to be given public  scope. 
+The symbol may then be imported by an IMPORT pseudo-op in another 
+module.  A  symbol which has been exported from a module  may  be 
+used   in  that  module  as  an  instruction  operand  or  in  an 
+expression.  The  EXPORT  pseudo-op must not be  used  to  export 
+procedures.  The  EXPORTP pseudo-op (see subsection 5.6.4) should 
+be used.
+
+A  symbol  may  be exported by following its  definition  with  a 
+double-colon (::).   If the double colon (::) is used without the 
+PROC  pseudo-op (Section 6.2),  then the symbol is assumed to  be 
+referencing data.
+
+NOTE:     A symbol which appears after the EXPORT statement  must 
+          also  be defined in some statement following the EXPORT 
+          statement.  Otherwise an error will be reported by  the 
+          assembler.
+Example:
+
+	EXPORT	ONE, TWO, THREE
+
+In the example three symbols are assigned public scope:  ONE, TWO 
+and THREE.
+.pa
+5.6.4  EXPORTP pseudo-op
+
+Format:   EXPORTP <symbol>,,,
+
+description:
+          EXPORT         is the pseudo-op.
+
+          <symbol>       is the name of a symbol which is defined 
+                         in the current module.  It must have one 
+                         of  the following relocation types:  PC, 
+                         ABS,  or SB. More than one symbol may be 
+                         exported per line,  each symbol must  be 
+                         separated by a comma.
+
+The EXPORTP pseudo-op enables a symbol to be given public  scope. 
+The  symbol  may  then  be imported by an  IMPORTP  pseudo-op  in 
+another  module.  A symbol which has been exported from a  module 
+may  be  used in that module as an instruction operand or  in  an 
+expression.  The  EXPORTP  pseudo-op must not be used  to  export 
+data. The EXPORT pseudo-op (see subsection 5.6.3) should be used.
+
+A  symbol  may  be exported by following its  definition  with  a 
+double-colon  (::).   If the double colon (::) is used  with  the 
+PROC  pseudo-op (Section 6.2),  then the symbol is assumed to  be 
+referencing an external procedure.
+
+NOTE:     A symbol which appears after the EXPORTP statement must 
+          also be defined in some statement following the EXPORTP 
+          statement.  Otherwise  an error will be reported by the 
+          assembler.
+
+Example:
+
+	EXPORTP	ONE, TWO, THREE
+
+In the example three symbols are assigned public scope:  ONE, TWO 
+and THREE.
+.pa
+5.6.5 COMM pseudo-op (Enhanced assembler only)
+
+Format:   COMM   <symbol>,length
+
+description:
+          COMM           is the pseudo-op.
+
+          <symbol>       is the  name of a symbol which is to  be 
+                         imported  from  some other  module.  The 
+                         symbol refers to a data item.
+
+          length         is the length of the data item.  If  the 
+                         symbol  is  not  defined  in  any  other 
+                         module  via  an export then  the  linker 
+                         will  assign  the variable and  allocate 
+                         enough  static base data to satisfy  the 
+                         length specifier.  The data item is also 
+                         zeroed by the linker.
+
+The  COMM  pseudo-op  enables a data item  to  be  accessed  from 
+another  module or to be created by the linker at link time.  The 
+COMM  pseudo op enables the assembler to support the  concept  of 
+named common such as required by languages such as Fortran.
+Example:
+
+	COMM   FRED,10
+
+In  the  example the data item FRED is imported from some  module 
+and  its length is 10 bytes.  If FRED is satisfied by some  other 
+module  at  link time then the length specifier will  be  ignored 
+else  the linker will create a dummy module and allocate 10 bytes 
+for  the data item.  The linker will also create an entry in  the 
+appropriate Link Table.
+.pa
+5.7  SEGMENT CONTROL PSEUDO-OPS
+
+The  segment control pseudo-ops enable the programmer to  control 
+the  Assembler's  current relocation mode and the  value  of  the 
+location counter. The segment control pseudo-ops are described in 
+detail below:
+
+     pseudo-op	   Description
+     ---------	   -----------
+     DSECT	   location counter set to IM relocation mode
+     PROGRAM	   location counter set to PC relocation mode
+     STATIC	   location counter set to SB relocation mode
+     LOC	   location counter set to the specified value
+     ENDSEG	   location counter and relocation mode set to
+		   the values prior to the current segment
+     ALIGN	   location counter set to the specified offset
+
+The  segment  control pseudo-ops enable the programmer to  define 
+various  program  segments.  Each segment contains data  or  code 
+relative to the segment base.  The various data or code  segments 
+are assigned contiguous addresses by the assembler, the FP and SP 
+segments  are  the only exception to this rule.  Since  they  are 
+actually  relative to the stack they only exist for the  duration 
+of a procedure invocation etc.
+
+The  form  and description of the segment control  pseudo-ops  is 
+described in subsections 5.7.1 through 5.7.6.
+.pa
+5.7.1  DSECT pseudo-op
+
+Format:   DSECT
+
+description:
+          DSECT          is the pseudo-op.
+
+The DSECT pseudo-op defines a dummy segment. This enables symbols 
+to  be  assigned  immediate type and a  particular  value.  These 
+symbols  may  then be used within expressions or as  operands  in 
+instructions.  These  symbols may only be referenced  after  they 
+have been defined in a segment.
+
+The  location  counter  is  set  to an offset of  0  and  the  IM 
+relocation  mode.   No object code is produced for  this  segment 
+type.
+
+Example:
+
+	DSECT
+ONE:	BLKB	1
+TWO:	BLKB	2
+THREE:	BLKB	3
+	ENDSEG
+
+In  the  example three symbols are assigned Immediate  type.  The 
+symbols  ONE,  TWO  and  THREE are assigned values  0,  1  and  3 
+respectively.
+
+The symbols may then be used to reference data.  Since their type 
+is  Immediate they may be used as displacements in  frame  memory 
+operands. The following example shows one use of these symbols:
+
+	ADDB	1,ONE(FP)
+	SUBB	2,TWO(FP)
+	MULD	3,THREE(FP)
+.pa
+5.7.2  PROGRAM pseudo-ops
+
+Format:	PROGRAM
+
+description:
+
+	PROGRAM		is the pseudo-op.
+
+The  PROGRAM  pseudo-op  defines a  program  code  segment.   The 
+instructions and constant data is stored in this segment.
+
+The  location counter is set to PC relocation mode the offset  to 
+the  next  available PC address (initially  zero).  The  location 
+counter is incremented after every instruction.
+
+The program code segment is the only segment in which object code 
+is generated. All other segments only reserve storage relative to 
+one of the segment bases.
+
+Example:
+
+	PROGRAM
+
+In the example the Location Counter is set to PC relocation mode. 
+The offset is set to the next PC address.
+.pa
+5.7.3  STATIC pseudo-op
+
+Format:   STATIC
+
+description:
+          STATIC         is the pseudo-op.
+
+The  STATIC pseudo-op defines a static base segment.  The  static 
+base segment is relative to the SB register,  which is automatic-
+ally loaded when a module is first entered. Forward references to 
+symbols defined in static base segments are allowed.
+
+The  symbols in a static base segment are assigned  monotonically 
+increasing addresses which start at 0 for the first symbol in the 
+first static base segment.   The location counter for the  static 
+base  relocation mode may not be decremented thus it is saved  on 
+entering a different relocation mode.
+
+The  static  base segment contains storage allocation  pseudo-ops 
+only.   No  instructions or pseudo-ops which generate code  (e.g. 
+DOUBLE, FIELD, etc) may be used.
+
+Example:
+
+	STATIC
+ONE:	BLKB	1
+TWO:	BLKB	2
+THREE:	BLKB	3
+	ENDSEG
+
+In  the  example  three  symbols are defined  in  a  static  base 
+segment.  The  STATIC  pseudo-op sets the location counter to  SB 
+relocation mode and to the next available SB address.
+.pa
+5.7.4  LOC pseudo-op
+
+Format:   LOC [<expression>]
+
+description:
+          LOC		is the pseudo-op.
+
+          <expression>   defines   a  new  relocation  mode   and 
+                         offset.  The expression must evaluate to 
+                         a  value with IM,  PC,  SB,  FP,  or  SP 
+                         relocation mode.
+
+The  LOC  pseudo-op  causes a new  segment  to  be  entered.  The 
+location   counter   is  set  to  the  value  specified  by   the 
+expression.
+
+If  the  expression evaluates to SP or FP  relocation  mode,  any 
+value is allowed.  If the relocation mode is IM,  PC,  or SB, the 
+expression's value must evaluate to a value greater than or equal 
+to  the  last value for the particular relocation  mode.  If  the 
+Relocation  Mode  is PC,  the  assembler will output  zero  value 
+bytes  till the location counter reaches the address specified by 
+<expression>.
+
+The location counter is incremented after each instruction in IM, 
+PC and SB relocation modes.  The location counter is  decremented 
+in the FP and SP relocation modes.
+Examples:
+
+  1.	LOC  12
+  2.	LOC  12(FP)
+  3.	LOC  12(PC)
+
+Example  1 assigns IM relocation mode and an offset of 12 to  the 
+location counter.
+
+Example  2 assigns FP relocation mode and an offset of 12 to  the 
+location counter.
+
+Example  3 assigns PC relocation mode and an offset of 12 to  the 
+location counter.
+.pa
+5.7.5  ENDSEG pseudo-op
+
+Format:   ENDSEG
+
+description:
+          ENDSEG         is the pseudo-op.
+
+The  ENDSEG  pseudo-op  cause  the current  segment  to  end  and 
+restores  the  location counter relocation mode and value it  had 
+before  the  current segment was entered by one  of  the  segment 
+pseudo-ops (see subsections 5.7.1 through 5.7.4).
+
+Each  DSECT,  PROGRAM,  STATIC  and  LOC pseudo-op  must  have  a 
+matching ENDSEG pseudo-op.
+
+NOTE:     The  assembler  assigns  a default value  and  type  of 
+          00000000  PC to the location counter at the start of an 
+          assembly  thus  a  program	may  have  no  opening 
+          pseudo-op and no ENDSEG and still be valid.
+
+Example:
+
+00000000 PC			     1  	PROGRAM
+00000000 PC CEE0D6C0000000C00000     2  	MULB  TEST1,TEST2
+00000000 SB			     3  	STATIC
+00000000 SB			     4  TEST1:	BLKB	4
+00000004 SB 			     5  	ENDSEG
+0000000B PC 0C00		     6  TEST2:	WORD	12
+0000000D PC CEFCD6007E		     7  	DIVB  TEST1,TEST2
+00000012 PC 			     8  	ENDSEG
+00000000 FP 			     9  	LOC	0(FP)
+FFFFFFF6 FP			    10  TEST3:	BLKB	10
+FFFFFFF6 FP 			    11  	ENDSEG
+
+In  the  example  the  ENDSEG  pseudo-op  terminates  the   three 
+segments: PC, SB and the FP segments.
+.pa
+5.7.6  ALIGN pseudo-op
+
+Format:   ALIGN <expression1> [,<expression2>]
+
+description:
+          ALIGN          is the pseudo-op.
+
+          <expression1>	 defines  the  base  of  a  new  location 
+                         counter   value.   The  expression  must 
+                         evaluate  to  a  non-negative  value  of 
+                         Immediate  type.   No forward references 
+                         to symbols are permitted.
+
+          <expression2>	 optional  expression which  defines  the 
+                         offset   of  the  new  location  counter 
+                         value. The expression must evaluate to a 
+                         non-negative value of Immediate type and 
+                         must  be  less  than  <expression1>   in 
+                         value. If <expression2> is not specified 
+                         it takes on a default value of zero (0). 
+                         No  forward  references to  symbols  are 
+                         permitted.
+
+The  ALIGN  pseudo-op  enables the location counter value  to  be 
+changed while still maintaining the current relocation mode.  The 
+new  value  is the sum of a multiple of  <expression1>,  and  the 
+<expression2> and is always equal to or greater than the  current 
+location counter.  The value satisfies the following definition:
+
+	new value MODULUS  <expression1> = <expression2>
+
+If  only <expression1> is specified,  the new value is a multiple 
+of <expression1> only. The new value is the multiple of the basis 
+that  is  greater than or equal to the current location  counter. 
+For  example,  if  <expression1> is 8 and  the  current  location 
+counter is 25, then the new value is 32 (i.e. 4*8).
+
+If  both <expression1> and <expression2> are specified,  the  new 
+value is the sum of the multiple of the basis and the offset. For 
+example,  if  <expression1>  is 8,  <expression2> is 5,  and  the 
+current  location counter is 25,  then the new value is 29  (i.e. 
+3*8+5).
+
+NOTE:     The ALIGN pseudo-op may only be used when assembly mode 
+          is  standard.   If the ALIGN pseudo-op is used in a  PC 
+          relocation  segment,  the Assembler will zero-fill  all 
+          bytes  between  the  current  PC address  and  the  new 
+          address     calculated    from    <expression1>     and 
+          <expression2>.
+.pa
+Example:
+
+00000000 SB			   1		STATIC
+00000000 SB                        2  TEST1:	BLKW	1
+00000002 SB			   3		ALIGN   5
+00000005 SB			   4  TEST2:	BLKW
+00000007 SB			   5		ALIGN   12, 3
+0000000F SB			   6  TEST3:	BLKW
+00000011 SB			   7		ENDSEG
+
+In  the  example two ALIGN pseudo-ops  appear.  In  line  3,  the 
+pseudo-op sets the location counter to a multiple of 5. Since the 
+location counter is 00000002  SB,  the new value will be 00000005 
+SB i.e., 1*5. In line 5, the pseudo-ops sets the location counter 
+to a multiple of 12 plus 5. Since the current location counter is 
+7, the the new value will be 15 i.e., 1*12+3.
+.pa
+5.8  MODULE CONTROL PSEUDO-OPS
+
+There   are  two  module  control  pseudo-ops  which  enable  the 
+programmer  to  specify  the module name  and  the  module  start 
+address:
+
+     pseudo-op		Description
+     ---------		-----------
+     MODULE		defines the module's name
+     START		defines the module's execution address
+
+Subsections  5.8.1 and 5.8.2 describe the module control  pseudo-
+ops.
+
+5.8.1  MODULE pseudo-op
+
+Format:   MODULE <symbol>
+
+description:
+          MODULE         is the pseudo-op.
+
+          <symbol>       defines the name of the current module.
+
+The MODULE pseudo-op defines the name of the current module. Only 
+one  MODULE pseudo-op is allowed per assembler source  file.  The 
+pseudo-op may appear anywhere in the file. The name of the source 
+file  is  used  as  the module name if  no  MODULE  pseudo-op  is 
+specified.
+Example:
+
+	MODULE	MSUBRT
+
+In the example the symbol MSUBRT is assigned as the module name.
+.pa
+5.8.2  START pseudo-op
+
+Format:   START [<expression>]
+
+description:
+          START          is the pseudo-op.
+
+          <expression>   specifies the module's execution address.
+
+The  START pseudo-op specifies where execution is to  start.  The 
+expression must evaluate to a value with PC relocation type.   If 
+a  START pseudo-op is not specified,  the assembler defaults  the 
+start address to 00000000 PC.
+
+The START pseudo-op assigns the module as the MAIN module.
+

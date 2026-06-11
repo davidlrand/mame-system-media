@@ -1,0 +1,120 @@
+.pl 62
+
+
+
+
+
+
+
+
+
+
+
+
+
+                     DEFINICON SYSTEMS, INC.
+
+
+
+                    DSI-32 COPROCESSOR BOARD
+                   & MS/PC DOS SYSTEM SOFTWARE
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+     INSTANT GRATIFICATION
+
+.pa
+Instant Gratification
+
+Now  that you have received your DSI-32 card and assembled it (if 
+it  was a kit) and you've plugged into your computer (please  see 
+the instructions on installation), you probably want some instant 
+gratification. Well, here it comes.
+
+The  first  thing  you  should do is make a  backup  of  all  the 
+distribution  disks  that came with your board and then  put  the 
+originals in a safe place.  Next you should create a subdirectory 
+for  your  DSI-32 development area.  Into this  subdirectory  you 
+should copy all the files on your distribution disks.  Now we are 
+ready  to  try the DSI-32 out,  part a) of this  discussion  will 
+describe  how  to  try out the compilers and part b) is  for  the 
+people that bought the DSI-32 without any compilers.
+
+a) Lets assume for now that you purchased the C compiler, on your 
+disk you will find a file called HELLO.C.  Type the file out  and 
+you will see a simple print statement with the hello message.  We 
+will now compile and run the test program.
+
+     A>CC HELLO                    ; run the compiler
+
+     A>AS HELLO                    ; assemble the compiler output
+
+     A>LN FILE=HELLO               ; link the assembler output
+
+At this stage you will find several new files on your disk,  they 
+are:
+
+     HELLO.A32      which is the output from the compiler,  it is 
+                    in 32000 assembler code.
+     HELLO.O32      which is the output from the assembler, it is 
+                    the object file that is ready for linking.
+     HELLO.E32      which  is the executable file that the linker 
+                    produces,  this  is the file that is ready to 
+                    run.
+Now we are ready to run our test program,  all that is  necessary 
+is to type:
+
+     A>LOAD HELLO
+
+If everything went ok, the hello message will be displayed on the 
+console.  Now,  if  you want to play for a while just  experiment 
+with changing the message. Note if you have the Pascal or Fortran 
+compiler  instead  of  the C then all that changes  is  the  test 
+filename,  it would be HELLO.P or HELLO.F and the compile command 
+would be either:  A>PC HELLO or A>FC HELLO ,respectively. All the 
+rest of the commands to assemble, link and load are the same.
+.pa
+b) Now lets assume that all you purchased was the DSI-32, with it 
+comes  a  less elaborate (but object level compatible)  assembler 
+and linker.  So in your case we supply an assembler test  program 
+that says hello.  It is called HELLO.A32,  and uses direct system 
+calls to display the hello message.  Let's go through the process 
+of assembling and linking the test program.
+
+     A>AS HELLO                    ; assemble the test program
+
+     A>LN FILE=HELLO               ; link the test program
+
+At this stage you will find several new files on your disk,  they 
+are:
+
+     HELLO.O32      which is the output from the assembler, it is 
+                    the object file that is ready for linking.
+     HELLO.E32      which  is the executable file that the linker 
+                    produces,  this  is the file that is ready to 
+                    run.
+
+Now we are ready to run our test program,  all that is  necessary 
+is to type:
+
+     A>LOAD HELLO
+
+If  everything went ok the hello message will be displayed on the 
+console.  Now,  if  you want to play for a while just  experiment 
+with changing the message. 
+
+At  this stage you should be suitably gratified and it  would  be 
+very wise for you to read the rest of the manual before you wreak 
+havoc and get disillusioned.
+

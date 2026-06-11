@@ -1,0 +1,55 @@
+.pl 66
+                TABLE 7-2  AS ERROR CODES AND ERROR MESSAGES
+
+ 0.  Internal assembler error
+ 1.  Maximum location counter nesting exceeded (15)
+ 2.  Maximum if-endif nesting exceeded (15)
+ 3.  Open square bracket expected
+ 4.  Close square bracket expected
+ 5.  Open bracket expected
+ 6.  Close bracket expected
+ 7.  Comma expected
+ 8.  String delimiter expected
+ 9.  Length qualifier expected
+10.  MMU register expected
+11.  Processor register expected
+12.  General-Purpose register (R0..R7) expected
+13.  End of line or comment expected
+14.  Unexpected character in input file
+15.  Unexpected symbol
+16.  Invalid instruction
+17.  Missing operand
+18.  Illegal operand
+19.  Illegal operator
+20.  Complex expressions not allowed for floating point
+21.  Attribute of operand must be IMMEDIATE
+22.  Configuration register expected
+23.  Attribute of operand must be FLOAT or LONG
+24.  Attribute of operand must be EXTERNAL PROCEDURE
+25.  Floating point operand not allowed here
+26.  Operand must be defined before use
+27.  Attributes of operands do not match
+28.  External operands must have the same ordinal number
+29.  Division by zero
+30.  Operand out of range
+31.  Duplicate option specified
+32.  Illegal addressing mode
+33.  Illegal attribute of exported symbol
+34.  Undefined symbol
+35.  Symbol already declared
+36.  EXPORT must precede symbol definition
+37.  Illegal directive in this context
+38.  Label required
+39.  No label may appear on this directive
+40.  Duplicate use of directive
+41.  Illegal to decrement location counter in PC or SB segment
+42.  Symbol type must be Immediate or Long
+43.  Illegal relocation mode
+44.  Nested procedure not allowed
+45.  Illegal use of VAR
+46.  Illegal use of BEGIN
+47.  Illegal use of RETURN
+48.  Unexpected ENDSEG or ENDPROC
+49.  Return block size exceeds parameter block size
+50.  Unbalanced if-endif
+

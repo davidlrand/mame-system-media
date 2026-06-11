@@ -1,0 +1,165 @@
+.module	hardtest.c
+.program
+.endseg
+.program
+_main:-
+
+	movd	@8280,_Duart_Base
+	cmpqd	0,_Duart_Base
+	bne	L2
+	movd	2097408,_Duart_Base
+L2:
+	addrd	L6,tos
+	cxp	_printf
+	cmpqd	0,tos
+	cxp	_memtest
+	addrd	L7,tos
+	cxp	_printf
+	cmpqd	0,tos
+
+	rxp	0
+.endseg
+.static
+L6:	.byte	68,83,73,45,51,50,32,72,97,114
+	.byte	100,119,97,114,101,32,84,101,115,116
+	.byte	32,80,114,111,103,114,97,109,44,32
+	.byte	86,101,114,115,105,111,110,32,49,46
+	.byte	50,10,0
+L7:	.byte	10,72,97,114,100,119,97,114,101,32
+	.byte	86,97,108,105,100,97,116,101,100,10
+	.byte	0
+.endseg
+.program
+_memtest:-
+	enter	[r3,r4],0
+	movd	8224,r1
+	movd	8228,r0
+
+	movd	0(r1),r4
+	movd	0(r0),r3
+	subd	1024,r3
+	movd	r3,tos
+	movd	r4,tos
+	addrd	L12,tos
+	cxp	_printf
+	adjspb	-12
+	movqd	0,tos
+	movd	r3,tos
+	movd	r4,tos
+	cxp	_testm
+	adjspb	-12
+	movqd	-1,tos
+	movd	r3,tos
+	movd	r4,tos
+	cxp	_testm
+	adjspb	-12
+	movd	1437226410,tos
+	movd	r3,tos
+	movd	r4,tos
+	cxp	_testm
+	adjspb	-12
+	movd	-1437226411,tos
+	movd	r3,tos
+	movd	r4,tos
+	cxp	_testm
+	adjspb	-12
+	movd	411113601,tos
+	movd	r3,tos
+	movd	r4,tos
+	cxp	_testm
+	adjspb	-12
+	addrd	L13,tos
+	cxp	_printf
+	cmpqd	0,tos
+
+	exit	[r3,r4]
+	rxp	0
+.endseg
+.static
+;_low	r4	local
+;_high	r3	local
+;_lowmem	r1	local
+;_highmem	r0	local
+L12:	.byte	84,101,115,116,105,110,103,32,109,101
+	.byte	109,111,114,121,32,102,114,111,109,32
+	.byte	37,88,32,116,111,32,37,88,10,0
+L13:	.byte	77,101,109,111,114,121,32,116,101,115
+	.byte	116,32,99,111,109,112,108,101,116,101
+	.byte	10,0
+.endseg
+.program
+_testm:-
+	enter	[r3,r4,r5,r6],0
+	movd	12(fp),r5
+	movd	16(fp),r4
+	movd	20(fp),r3
+
+	movd	r3,tos
+	addrd	L28,tos
+	cxp	_printf
+	cmpd	tos,tos
+	movd	r5,r6
+	br	L25
+L16:
+	movd	r3,0(r6)
+	addqd	4,r6
+L25:
+	cmpd	r6,r4
+	blo	L16
+	movd	r5,r6
+	br	L23
+L20:
+	cmpd	r3,0(r6)
+	beq	L17
+	movd	r3,tos
+	movd	r6,tos
+	cxp	_error
+	cmpd	tos,tos
+L17:
+	addqd	4,r6
+L23:
+	cmpd	r6,r4
+	blo	L20
+
+	exit	[r3,r4,r5,r6]
+	rxp	0
+.endseg
+.static
+;_test	r6	local
+L28:	.byte	84,101,115,116,105,110,103,32,112,97
+	.byte	116,116,101,114,110,32,37,88,10,0
+;_low	r5	local
+;_high	r4	local
+;_quad	r3	local
+.endseg
+.program
+_error:-
+
+	movd	12(sp),tos
+	movd	0(12(sp)),tos
+	movd	16(sp),tos
+	addrd	L33,tos
+	cxp	_printf
+	adjspb	-16
+	movqd	1,tos
+	cxp	_exit
+	cmpqd	0,tos
+
+	rxp	0
+.endseg
+.static
+L33:	.byte	77,101,109,111,114,121,32,102,97,105
+	.byte	108,101,100,46,32,65,100,100,114,101
+	.byte	115,115,32,61,32,37,120,44,32,119
+	.byte	97,115,32,37,88,44,32,115,104,111
+	.byte	117,108,100,32,98,101,32,37,88,0
+;_test	8(sp)	local
+;_quad	12(sp)	local
+.endseg
+.static
+;__iob	__iob	import
+;__ctype_	__ctype_	import
+.endseg
+	.importp	_exit
+	.importp	_printf
+	.comm	_Duart_Base,4

@@ -1,0 +1,1144 @@
+.pl 62
+                            CHAPTER 4
+
+                      INSTRUCTION OPERANDS
+
+4.1  INTRODUCTION
+
+The  syntax  of  instruction  operands are  desribed  in  detail. 
+Instruction  operands  are operated on by CSD-32000  opcodes  and 
+psuedo-ops. In the following example the opcode MOVW means move a 
+16 bit integer. VAL1 and VAL2 are the instruction operands.  They 
+identify  the source and destination for the number to be  moved.  
+Instruction operands may be constants, memory addresses, symbols, 
+and/or  expressions.
+
+Example  ----->    MOVW  VAL1,VAL2
+
+The following operand types exist:
+
+               Operand Type                         Section
+
+      General Operands                               4.2
+        Register Operands                            4.2.1
+        Register Relative Operands                   4.2.2
+        Frame Memory Operands                        4.2.3
+        Frame Memory Relative Operands               4.2.4
+        Stack Memory Operands                        4.2.5
+        Stack Memory Relative Operands               4.2.6
+        Static Memory Operands                       4.2.7
+        Static Memory Relative Operands              4.2.8
+        Program Memory Operands                      4.2.9
+        Immediate Operands                           4.2.10
+        Absolute Operands                            4.2.11
+        External Operands                            4.2.12
+        Top of Stack Operands                        4.2.13
+        Scaled-Index Byte Operands                   4.2.14
+        Scaled-Index Word Operands                   4.2.15
+        Scaled-Index Double-Word Operands            4.2.16
+        Scaled-Index Quad-Word Operands              4.2.17
+      Immediate subrange operands                    4.3
+        Quick                                        4.3.1
+        Block Length                                 4.3.2
+        Bit Field Length                             4.3.3
+        Bit Field Offset                             4.3.4
+        Displacement Operands                        4.3.5
+      Program Memory Operands                        4.4
+      Register Operands                              4.5
+      Register List Operand                          4.6
+      Configuration List Operand                     4.7
+      Processor Register Operands                    4.8
+      Memory Management Register Operands            4.9
+      External Procedure Operands                    4.10
+4.2  General Operands
+
+Format:   <gen>
+
+description:
+          <gen>          is   one   of  the   following   General 
+                         Addressing Operand types:
+
+                              Register
+                              Register Relative
+                              Frame Memory
+                              Frame Memory Relative
+                              Stack Memory
+                              Stack Memory Relative
+                              Static Memory
+                              Static Memory Relative
+                              Program Memory
+                              Immediate
+                              Absolute
+                              External
+                              Top of Stack
+                              Scaled-Index Byte
+                              Scaled-Index Word
+                              Scaled-Index Double-Word
+                              Scaled-Index Quad-Word
+
+Many operands use displacements (disp) to specify the offset from 
+a base address to a particular memory location.  The displacement 
+range depends on the particular 32000 series microprocessor  that 
+is in use.  The 32008,  32016 and 32032 currently have 24 address 
+externally  and thus the displacement must range from -2**24+1 to 
+2**24-1 (ie from -16777215 through to 16777215).  The newer 32000 
+family  microprocessors have more external lines,  eg  the  32332 
+carries  all out 32 address lines  and thus the displacement  can 
+be  any value in the entire 30 bit range ie -2**29+1  through  to 
+2**29+1.
+Note.  The  assembler  computes all displacements to the full  30 
+bits and thus can be used with any 32000 series microprocessor.
+
+Subsections  4.2.1 through 4.2.17 detail the syntax and  function 
+of each of the general operand types.
+.pa
+4.2.1  Register Operands
+
+Format:   <register>
+
+description:
+          <register>     is  a symbol,  either reserved or  user-
+                         defined,   with  register  type.    (See 
+                         Section 2.6.3).
+
+A  register  operand  specifies one  of  the  General-Purpose  or 
+Floating-Point registers. 
+
+Floating-Point  registers  are analogous to  the  General-Purpose 
+registers  except  they  should only be used  for  Floating-Point 
+instructions.
+
+Example:
+
+  RG5:   .EQU  R5
+  FREG4: .EQU  F4
+         MULF  FREG4,F6
+         SUBW  RG5,R3
+
+The  MULF  instruction  multipies a  floating-point  number  from 
+Floating-Point  register   F4  with Floating-Point  register  F6.  
+The SUBW instruction subtracts the low-order word of R5 from R3.
+.pa
+4.2.2.  Register Relative Operands
+
+Format:   <disp>(<register>)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an immediate type  with 
+                         a   value  in  the  range  -16777215  to 
+                         16777216.
+
+	  (<register>)   is  a  symbol with  register  type  (see 
+                         Section    2.6.3).    Parentheses    are 
+                         required.
+
+A  register  relative  operand specifies an operand at  a  memory 
+address.  The address is the sum of the displacement disp and the 
+contents of the General-Purpose register R<n>.
+
+Examples:
+
+  1.  MOVW  VALUE, 3(R4)
+  2.  SUBB  (TWO*3)(R3), VALUE
+
+In  example  1,   3(R4)  is  a  register  relative  operand.  The 
+instruction moves the word at the address specified by the symbol 
+VALUE to the memory location specified by 3(R4).
+
+In  example 2,  (TWO*3)(R3) is a register relative  operand.  The 
+expression TWO * 3 must evaluate to an immediate type. This value 
+is  added  to the contents of register R3 to yield the  operand's 
+address.  The instruction subtracts the byte at this address from 
+the byte at the address specified by the symbol VALUE. The result 
+is stored at VALUE.
+.pa
+4.2.3  Frame Memory Operands
+
+Format:  <disp>(FP)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          (FP)           specifies  the  Frame-Pointer  register.  
+                         Parentheses are required.
+
+A  frame memory operand specifies an operand at a memory address. 
+The address is the sum of the displacement disp and the  contents 
+of the FP register.
+
+A  symbol  may be used as a frame-memory operand if it  has  been 
+defined as FP type (see Section 2.6.3).
+
+Examples:
+
+  1.  MOVW  VALUE, 12(FP)
+  2.  SUBB  (TWO*3)(FP), VALUE
+
+In example 1,  12(FP) is a frame memory operand.  The instruction 
+moves  the  word at the address specified by the symbol VALUE  to 
+the word at the memory address specified by 12(FP).
+
+In  example  2,  (TWO*3)(FP)  is  a  frame  memory  operand.  The 
+expression  (TWO*3)  must evaluate to an  immediate  value.  This 
+value  is  added  to the contents of register  FP  to  yield  the 
+operand's  address.  The  instruction subtracts the byte at  this 
+address  from  the byte at the address specified  by  the  symbol 
+VALUE.  The result is stored at VALUE.
+.pa
+4.2.4  Frame memory Relative Operands
+
+Format:   <disp>(<expression>)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          (<expression>) is  an expression with FP relative  type 
+                         (see  Section 2.6.3).   Parentheses  are 
+                         required.
+
+A  frame memory relative operand points to a memory address whose 
+double-word  value  is  added to the  displacement  to  give  the 
+resultant address.
+
+Example:
+
+	FP_VAL:	.EQU	12(FP)
+		ADDB	R3,12(5(FP)+1)
+		MOVB	3(FP_VAL),R4
+
+In  the  above  example 12(5(FP)+1) is a  frame  memory  relative 
+operand.   The  second assembler instruction adds register R3  to 
+the  specified  address.   The address is the sum of 12  and  the 
+double-word value at the address (5(FP+1)) ie (6(FP)). The symbol 
+FP_VAL  is  defined as FP relative in the  first  statement.  The 
+third  statement  moves a byte from the double-word at  offset  3 
+from FP_VAL to R4.
+.pa
+4.2.5  Stack Memory Operands
+
+Format:   <disp>(SP)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          (SP)           specifies  the  current  stack  pointer.  
+                         Parentheses are required.
+
+A  stack memory operand specifies an operand at a memory address. 
+The  address is computed as the sum of the displacement disp  and 
+the contents of the current stack pointer register.
+
+A  symbol  may be used as a stack memory operand if it  has  been 
+defined as an SP type (see Section 2.6.8).
+
+Examples:
+
+  1.  MOVW  VALUE, 12(SP)
+  2.  SUBB  (TWO*3)(SP), VALUE
+
+In example 1,  12(SP) is a stack memory operand.  The instruction 
+moves  the word at the address specified by the symbol  VALUE  to 
+the   memory  address  specified  by  12(SP).
+
+In  example  2,  (TWO*3)(SP)  is  a  stack  memory  operand.  The 
+expression  (TWO*3)  must evaluate to an  immediate  value.  This 
+value  is  added  to  the contents of register SP  to  yield  the 
+operand's  address.  The instruction subtracts the byte  at  this 
+address  from  the  byte at the address specified by  the  symbol 
+VALUE. The result is stored at VALUE.
+.pa
+4.2.6  Stack Memory Relative Operands
+
+Format:   <disp>(<expression>)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          <expression>   should be an expression with SP relative 
+                         type  (see Section 2.6.8).   Parentheses 
+                         are required.
+
+A stack memory relative operand points to a memory address  whose 
+double-word  value  is  added  to the displacement  to  give  the 
+resultant address.
+
+Example:
+
+	SP_VAL:	.EQU	12(SP)
+		ADDB	R3,12(5(SP)+1)
+		MOVB	3(SP_VAL),R4
+
+In  the  above  example 12(5(SP)+1) is a  stack  memory  relative 
+operand.   The  second assembler instruction adds register R3  to 
+the  specified  address.   The address is the sum of 12  and  the 
+double-word value at the address (5(SP+1)) ie (6(SP)). The symbol 
+SP_VAL  is  defined as SP relative in the  first  statement.  The 
+third  statement  moves a byte from the double-word at  offset  3 
+from SP_VAL to R4.
+.pa
+4.2.7  Static Memory Operands
+
+Format:   <disp>(SB)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          (SB)           specifies   the  Static  Base  register.  
+                         Parentheses are required.
+
+A   static  memory  operand  specifies an  operand  at  a  memory 
+address.  The address  is  the  sum  of the displacement disp and 
+the contents of the Static Base register.
+
+A  symbol may be used as a static memory operand if it has been defined
+as an SB type (see Section 2.6.6).
+
+Examples:
+
+  1.  MOVW  VALUE, 12(SB)
+  2.  SUBB  (TWO*3)(SB), VALUE
+
+In example 1, 12(SB) is a static memory operand.  The instruction 
+moves  the  word at the address specified by the symbol VALUE  to 
+the word at the memory address specified by 12(SB).
+
+In  example  2,  (TWO*3)(SB)  is a  static  memory  operand.  The 
+expression  (TWO*3)  must evaluate to an  immediate  value.  This 
+value  is  added  to the contents of register  SB  to  yield  the 
+operand's  address.  The  instruction subtracts the byte at  this 
+address  from  the byte at the address specified  by  the  symbol 
+VALUE. The result is stored at VALUE.
+.pa
+4.2.8  Static Memory Relative Operands
+
+Format:   <disp>(<expression>)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          <expression>   should  be  expression with SB  relative 
+                         type (see Section  2.6.6).   Parentheses 
+                         are required
+
+A static memory relative operand points to a memory address whose 
+double-word  value  is  added  to the displacement  to  give  the 
+resultant address.
+
+Example:
+
+	SB_VAL:	.EQU	12(SB)
+		ADDB	R3,12(5(SB)+1)
+		MOVB	3(SB_VAL),R4
+
+In  the  above example 12(5(SB)+1) is a  static  memory  relative 
+operand.   The  second assembler instruction adds register R3  to 
+the  specified  address.   The address is the sum of 12  and  the 
+double-word value at the address (5(SB+1)) ie (6(SB)). The symbol 
+SB_VAL  is  defined as SB relative in the  first  statement.  The 
+third  statement  moves a byte from the double-word at  offset  3 
+from SB_VAL to R4.
+.pa
+4.2.9  Program Memory Operands
+
+Format:   <disp>(PC)
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+          (PC)           specifies   the  start  address  of  the 
+                         program  code  of  the  current  module.  
+                         Parentheses are required.
+
+A  program  memory  operand  specifies an  operand  at  a  memory 
+address.   The address  is  the  sum of the displacement disp and 
+the start address of the program code segment of the module.
+
+A  symbol may be used as a program memory operand if it has  been 
+defined as PC type (see Section 2.6.9).
+
+Examples:
+
+  1.  MOVW  VALUE, 12(PC)
+  2.  SUBB  (TWO*3)(PC), VALUE
+
+In  example  1,   12(PC)  is  a  program  memory  operand.    The 
+instruction moves the word at the address specified by the symbol 
+VALUE to the word at the memory address specified by 12(PC).
+
+In  example  2,  (TWO*3)(PC)  is a program  memory  operand.  The 
+expression  (TWO*3)  must evaluate to an  immediate  value.  This 
+value  is  added  to the contents of register  PC  to  yield  the 
+operand's  address.  The  instruction subtracts the byte at  this 
+address  from  the byte at the address specified  by  the  symbol 
+VALUE. The result is stored at VALUE.
+
+Program  memory  operands are encoded as  PC-relative  addressing 
+mode.   At  run time the address of a PC relative operand is  the 
+encoded  displacement plus the contents of the PC register.  Thus 
+the  Assembler  encodes  the  difference  between  the  operand's 
+displacement  and the value of the location counter (as a  signed 
+number), rather than the value of the displacement itself.
+.pa
+4.2.10  Immediate Operands
+
+Format:   <expression>
+
+description:
+          <expression>   is one of the following:
+
+          - an expression of type immediate (see Section 2.6.1)
+          - an expression of type long (see Section 2.6.2)
+
+Immediate  operands are encoded into immediate  addressing  mode, 
+thus the operand's value is stored in the instruction stream.
+
+The   range   of   immediate  operands  is  controlled   by   the 
+instruction's length specifiers as follows:
+
+  - For expressions of type immediate, the ranges are:
+	-128 to 255			for byte instructions.
+	-32768 to 65535			for word instructions.
+	-2147483648 to 2147483648	for double-word instructions.
+
+  - For expressions of type long, the positive ranges are:
+         1.28x10E-38 to 3.40x10E38	for float instructions.
+         2.23x10E-308 to 1.80x10E308	for long instructions.
+
+
+Examples:
+
+  1.  ADDW  3, FRED
+  2.  SUBF  3.14159E12, F2
+  3.  SUBD  "MNOP", TEST
+  4.  ADDD  TWO*3, R4
+
+Example  1  adds  the  word  constant 5  to  the  memory  address 
+specified by FRED.
+
+Example 2 subtracts the floating point number 3.14159E12 from the 
+contents of register F2.
+
+Example  3 subtracts the string constant "MNOP" from the  double-
+word at address specified by TEST.
+
+Example  4 adds the value of the expression TWO*3 to the  double-
+word of register R4.
+.pa
+4.2.11  Absolute Operands
+
+Format:  <absolute>
+
+description: 
+          <absolute>     is  a  constant or an  expression  which 
+                         evaluates to absolute type (see  Section 
+                         2.6.4).
+
+An  absolute  operand specifies an operand at an absolute  memory 
+address.
+
+Examples:
+
+  1.		SUBW  H'9876, @12
+  2.		CMPB  @ELEVEN, R6
+  3.  HERE:	.EQU @12
+ 		MOVW  HERE, R3
+
+In  example  1,  @12  is an  absolute  operand.  The  instruction 
+subtracts the immediate operand H'9876 from the word starting  at 
+absolute address 12.
+
+In example 2,  @ELEVEN is an absolute operand.  The symbol ELEVEN 
+must  be of immediate type.  The instruction compares the word at 
+the absolute address specified by ELEVEN to the low order word of 
+register R6.
+
+In  example 3,  the use of @ preceding an immediate value  causes 
+the .EQU directive to assign HERE absolute type.  MOVW then moves 
+the word at the absolute  address  specified  by HERE to the low-
+order word of register R3.
+.pa
+4.2.12  External Operands
+
+Format:   <external>
+
+description:
+          <external>     is an expression with external type (see 
+                         Section 2.6.5).
+
+An  external  operand  implies both a Link  Table  entry  and  an 
+offset.  At run-time the contents of the Link Table entry and the 
+offset are added together to produce an absolute address.
+
+Examples:
+
+  1.  ADDW  R3, EXT(4)
+  2.  SUBW  FIRST, EXT(FOUR) + ELEVEN
+
+In  example 1,  EXT(4) is an external operand.   The  instruction 
+adds  the low order word of register R3 to the word specified  by 
+EXT(3).  The  external   address is the sum  of  the  double-word 
+contents of a Link Table entry and 0.
+
+In  example  2,  EXT(FOUR) + ELEVEN is an external  operand.  The 
+instruction subtracts the word at the address specified by  FIRST 
+from  the word specified by EXT(FOUR) + ELEVEN.  The symbols FOUR 
+and ELEVEN must evaluate to immediate type.
+.pa
+4.2.13  Top of Stack Operands
+
+Format:   TOS
+
+description:
+          TOS       is the required keyword.
+
+The  top  of stack operand specifies an operand which is  at  the 
+current  top  of stack,  ie the address specified by the  current 
+stack pointer. 
+
+TOS is a NS32000 general addressing mode.
+
+The stack pointer is incremented by the length (in bytes) of  the 
+operand  after  a  read  is  performed.   The  stack  pointer  is 
+decremented  by  the  length (in bytes) of the operand  before  a 
+write  is  performed.  The stack pointer is not  modified  if  an 
+operand is both read and written.
+
+Examples:
+
+  1.  ADDW  R4,TOS
+  2.  SUBW  TOS,TOS
+
+Example  1  decrements the stack pointer by 2 (the  length  of  a 
+word)  and then adds the low-order word of register R4 to the top 
+of the stack.
+
+Example  2  reads  the  word at the top  of  the  current  stack, 
+increments  the stack pointer by 2 (the length of a word),  reads 
+the  word at the new top of stack,  subtracts the first word from 
+the  second  word and then writes the word back over  the  second 
+word.
+.pa
+4.2.14  Scaled-Index Byte Operands
+
+Format:   gen[<register>:B]
+
+description:
+          gen            specifies a general operand.  It may not 
+                         be   an  immediate  operand  or  another 
+                         scaled-index operand.
+
+	   []            are the required brackets.
+
+	    <register>   specifies  a  General-Purpose   register 
+                         either by using R<n>,  ie.  one of R0 to 
+                         R7,  or  by using a symbol with register 
+                         type.
+
+	   :B            is the byte scaling flag.
+
+The  resulting address of this addressing mode is the sum of  the 
+address  of  the general operand 'gen' and the  contents  of  the 
+General-Purpose register R<n> multiplied by 1.
+
+Example:
+
+  ADDW  R4, 20(FP)[R3:B]
+
+In  the  above  example,  20(FP)[R3:B]  is  a  scaled-index  byte 
+operand.  The  instruction adds the low-order word of register R4 
+to  the  contents of the  destination  address.  The  destination 
+address  is  the sum of the address specified by 20(FP)  and  the 
+contents of the register R3 multiplied by 1.
+.pa
+4.2.15  Scaled-Index Word Operands
+
+Format:   gen[<register>:W]
+
+description:
+          gen            specifies a general operand.  It may not 
+                         be   an  immediate  operand  or  another 
+                         scaled-index operand.
+
+          []             are the required brackets.
+
+          <register>     specifies  a  General-Purpose   register 
+                         either by using R<n>,  ie.  one of R0 to 
+                         R7,  or  by using a symbol with register 
+                         type.
+
+          :W             is the word scaling flag.
+
+The  resulting address of this addressing mode is the sum of  the 
+address  of  the general operand 'gen' and the  contents  of  the 
+General-Purpose register R<n> multiplied by 2.
+
+Example:
+
+  ADDW  R4, 20(FP)[R3:W]
+
+In  the  above  example,  20(FP)[R3:W]  is  a  scaled-index  word 
+operand.  The  instruction adds the low-order word of register R4 
+to  the  contents  of the destination  address.  The  destination 
+address  is  the sum of the address specified by 20(FP)  and  the 
+contents of the register R3 multiplied by 2.
+.pa
+4.2.16  Scaled-Index Double-Word Operands
+
+Format:   gen[<register>:D]
+
+description:
+          gen            specifies a general operand.  It may not 
+                         be   an  immediate  operand  or  another 
+                         scaled-index operand.
+
+          []             are the required brackets.
+
+          <register>     specifies  a  General-Purpose   register 
+                         either by using R<n>,  ie.  one of R0 to 
+                         R7,  or  by using a symbol with register 
+                         type.
+
+          :D             is the double-word scaling flag.
+
+The  resulting address of this addressing mode is the sum of  the 
+address  of  the general operand 'gen' and the  contents  of  the 
+General-Purpose register R<n> multiplied by 4.
+
+Example:
+
+  ADDW  R4, 20(FP)[R3:D]
+
+In the above example,  20(FP)[R3:D] is a scaled-index double word 
+operand.   The instruction adds the low-order word of register R4 
+to  the  contents of the  destination  address.  The  destination 
+address  is  the sum of the address specified by 20(FP)  and  the 
+contents of the register R3 multiplied by 4.
+.pa
+4.2.17  Scaled-Index Quad-Word Operands
+
+Format:   gen[<register>:Q]
+
+description:
+          gen            specifies a general operand.  It may not 
+                         be  an  immediate  operand  or   another 
+                         scaled-index operand.
+
+          []             are the required brackets.
+
+          <register>     specifies   a  General-Purpose  register 
+                         either by using R<n>,  ie.  one of R0 to 
+                         R7,  or by using a symbol with  register 
+                         type.
+
+          :Q             is the quad-word scaling flag.
+
+The  resulting address of this addressing mode is the sum of  the 
+address  of  the  general operand 'gen' and the contents  of  the 
+General-Purpose register R<n> multiplied by 8.
+
+Example:
+
+  ADDW  R4, 20(FP)[R3:Q]
+
+In  the above example,  20(FP)[R3:Q] is a scaled-index  quad-word 
+operand.   The instruction adds the low-order word of register R4 
+to  the  contents  of the destination  address.  The  destination 
+address  is  the sum of the address specified by 20(FP)  and  the 
+contents of the register R3 multiplied by 8.
+.pa
+4.3  IMMEDIATE OPERANDS
+
+Immediate  operands are expressions of immediate type with values 
+within subranges of the full double-word range (32 bits).
+
+
+4.3.1  Quick Operands
+
+Format:   <quick>
+
+description:
+          <quick>        is a signed constant or expression which 
+                         evaluates  to an immediate type  with  a 
+                         value in the range -8 to 7, inclusive.
+
+A  quick  operand  is  encoded as a 4-bit  signed  integer  in  a 
+reserved field within the instruction itself.  Quick operands may 
+only be used in the quick-integer instructions. The quick operand 
+is  typically used to clear,  increment,  decrement or compare  a 
+variable.
+
+Examples:
+
+  1.  MOVQB  -1, LAST(R4)
+  2.  CMPQB   2, TEST
+  3.  ADDQD  1, R4
+
+Example  1  moves  the  quick operand -1 to the  operand  at  the 
+address specified by LAST(R4).
+
+Example 2 compares the quick operand 2 with the operand specified 
+by TEST.
+
+Example 3 adds the quick operand 1 to the double-word of register 
+R4.  This would effectively increment register R4.
+.pa
+4.3.2  Block Length Operands
+
+Format:   <cons4>
+
+description:
+          <const>        is  an  unsigned constant or  expression 
+                         which  evaluates  to an  immediate  type 
+                         with  a value in the range 1 to 16  (see 
+                         below).
+
+The  block  length  operands are  4-bit  unsigned  numbers  which 
+specify  the  length of a block of integers.  A block may  be  no 
+longer than 16 bytes,  thus the allowable values that <cons4> may 
+take depends on the instruction's length specifier (B,  W,  or D) 
+as shown by the following:
+
+        Length Specifier        <cons4>
+        ----------------        -------
+		B		1 to 16
+		W		1 to 8
+		D		1 to 4
+
+The operand is multiplied by the corresponding byte length of the 
+length specifier and then decremented by one before being encoded 
+in the instruction.
+
+The  block length operand is the final operand in  the  following 
+instructions:
+
+  Move Multiple      MOVMi
+  Compare Multiple   CMPMi
+
+Examples:
+
+  1.  MOVMB   VAL1, R0, 4
+  2.  CMPMD   VAL2, R4, LENGTH/4
+
+In example 1, the block length 4 specifies the number of bytes to 
+move from the address specified by VAL1 to the address  specified 
+by R0.
+
+In  example 2,  the block length is the expression  LENGTH/4.  It 
+specifies  the  number of double-words to be  compared.  LENGTH/4 
+must evaluate to a positive number less than, or equal to four.
+
+NOTE:     the  block instructions compute an address for the  two 
+          general addressing fields,  thus the contents of R0 and 
+          R4 are used as addresses.
+.pa
+4.3.3  Bit-Field Length Operands
+
+Format:   <cons5>
+
+description:
+          <cons5>        is  an  unsigned constant or  expression 
+                         which  evaluates  to an  immediate  type 
+                         with  a value in the range 1 to  32.  At 
+                         assembly-time,  the assembler decrements 
+                         the number by 1 before encoding it  into 
+                         the instruction.
+
+A  bit-field  length operand is an unsigned,  5-bit number  which 
+specifies  the  length in a  bit-field  instruction.  The  length 
+operands of the 'short bit field' instructions are encoded into a 
+5-bit field,  and into a byte displacement in the other bit-field 
+instructions. The bit-field length operand is the last operand in 
+the following instructions:
+
+  Extract Field Short  EXTSi
+  Insert Field Short   INSSi
+
+Examples:
+
+  1.  EXTSB  START, TARGET, 4, 10
+  2.  INSSW  BEG, END, 8, 13
+
+In example 1,  10 is the 5-bit constant. The instruction computes 
+the  location of a bit field 10 bits in length and 4 bits  offset 
+from  the address specified by START and copies the field to  the 
+address specified by the symbol TARGET.
+
+In example 2,  13 is the 5-bit constant. The instruction computes 
+the  destination  of  a bit field 13 bits in length  and  8  bits 
+offset from the address specified by END and moves the field from 
+the address specified by BEG to the destination.
+.pa
+4.3.4  Bit-Field Offset Operands
+
+Format:   <cons3>
+
+description:
+          <cons3>        is  an unsigned constant  or  expression 
+                         which  evaluates  to an  immediate  type 
+                         with a value in the range 0 to 7.
+
+A  bit-field  offset  operand is a  3-bit,  unsigned  number.  It 
+specifies an offset which is used to calculate the location of  a 
+bit field. A bit-field offset operand is the third operand in the 
+following instructions:
+
+  Extract Field Short   EXTSi
+  Insert Field Short    INSSi
+
+Examples:
+
+  1.  EXTSB  START, END, 4, 6
+  2.  INSSW  BEG, END, 3, 12
+
+In example 1, 4 is a 3-bit constant. The instruction computes the 
+source address by adding the bit offset 4 to START and moving a 6 
+bit field to the destination END, the top 4 bits are zero filled.
+
+In example 2, 3 is a 3-bit constant. The instruction computes the 
+target  address  by  adding  the bit  offset  3  to  the  address 
+specified by END, and moves a field 12 bits in length from BEG.
+.pa
+4.3.5  Displacement Operands
+
+Format:   <disp>
+
+description:
+          <disp>         is  a  displacement or expression  which 
+                         must evaluate to an Immediate type  with 
+                         a  value  that  is legal for  the  32000 
+                         series microprocessor in use.
+
+A  displacement  operand  is the final operand in  the  following 
+instructions:
+
+	Return from Subroutine		RET
+	Return from Trap		RETT
+	Insert Field			EXTi
+
+Examples:
+
+  1.  RET	4
+  2.  RETT	3
+  3.  INSW	R3, R4, 4(R3), 5
+
+In example 1,  the displacement is 4.  It specifies the number of 
+bytes to remove from the stack on return from a subroutine.
+
+In example 2,  the displacement is 3.  It specifies the number of 
+bytes to remove from the stack on return from a trap.
+
+In example 3,  the displacement is 5.  It specifies the number of 
+bits in the bit field to be written.
+
+Displacement  operands are encoded by the assembler in  the  same 
+way  as  memory displacements are.  The length of a  displacement 
+operand is encoded in the most significant bits of the operand in 
+the following way:
+
+  0XXXXXXX					1 byte
+  10XXXXXX XXXXXXXX				2 bytes
+  11XXXXXX XXXXXXXX XXXXXXXX XXXXXXXX		4 bytes
+
+Note.  The displacement is output with the most significant bytes 
+first.
+.pa
+4.4  PROGRAM MEMORY OPERANDS
+
+Format:   <label>
+
+description:
+          <label>        is a label or expression which evaluates 
+                         to  a PC-relative type with a  value  in 
+                         the range -16777215 through 16777216.
+
+A  label  operand specifies the location of  an  instruction.  At 
+assembly-time  the  assembler  computes the address as  a  signed 
+number which is the distance in bytes from the specified label to 
+the current instruction address.
+
+Program  memory operands are stored in memory in the same way  as 
+general program memory operands (Section 4.2.9).
+
+  Branch to subroutine		BSR
+  Jump to subroutine		JSR
+  Conditional branch		B[cond] 
+
+Examples:
+
+  1.  BSR	FRED
+  2.  JSR	13(PC)
+  3.  BEQ	$+6
+
+In example 1,  the label operand is FRED. It specifies the number 
+of bytes offset from the PC.
+
+In example 2,  the displacement is 13. It specifies the number of 
+bytes offset from the PC.
+
+In example 3,  the displacement is 6.  It specifies the number of 
+bytes offset from the beginning of the current instruction.
+.pa
+4.5  REGISTER OPERANDS
+
+Format:   <register>
+
+description:
+          <register>     is  a General-Purpose register specified 
+                         by either R<n>,  ie.  one of R0  through 
+                         R7, or a symbol with register type.
+
+A   register   operand  specifies  one  of  the   General-Purpose 
+registers. The contents of the register are used as the operand.
+
+  Move				MOVi
+  Add				ADDi
+  Compare multiple		CMPMi
+
+Register operands are equivalent to the general register operands 
+(see Section 4.2.1).
+
+Examples:
+
+  1.  MOVB	R0, 12(FP)
+  2.  ADDW	R3, 5(SP)
+  3.  CMPMB	R2, FRED, LENGTH
+
+In  example  1,  the  register operand is  R0.  The  contents  of 
+register R0 moved to the address computed from 12 added to the FP 
+register.
+
+In  example  2,  the  register operand is  R3.  The  contents  of 
+register R3 is added to the word contents at the address computed 
+from 5 added to the current stack pointer.
+
+In  example  3,  the  register operand is  R2.  The  contents  of 
+register  R2  is  compared with LENGTH bytes at  the  address  of 
+symbol FRED.
+.pa
+4.6  REGISTER LIST (reglist) OPERAND
+
+Format:   [[<register>,,,]]
+
+description: 
+          []             are  the  required  brackets.  A  single 
+                         level  of brackets are required even  if 
+                         no registers are specified.
+
+          <register>     specifies  a General-Purpose register or 
+                         a symbol with register type.
+
+A   register  list  operand  may  be  used  with  the   following 
+instructions:
+
+  Save Registers        SAVE
+  Restore Registers     RESTORE
+  Enter New Context     ENTER
+  Exit Context          EXIT
+
+Examples:
+
+  1.  FRED:	.EQU  R5
+		SAVE     [FRED]
+  2.		RESTORE  [R3]
+  3.		ENTER    [], 3
+  4.		EXIT     [R0,R1]
+
+In example 1, the operand specifies a single register FRED, which 
+has  been  set to R5.  The contents of register R5 are  saved  on 
+stack.
+
+In  example 2,  the operand specifies the register directly.  The 
+instruction removes a double-word off the stack into R3.
+
+In example 3,  the operand specifies no registers. A displacement 
+of 5 is used to allocate three bytes of the stack for storage.
+
+In example 4, the operand restores two General-Purpose registers, 
+R0 and R1, and then the EXIT instruction is executed.
+.pa
+4.7  CONFIGURATION LIST (cfglist) OPERAND
+
+Format:   [[C] [,I] [,M] [,F]]
+
+description:
+          []             are the required brackets.  The brackets 
+                         must be entered even if no configuration 
+                         bit is specified.
+
+          C     specifies that a Custom Slave is installed.
+	  I     specifies that a Interrupt Control Unit is installed.
+	  M     specifies that a Memory Management Unit is installed.
+	  F     specifies that a Floating Point Unit is installed.
+
+               		 If  one  or  more  of  these  units  are                         
+                         installed, then the  user program should                         
+                         set   the  corresponding  bits  in   the 
+                         NS32032  Configuration register is  set. 
+                         Otherwise,  the  bit  is  cleared.   Any 
+                         order  is  permissible as  long  as  bit 
+                         specifications  are separated by commas.
+
+
+A  configuration  list  operand may be used  with  the  following 
+instruction:
+
+  Set Configuration Register   SETCFG
+
+Examples:
+
+  1.  SETCFG []
+  2.  SETCFG [I]
+  3.  SETCFG [C,I,M,F]
+
+In  example  1,  the operand specifies  no  register  bits.   The 
+instruction clears all bits in the Configuration register.
+
+In example 2,  the operand specifies the I bit.   The instruction 
+sets the I bit and clears the F, M, and C bits.
+
+In  example 3,  the operand specifies all bits.   The instruction 
+sets all bits in the Configuration register.
+
+NOTE:     If a bit is set when the unit is not  present,  serious 
+          hardware problems can occur.
+.pa
+4.8  PROCESSOR REGISTER OPERANDS
+
+Format:   <proceg>
+
+description:
+          <proceg>       specifies one of the following dedicated 
+                         CPU registers:
+
+               UPSR        User Processor Status Register
+               FP          Frame Pointer
+               SP          Stack Pointer
+               SB          Static Base
+               PSR         Processor Status Register
+               INTBASE     Interrupt Base
+               MOD         Module
+
+                         The   function  of  the  Dedicated   CPU 
+                         Registers is described in Section 1.3.2.
+
+The  first operand in the following instructions is  a  processor 
+register operand.
+
+  Load Processor Register   LPRi
+  Store Processor Register  SPRi
+
+Examples:
+
+  1.  LPRD  SB, R7
+  2.  SPRD  INTBASE, INT_SAVE
+
+In  example  1,  SB  is  the  Processor  register  operand.   The 
+instruction  copies  the  double-word in register R7  to  the  SB 
+register.
+
+In  example 2,  INTBASE is the Processor register  operand.   The 
+instruction copies the double-word of the Interrupt Base register 
+to the address specified by the symbol INT_SAVE.
+.pa
+4.9   MEMORY MANAGEMENT REGISTER OPERANDS
+
+Format:   <mmureg>
+
+description:
+          <mmureg>       specifies  one of the  following  Memory 
+                         Management registers:
+
+              BPR0    Breakpoint Register 0
+              BPR1    Breakpoint Register 1
+              PF0     Program Flow 0
+              PF1     Program Flow 1
+              BCNT    Breakpoint Count
+              PTB0    Page Table Base 0
+              PTB1    Page Table Base 1
+              SC0     Sequential Count 0
+              SC1     Sequential Count 1
+              MSR     Memory Management Status Register
+              EIA     Error/Invalidate Address
+
+                         Memory    Management    registers    are 
+                         described in Section 1.3.4.
+
+The  first  operand  in the following instructions  is  a  Memory 
+management register.
+
+  Load Memory Management Register     LMR
+  Store Memory Management             SMR
+
+Examples:
+
+  1.  LMR  EIA,	R0
+  2.  SMR  PF0, PFLOW_1
+
+In example 1,  EIA is the memory management register operand. The 
+instruction loads the double-word in R0 into the Error/Invalidate 
+Address register.
+
+In example 2,  PF0 is the memory management register operand. The 
+instruction  stores  the double-word contents of the PF0  at  the 
+address specified by the symbol PFLOW_1.
+.pa
+4.10  EXTERNAL PROCEDURE OPERANDS
+
+Format:   <external>
+
+description:
+          <external>     is  a symbol or expression with external 
+                         type and zero offset.
+
+An  external  procedure  operand  specifies an entry in the  Link 
+Table.    Entries    for    external    procedure    are   called  
+external  procedure descriptors and consist of the 16-bit address 
+of  an  entry  in  the  Module Table   and   a   16-bit   offset.    
+During   execution   the  address of the  external  procedure  is 
+calculated  by  adding the offset to the address in  the   Module  
+Table   entry  (See  the  section  on  software  modules  in  the 
+Programmer's Reference Manual).
+
+An  external  operand  is  the  only  operand  in  the  following 
+instructions:
+
+  Call External Procedure               CXP
+  Call External Procedure descriptor    CXPD
+
+Example:
+
+  CXP   PRINTF
+
+In the example,  PRINTF is an external operand. PRINTF references 
+a  Link  Table  entry address.  At assemble  time  the  Assembler 
+assigns a number to the PRINTF label.  At run-time the Link Table 
+address is extracted from the current Module Table,  the value of 
+the PRINTF label is multiplied by four and a double-word is  read 
+from  this  address.  The low-order word is the new Module  Table 
+address  and  the  high-order word is the  offset  to  the  start 
+address of the procedure being called. The offset is added to the 
+module's  code  address which is obtained from the  new  module's 
+Module Table.
+

@@ -1,0 +1,427 @@
+.pl 62
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                     DEFINICON SYSTEMS, INC.
+
+                    DSI-32 COPROCESSOR BOARD
+                   & MS/PC DOS SYSTEM SOFTWARE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          INTERFACING HIGH LEVEL LANGUAGES
+          AND ASSEMBLER LANGUAGE
+.pa
+1.0 Interfacing C, Pascal and Fortran to assembler
+
+     Some  applications require both high level language code  as 
+well as assembler code. For these applications it is necessary to 
+be  able to link the two language types together to form a single 
+program. This document describes how interface language types and 
+how parameters are passed between them.
+
+     For   further  reference  on  the  assembler  syntax  and  a 
+discussion on assembler procedures and parameter passing refer to 
+the Defincon Assembler/Linker document.
+
+     One of the advantages of the Definicon C, Pascal and Fortran 
+compilers  is the common code generator that they all share.  The 
+common code generator means that the same interfacing  techniques 
+will apply to all three languages. Below is an outline of how the 
+three languages pass their parameters on the stack.
+
+  o   C.
+
+      The  C  language  can pass parameters by  either  value  or 
+      pointer.  Which  type  of parameter gets passed  is  purely 
+      dependent the C program.
+
+  o   Pascal.
+
+      The  Pascal language can pass parameters by either value or       
+      pointer.  Which  type  of parameter gets passed  is  purely       
+      dependent the Pascal program.
+
+  o   Fortran.
+
+      The  Fortran language passes parameters by pointer,  ie the 
+      item  that  gets passed on the stack is a  pointer  to  the       
+      actual parameter.
+
+In the following sections there are three examples,  one for each 
+language.  The  astute  person will note that the  C  and  Pascal 
+languages  produce identical assembler output for the  equivalent 
+test  program.  Fortran  on  the  other  hand  produces  entirely 
+different  code,  primarily because the parameters are passed  by 
+pointer (ie by reference). In each of the three examples there is 
+also  an example program written in assembler to interface to the 
+high level language program.
+.pa
+1.1 C calling convention
+
+Below  is  an  example C program which calls  a  function  called 
+'asm1'  and  passes  two pointers and a value.  Variable  'a'  is 
+passed  to  the  'asm1' function by reference  as  is  the  first 
+element of the 'c' array, while variable 'b' is passed by value.
+
+test()
+{
+     int  a, b;
+     char c[10];
+
+     asm1(&a, b, &c[0]);
+}
+
+The actual assembler code that is produced for this C program  is 
+shown below:
+
+ .module	test.c
+ .program
+ _main:-
+	enter	[],16              ;16 bytes = a + b + c[10]
+	addrd	-14(fp),tos        ;address of c
+	movd	r0,tos             ;value of b
+	addrd	-4(fp),tos         ;address of a
+	cxp	_asm1              ;call the function
+	adjspb	-12                ;collapse stack back
+	exit	[]                 ;exit from stack frame
+	rxp	0                  ;done
+ .endseg
+ ;_a	-4(fp)	local
+ ;_b	r0	local
+ ;_c	-14(fp)	local
+	.importp	_asm1
+.pa
+1.2 Pascal calling convention
+
+Below is an example Pascal program which calls a function  called 
+'asm1'  and  passes  two pointers and a value.  Variable  'a'  is 
+passed  to  the  'asm1' function by reference  as  is  the  first 
+element of the 'c' array, while variable 'b' is passed by value.
+
+    type
+	string = array[0..9] of char;
+    procedure asm1(var a:integer; b:integer; var c:string); external;
+
+procedure test;
+    var
+	a, b: integer;
+	c: string;
+begin
+    asm1(a, b ,c);
+end;
+
+The  actual  assembler  code  that is produced  for  this  Pascal 
+program is shown below:
+
+ .module	test1.p
+ .program
+ _test:-
+	enter	[],16              ;16 bytes = a + b + c[10]
+	addrd	-14(fp),tos        ;address of c
+	movd	r0,tos             ;value of b
+	addrd	-4(fp),tos         ;address of a
+	cxp	_asm1              ;call the function
+	adjspb	-12                ;collapse stack back
+	exit	[]                 ;exit from stack frame
+	rxp	0                  ;done
+ .endseg
+ ;_a	-4(fp)	local
+ ;_b	r0	local
+ ;_c	-14(fp)	local
+	.importp	_asm1
+
+.pa
+1.3 Assembler program example for C or Pascal
+
+Below  is  an  example  of  how to write  the  asm1  function  in 
+assembler.  Since  the  compiler  output from the  C  and  Pascal 
+compilers  is  the  same,  this one assembler code  program  will 
+suffice for both.
+
+          exportp   _asm1
+
+_asm1:    proc
+c:        blkd      1              ;order of variables on stack
+b:        blkd      1              ; is the order  they  were 
+a:        blkd      1              ; push in
+          returns
+          blkd      3              ;must fake return of a, b & c
+          var       []
+          begin
+          addd      b,0(a)         ;add 'b' to contents of 'a'
+          movd      'done',0(c)    ;put 'done...' with zero
+          movd      '...',4(c)     ; terminator
+          endproc
+
+The  listing  file  for the above assembler language  program  is 
+shown below:
+.cw 10
+
+				     1            exportp   _asm1
+				     2  
+				     3  _asm1:    proc
+				     4  c:        blkd      1
+				     5  b:        blkd      1 
+				     6  a:        blkd      1
+				     7            returns
+				     8            blkd      3
+				     9            var       []
+00000000 PC 820000		    10            begin
+00000003 PC 03c4100c00		    11            addd      b,0(a)
+00000008 PC 17a4656e6f641400	    12            movd      'done',0(c)
+00000010 PC 17a4002e2e2e1404	    13            movd      '...',4(c)
+00000018 PC 92003200		    14            endproc
+
+
+NAME                         EXT  REL   VALUE   VALUE  DEFINED REFERENCES
+
+a                                 FP  0000000c              6     11
+b                                 FP  00000010              5     11
+c                                 FP  00000014              4     12  13
+_asm1                        EXP  PC  00000000              3      1
+.cw 12
+.pa
+Some points to note about the above assembler program follow:
+
+1)   After the 'proc' pseudo-op are the definitions for reserving 
+     the  space for the variables passed by the calling  routine. 
+     Sufficient  memory  has  to be reserved for all  the  passed 
+     variables.
+
+2)   After  the 'returns' pseudo-op  is the  definition  for  the 
+     amount of data passed back to the calling function. Since in 
+     both C and Pascal it is the calling routines task to unstack 
+     the  passed  parameters the procedure must return  the  same 
+     amount of data that was passed to it.
+
+3)   The 'var' pseudo-op can if necessary inform the assembler to 
+     save  some of the general purpose registers (R0  - R7).  Any 
+     general  purpose registers that need to be saved are  placed 
+     between  the  square  brackets,   separated  by  commas,  eg 
+     [R3,  R4].  Note  that  in both the C and  Pascal  compilers 
+     registers  R0,  R1 and R2 may be changed by a function,  but 
+     registers R3,  R4,  R5,  R6 and R7 must be  preserved.  Also 
+     floating point registers F0,  F1,  F2 and F3 may be changed, 
+     but registers F4, F5, F6 and F7 must be preserved.
+
+4)   If  a  procedure has to return a result  to a  C  or  Pascal       
+     function  then  that  result  must be  returned  in  the  R0 
+     register for integer results  or in the F0,F1 floating point      
+     register pair if it is a floating point result.
+
+5)   Since all variables to the procedure are passed on the frame 
+     the  procedure may recursively call itself if required.  The 
+     level  of  recursion  is solely limited  by  the  amount  of      
+     available stack.
+.pa
+1.4 Fortran calling convention
+
+Below is an example Fortran program which calls a function called 
+'asm1' and passes three variables, 'a', 'b' and 'c' by reference.
+
+	program test
+	integer a,b
+	character*10 c
+
+	call asm1(a,b,c)
+	end
+
+The  actual  assembler  code that is produced  for  this  Fortran 
+program is shown below:
+
+ .module	test3.f
+ .program
+ _MAIN_:-
+	addrd	@10,tos            ;the size of array c
+	addrd	L8,tos             ;pointer to array c
+ 	addrd	L6,tos             ;pointer to b
+	addrd	L7,tos             ;pointer to a
+	cxp	_asm1_
+	adjspb	-16
+	rxp	0
+ .endseg
+ L7:	.blkb	4
+ L6:	.blkb	4
+ L8:	.blkb	8
+	.word	0
+	.importp	_asm1_
+
+Below  is  an  example  of  how to write  the  asm1  function  in 
+assembler.
+
+          exportp   _asm1
+_asm1:    proc
+d:        blkd      1              ;sizeof array c
+c:        blkd      1              ;order of variables on stack
+b:        blkd      1              ; is the order  they  were 
+a:        blkd      1              ; push in
+          returns
+          blkd      4              ;fake return of a, b, c & d
+          var       []
+          begin
+          addd      0(b),0(a)      ;add 'b' to contents of 'a'
+          movd      'done',0(c)    ;put 'done...' with zero
+          movd      '...',4(c)     ; terminator
+          endproc
+
+.pa
+The  listing  file  for the above assembler language  program  is 
+shown below:
+.cw 10
+
+
+
+				     1            exportp   _asm1
+				     2  
+				     3  _asm1:    proc
+                                     4  d:        blkd      1
+				     5  c:        blkd      1
+				     6  b:        blkd      1
+				     7  a:        blkd      1
+				     8            returns
+				     9            blkd      3 
+				    10            var       []
+00000000 PC 820000		    11            begin
+00000003 PC 038410000c00            12            addd      0(b),0(a)
+00000009 PC 17a4656e6f641400	    13            movd      'done',0(c)
+00000010 PC 17a4002e2e2e1404	    14            movd      '...',4(c)
+00000018 PC 92003200		    15            endproc
+
+NAME                         EXT  REL   VALUE  VALUE  DEFINED  REFERENCES
+
+a                                 FP  0000000c            7   12
+b                                 FP  00000010            6   12
+c                                 FP  00000014            5   13 14
+d                                 FP  00000018            4
+_asm1                        EXP  PC  00000000            3    1
+
+
+
+.cw 12
+Notes  1)  2) and 3) from the C / Pascal assembler  example  also 
+apply  to this Fortran example.  Note that in the Fortran example 
+the size of the array is also passed to the assembler  procedure. 
+Unless the size is actually required within the procedure then it 
+may just be ignored.
+.pa
+1.5 Building the executable program
+
+Now  that  we  have  written both the  high  level  language  and 
+assembler  language portions of the code it is time to build  the 
+executable  program.  Firstly  it  is necessary  to  compile  and 
+assemble the high level language portion.
+
+For C programs:
+
+     A>cc test
+     A>as test
+ 
+or for Pascal programs:
+
+     A>pc test1
+     A>as test1
+
+or for Fortran programs:
+
+     A>fc test2
+     A>as test2
+
+Now  we  have to assemble the assembler language portion  of  the 
+code:
+
+     A>as asm1
+
+All  that  is  now necessary is to link the high  level  language 
+portion to the assembler language portion:
+
+For the C example:
+
+     A>ln file=test,asm1
+
+or for the Pascal example:
+
+     A>ln file=test1,asm1
+
+or for the Fortran example:
+
+     A>ln file=test2,asm1
+
+And to execute the resultant program all that is necessary is  to 
+use  the  standard  Definicon  loader  program,  see  section  on 
+invoking the 'LOAD' program.
+.pa
+2.0 High level language to high level language
+
+In  some cases it is necessary to interface high  level  language 
+programs together.  The Definicon C, Pascal and Fortran compilers 
+share a common code generator.  This means that parameter passing 
+to functions,  procedures or subroutines is performed in the same 
+manner regardless of the language.  As seen in the last section C 
+and  Pascal  are  very compatible while Fortran  may  pass  extra 
+parameters  if required.  Nevertheless,  separately compiled  and 
+assembled  modules  may  be  linked together  to  form  a  single 
+program.  In fact all the libraries for the compilers; CLIB, PLIB 
+and FLIB are all written in the C language.
+
+The  major difference between the languages is that C and  Pascal 
+normally   pass  variables  by  value,   and  Fortran  passes  by 
+reference.  This means that the statement  'asm1(&a,  b,  &c[0])' 
+in  C  passes  the  variable 'b' by value,  and 'a'  and  'c'  by 
+reference.  Specifically, the CONTENTS of 'b' are passed, and the 
+ADDRESS of 'a' and 'c' are passed.
+
+As  an  example  of how to invoke a function written  in  C  from 
+within a program written in Fortran, see below:
+
+     program fortest
+     integer a,b
+     character*10 c
+
+     call cfunct(a, b, c)
+     end
+
+Now  we  will write the C function that was invoked in the  above 
+Fortran program.
+
+     cfunct(a, b, c, d)
+     int *a, *b;         /* pointers to integer variables */
+     char *c;            /* pointer to character array */
+     int d;              /* the size of the character array */
+     {
+          int i = d;
+          static char done[] = "done.............."
+
+          *a = *a + *b;       /* add b to contents of a */
+          ptr = done;
+          while (d--)         /* for the size of the array */
+               *c++ = done[i-d];
+          *c = '\0';          /* append null */
+     }
+
+Note.  When  an array is passed to a subroutine in  Fortran,  the 
+size  of  the  array is also implicitly  passed.  See  the  above 
+example with reference to the 'd' variable in the C program.

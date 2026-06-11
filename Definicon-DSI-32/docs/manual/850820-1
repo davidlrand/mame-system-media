@@ -1,0 +1,52 @@
+Engineering Note 850820-1
+Conversion of DSI-32 to take NS32016.
+
+The  NS32016 is a 100% instruction set compatible  microprocessor 
+to the NS32032.  The NS32016 has a 32 bit wide internal data path 
+and  a 16 bit external data path,  while the NS32032 has both  32 
+bit wide internal and external data paths.
+The measured performance degradation in using the NS32016 instead 
+of the NS32032 on the DSI-32 board is roughly 30%.
+Also  the use of the NS32016 CPU excludes the later  installation 
+of  the NS32082 memory management unit in the DSI-32.  This means 
+that  UNIX can not then be run on the board.  For real  time  and 
+single user applications this is not a problem.
+
+To  install the NS32016 on the DSI-32 the following steps need to 
+be followed.
+
+1) Remove the NS32032 CPU from the DSI-32 board.  The NS32032  is 
+   the 68 chip in the LCC socket in the center of the board.
+
+2) Insert the NS32016 CPU in the 48 pin socket to the left of the 
+   LCC socket.
+
+3) Set the berg jumpers as shown below.
+
+    JB1                JB2                    JB3
+
+  o o o o           o o o o o           o o o o o o o o
+  o o o o           o o o o o           o o o o o o o o
+
+
+The above instructions are for replacing the 10MHz NS32032 with a 
+10MHz  NS32016  CPU.  If  a 6MHz NS32016 is to be used  then  the 
+following  steps  need to be followed in addition  to  the  three 
+steps above.
+
+1) Remove  the 20MHz crystal to the left  of the  NS32201  Timing         
+   Control Unit (TCU) and replace it with a 12Mhz crystal.
+
+2) Remove the 68 ohm resistor to the left of the TCU and  replace 
+   it with a 470 ohm resistor.
+
+3) Tag a 22 pF capacitor from pin 12 of the Folding Pal (IC42) to 
+   pin 10 of IC42.
+
+4) Set the berg jumpers as shown below.
+ 
+    JB1
+
+  o o o o
+  o o o o
+

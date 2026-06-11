@@ -1,0 +1,166 @@
+;
+; Include file for MC-DOS System Function Calls 
+;
+P_TERMCPM	equ	0
+C_READ		equ	1
+C_WRITE		equ	2
+L_WRITE		equ	5
+C_RAWIO		equ	6
+C_WRITESTR	equ	9
+C_READSTR	equ	10
+C_STAT		equ	11
+S_BDOSVER	equ	12
+DRV_ALLRESET	equ	13
+DRV_SET		equ	14	
+F_OPEN		equ	15
+F_CLOSE		equ	16
+F_SFIRST	equ	17
+F_SNEXT		equ	18
+F_DELETE	equ	19
+F_READ		equ	20
+F_WRITE		equ	21
+F_MAKE		equ	22
+F_RENAME	equ	23
+DRV_LOGINVEC	equ	24
+DRV_GET		equ	25
+F_DMAOFF	equ	26
+DRV_ALLOCVEC	equ	27
+DRV_SETRO	equ	28
+DRV_ROVEC	equ	29
+F_ATTRIB	equ	30
+DRV_DPB		equ	31
+F_USERNUM	equ	32
+F_READRAND	equ	33
+F_WRITERAND	equ	34
+F_SIZE		equ	35
+F_RANDREC	equ	36
+DRV_RESET	equ	37
+DRV_ACCESS	equ	38
+DRV_FREE	equ	39
+F_WRITEZF	equ	40
+F_LOCK		equ	42
+F_UNLOCK	equ	43
+F_MULTISEC	equ	44
+F_ERRMODE	equ	45
+DRV_SPACE	equ	46
+P_CHAIN		equ	47
+DRV_FLUSH	equ	48
+S_BIOS		equ	50
+F_DMASEG	equ	51
+F_DMAGET	equ	52
+MC_MAX		equ	53
+MC_ABSMAX	equ	54
+MC_ALLOC	equ	55
+MC_ABSALLOC	equ	56
+MC_FREE		equ	57
+MC_ALLFREE	equ	58
+P_LOAD		equ	59
+F_TRUNCATE	equ	99
+DRV_SETLABEL	equ	100
+DRV_GETLABEL	equ	101
+F_TIMEDATE	equ	102
+F_WRITEXFCB	equ	103
+T_SET		equ	104
+T_GET		equ	105
+F_PASSWD	equ	106
+S_SERIAL	equ	107
+C_MODE		equ	109
+C_DELIMIT	equ	110
+C_WRITEBLK	equ	111
+L_WRITEBLK	equ	112
+M_ALLOC		equ	128
+M_FREE		equ	130
+DEV_POLL	equ	131
+DEV_WAITFLAG	equ	132
+DEV_SETFLAG	equ	133
+Q_MAKE		equ	134
+Q_OPEN		equ	135
+Q_DELETE	equ	136
+Q_READ		equ	137
+Q_CREAD		equ	138
+Q_WRITE		equ	139
+Q_CWRITE	equ	140
+P_DELAY		equ	141
+P_DISPATCH	equ	142
+P_TERM		equ	143
+P_CREATE	equ	144
+P_PRIORITY	equ	145
+C_ATTACH	equ	146
+C_DETACH	equ	147
+C_SET		equ	148
+C_ASSIGN	equ	149
+P_CLI		equ	150
+P_RPL		equ	151
+F_PARSE		equ	152
+C_GET		equ	153
+S_SYSDAT	equ	154
+T_SECONDS	equ	155
+P_PDADR		equ	156
+P_ABORT		equ	157
+L_ATTACH	equ	158
+L_DETACH	equ	159
+L_SET		equ	160
+L_CATTACH	equ	161
+C_CATTACH	equ	162
+S_OSVER		equ	163
+L_GET		equ	164
+;
+;	Other Miscellaneous Equates
+;
+DFLT_DMA	equ	80h	;default DMA Buffer Address (base page)
+DFLT_FCB	equ	5ch	;default FCB 1 (base page)
+MPM             equ	224	;system call interrupt
+;
+;
+; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+; *									      *
+; *                             m o v e b y t e s			      *
+; *									      *
+; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+;
+;	MOVEBYTES is a codemacro which generates code to move a string.
+;	MOVEBYTES logically replaces REP MOVSB except for altering the flags.
+;	MOVEBYTES takes 5 more bytes and is much faster for large CX.
+;	Breakeven is about CX = 3, depending on the particular chip.
+;
+;	MOVEBYTES first moves an integral number of words and then moves the
+;	(odd) last byte, if there is one.  Thus MOVEBYTES will run even faster
+;	if either or both the source and target start on a word boundary.
+;
+;	Assumptions:
+;
+;		CX	=	number of bytes to be moved
+;		DS:SI	->	source text address
+;		ES:DI	->	destination text address
+;
+codemacro	MOVEBYTES
+	db	0d1h			;	shr	cx,1
+	db	0e9h
+	db	0f3h			;	rep	movsw
+	db	0a5h
+	db	073h			;	jnc	even
+	db	001h
+	db	0a4h			;	movsb
+	endm				; even:
+
+	if	cc
+CodeMacro	SVC	SV:Db
+	db	0b1h		;MOV CL,xx
+	db	SV
+	db	0cdh		;INT E0H
+	db	0e0h
+EndM
+	endif
+	if	pcdos
+CodeMacro	SVC	SV:Db
+	db	1eh		;PUSH DS
+	db	0b4h		;MOV AH,xx
+	db	SV
+	db	0CDh		;INT 21H
+	db	21h
+	db	1fh		;POP DS
+EndM
+	endif
+
+
+

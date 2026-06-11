@@ -1,0 +1,13 @@
+FILE=cmain
+library=plib,clib
+nocomm
+MOD=80
+module=CLIB/code_start=3600,nocopy
+module=CLIB/link_start=35e0,nocopy
+module=CRTLIB.C/code_start=4000,nocopy
+module=CRTLIB.C/link_start=7500,nocopy
+module=CRTLIB.C/sb_start=7000,nocopy
+stack=+10
+code=8000
+ram=0..fffff
+

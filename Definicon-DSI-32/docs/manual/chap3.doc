@@ -1,0 +1,201 @@
+.pl 62
+                            Chapter 3
+
+
+                         DSI-32 PROGRAMS
+
+
+3.1  INTRODUCTION
+
+DSI-32  assembly  language programs and how the DSI-32  Assembler 
+assigns memory addresses to symbols,  instruction,  and data  are 
+covered in this Chapter.
+
+
+3.2  DSI-32 MODULE STRUCTURE
+
+A  DSI-32  program  may  be  divided  into  separately  assembled 
+modules.  A  module consists of one or more segments and has  the 
+following form:
+
+  [MODULE <symbol>]
+   <segment-1>
+   <segment-2>
+      .
+      .
+      .
+   <segment-n>
+
+description:
+
+   MODULE <symbol>  is  the  optional  MODULE  pseudo-op.  If  it 
+                    appears  within  the  current  module   being 
+                    assembled  the string <symbol> is written  to 
+                    the object file as the module name, otherwise 
+                    the  name  of the source file is assigned  as 
+                    the module name.  Section 5.8.1 describes the 
+                    MODULE pseudo-op in detail.
+
+   <segment-1>      specify the segments within the module.  Each 
+     thru           segment may consist of one or more  Assembler 
+   <segment-n>      statements. Section 3.3 describes segments in 
+                    detail.
+
+If a program is made up several modules,  the modules must all be 
+separately  assembled  and then linked together (via  the  DSI-32 
+linker).
+.pa
+3.3  PROGRAM SEGMENTS
+
+A  program  segment is made up of a set of statements  which  all 
+have  the same relocation mode.  The following segment types  are 
+supported:
+
+   - Program Code
+   - Static Base
+   - Frame Pointer
+   - Stack Pointer
+   - Absolute
+   - Immediate
+
+3.3.1  Relocatable Addresses And Relocation Modes
+
+Each  byte  of  data storage defined in a module  is  assigned  a 
+relocatable address. A relocatable memory address is an offset to 
+the  start  of the segment in which the instruction or  data  was 
+defined.
+
+Also associated with a relocatable memory address is a relocation 
+mode. The relocation mode specifies the base address to which the 
+address is relative.  The Assembler assigns a relocation mode  to 
+an  instruction  or  data element depending on the  type  of  the 
+segment in which it is defined or whether the relocation mode was 
+explicitly  defined.  Table  3-1 lists the  permitted  relocation 
+modes:
+.cw 10
+
+                      TABLE 3-1  RELOCATION MODES
+
+-------------------------------------------------------------------------
+|   Name  |	Mode type	|	Description			|
+-------------------------------------------------------------------------
+|    PC   |	Program code	| Value is relative to the start of the |
+|	  |			| program code segment			|
+|	  |			|					|
+|    SB   |	Static Base	| Value is relative to the SB register  |
+|	  |			| at run time.				|
+|	  |			|					|
+|    FP   |	Frame Pointer	| Value is relative to the FP register	|
+|	  |			| at run time.				|
+|	  |			|					|
+|    SP   |	Stack Pointer	| Value is relative to the SP register	|
+|	  |			| at run time.				|
+|	  |			|					|
+|    AB   |	Absolute	| Value is the absolute memory address.	|
+|	  |			|					|
+|    IM   |	Immediate	| Value is a constant.			|
+-------------------------------------------------------------------------
+.cw 12
+.pa
+3.3.2  Program Code Segments
+
+Relocation Mode - PC Relative.
+
+It is the only segment where code generation is allowed,  all the 
+constants  and  program code are generated in this  segment.  The 
+location  counter  is incremented by the  appropriate  number  of 
+bytes  after each statement.  The pseudo location counter may not 
+be decremented in the PC segment.  The program code segments  are 
+relocated  at  run  time via the Module table  mechanism  of  the 
+NS32000 series of microprocessors.
+
+3.3.3  Static Base Segments
+
+Relocation Mode - SB Relative.
+
+Static  data  is referenced relative to the SB  segment.  The  SB 
+segment  is fixed as long as the program resides in  one  module. 
+The  SB  register  is loaded from the Module table  each  time  a 
+program enters a new module.
+
+The  Assembler  pseudo  location counter is  incremented  by  the 
+appropriate  amount after each instruction.  The location counter 
+may not be decremented in the SB segment.
+
+Only  uninitialized  storage may be allocated in the  SB  segment 
+when using the NSX compatible DSI-32 assembler. The extended DSI-
+32  assembler  allows initialized storage which is output to  the 
+object file along with the code segments.
+
+The static base segments are relocated at run time via the Module 
+table mechanism of the NS32000 series of microprocessors.
+
+3.3.4  Frame Pointer Relative
+
+Relocation Mode - FP Relative Segment.
+
+ - This  segment allocates storage for data items that are  local 
+to  a  procedure.   Storage of FP relative data is allocated  and 
+deallocated at run time.
+
+ - FP  relative data items are allocated on the stack,  thus  the 
+location  counter  is  decremented by the appropriate  number  of 
+bytes.  If a label is specified on a line which allocates storage 
+on  the stack,  it is assigned the value of the location  counter 
+after it has been decremented by the appropriate number of bytes.
+
+ - FP segments are on the stack and transient, thus Assembly time 
+initialization is not possible.
+.pa
+3.3.5  Stack Pointer Relative Segment
+
+Relocation Mode - SP Relative
+
+Data  that is relative to the stack is allocated by this segment. 
+SP relative data items are allocated on the push down stack, thus 
+the location counter is decremented by the appropriate number  of 
+bytes.  If a label is specified on a line which allocates storage 
+on  the  stack it is assigned the value of the  location  counter 
+after it has been decremented by the appropriate number of bytes.
+
+SP  segments  like  FP and SB segments only contain  storage  for 
+data,  thus Assembly time initialization is not  possible.  Again 
+note  that  the extended DSI-32 assembler  allows  assembly  time 
+initialized SB segments.
+
+An  SP relative segment is relocated at run time by  instructions 
+which modify the stack pointer
+
+3.3.6  Absolute Segment
+
+Relocation Mode - Absolute.
+
+This segment allocates storage at absolute memory locations.  The 
+absolute  location  counter  is incremented  by  the  appropriate 
+number of bytes.
+
+This  segment  is  not relocatable since it  refers  to  absolute 
+addresses.   Input/output ports can be easily reference via  this 
+addressing mode.
+
+3.3.7  Immediate Segments
+
+Relocation Mode - Immediate.
+
+Storage  is not allocated by this segment.  The immediate segment 
+is a mechanism for assigning immediate values to labels which may 
+then  be  used as offsets in the various  addressing  modes.  The 
+Immediate  location  counter is incremented  by  the  appropriate 
+number of bytes.
+
+This  segment is not relocatable since it doesn't refer to memory 
+locations.
+
+3.4  NESTED SEGMENTS
+
+The  Assembler supports the nesting of segments,  i.e.  it allows 
+defining a new segment within the current segment.   The  maximum 
+nesting level is 16.   Note that the PC and SB segments even when 
+nested  continue to increment from the last used value unlike the 
+FP and SP segments which are reset on every new occurrence.
+

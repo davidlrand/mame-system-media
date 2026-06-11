@@ -1,0 +1,10 @@
+diskdef cpm86-ss
+  seclen 512
+  tracks 40
+  sectrk 8
+  blocksize 2048
+  maxdir 64
+  skew 1
+  boottrk 1
+  os 2.2
+end

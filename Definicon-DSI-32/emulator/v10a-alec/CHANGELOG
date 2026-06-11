@@ -1,0 +1,26 @@
+- translate ALL filenames to lowercase on DISK I/O operations (open, creat e.t.c.)
+ (Initial DSI-32 tools was born on the case-insensitive system
+  `cc` dos not change filename case, `as` and `ln` - required uppercase)
+- emulator execulable renamed to "load" (to conform DSI-32 tools)
+- renamed all source files to lowercase
+- makefile: "-lrt" added for Linux
+- minihelp updated
+- #define debug --> #define DEBUG_LOAD
+- #define TRACE_SERVICE  added
+- environment: do not overflow target memory +512-4
+  NOTE! CLIB seems has an error in passing 3'rd main argument: 'char **envp'
+  use 'char ** environ' instead !
+- added -t (timing) and -m (memory use, BUGGY!) options
+
+TODO: port a "cc.c" from the Definicon sources. It's a wrapper
+for the `load` to refine an optios passed to the *.e32 programms.
+Compile macros MAKE=x changes an options processing:
+- MAKE=1 -- cc
+- MAKE=2 -- pc
+- MAKE=3 -- fc
+- MAKE=4 -- as
+- MAKE=5 -- ln
+- MAKE=6 -- lib
+- MAKE=7 -- fortran
+
+alec@sensi.org

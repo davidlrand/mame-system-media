@@ -1,0 +1,540 @@
+.module	dhrystone.c
+.program
+.endseg
+.program
+_main:-
+
+	cxp	_Proc0
+	movqd	0,tos
+	cxp	_exit
+	cmpqd	0,tos
+
+	rxp	0
+.endseg
+.static
+.endseg
+.program
+_Proc0:-
+	enter	[r3,r4,r5,r6,r7],84
+
+	addrd	@48,tos
+	cxp	_malloc
+	cmpqd	0,tos
+	movd	r0,_PtrGlbNext
+	addrd	@48,tos
+	cxp	_malloc
+	cmpqd	0,tos
+	movd	r0,_PtrGlb
+	movd	_PtrGlb,r0
+	movd	_PtrGlbNext,0(r0)
+	movd	_PtrGlb,r0
+	movqd	0,4(r0)
+	movd	_PtrGlb,r0
+	movqd	2,8(r0)
+	movd	_PtrGlb,r0
+	addrd	@40,12(r0)
+	addrd	L21,tos
+	movd	_PtrGlb,r0
+	addrd	16(r0),tos
+	cxp	_strcpy
+	cmpd	tos,tos
+	addrd	L22,tos
+	addrd	-52(fp),tos
+	cxp	_strcpy
+	cmpd	tos,tos
+	addrd	@10,_Array2Glob+1660
+	movqd	0,r6
+	br	L18
+L15:
+	movqd	5,r7
+	cxp	_Proc5
+	cxp	_Proc4
+	movqd	2,-20(fp)
+	movqd	3,r3
+	addrd	L23,tos
+	addrd	-84(fp),tos
+	cxp	_strcpy
+	cmpd	tos,tos
+	movqd	1,-12(fp)
+	addrd	-84(fp),tos
+	addrd	-52(fp),tos
+	cxp	_Func2
+	cmpd	tos,tos
+	cmpqd	0,r0
+	seqd	r0
+	movd	r0,_BoolGlob
+	addrd	-16(fp),r5
+	addrd	-20(fp),r4
+	br	L14
+L5:
+	movd	0(r4),r0
+	muld	r7,r0
+	subd	r3,r0
+	movd	r0,0(r5)
+	movd	r5,tos
+	movd	r3,tos
+	movd	0(r4),tos
+	cxp	_Proc7
+	adjspb	-12
+	addqd	1,0(r4)
+L14:
+	cmpd	r3,0(r4)
+	bgt	L5
+	movqd	0,-4(fp)
+	addrd	@67,-8(fp)
+	movd	-16(fp),tos
+	movd	-20(fp),tos
+	addrd	_Array2Glob,tos
+	addrd	_Array1Glob,tos
+	cxp	_Proc8
+	adjspb	-16
+	movd	_PtrGlb,tos
+	cxp	_Proc1
+	cmpqd	0,tos
+	movb	65,r4
+	addrd	-12(fp),r5
+	addrd	_Char2Glob,r7
+	br	L12
+L9:
+	movd	-8(fp),tos
+	movxbd	r4,r0
+	movd	r0,tos
+	cxp	_Func1
+	cmpd	tos,tos
+	cmpd	0(r5),r0
+	bne	L6
+	movd	r5,tos
+	movd	-4(fp),tos
+	cxp	_Proc6
+	cmpd	tos,tos
+L6:
+	addqb	1,r4
+L12:
+	cmpb	r4,0(r7)
+	ble	L9
+	movd	-20(fp),r0
+	muld	r3,r0
+	movd	r0,-16(fp)
+	movd	-16(fp),r0
+	quod	-20(fp),r0
+	movd	r0,r3
+	movd	-16(fp),r1
+	subd	r3,r1
+	movqd	7,r0
+	muld	r0,r1
+	subd	-20(fp),r1
+	movd	r1,r3
+	addrd	-20(fp),tos
+	cxp	_Proc2
+	cmpqd	0,tos
+	addqd	1,r6
+L18:
+	cmpd	500000,r6
+	bhi	L15
+
+	exit	[r3,r4,r5,r6,r7]
+	rxp	0
+.endseg
+.static
+;_IntLoc1	-20(fp)	local
+;_IntLoc2	r3	local
+;_IntLoc3	-16(fp)	local
+;_CharIndex	r4	local
+;_EnumLoc	-12(fp)	local
+;_String1Loc	-52(fp)	local
+;_String2Loc	-84(fp)	local
+;_i	r6	local
+L21:	.byte	68,72,82,89,83,84,79,78,69,32
+	.byte	80,82,79,71,82,65,77,44,32,83
+	.byte	79,77,69,32,83,84,82,73,78,71
+	.byte	0
+L22:	.byte	68,72,82,89,83,84,79,78,69,32
+	.byte	80,82,79,71,82,65,77,44,32,49
+	.byte	39,83,84,32,83,84,82,73,78,71
+	.byte	0
+L23:	.byte	68,72,82,89,83,84,79,78,69,32
+	.byte	80,82,79,71,82,65,77,44,32,50
+	.byte	39,78,68,32,83,84,82,73,78,71
+	.byte	0
+.endseg
+.program
+_Proc1:-
+	movd	r3,tos
+	movd	12(sp),r3
+
+	movd	0(r3),r0
+	movd	_PtrGlb,r1
+	addrd	0(r0),r2
+	addrd	0(r1),r1
+	addrd	@12,r0
+	movsd
+	movqd	5,12(r3)
+	movd	0(r3),r0
+	movd	12(r3),12(r0)
+	movd	0(r3),r0
+	movd	0(r3),0(r0)
+	movd	0(r3),r0
+	movd	0(r0),tos
+	cxp	_Proc3
+	cmpqd	0,tos
+	movd	0(r3),r0
+	cmpqd	0,4(r0)
+	bne	L28
+	movd	0(r3),r0
+	movqd	6,12(r0)
+	movd	0(r3),r0
+	addrd	8(r0),tos
+	movd	8(r3),tos
+	cxp	_Proc6
+	cmpd	tos,tos
+	movd	0(r3),r0
+	movd	_PtrGlb,r1
+	movd	0(r1),0(r0)
+	movd	0(r3),r0
+	addrd	12(r0),tos
+	addrd	@10,tos
+	movd	0(r3),r0
+	movd	12(r0),tos
+	cxp	_Proc7
+	adjspb	-12
+	br	L25
+L28:
+	movd	0(r3),r0
+	addrd	0(r3),r2
+	addrd	0(r0),r1
+	addrd	@12,r0
+	movsd
+L25:
+
+	movd	tos,r3
+	rxp	0
+.endseg
+.static
+;_PtrParIn	r3	local
+.endseg
+.program
+_Proc2:-
+	enter	[r3,r4],0
+
+	movqd	0,r2
+	movd	0(12(fp)),r0
+	addrd	10(r0),r1
+	addrd	_IntGlob,r4
+	addrd	_Char1Glob,r3
+L39:
+	cmpb	65,0(r3)
+	bne	L37
+	addqd	-1,r1
+	movd	r1,r0
+	subd	0(r4),r0
+	movd	r0,0(12(fp))
+	movd	r2,r0
+L37:
+	cmpqd	0,r0
+	bne	L39
+
+	exit	[r3,r4]
+	rxp	0
+.endseg
+.static
+;_IntLoc	r1	local
+;_EnumLoc	r0	local
+;_IntParIO	12(fp)	local
+.endseg
+.program
+_Proc3:-
+
+	cmpqd	0,_PtrGlb
+	beq	L46
+	movd	_PtrGlb,r0
+	movd	0(r0),0(8(sp))
+	br	L44
+L46:
+	addrd	@100,_IntGlob
+L44:
+	movd	_PtrGlb,r0
+	addrd	12(r0),tos
+	movd	_IntGlob,tos
+	addrd	@10,tos
+	cxp	_Proc7
+	adjspb	-12
+
+	rxp	0
+.endseg
+.static
+;_PtrParOut	8(sp)	local
+.endseg
+.program
+_Proc4:-
+
+	cmpb	65,_Char1Glob
+	movb	66,_Char2Glob
+
+	rxp	0
+.endseg
+.static
+;_BoolLoc	r0	local
+.endseg
+.program
+_Proc5:-
+
+	movb	65,_Char1Glob
+	movqd	0,_BoolGlob
+
+	rxp	0
+.endseg
+.static
+.endseg
+.program
+_Proc6:-
+	enter	[r3,r4],0
+	movd	12(fp),r4
+	movd	16(fp),r3
+
+	movd	r4,0(r3)
+	movd	r4,tos
+	cxp	_Func3
+	cmpqd	0,tos
+	cmpqd	0,r0
+	bne	L69
+	movqd	3,0(r3)
+L69:
+	movd	r4,r1
+	cmpqd	0,r1
+	bgt	L58
+	cmpqd	4,r1
+	blt	L58
+L74:
+	casew	L73[r1:w]
+L73:
+	.word	L68-L74
+	.word	L67-L74
+	.word	L63-L74
+	.word	L58-L74
+	.word	L61-L74
+L68:
+	br	L75
+L67:
+	cmpd	100,_IntGlob
+	bge	L66
+L75:
+	movqd	0,0(r3)
+	br	L58
+L66:
+	movqd	3,0(r3)
+	br	L58
+L63:
+	movqd	1,0(r3)
+	br	L58
+L61:
+	movqd	2,0(r3)
+L58:
+
+	exit	[r3,r4]
+	rxp	0
+.endseg
+.static
+;_EnumParIn	r4	local
+;_EnumParOut	r3	local
+.endseg
+.program
+_Proc7:-
+
+	addrd	2(8(sp)),r1
+	movd	12(sp),r0
+	addd	r1,r0
+	movd	r0,0(16(sp))
+
+	rxp	0
+.endseg
+.static
+;_IntLoc	r1	local
+;_IntParI1	8(sp)	local
+;_IntParI2	12(sp)	local
+;_IntParOut	16(sp)	local
+.endseg
+.program
+_Proc8:-
+	movd	r3,tos
+
+	addrd	5(20(sp)),r2
+	movd	r2,r1
+	ashd	2,r1
+	movd	r1,r0
+	addd	12(sp),r0
+	movd	24(sp),0(r0)
+	addrd	1(r2),r1
+	ashd	2,r1
+	movd	r1,r0
+	addd	12(sp),r0
+	movd	r2,r1
+	ashd	2,r1
+	addd	12(sp),r1
+	movd	0(r1),0(r0)
+	addrd	30(r2),r1
+	ashd	2,r1
+	movd	r1,r0
+	addd	12(sp),r0
+	movd	r2,0(r0)
+	movd	r2,r3
+	movd	r2,r1
+	muld	204,r1
+	movd	r1,r0
+	addd	16(sp),r0
+	movd	r3,r1
+	ashd	2,r1
+	addd	r1,r0
+	addrd	1(r2),r1
+	br	L85
+L82:
+	movd	r2,0(r0)
+	addqd	1,r3
+	addqd	4,r0
+L85:
+	cmpd	r3,r1
+	ble	L82
+	movd	r2,r1
+	muld	204,r1
+	movd	r1,r0
+	addd	16(sp),r0
+	addrd	-1(r2),r1
+	ashd	2,r1
+	addd	r1,r0
+	addqd	1,0(r0)
+	addrd	20(r2),r1
+	muld	204,r1
+	movd	r1,r0
+	addd	16(sp),r0
+	movd	r2,r1
+	ashd	2,r1
+	movd	r0,r3
+	addd	r1,r3
+	movd	r2,r0
+	ashd	2,r0
+	addd	12(sp),r0
+	movd	0(r0),0(r3)
+	movqd	5,_IntGlob
+
+	movd	tos,r3
+	rxp	0
+.endseg
+.static
+;_IntLoc	r2	local
+;_IntIndex	r3	local
+;_Array1Par	8(sp)	local
+;_Array2Par	12(sp)	local
+;_IntParI1	16(sp)	local
+;_IntParI2	20(sp)	local
+.endseg
+.program
+_Func1:-
+
+	movb	8(sp),r0
+	cmpb	r0,12(sp)
+	beq	L91
+	movqd	0,r0
+	br	L89
+L91:
+	movqd	1,r0
+L89:
+
+	rxp	0
+.endseg
+.static
+;_CharLoc1	r0	local
+;_CharLoc2	r0	local
+;_CharPar1	8(sp)	local
+;_CharPar2	12(sp)	local
+.endseg
+.program
+_Func2:-
+	enter	[r3,r4,r5,r6,r7],0
+
+	addrd	@65,r7
+	movqd	1,r3
+	addrd	2(16(fp)),r5
+	addrd	1(12(fp)),r4
+	br	L107
+L97:
+	movxbd	0(r5),r1
+	movd	r1,tos
+	movxbd	0(r4),r1
+	movd	r1,tos
+	cxp	_Func1
+	cmpd	tos,tos
+	cmpqd	0,r0
+	bne	L107
+	movb	r7,r6
+	addqd	1,r3
+	addqd	1,r4
+	addqd	1,r5
+L107:
+	cmpqd	1,r3
+	bge	L97
+	cmpb	87,r6
+	bgt	L103
+	cmpb	90,r6
+	blt	L103
+	movqd	7,r3
+L103:
+	cmpb	88,r6
+	bne	L102
+L110:
+	movqd	1,r0
+	br	L98
+L102:
+	movd	16(fp),tos
+	movd	12(fp),tos
+	cxp	_strcmp
+	cmpd	tos,tos
+	cmpqd	0,r0
+	bge	L101
+	addqd	7,r3
+	br	L110
+L101:
+	movqd	0,r0
+L98:
+
+	exit	[r3,r4,r5,r6,r7]
+	rxp	0
+.endseg
+.static
+;_IntLoc	r3	local
+;_CharLoc	r6	local
+;_StrParI1	12(fp)	local
+;_StrParI2	16(fp)	local
+.endseg
+.program
+_Func3:-
+	movd	8(sp),r0
+
+	cmpqd	2,r0
+	bne	L114
+	movqd	1,r0
+	br	L112
+L114:
+	movqd	0,r0
+L112:
+
+	rxp	0
+.endseg
+.static
+;_EnumLoc	r0	local
+;_EnumParIn	r0	local
+.endseg
+.static
+	.align	1
+_Version:-	.byte	49,46,49,0
+.endseg
+	.importp	_strcmp
+	.importp	_strcpy
+	.importp	_malloc
+	.importp	_exit
+	.comm	_PtrGlbNext,4
+	.comm	_PtrGlb,4
+	.comm	_Array2Glob,10404
+	.comm	_Array1Glob,204
+	.comm	_Char2Glob,1
+	.comm	_Char1Glob,1
+	.comm	_BoolGlob,4
+	.comm	_IntGlob,4

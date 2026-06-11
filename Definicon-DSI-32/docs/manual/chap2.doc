@@ -1,0 +1,782 @@
+.pl 62
+                            Chapter 2
+
+
+              ELEMENTS OF DSI-32 ASSEMBLY LANGUAGE
+
+
+2.1  INTRODUCTION
+
+This  chapter  describes certain aspects of the  DSI-32  Assembly 
+Language.
+
+2.2  CHARACTER SET
+
+The  DSI-32  assembler  supports a subset of the  standard  ASCII 
+character set.
+
+ - Upper and lower-case letters A through Z.
+ - Digits 0 through 9.
+ - Blanks , Tabs.
+ - The following printable characters:
+
+Character  Name                      Character  Name
+---------  ----                      ---------  ----
+   '       Apostrophe                    +      Plus Sign
+   (       Left Parentheses              /      Slash
+   )       Right Parentheses             :      Colon
+   .       Period                        ;      Semi-Colon
+   _       Underscore                    @      At Sign
+   ,       Comma                         [      Left Square Bracket
+   -       Minus Sign and/or Hyphen      ]      Right Square Bracket
+   *       Asterisk                      "      Double Quote
+   %       Percent   
+Carriage Return serves as the line terminator.
+The  entire  ASCII  character set is permitted when  enclosed  in 
+quotes.
+
+The  Assembler differentiates between upper and lower  case  user 
+defined  symbol names but all other mnemonics and register  names 
+are not case sensitive.
+.pa
+2.3  DSI-32 ASSEMBLER STATEMENTS
+
+DSI-32  Assembler statements must follow a  specific  syntactical 
+format which is described in detail below:
+
+  [<label>:[: | -]] [<mnemonic> [<operands>]] [;<comment>]
+
+description:
+
+<label>
+     the label is generally optional but certain pseudo ops  such 
+     as 'EQU' require the label to be present.  Labels follow the 
+     rules for valid symbol names.  A label  must  be immediately 
+     followed by either one,  two colons,  or a colon and a minus 
+     sign.   The label will be assigned the value and type of the 
+     current  relocation mode unless  the pseudo op was 'EQU'  in 
+     which  case the expression following the 'EQU' is  evaluated 
+     and the resultant type and value is assigned to the label.
+
+<mnemonic>
+     is an optional 32000 instruction or Assembler pseudo-op.  If 
+     no mnemonic is present then the comment character or the end 
+     of line character must be present.
+
+<operands>
+     the  operands of the  instruction  follow the mnemonic.  The 
+     number of operands  required depend on the mnemonic. If more 
+     or   less operands are supplied the assembler will issue  an 
+     error.  Operands  must  be separated by the comma  character 
+     (,).  Spaces  may be used to add clarity to   the    program   
+     but   are otherwise ignored. An operand is illegal without a 
+     valid mnemonic.
+
+<comment>
+     is  the optional comment.  A comment must be preceded by the 
+     semi-colon character (;).  All characters after the  comment 
+     character are ignored by the assembler.
+
+A source line of 32000 Assembler code must follow the following:
+
+ -   Multiple statements are not permitted on the same line.
+ -   A statement may begin in any column.
+ -   A statement must no be longer than 132 characters.
+
+Examples:
+
+  1.         FLAG           ;a single instruction only
+  2.         BR    STOPT
+  3.         ADDW  R7, R3   ;add register R7 to R3
+  4.  LABEL:                ;just a label
+  5.  STOP:  ADDB  R0, R2   ;add register R0 to R2
+2.4  STRING AND NUMBER SYNTAX
+	
+The  DSI-32 assembler supports three basic formats for constants: 
+one for integer values,  one for floating-point values,  and  one 
+for strings.
+
+2.4.1  Integer Format
+
+An integer  has the following form:
+
+    [<sign>] [<base>] <digits>
+
+description:
+
+     <sign>              specifies  the sign of the integer.  The 
+                         default positive value may be overridden 
+                         by  prepending  the  (-)  sign  to   the 
+                         integer. 
+
+     <base>              specifies  the  number  base  which  the
+                         integer   is  to  be  defined  in.   The
+                         following number bases are supported  by
+                         the DSI-32 assembler:
+		   Binary      -  B'
+		   Octal       -  O' or Q'
+		   Decimal     -  D'
+		   Hexadecimal -  H' or X'
+		   Decimal is the default number base.
+
+     <digits>            used to specify the integer.  The digits 
+                         must be valid for the selected base:
+		   Binary      -  0 through 1
+		   Octal       -  0 through 7
+		   Decimal     -  0 through 9
+		   Hexadecimal -  0 through 9 and A through F
+				  (or lower case a through f)
+
+Integer  constants have the following range of values,  depending 
+on their size:  -128 to 127 for signed byte constants,  0 to  255 
+for   unsigned  constants,   -32678  to  32767  for  signed  word 
+constants, 0 to 65535 for unsigned word constants, -2147483648 to 
+2147483647 (-2**31 to 2**31-1) for double-word constants.
+
+Examples:
+
+   Binary         Octal          Decimal          Hexadecimal
+   ------         -----          -------          -----------
+  -B'01          -Q'3027          -121            -X'124E
+   B'10011011     O'034          D'2139            H'231A
+  +B'101         +Q'225           +12232          +H'1AB2
+.pa
+2.4.2  Floating-Point Number Syntax
+
+Floating point numbers have the following form:
+
+                Mantissa                 Exponent
+  ------------------------------ ----------------------
+  [<sign>] <digits> {.[<digits>] [E [<sign>] <digits> ] |
+                     [.<digits>]  E [<sign>] <digits>}
+
+description:
+
+     <sign>              specifies the sign of the floating point 
+                         number. The default positive sign may be 
+                         overridden by the (-) sign. 
+
+     <digits>            Only   decimal    digits  are  permitted 
+                         (0  to  9).   The decimal point must  be 
+                         preceded be at least one digit.
+
+     .                   the decimal point.
+
+     E                   When the 'E' character is specified then 
+                         an exponent field is then required.  The 
+                         maximum   size   of  the   exponent   is 
+                         determined  by  the size of the  number. 
+                         ie.  whether  it is a single  or  double 
+                         precision number. 
+
+Examples:
+
+  Valid          Invalid        Comments
+  -----          -------        --------
+  281.            -0.A12        ;decimal digits only
+  +1.1E-12        +0.125E777    ;exponent exceeds limit
+  80E+21           100          ;either decimal point or exponent
+                                ;flag required.
+
+NOTE:     The DSI-32 Assembler recognizes two sizes of  floating-
+          point  constant:   single-precision (float) and double-
+          precision     (long).      Single-precision     numbers           
+          occupy  four  bytes of memory.   The  largest  positive           
+          single-precision value is 3.40282346E38;  the  smallest           
+          positive value is 1.17549430E-38.  The largest negative                     
+          value   is   the  negative  value  is   -3.40282346E38.           
+          Double-precision numbers occupy eight bytes of  memory.            
+          The   largest   positive  double-precision  number   is           
+          1.79769313486231305E308.  The largest negative value is           
+          -1.79769313486231305E308.    The   assembler   performs           
+          minimal  checking of floating point numbers thus it  is           
+          the user's responsibility to enter legal numbers only.
+.pa
+2.4.3  String Syntax
+
+Strings have the following form:
+
+  '[<ASCII string>...]'
+         or
+  "[<ASCII string>...]"
+
+The Assembler treats quotes within strings in a special way:
+
+   - Strings  which  contain  single quotes may  be  enclosed  in 
+     double quotes
+   - Strings  which  contain  double quotes may  be  enclosed  in 
+     single quotes
+   - Strings  enclosed  in  double quotes  which  contain  double 
+     quotes  must specify the double quotes within the string  by 
+     the use of two double quotes
+   - Strings  enclosed  in  single quotes  which  contain  single 
+     quotes  must specify the single quotes within the string  by 
+     the use of two single
+
+The instruction or pseudo-op controls both the maximum length and 
+the way in which a string is stored in memory.
+
+Examples:
+
+   Strings in Source Statements           Resultant String 
+   ----------------------------           ----------------
+      "this is a test string"             this is a test string
+      'another one'                       another one
+      "Don't do that"                     Don't do that
+      'the letter "a"'                    the letter "a"
+      "the letter ""a"""                  the letter "a"
+.pa
+2.5  SYMBOLS
+
+Symbols are names used to refer to user defined constants, labels 
+and  re-defined  register names.  Symbols have  three  parameters 
+associated with them:  a unique name,  a value, and a type. There 
+are  various symbols which are reserved by the assembler such  as 
+instruction mnemonics,  pseudo-ops etc.  Reserved symbols may not 
+be redefined by the user. A complete list of all reserved symbols 
+used by the DSI-32 Assembler may be found in Appendix C.
+
+A user defined symbol must follow the following rules:
+
+   - the  first  character  must by a letter (A - Z  or  a  - z), 
+     underscore character (_) or the percent character (%).
+     N.B. Symbols are case sensitive.
+   - any remaining characters may be letters, digits, '_' or '.'
+   - the  name must be unique to the first 8 characters  for  the      
+     National   Semiconductor  NSX  compatible  DSI-32  assembler      
+     and  to  the  first 29 characters for  the  extended  DSI-32      
+     assembler.
+
+Examples:
+
+  Valid          Invalid        Comments
+  -----          -------        --------
+  label          @LABEL         ; @ is an illegal character
+  _TEST          2TIMES         ;first character cannot be a digit
+  L1234          SP             ;SP is reserved symbol
+
+User  defined symbols must only be defined once within a program. 
+There are three ways of defining symbols:
+
+ - by defining a label in front of a mnemonic
+ - by use the EQU pseudo-op
+ - by the use of the IMPORT or IMPORTP pseudo-ops.
+
+For the first way:
+
+	  <symbol name>:  <statement>
+    or    <symbol name>:: <statement>
+    or    <symbol name>:- <statement>
+
+All  three cases result in the symbol being assigned the type  of 
+the  location  counter (see Section 2.7).  The second  case  also 
+exports the symbol, while the third case both imports and exports 
+the symbol.
+.pa
+For the second way:
+
+   <symbol name>: EQU  <expression>
+
+The  symbol is assigned the value and type of  the  <expression>.  
+The values allowed for <expression> depend on the symbol type.
+
+For the third way:
+
+	IMPORT <symbol name>,,,
+               or
+	IMPORTP <symbol name>,,,
+
+These two cases are only for use with external  symbols.  Section 
+5.6  describes the IMPORT and IMPORTP pseudo-ops in  detail.  The 
+extended DSI-32 assembler also will implicitly define a symbol if 
+a  symbol is used with a CXP instruction eg  CXP  UNDEFINED.  The 
+symbol  UNDEFINED  in  the  above example would  be  defined  and 
+imported.
+.pa
+2.6  SYMBOL TYPES
+
+A Symbol or expression may have one of the following types:
+
+   - Immediate            - SB Relative
+   - External             - FP Relative
+   - Long                 - SP Relative
+   - Register             - PC Relative
+   - Absolute             - Undefined
+
+The type of a symbol specifies when symbol may be permitted as an 
+operand and how it is used.  The assembler displays the type of a 
+symbol  with  a  two letter abbreviation if  a  cross  referenced 
+listing is requested. 
+
+
+2.6.1  Immediate
+
+The Immediate type specifies a 32 bit, signed Integer:
+
+The two letter abbreviation for Immediate type is IM. Below is an 
+example:
+
+   TEST1     00000043   IM     ;an integer with the value 67
+   TEST2     FFFFFFA0   IM     ;an integer with the value -96
+
+
+2.6.2  Long
+
+The  Long  type  specifies either a single  or  double  precision 
+floating point constant.
+
+The two letter abbreviation for Long type type is LN.   Below  is 
+an example:
+
+  FRED      412442422424E50   LN
+
+
+2.6.3  Register
+
+The  Register type is assigned to a symbol which has been equated 
+to  either a general purpose register (R<n>) or a  Floating-Point 
+register (F<n>) where n is a number 0 to 7.
+
+The two letter abbreviation for Register type is RG.  Below is an 
+example:
+
+  START        R7   RG
+  FPRES        F6   RG
+
+.pa
+2.6.4  Absolute
+
+The  Absolute type is assigned to symbols which refer to absolute 
+memory locations.
+
+The two letter abbreviation for absolute type is AB.  Below is an 
+example:
+
+  LOCN         00000133   AB
+
+The   '@'  character  is used to inform the  assembler  that  the 
+resulting expression value is to be given the absolute type.
+
+   @ <disp>
+
+where  <disp> is an expression which must evaluate to a value  in 
+the  range 0 through 16777215 (this is a limitation if the  32032 
+CPU;  16777215 = 2**24-1) with Immediate type.
+
+
+2.6.5  External
+
+The  External type is assigned to symbols (or expressions)  whose 
+addresses are pointed to by a link table entry and an offset.
+
+The two letter abbreviation for External type is EX.  Below is an 
+example:
+
+   TEST        00000012   0000001A   EX
+
+In this example,  the first integer specifies the 18th  (starting 
+from  zero)  Link Table entry,  the second integer  specifies  an 
+offset of 26 from the address at the 18th entry.
+
+The format for specifying an External type is:
+
+  EXT (<disp1>)[+<disp2>]
+
+where  <disp1> is an expression which must evaluate to a value in 
+the  range 0 through 16777215 with Immediate  type,  and  <disp2> 
+must  be in the range -16777215 through 16777215.  <disp1> is the 
+Link Table entry number and <disp2> is the optional offset.
+.pa
+2.6.6  SB Relative
+
+The SB relative type is assigned to symbols which refer to memory 
+locations defined relative to the SB register.
+
+The two letter abbreviation for SB relative type is SB.  Below is 
+a listing format example:
+
+  TEST1         00000123  SB
+
+The SB relative type has the following form:
+
+  <disp> (SB)
+
+where  <disp>  is a constant or expression which evaluates  to  a 
+value in the range -16777215 to 16777215 with Immediate type.
+
+2.6.7  FP Relative
+
+The FP relative type is assigned to symbols which refer to memory 
+locations defined relative to the FP register.
+
+The abbreviation for FP relative type is FP.   below is a listing 
+format example:
+
+  TEST1         00000123   FP
+
+The FP relative type has the following form:
+
+  <disp> (FP)
+
+where  <disp>  is a constant or expression which evaluates  to  a 
+value in the range -16777215 to 16777215 with Immediate type.
+
+2.6.8  SP Relative
+
+The SP relative type is assigned to symbols which refer to memory 
+locations defined relative to the SP register.
+
+The two letter abbreviation for SP relative type is SP.  Below is 
+a listing format example:
+
+  TEST1        0000123   SP
+
+The SP relative type has the following form:
+
+  <disp> (SP)
+
+where  <disp>  is a constant or expression which evaluates  to  a 
+value in the range -16777215 to 16777215 with Immediate type.
+.pa
+2.6.9   PC Relative
+
+The PC relative type is assigned to symbols which refer to memory 
+locations defined relative to the PC register.
+
+The two letter abbreviation for PC relative type is PC.  Below is 
+a listing format example:
+
+  TEST1       0000123  PC
+
+The PC relative type has the following form:
+
+  <disp>  (PC)
+
+where  <disp>  is a constant or expression which evaluates  to  a 
+value in the range -16777215 to 16777215 with Immediate type.
+
+
+2.6.10  Undefined
+
+The  Assembler issues an error message if an undefined symbol  is 
+found.
+.pa
+2.7  LOCATION COUNTER
+
+The Assembler maintains five location counters of which only  one 
+is active at any one time.  The five location counters correspond 
+to  the  five segment types supported by  the  Assembler below:
+
+  - program code relative
+  - static base relative
+  - frame pointer relative
+  - stack pointer relative
+  - immediate
+
+When  the Assembler processes a segment change pseudo-op it saves 
+the current location counter value and relocation type and enters 
+the  new mode.  On exiting the new relocation mode  the  previous 
+mode  and  location  counter are restored.  Up to  16  levels  of 
+segment nesting are supported by the DSI-32 assembler.
+
+A special symbol, $, is reserved by the Assembler to refer to the 
+current  location  counter and relocation type.  The  symbol  may 
+appear  alone  or  as a term in an expression (only  addition  or 
+subtraction operators are allowed with the '$' symbol).
+
+Examples:
+
+  1.  FRED:   EQU  $
+  2.  LENGTH: EQU  $ - FRED
+
+In example 1,  $ specifies the current address.   The symbol FRED 
+is assigned the current location counter value and type.
+
+In  example 2,  the expression $ - FRED is assigned to the symbol 
+LENGTH.
+.pa
+2.8  EXPRESSIONS
+
+The  DSI-32 Assembler enables expressions to be evaluated and  be 
+used  as operands for various  instructions.  Since  instructions 
+expect particular operand types, the assembler tags the resultant 
+expression value with a type.
+
+The  following may be used as terms in expressions:   instruction 
+operands,  constants,  symbols  and the location  counter  ('$'). 
+Terms  of  a specific type may only appear with terms of  another 
+specific type as described in section 2.8.2.
+
+Operators   in   expressions  define   arithmetic   and   logical 
+operations.  An operator has the following features:
+
+   - An  operator's precedence level controls the order in  which 
+     the assembler evaluates an expression.
+
+   - An  operator  constrains the type of the term(s)  which  may 
+     appear  in the expression.  It also constrains the resultant 
+     type of the expression.
+
+Table  2-1 lists all DSI-32 operators in order of precedence from 
+lowest to highest.  The type and order of the terms which may  be 
+used with certain operators are listed in Table 2-2.
+.pa
+                    TABLE 2-1.  OPERATOR PRECEDENCE
+.cw 10
+---------------------------------------------------------------------------
+| Precedence  |	Operator | 	Name	  |     Operation		  |
+---------------------------------------------------------------------------
+| Unary Operators:							  |
+---------------------------------------------------------------------------
+|	1     |	   +     |  unary positive |  identity	  		  |
+|	1     |	   -	 |  unary minus	  |  two's complement		  |
+|	1     |	   ~	 |  complement	  |  one's complement		  |
+---------------------------------------------------------------------------
+| Binary Operators:							  |
+---------------------------------------------------------------------------
+|	2     |	   *	 |  multiply	  |  multiply 1st and 2nd terms   |
+|	2     |	   /	 |  divide	  |  divide 1st by 2nd term	  |
+|	2     |    %	 |  modulus	  |  remainder of 1st / 2nd term  |
+|	2     |	   &	 |  logical AND	  |  bit AND of 1st and 2nd terms |
+|	2     |	  <<	 |  shift left	  |  shift 1st by 2nd term;	  |
+|	      |		 |		  |  emptied bits are zero-filled |
+|	2     |	  >>	 |  shift right	  |  shift 1st by 2nd term;	  |
+|	      |		 |		  |  emptied bits are zero-filled |
+|	3     |	   +	 |  add		  |  add 1st and 2nd terms	  |
+|	3     |	   -	 |  subtract	  |  subtract 1st and 2nd terms   |
+|	3     |	   |	 |  logical or	  |  bit OR of 1st and 2nd terms  |
+|	3     |	   ^	 |  exclusive or  |  bit exclusive OR of 1st and  |
+|	      |		 |		  |  2nd terms			  |
+---------------------------------------------------------------------------
+.pa
+                   TABLE 2-2  TYPES AND OPERATORS
+
+---------------------------------------------------------------------------
+|  Unary operators:							  |
+|									  |
+|		Operator	Term1	Operation			  |
+|									  |
+|		   +		 %1	identity of %1			  |
+|		   -		 %1	two's complement of %1		  |
+|		   ~		 %1	one's complement of %1		  |
+---------------------------------------------------------------------------
+|  Binary operators:							  |
+|									  |
+|	Term1	Operator    Term2	Operation			  |
+|	  %1	   *	      #2	multiply %1 by #2		  |
+|	  %1	   /	      #2	divide %1 by #2			  |
+|	  %1	   %	      #2	modulus of %1 divided by #2	  |
+|	  %1	   &	      #2	bit-wise logical AND of %1 and #2 |
+|	  %1	  <<	      #2	shift %1 left by #2 positions	  |
+|	  %1	  >>	      #2	shift %1 right by #2 positions	  |
+|									  |
+|	  %1	   +	      #2	add %1 and #2			  |
+|	  %1	   -	      #2	subtract #2 from %1		  | 
+|	  %1	   -	      &2	subtract &2 from %1		  |
+|									  |
+|	  $1	   +	      #2	add $1 and #2			  |
+|	  $1	   -	      #2	subtract #2 from $1		  |
+|	  $1	   -	      &2	subtract &2 from $1		  |
+|									  |
+|	  %1	   |	      #2	bit-wise logical OR of %1 and #2  |
+|	  %1	   ^	      #2	bit wise exclusive OR of %1 and #2|
+---------------------------------------------------------------------------
+.cw 12
+Notation:
+
+#2   may be a term which has Immediate type.   It must appear  to 
+     the right of the operator.
+
+%1   may be a term which has either Immediate or Absolute type or 
+     one  of the Relative types.   This term must appear  to  the      
+     right  of  a   unary operator or to the  left  of  a  binary                
+     operator.
+
+$1   may be a term with External type.   It must appear  to  the      
+     left of the operator.
+
+&2   must  be a term which has the same type as the  first  term.  
+     It must appear to the right of a binary operator.
+.pa
+2.8.1  Rules for Expressions
+
+Expressions must follow the following rules:
+
+ a)  Unary  operators precede single terms,  e.g.  the expression 
+     ~(-1) is legal, but 7 ~(-1) is not.
+
+ b)  Binary operators separate two terms, e.g. the expression 7+2 
+     is legal, but 7+*2 is not.
+
+ c)  Expressions  may  be  made  up  of  several  other   smaller 
+     expressions.  Unary and binary operators may be used to link 
+     up the smaller expressions,  e.g.  the two expressions "2+1" 
+     and  "4+2"  may  be combined with a  division  operator  and 
+     parentheses   to  obtain  the  single  compound   expression 
+     "(2+1)/(4+2)".
+
+ d)  Expressions are evaluated by three rules:
+
+   - Parentheses.   Expressions  within  parentheses  are  always 
+     evaluated first.  E.g.  the expression "16/8/2" evaluates to 
+     "1", while the expression "16/(8/2)" evaluates to "4".
+
+   - Precedence Groups.  An operator of a higher precedence group 
+     will  cause the assembler to evaluate the terms  surrounding 
+     that  operator  prior to terms surrounding an operator of  a 
+     lower  precedence  whenever  parentheses  do  not  otherwise 
+     control  the  evaluation order,  e.g the expression  "8+8/4" 
+     evaluates  to "10",  but the expression "8/8+4  evaluates to 
+     "5".
+
+   - Left to Right Evaluation.  Expressions evaluate from left to 
+     right  whenever  parentheses  or  precedence  rules  do  not 
+     otherwise  determine evaluation order,  e.g.  the expression 
+     "4*2/1"  evaluates  as  "8",   but  the  expression  "4/2*1" 
+     evaluates to "2".
+
+
+2.8.2  Types in Expressions
+
+Expressions  with mixed types and operators follow certain  rules 
+as outlined below:
+
+1.   Expressions with Terms having Immediate Type.
+
+     Terms  with Immediate Type may have any operator applied  to 
+     them.  The resultant type is always Immediate.
+.pa
+     Examples:
+
+     1.  23 * 7          result is 000000A1 IM
+     2.  23 / 7          result is 00000003 IM
+     3.  23 % 7          result is 00000002 IM
+     4.  23 & 7          result is 00000007 IM
+     5.  23 << 7         result is 00000B80 IM
+     6.  23 >> 7         result is 00000000 IM
+     7.  23 + 7          result is 0000001E IM
+     8.  23 - 7          result is 00000010 IM
+     9.  23 | 7          result is 00000017 IM
+     10.  23 ^ 7          result is 00000010 IM
+
+2.   Expressions  with  terms  Having Relative  or  Absolute  and 
+     Immediate Types.
+
+     Terms  with  relative  or  absolute  type  and  terms   with 
+     immediate  type may have the following operators applied  to 
+     them:  *,  /,  %, &, <<, >>, +, -, | and ^.  The operator is 
+     applied  to  the first and the second terms and the type  of 
+     the  first term is assigned to the result.  The  first  term 
+     must  have  relative or absolute type while the second  term 
+     must have Immediate type.
+
+     Examples:
+
+     1.  23(SB) * 7       result is  000000A1 SB
+     2.  23(SB) / 7       result is  00000003 SB
+     3.  23(SB) % 7       result is  00000002 SB
+     4.  23(SB) & 7       result is  00000007 SB
+     5.  23(SB) << 7      result is  00000B80 SB
+     6.  23(SB) >> 7      result is  00000000 SB
+     7.  23(SB) + 7       result is  0000001E SB
+     8.  23(SB) - 7       result is  00000010 SB
+     9.  23(SB) | 7       result is  00000017 SB
+     10. 23(SB) ^ 7       result is  00000010 SB
+
+3.   Expressions with Terms Having Relative or Absolute Type
+
+     Terms with relative or absolute type may only be  subtracted 
+     from terms of the same type.  The Immediate type is assigned 
+     to the result.
+
+     Example:
+
+     1.  1(PC) - 7(PC)     result is FFFFFFFA IM
+     2.  12(SB) - 4(SB)    result is 00000008 IM
+     3.  15(FP) - 3(FP)    result is 0000000C IM
+     4.  7(SP) - 3(SP)     result is 00000004 IM
+.pa
+4.   Expressions with Terms Having External and Immediate Type
+
+     Terms with Immediate type may be added to or subtracted from 
+     terms with external type. Note: only the offset is affected. 
+     The external type is assigned to the result.
+
+     Examples:
+
+     1.  EXT(3)+12 + 4     result is 00000003 00000010 EX
+     2.  EXT(12)+3 - 10    result is 0000000C FFFFFFF9 EX
+
+5.   Expressions with Terms Having External Type
+
+     Terms  with external type may be subtracted from each  other 
+     only if they have the same Link Table number.  The Immediate 
+     type is assigned to the result.
+
+     Examples:
+
+     1.  EXT(7)+ 3 - EXT(7)+12     result is FFFFFFF7 IM
+     2.  EXT(12)+2 - EXT(12)-10    result is 0000000C IM
+     3.  EXT(4) - EXT(4)           result is 00000000 IM
+
+
+2.8.3  Length of Displacements
+
+In the DSI-32 Assembly language,  the length of a displacement in 
+an  instruction operand may be explicitly defined,  otherwise the 
+Assembler will supply a default length.
+
+The  length  of  an operand is specified by  appending  a  length 
+specifier  to the displacement.   The following length specifiers 
+are permitted:
+     :B - byte displacement
+     :W - word displacement (two byte)
+     :D - double-word displacement (four bytes).
+
+Following are the rules regarding length specifiers:
+
+  1. Length specifiers appended to operands which evaluate to the 
+     Immediate type are ignored by the assembler. This is because 
+     the assembler knows the length of the value in all passes. 
+
+  2. If  the  displacement  is an  expression  whose  terms  have 
+     already  been  defined in previous statements the  Assembler 
+     will  automatically calculate the correct length  specifier. 
+     If  the programmer supplies a length specifier it must be no 
+     smaller  than  the calculated length else an error  will  be 
+     reported.
+.pa
+  3. If  the  displacement  is a symbol which has  not  yet  been 
+     defined,  and no length specifier has been supplied a length 
+     of  4 bytes will be assumed by the Assembler.  If  a  length 
+     specifier  is  supplied  it  must be  no  smaller  than  the 
+     required length, otherwise, an error results.
+
+  4. If a length specifier is supplied for the first displacement 
+     of  a memory relative operand,  it may appear anywhere after 
+     the displacement,  but within the parentheses. The following 
+     operands are treated equally by the assembler:
+
+        5(10:W(FP))    5(10(FP):W)
+
+  5. The assembler requires any length specifier that is appended 
+     to  the second displacement of a memory relative operand  to 
+     immediately follow the displacement.
+
+        5:W(10(FP))
+
+Examples:
+
+  1.  ADDB   MON(FP):W, R7
+  2.  CMPQB  2,(WEEK+3):B(SB)
+  3.  SUBD   10(UP:B(SP)),R2
+
+In  example 1,  the displacement for the frame memory operand  is 
+one  word long.
+
+In  example 2,  the displacement for the static memory operand is 
+one  byte long.
+
+In  example  3,  the  first  displacement for  the  stack  memory 
+relative operand is one byte long.
+

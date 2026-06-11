@@ -1,0 +1,378 @@
+The UNIX-like MSDOS Interface
+
+The   GreenHills  compilers  have  been  provided  with   runtime 
+libraries that make it unnecessary for a high-level programmer to 
+understand the intricacies of the Definicon MSDOS interface.  The 
+standard  runtime functions of the Berkeley 4.2 UNIX system  have 
+been  emulated  by  the  interface,  ensuring  that  applications 
+written for the UNIX C, Pascal or Fortran compilers can be ported 
+to the DSI-32 with a minimum of effort. 
+
+A  brief  description of how this symbiosis is achieved will  now 
+follow.
+
+The software interface is implemented using the features of  both 
+the 8088 and 32032 environments.  The LOADer program,  written in 
+C,  runs  under MSDOS (or Concurrent-PCDOS) on the PC's 8088 CPU. 
+This  handles most of the file I/O and so is  relatively  complex 
+(about 35K bytes of code). The 32IO module runs on the DSI-32 and 
+handles  most  of the computationally intensive  tasks.  Together 
+they implement the interface detailed in Table XXX,  which  gives 
+the  32032 access to the MSDOS file subsystem and all of the PC's 
+I/O facilities.
+
+To  access  the  32IO  from an  assembler  program  all  that  is 
+necessary  is  to load the register R0 (of the  32000  processor) 
+with  a  request code.  The request codes,  together with  others 
+registers  that  may require initialisation are outlined  in  the 
+table. 
+
+The 32032 has a software trap vector for Supervisor Calls.  These 
+are  initiated  with  the SVC instruction,  and look  to  a  user 
+program just as if a subroutine had been called. They are simialr 
+to  the software interrupts of MSDOS.  All the facilities of  the 
+host  PC can be accessed by the 32032 using the  supervisor  call 
+structure implemented in the interface software.
+The  interaction  between  the 32032 and the 8088 occurs  at  two 
+levels.  Some primitive 8088 functions, such as PEEK and POKE and 
+INP and OUT have been made available to 32032 programs,  but  the 
+majority of the interface uses the MSDOS 'DEVICE DRIVER' concept. 
+Most users are familiar with MSDOS devices such as CON:  or COM1: 
+but in addition to these basic system facilities MSDOS allows the 
+installation  of  special  device drivers ( .SYS files)  at  boot 
+time.  Thus if,  for instance,  a GPIB card has been installed in 
+this  way a user program could open the device called  GPIB:  ,in 
+the same way as opening any other file,  and access the GPIB card 
+without  any  need to know about PEEKs or POKEs or  other  system 
+dependent  parameters.  UNIX  goes  a  step  further  than  this, 
+treating even CON:  as a device, <STDIN>. All computer interfaces 
+are accessed by a UNIX application through the common filesystem. 
+The  Definicon MSDOS interface has been designed to be similar to 
+UNIX in this respect.  The 'OPEN' system call (supervisor call  5 
+in  table XXX) opens the device whose name has been passed to  it 
+(eg  MOUSE:)  and returns a 'handle' that is used  whenever  that 
+device is later used (for reading or writing).
+
+The handle for <STDIN>,  which is usually the keyboard,  is 0. It 
+may be redirected to be from a file,  if desired.  The handle for 
+<STDOUT>,  usually the CRT, is 1 and <STDERR>, the standard error 
+channel, is 2. These may also be redirected, if desired.
+
+.cp5
+Thus  to  write  a character to the CRT using the  interface  one 
+would write in 'C'
+
+     putc(char)
+
+or, in assembler,
+
+     MOVB 9,R0      ;Supervisor request #9, write to a device
+     MOVW 1,R1      ;Handle of <STDOUT> is 1
+     ADDR char,R2   ;Point at character to be put
+     MOVW 1,R3      ;one character to be output
+     SVC            ;do the supervisor call
+
+The  remaining supervisor calls may need  fewer  parameters,  but 
+they are all accessed in the same way.
+
+
+Support for IBM style bit-mapped graphics
+
+System  call # 17 moves memory from the 32000 to  the  IBM.  This 
+allows  a  user to set up single or multiple 16K graphics  screen 
+images in the 32000's memory space and swap them to the  IBM-PC's 
+screen  memory  as  required.   It  takes  only  a  few  tens  of 
+milliseconds  to totally replace a PC's screen in this way.  Thus 
+an application that, for example, requires animation, can use the 
+32000  to set up successive backgrounds in its own memory  space, 
+swapping  only  those  portions of  the  screen  memory  actually 
+necessary  to  update the foreground motion.  When  a  background 
+change  is  needed  it  can be transferred to the  display  in  a 
+fraction of a second.  Note that it would be possible to set up a 
+large background space from which the 16K screen display could be 
+'zoomed', using the 32 bit integer manipulation capability of the 
+32032.  Applications  which have already been written (in a  high 
+level  language)  can  perform bit-mapped  graphics  with  nearly 
+identical code in the DSI-32 environment.
+.pa
+------------------------- TABLE XXX -------------------------
+
+Supervisor request 5          OPEN A DEVICE
+--------------------
+
+Pass:          R0 = 5
+               R1 = Pointer to null delimited device name string
+               R2 = Open mode,  0 = read,  1 = write, 2 = create. 
+                    To  open a binary file set bit 2 of the  open 
+                    mode. This is the preferred (fastest) mode.
+
+Returns:       R0 = Device id, (-1 = error)
+
+
+Description:
+This supervisor request causes a device that already exists to be 
+opened  for access as specified via the mode  parameter.  If  the 
+device  does  not  exist error will be  returned,  otherwise  the 
+device  id  via  which all further access to the device  will  be 
+directed is returned.
+
+Supervisor request 6          CLOSE A DEVICE
+--------------------
+
+Pass:          R0 = 6
+               R1 = Device id to close
+
+Returns:       R0 = Close status (0 if successful, -1 if error)
+
+Description:
+This  supervisor request closes the device which is  attached  to 
+the device id. The return status reports any errors that may have 
+occurred.
+
+Supervisor request 7          CREATE A DEVICE (FILE)
+--------------------
+
+Pass:          R0 = 7
+               R1 = Pointer to null terminated device name string
+               R2 = Create mode, 0 = ascii, 4 = binary
+
+Returns:       R0 = File id, (-1 = error)
+
+Description:
+This supervisor request will create a file.  If the file  already 
+exists  then it is truncated to zero length.  If an error  occurs 
+then  -1 is returned otherwise the file id via which all  further 
+access to the file will be directed is returned.
+.pa
+Supervisor request 8          READ FROM A DEVICE
+--------------------
+
+Pass:          R0 = 0
+               R1 = Device id to read from
+               R2 = Destination for the read data
+               R3 = Length of data to read (Maximum of 65535)
+
+Returns:       R0 = Length of data actually read (0 = error)
+
+Description:
+This  supervisor request will read data from the device  attached 
+to  the  device id.  Note that the maximum read length  is  65535 
+bytes. If any errors occur during the read then the return status 
+will be zero,  otherwise that actual number of bytes read will be 
+returned.  The returned length will generally be the same as  the 
+requested length unless the end of the file is reached.
+
+Supervisor request 9          WRITE TO A DEVICE
+--------------------
+
+Pass:          R0 = 9
+               R1 = Device id to write to
+               R2 = Write data source
+               R3 = Length of data to write (Maximum of 65535)
+
+Returns:       R0 = Length of data actually written (0 = error)
+
+Description:
+This supervisor request will write data to the device attached to 
+the device id. Note that the maximum write length is 65535 bytes. 
+If  any errors occur during the write then the return status will 
+be  zero,  otherwise that actual number of bytes written will  be 
+returned.  The returned length will generally be the same as  the 
+requested length unless the device becomes full.
+
+Supervisor request 10         ERASE (UNLINK) A DISK FILE 
+---------------------
+
+Pass:          R0 = 10
+               R1 = Pointer to null terminated filename string
+
+Returns:       R0 = Erase status (0 = successful, -1 = error)
+
+Description:
+This  supervisor request will erase the specified file.
+.pa
+Supervisor request 11         RENAME A FILE
+---------------------
+
+Pass:          R0 = 11
+               R1 = Pointer to old null terminated name string
+               R2 = Pointer to new null terminated name string
+
+Returns:       R0 = Rename status, 0 if successful, 1 if error
+
+Description:
+This  supervisor request will rename the old filename to the  new 
+filename.
+
+Supervisor request 12         SEEK TO BYTE IN FILE
+---------------------
+
+Pass:          R0 = 12
+               R1 = Device id
+               R2 = Byte offset to seek to
+               R3 = Seek base, 0 = from the beginning of the file
+                               1 = from the current position
+                               2 = from the end of the file
+
+Returns:       R0 = New byte position relative to the  beginning 
+                    of file or -1 if error. 
+
+Description:
+This  supervisor  request causes the file pointer to be moved  to 
+the specified position.  Three bases from which the seek is to be 
+offset  are available.  The new seek position is returned by  the 
+function unless and error occurs.  The returned file pointer is a 
+32 bit variable.
+
+Supervisor request 13         DETERMINE POSITION IN FILE
+---------------------
+
+Pass:          R0 = 13
+               R1 = Device id
+
+Returns:       R0 = Current position or -1 if error
+
+Description:
+This  supervisor request returns the current file pointer  unless 
+and error occurs. The returned file pointer is a 32 bit variable.
+.pa
+Supervisor request 14         GET COMMAND LINE ARGUMENTS
+---------------------
+
+Pass:          R0 = 14
+               R1 = Length of command buffer
+               R2 = Location to store the data
+
+Returns:       R0 = Number of arguments returned
+
+Description:
+This  supervisor request allows the command line  arguments  that 
+were entered on the IBM to be transfered to the DSI-32.  The user 
+supplies the address to store the arguments and the length of the 
+buffer.  The returned data is depicted below:
+
+              ---------------------------------------------------
+R2 ->         | Number of commands                 4 byte value |
+              |-------------------------------------------------|
+              | Pointer to first argument          4 byte value |
+              |-------------------------------------------------|
+              | Pointer to second argument         4 byte value |
+              |-------------------------------------------------|
+              |           ..                            ..      |
+              |-------------------------------------------------|
+              | Pointer to nth argument            4 byte value |
+              |-------------------------------------------------|
+              | First null terminated argument                  |
+              |-------------------------------------------------|
+              | Second null terminated argument                 |
+              |-------------------------------------------------|
+              |           ..                                    |
+              |-------------------------------------------------|
+              | Nth null terminated argument                    |
+              ---------------------------------------------------
+
+Supervisor request 15         TERMINATE 32000 EXECUTION
+---------------------
+
+Pass:          R0 = 15
+
+Returns:       (doesn't)
+
+Description:
+This  supervisor request causes the IBM to terminate execution of 
+the resident portion of the code which interfaces to  32IO.  This 
+request  should  be  performed at the end of every  program  that 
+executes on the DSI-32 board. It ensures a clean termination of a 
+program.
+.pa
+Supervisor request 16         MOVE MEMORY FROM IBM TO 32000
+---------------------
+
+Pass:          R0 = 16
+               R1 = Pointer to source of IBM memory
+               R2 = Pointer to destination in 32000 memory space
+               R3 = Length in bytes to move (maximum 65535 bytes)
+
+Returns:       (nothing)
+
+Description:
+This  supervisor  request moves memory from the IBM memory  space 
+into the 32000 memory space. The maximum length is limited to the 
+size of an integer on the IBM which is 16 bits.
+
+Supervisor request 17         MOVE MEMORY FROM THE 32000 TO IBM
+---------------------
+
+Pass:          R0 = 17
+               R1 = Pointer to source of 32000 memory
+               R2 = Pointer to destination in IBM memory space
+               R3 = Length in bytes to move (maximum 65535 bytes)
+
+Returns:       (nothing)
+
+Description:
+This supervisor request moves memory from the 32000 memory  space 
+into  the IBM memory space.  The maximum length is limited to the 
+size of an integer on the IBM which is 16 bits.
+
+Supervisor request 18         INPUT FROM PORT ON IBM
+---------------------
+
+Pass:          R0 = 18
+               R1 = Port address to input a byte from
+
+Returns:       R0 = Byte read from the input port
+
+Description:
+This supervisor request causes the IBM to read a single byte from 
+an input port and return it to the 32000.  The port address is  a 
+16 bit value.
+
+Supervisor request 19         OUTPUT TO A PORT ON THE IBM
+---------------------
+
+Pass:          R0 = 19
+               R1 = Port address to output a byte to
+               R2 = Byte to output to the port
+
+Returns:       (nothing)
+
+Description:
+This supervisor request causes the IBM to output a specified byte 
+to the specified output port. The port address is a 16 bit value.
+
+Supervisor request 20         EXECUTE SOFTWARE INTERRUPT ON IBM
+---------------------
+
+Pass:          R0 = 20
+               R1 = Pointer to a structure/array containing a
+                    copy of the 8088 register set
+
+Returns:       (nothing)
+
+Description:
+This supervisor request enables a program on the 32000 to perform 
+a  software interrupt on the IBM.  It is the responsiblity of the 
+user  to ensure that all the necessary registers are set  up.  On 
+terminating  the software interrupt the resultant  registers  are 
+stored  back into the structure/array.  Below is a table  showing 
+the layout of the registers in the structure/array.
+
+          -------------------------------
+          | AX REGISTER       2 BYTES   |
+          | BX REGISTER       2 BYTES   |
+          | CX REGISTER       2 BYTES   |
+          | DX REGISTER       2 BYTES   |
+          | SI REGISTER       2 BYTES   |
+          | DI REGISTER       2 BYTES   |
+          | FLAGS REGISTER    2 BYTES   |
+          | DS REGISTER       2 BYTES   |
+          | ES REGISTER       2 BYTES   |
+          -------------------------------
+
+---------------------------------------------------------------
+Note: Supervisor request is a BYTE variable,
+      Handles (Device ID) are WORD variables
+      Addresses are all 32 bit DOUBLE variables
+      Length parameters are WORD variables
+

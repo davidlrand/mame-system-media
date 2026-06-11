@@ -1,0 +1,18 @@
+	title	"The assembler hello program"
+	;
+	; This program is supplied with the assembler to enable
+	; a programmer to obtain instant gratification after
+	; purchasing the DSI-32 board
+	;
+hello:	addr	msg1:b,r2	;message start
+	movd	msg1l,r3	;message length
+	movqw	1,r1		;stdout for message
+	movw	9,r0		;request #14
+	svc			;the write command
+	movw	15,r0
+	movqd	0,r1
+	svc			;terminate back to msdos or c/cpm
+	;
+msg1:	byte	"Welcome to the world of 32 bit computers", h'0a
+msg1l:	equ	$-msg1
+
