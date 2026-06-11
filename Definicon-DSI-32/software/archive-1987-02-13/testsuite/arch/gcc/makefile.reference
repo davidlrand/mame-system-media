@@ -1,0 +1,33 @@
+##############################################################################################
+# compiler testsuite - makefile for gcc (reference)
+##############################################################################################
+
+CC=gcc
+RM=rm -f
+
+CCFLAGS=-O2 -Wall -W -Wextra -fwrapv -fno-strict-overflow
+CCFLAGS+=-D$(TARGETSTDDEF) -I ./arch/$(TARGET) -I ./arch/$(REFCC) -I ./util -I . -DLINUX -DREFERENCE
+HOSTSUFFIX=
+
+##############################################################################################
+
+#.SILENT:
+
+%: %.c
+	@echo "[HOSTCC]" $<
+	-@$(RM) $*.warnref
+	-@$(RM) $*$(HOSTSUFFIX)
+	-@$(RM) ./bin/$(@F)$(HOSTSUFFIX)
+	-@LANGUAGE="en" $(CC) -o $*$(HOSTSUFFIX) $(CCFLAGS) $< 1>> $*.warnref 2>> $*.warnref
+	-@if test -e $*.warnref; then \
+		mv $*.warnref ./temp/; \
+	  fi
+	-@if test -e $*$(HOSTSUFFIX); then \
+		mv $*$(HOSTSUFFIX) ./bin/; \
+	  fi
+
+clean:
+	@for i in $(TESTS) ; do \
+		$(RM) $$i.o; \
+		$(RM) $$i.warnref; \
+	done

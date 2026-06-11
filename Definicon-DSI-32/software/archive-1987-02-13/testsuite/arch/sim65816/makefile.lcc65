@@ -1,0 +1,111 @@
+##############################################################################################
+# compiler testsuite - makefile for lcc65 (target)
+##############################################################################################
+
+#DEVPREFIX=~/cc65/cc65-snapshot-2.9.5.20030502
+#CC=$(DEVPREFIX)/src/cc65/cc65
+#AS=$(DEVPREFIX)/src/ca65/ca65
+#LD=$(DEVPREFIX)/src/ld65/ld65
+
+CC=~/projects/lcc65/bin/lcc65 -S
+AS=ca65
+LD=ld65
+
+RM=rm -f
+
+#CCFLAGS=-T -t none -Osir -I. -I./arch/$(TARGET) -I ./util
+CCFLAGS=-DLINUX -D__LCC65__
+CCFLAGS+=-bu1 -I. -I./arch/$(TARGET) -I./util
+ASFLAGS=-t none --cpu 65816
+LDFLAGS=-t none
+LDFLAGS+=-L ~/projects/lcc65/lib
+#START=c64.o
+STDLIBS=liblcc.a libscpu.a
+
+##############################################################################################
+
+.SILENT:
+
+%: %.c
+		-@echo -n "$< ..."; \
+		$(RM) $*.errors; \
+		if test -e $*.c; then \
+			echo -n " cc:"; \
+			if $(CC) -o $*.s $(CCFLAGS) $*.c 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+			fi; \
+		fi; \
+        \
+		if test -e $*.s; then \
+			echo -n " as:"; \
+			if $(AS) -o $*.o $(ASFLAGS) $*.s 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+			fi; \
+		fi; \
+        \
+		if test -e $*.o; then \
+			echo -n " ld:"; \
+			if $(LD) $(LDFLAGS) -o $*.prg $(START) $*.o $(STDLIBS) 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+			fi; \
+		fi; \
+        \
+		if test -e $*.prg; then \
+            mv $*.prg ./bin/; \
+			echo " (complete)"; \
+		else \
+			echo " (failed)"; \
+		fi; \
+        \
+		mv $*.errors ./temp/
+
+#			pucrunch -fshort -c64 $$i.prg $$i.prg 1> /dev/null 2> /dev/null; \
+
+disc:
+
+	@$(C1541) -format testdisc,00 d81 ./bin/testsuite.d81 1> /dev/null 2> /dev/null
+	@for i in $(TESTS) ; do \
+			export THISTEST=`echo "$$i" | sed -e 's/.*\///'`; \
+			if test -e ./bin/$$THISTEST.prg; then \
+			    $(C1541) -attach ./bin/testsuite.d81 -write ./bin/$$THISTEST.prg $$THISTEST 1> /dev/null 2> /dev/null; \
+			fi; \
+	done
+	@for i in $(TESTS) ; do \
+			export THISTEST=`echo "$$i" | sed -e 's/.*\///'`; \
+			if test -e $$i.input; then \
+				cat $$i.input | $(CBMCVT) > ./bin/$$THISTEST.in; \
+			fi; \
+			if test -e ./bin/$$THISTEST.in; then \
+			    $(C1541) -attach ./bin/testsuite.d81 -write ./bin/$$THISTEST.in $$THISTEST.in,u 1> /dev/null 2> /dev/null; \
+			fi; \
+	done
+
+run:
+
+#		@x64 +sound -truedrive -virtualdev -warp -drive8type 1581 -8 ./bin/testsuite.d81 -keybuf "Lo\\22:*\\22,8,1\\0dRu\\0d" \
+#            1> /dev/null 2> /dev/null
+
+extract:
+
+		@for i in $(TESTS) ; do \
+			export THISTEST=`echo "$$i" | sed -e 's/.*\///'`; \
+			echo -n "$$THISTEST,"; \
+			rm -f ./bin/$$THISTEST.out ./temp/$$THISTEST.result; \
+			$(C1541) -attach ./bin/testsuite.d81 -read $$THISTEST.out ./bin/$$THISTEST.out 1> /dev/null 2> /dev/null; \
+			if test -e ./bin/$$THISTEST.out; then \
+				cat ./bin/$$THISTEST.out | $(CBMCVT) -f > ./temp/$$THISTEST.result; \
+				rm -f ./bin/$$THISTEST.out; \
+			fi;\
+		done
+
+clean:
+		@for i in $(TESTS) ; do \
+			$(RM) $$i.o; \
+			$(RM) $$i.s; \
+		done

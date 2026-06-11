@@ -1,0 +1,154 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<title>testsuite report</title>
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</HEAD>
+<BODY>
+
+
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+<table bgcolor="#c0c0c0" align="center" width="99%"><tr><td>
+<table bgcolor="#c0c0c0" align="center" width="99%"><tr><td>
+<table bgcolor="#a0a0a0" align="center" width="99%"><tr><td>
+<table bgcolor="#a0a0a0" align="center" width="99%"><tr><td>
+<h1>automatic compiler testsuite v0.7</h1>
+<small>(w) 2003-2014 Groepaz/Hitmen</small>
+</td></tr></table>
+<br></td></tr></table>
+<p>Index
+<a href="./report-overview.html">Overview</a>
+<table bgcolor="#c0c0c0" align="center" width="99%"><tr><td>
+<p>
+this is my little contribution to debugging cc65 :)
+ <a href="http://cc65.github.io/cc65/">Homepage</a>
+ <a href="http://github.com/cc65/cc65">github repository</a>
+ <a href="http://cc65.github.io/cc65/doc/">Documentation</a>
+ <a href="http://github.com/cc65/wiki">WIKI</a>
+
+<p>
+look at the
+ <a href="./report-overview.html">Overview</a> first, then check the detailed tests...
+<!--
+ configured for standard=
+<a href="./report-cc65-o-Osir.html">cc65</a>,
+ <a href="./report-c89-o-Osir.html">c89</a>,
+ <a href="./report-c99-o-Osir.html">c99</a> (with optimizations) and
+ <a href="./report-cc65-o.html">cc65</a>,
+ <a href="./report-c89-o.html">c89</a>,
+ <a href="./report-c99-o.html">c99</a> (without optimizations)
+<p>
+-->
+<p>
+the source to the testsuite and some other cc65 related goodies can be found on my
+<a href="https://github.com/mrdudz">github repository</a>.
+</p>
+
+</td></tr></table>
+<br>
+<table bgcolor="#a0a0a0" align="center" width="99%"><tr><td>
+<table bgcolor="#a0a0a0" align="center" width="99%"><tr><td>
+
+<p>
+since it gives a good brief overview of what cc65 can do, or rather what it can not do, here is a
+ short list with explainations of the options used to configure the various test programs:
+
+<p>
+<h3>target properties</h3>
+
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>SIZEOF_INT_16BIT
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>SIZEOF_LONG_32BIT
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>UNSIGNED_CHARS
+<br>char equals unsigned char
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>UNSIGNED_BITFIELDS
+<br>bitfields are unsigned
+</td></tr></table></td></tr></table>
+
+<p>
+<h3>compiler limitations</h3>
+<table bgcolor="#ffc0c0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#ffc0c0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_FLOATS
+<br>no support for floating point in cc65 yet :/
+</td></tr></table></td></tr></table>
+<table bgcolor="#ffc0c0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#ffc0c0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_WCHAR
+<br>library support for wchar is missing in cc65 (inttypes.h, wchar.h ...)
+</td></tr></table></td></tr></table>
+<table bgcolor="#ffc0c0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#ffc0c0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_FUNCS_TAKE_STRUCTS
+<br>disable passing structs to functions by value.
+</td></tr></table></td></tr></table>
+<table bgcolor="#ffc0c0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#ffc0c0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_FUNCS_RETURN_STRUCTS
+<br>disable returning structs from functions by value.
+</td></tr></table></td></tr></table>
+<table bgcolor="#efffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#efffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_SLOPPY_STRUCT_INIT
+<br>replace some "unusual" ways to initialize structs by more "explicit" ones.
+</td></tr></table></td></tr></table>
+
+<p>
+<li>The volatile modifier has no effect.
+<li>There are some limitation on the size of local variables. Not all operations are available if the size of local variables exceeds 256 bytes.
+<li>Part of the C library is available only with fastcall calling conventions. This means, that you may not mix pointers to those functions with pointers to user written functions.
+
+<p>
+<h3>language related options</h3>
+most of these are related to replacing K&R style code by a proper ansi equivalent. unless stated otherwise they
+are all active regardless of what standard was choosen to compile the tests, although most (if not all) of them
+<i>should</i> not be necessary unless standard=C99 (which does not support K&R)
+
+<p>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_OLD_FUNC_DECL
+<br>do not use K&R style function declarations. this option is only enabled if standard=C99
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>MAIN_RETURNS_INT
+<br>make sure main() returns int. this option is only enabled if standard=C99 (questionably pointless even then =P)
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_IMPLICIT_FUNC_PROTOTYPES
+<br>add prototypes where functions are used before they are declared. (cc65 -rightly so- gives an error on this)
+</td></tr></table></td></tr></table>
+<table bgcolor="#efffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#efffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_EMPTY_FUNC_ARGS
+<br>remove (K&R style) function call with empty arguments. (spill.c)
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>CAST_STRUCT_PTR
+<br>explicitly cast struct pointers when passing to a function that takes a struct pointer of a different type. (cc65 -rightly so- gives an error on this)
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_TYPELESS_INT
+<br>remove (K&R style) implicit int occurances. this option is only enabled if standard=C99
+</td></tr></table></td></tr></table>
+<table bgcolor="#c0ffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#c0ffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_TYPELESS_INT_PTR
+<br>remove (K&R style) implicit int pointer occurances. this option is only enabled if standard=C99
+</td></tr></table></td></tr></table>
+<table bgcolor="#efffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#efffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_TYPELESS_STRUCT_PTR
+<br>remove (K&R style) implicit struct pointer occurances.
+</td></tr></table></td></tr></table>
+<table bgcolor="#efffc0" border="2" cellpadding="0" cellspacing="0" width="100%"><tr><td><table bgcolor="#efffc0"  align="center" border="0" cellpadding="0" cellspacing="0" width="99%"><tr width="100%" ALIGN="left"><td>
+<li>NO_IMPLICIT_FUNCPTR_CONV
+<br>remove (K&R style) implicit int occurances from function pointer declarations. (ptrfunc.c)
+</td></tr></table></td></tr></table>
+
+</td></tr></table>
+</td></tr></table>
+</td></tr></table>
+</td></tr></table>
+</td></tr></table>
+
+</BODY>
+</HTML>

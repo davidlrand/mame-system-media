@@ -1,0 +1,114 @@
+##############################################################################################
+# compiler testsuite - makefile for cc65 (target)
+##############################################################################################
+
+include arch/cc65/makefile.targetcfg
+
+#CBMCVT=$(DEVPREFIX)/util/cbm/cbmcvt
+
+CBMCVT=cbmcvt
+#PET2ASC=petcat -nh
+PET2ASC=cbmcvt -f
+
+C1541=c1541
+
+RM=rm -f
+
+
+CCFLAGS+=-D $(TARGETSTDDEF) -D $(TARGETDEF) -T -t sim6502 $(TARGETOPTS) -I . -I ./arch/ -I ./tests/ -I ./arch/$(TARGET) -I ./arch/$(REFCC) -I ./util
+ASFLAGS=-t sim6502
+LDFLAGS=-t sim6502
+#START=c64.o
+STDLIBS=sim6502.lib
+
+##############################################################################################
+
+%: %.c
+		-@echo -n "$< ..."; \
+		$(RM) $*.errors; \
+		if test -e $*.c; then \
+			echo -n " cc:"; \
+			if $(CC) -o $*.s $(CCFLAGS) $*.c 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+				rm -f $*.s ;\
+				rm -f $*.o ;\
+				rm -f $* ;\
+			fi; \
+		fi; \
+        \
+		if test -e $*.s; then \
+			echo -n " as:"; \
+			if $(AS) -o $*.o $(ASFLAGS) $*.s 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+				rm -f $*.o ;\
+				rm -f $* ;\
+			fi; \
+		fi; \
+        \
+		if test -e $*.o; then \
+			echo -n " ld:"; \
+			if $(LD)  -o $* $(LDFLAGS) $(START) $*.o $(STDLIBS) 1>> $*.errors 2>> $*.errors; then \
+				echo -n "ok."; \
+			else \
+				echo -n "err."; \
+				rm -f $* ;\
+			fi; \
+		fi; \
+        \
+		if test -e $*; then \
+            mv $* ./tbin/; \
+			echo " (complete)"; \
+		else \
+			echo " (failed)"; \
+			rm -f ./tbin/$(@F) ;\
+		fi; \
+        \
+		mv $*.errors ./temp/
+
+disc:
+
+	@for i in $(TESTS) ; do \
+		export THISTEST=`echo "$$i" | sed -e 's/.*\///'`; \
+		if test -e $$i.input; then \
+			cat $$i.input > ./tbin/$$THISTEST.in; \
+		fi; \
+	done
+
+run:
+
+	@echo "using $(SIM65):"
+	@for i in $(TESTS) ; do \
+		export THISTEST=`echo "$$i" | sed -e 's/.*\///'` ;\
+		echo -n "$$THISTEST," ;\
+		rm -f ./tbin/$$THISTEST.out ;\
+		if test -e ./tbin/$$THISTEST; then \
+			if test -e ./tbin/$$THISTEST.in; then \
+				$(SIM65) -x 199999999 \
+				./tbin/$$THISTEST < ./tbin/$$THISTEST.in > ./tbin/$$THISTEST.out ; \
+			else \
+				$(SIM65) -x 199999999 \
+				./tbin/$$THISTEST > ./tbin/$$THISTEST.out ; \
+			fi;\
+		fi;\
+	done
+
+extract:
+	@-$(CC) --version 2>&1 | grep -v "No input files" > ./temp/targetcc.version
+	@for i in $(TESTS) ; do \
+		export THISTEST=`echo "$$i" | sed -e 's/.*\///'`; \
+		echo -n "$$THISTEST,"; \
+		rm -f ./temp/$$THISTEST.result; \
+		if test -e ./tbin/$$THISTEST.out; then \
+			cat ./tbin/$$THISTEST.out > ./temp/$$THISTEST.result; \
+		fi;\
+	done
+
+clean:
+	@for i in $(TESTS) ; do \
+		$(RM) $$i.o; \
+		$(RM) $$i.s; \
+	done

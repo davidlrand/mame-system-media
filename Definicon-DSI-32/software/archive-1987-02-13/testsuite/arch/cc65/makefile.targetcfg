@@ -1,0 +1,49 @@
+
+# CAUTION!!! DO NOT USE cl65 HERE, IT MAY NOT USE THE RIGHT SUBTOOLS
+
+CCFLAGS=
+LDFLAGS=
+ASFLAGS=
+TARGETLIBPATH=
+
+# recent git version
+DEVPREFIX=~/Desktop/cc65/github/cc65/bin
+CC=$(DEVPREFIX)/cc65
+AS=$(DEVPREFIX)/ca65
+LD=$(DEVPREFIX)/ld65
+SIM65=$(DEVPREFIX)/sim65
+
+# regular installed
+#CC=cc65
+#AS=ca65
+#LD=ld65
+#SIM65=sim65
+
+# older svn versions
+#DEVPREFIX=~/Desktop/cc65/cc65-old/cc65-2.12.0
+#CC=$(DEVPREFIX)/src/cc65/cc65
+#AS=$(DEVPREFIX)/src/ca65/ca65
+#LD=$(DEVPREFIX)/src/ld65/ld65
+
+# 2.7.0 does not support --standard
+# 2.8.0 does not support --standard
+# 2.11.0 DOES support it
+CCFLAGS+=--standard $(TARGETSTD)
+
+# FIXME: we must somehow get rid of this to make cc65 <= 2.13.3 work
+#        correctly without it being installed
+
+# must set include and lib- path
+CCFLAGS+=-I $(DEVPREFIX)/include
+
+# 2.7.0 doesnt know -L
+# 2.8.0 doesnt know -L
+# 2.11.0 DOES support it
+LDFLAGS+=-L $(DEVPREFIX)/libsrc
+# 2.7.0 doesnt know -L
+# 2.8.0 doesnt know -L
+#TARGETLIBPATH=$(DEVPREFIX)/libsrc
+
+# 2.12.0 needs crt0 explicitly linked (this path must have / at the end)
+# recent git does NOT need it
+#CRT0PATH=$(DEVPREFIX)/libsrc/

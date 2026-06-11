@@ -1,0 +1,7 @@
+bin/
+tbin/
+html/
+temp/
+tests/*.s
+tests/*.o
+report*.html

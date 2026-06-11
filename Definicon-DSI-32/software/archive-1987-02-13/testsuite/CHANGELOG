@@ -1,0 +1,20 @@
+test6:
+- cleaned up "run6502" and linked from index page
+- fixed add3 test (signed vs unsigned chars)
+
+test5:
+- added some more tests
+- added options for generating proper reference output on 64bit host
+- added options to tweak some tests to compile on latest cc65
+
+test4:
+- fixed a bug with linking to assembler files in the report
+- colorized and correctly crosslinked assembler view
+
+test3:
+- vice autostart problem(s) have been worked around
+- frontend "maketests" added and dodgy makefile removed
+- liiiiittle bit improved docs :)
+- licences added
+- some glitches fixed in several tests, seem to work all fine now
+ 

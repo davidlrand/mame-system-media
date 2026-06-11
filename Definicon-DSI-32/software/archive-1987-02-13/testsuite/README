@@ -1,0 +1,74 @@
+
+warning...this is major incomplete work in progress... :)
+
+-------------------------------------------------------------------------------
+compiler testsuite
+-------------------------------------------------------------------------------
+
+this is a little compiler-testsuite, currently mostly useful for
+use with cc65 and the c64, but generic and portable enough to be
+used on other targets....
+
+a lot of the test programs are nicked from other sources. please notice some
+tests are released under a different licence which is stated in each test, the
+respective licence text is available in the docs directory.
+
+-------------------------------------------------------------------------------
+Overview
+-------------------------------------------------------------------------------
+
+"maketests" is a shell script to serve as a frontend for running automated
+tests on both a reference- and a target compiler, and making a report in
+html.
+
+before being able to use the script, make sure the definitions in the file
+arch/<target>/makefile.<targetcc> meet your current setup.
+
+if you are using the "run6502" target (which is default), then also make sure
+that you update the run6502.lib runtime on each compiler update.
+
+use "maketests --clean --all" to run the entire testsuite, "maketests --help"
+gives you a list of available commandline options.
+
+needed external tools:
+
+- sed, grep, make
+- c2html
+- ca65html (from the cc65 package)
+
+-------------------------------------------------------------------------------
+Commandline options in detail
+-------------------------------------------------------------------------------
+
+todo
+
+-------------------------------------------------------------------------------
+adding more tests
+-------------------------------------------------------------------------------
+
+please look at example.c in the tests directory, use that as a template.
+
+you may just put your additional tests into the tests directory, or place them
+anywhere else and call the script like this:
+
+"maketests --add-dir /my/stuff/" (adds all files in the directory to the list
+of tests) or
+
+"maketests --skip-default --add-test /my/stuff/weird.c" (skips the tests in the
+default tests directory, and adds one test)
+
+-------------------------------------------------------------------------------
+cc65/c64 related notes
+-------------------------------------------------------------------------------
+
+needed tools:
+    x64, cc65, c1541 (from the vice package), cbmcvt (from the cc65 package)
+
+- if a test will hang, because the binaries dont exit
+cleanly to basic, reset the emu and load/run the file in question
+manually.
+
+- the "yacc" test appearently seems to hang atm (reset and load next test)
+
+-------------------------------------------------------------------------------
+report bugs to groepaz@gmx.net

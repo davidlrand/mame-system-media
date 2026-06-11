@@ -1,0 +1,392 @@
+#! /bin/sh
+
+################################################################################
+# sub functions
+################################################################################
+
+echotesttag()
+{
+    grep "\!\!$2\!\!" $1 | sed -e 's/\!\!'$2'\!\!//'
+}
+
+function addtest
+{
+    # full path to source, but without extension
+    export TESTS="$TESTS `echo "$1" | sed -e 's/\.c//'`"
+}
+
+function addtestdir
+{
+    for I in `ls $1/*.c | sort` ; do \
+        addtest "$I"; \
+    done
+}
+
+function version
+{
+    echo "$0 v0.7 - (w)2003-2014 Groepaz/Hitmen."
+}
+
+function usage
+{
+    echo "usage: $0 [options] [tests]"
+    echo "-h --help           show this help"
+    echo "--version           show version"
+    echo "--list              show tests that will be used"
+    echo "--list-details      show details on tests"
+    echo "--show-config       show config info"
+    echo "--skip-default      do not use default test directory"
+    echo "--add-test [name]   add a single test"
+    echo "--single [name]     same as --skip-default --add-test [name]"
+    echo "--add-dir [path]    add a directory with tests"
+    echo "--reference         recompile and run on host"
+    echo "--targetprogs       recompile for target"
+    echo "--target [tgt]      set target (c64,run6502)"
+    echo "--targetopts [opts] set target compiler options"
+    echo "--standard [std]    set C standard (c89,c99,cc65)"
+    echo "--run               run on target/simulator"
+    echo "--report            only create html report, don't recompile or run"
+    echo "--overview          create html overview page"
+    echo "--all               same as --reference --targetprogs --run --report --overview"
+    echo "--clean             cleanup, delete all created files"
+    echo "report bugs to groepaz@gmx.net."
+}
+function config
+{
+    echo -e "target:      $TARGET ($TARGETDEF)"
+    echo -e "standard:    $TARGETSTD ($TARGETSTDDEF)"
+    echo -e "targetcc:    $TARGETCC"
+    echo -e "referencecc: $REFCC"
+    echo -e "report file: $OUTFILE"
+    echo -e "html dir:    $HTMLDIR"
+}
+function details
+{
+    echo -e "test  infile  \t\tdescription"
+    for I in $TESTS; do \
+        echo -ne "$I  " ;\
+        if test -s "$I.input"; then \
+            echo -ne "$I.input  "; \
+        fi; \
+        echo -ne "\t\t"; \
+        echotesttag $I.c DESCRIPTION; \
+    done
+}
+
+################################################################################
+# main actions
+################################################################################
+
+function makereference
+{
+    echo creating reference binaries.
+
+    for i in $TESTS ; do \
+            THISTEST=`echo "$i" | sed -e 's/.*\///'`; \
+            rm -f $i ; \
+    done
+
+    make --no-print-directory -f ./arch/$REFCC/makefile.reference $TESTS
+
+    echo done.
+
+    echo creating reference input
+
+    for i in $TESTS ; do \
+        echo -n "$i..."; \
+        THISTEST=`echo "$i" | sed -e 's/.*\///'`; \
+        if test -e $i.input; then \
+            cat $i.input > ./bin/$THISTEST.in; \
+            cat $i.input > ./tbin/$THISTEST.in; \
+            echo "ok"; \
+        else \
+            echo "none"; \
+        fi; \
+    done
+
+    echo done.
+
+    echo running tests and creating reference output.
+
+    for i in $TESTS ; do \
+        THISTEST=`echo "$i" | sed -e 's/.*\///'`; \
+        echo -n "$i..." ;\
+            rm -f ./bin/$THISTEST.out ./temp/$THISTEST.ref; \
+        if test -f ./bin/$THISTEST; then \
+            cd ./bin;"./$THISTEST";cd ..; \
+            if test -s ./bin/$THISTEST.out; then \
+                cat ./bin/$THISTEST.out > ./temp/$THISTEST.ref; \
+                rm -f ./bin/$THISTEST.out; \
+            fi;\
+            echo "ok"; \
+        else \
+            echo "error"; \
+        fi;\
+    done
+
+    echo done.
+}
+
+function maketarget
+{
+
+    echo -ne "\n\nbuilding target binaries.\n"
+    make --no-print-directory -f ./arch/$TARGET/makefile.$TARGETCC $TESTS
+    echo -ne "\n\nbuilding target image.\n"
+    make --no-print-directory -f ./arch/$TARGET/makefile.$TARGETCC disc
+
+}
+
+function runtarget
+{
+    echo starting emulator "'"$TARGET"'"... close emulator when tests are finished.
+    make --no-print-directory -f ./arch/$TARGET/makefile.$TARGETCC run
+}
+
+function makereport
+{
+    echo -ne "\n\nextracting results.\n"
+    make --no-print-directory -f arch/$TARGET/makefile.$TARGETCC extract
+    echo -e "done."
+
+    echo -ne "\n\ncreating report.\n"
+    ./makereport.sh
+    echo -e "done."
+    echo -e "\n\nfinished. browse $OUTFILE to see the results."
+}
+
+function makeoverview
+{
+    echo -ne "\n\ncreating overview.\n"
+    ./maketable.sh
+    echo -e "done."
+    echo -e "\n\nfinished. browse report-overview.html to see the results."
+}
+
+function startup
+{
+    mkdir -p $BINDIR
+    mkdir -p $HTMLDIR
+    mkdir -p $TEMPDIR
+
+    export OUTFILE=report-$TARGETSTD-o$TARGETOPTS.html
+}
+
+function cleanup
+{
+    rm -f $BINDIR/*
+    rm -f $HTMLDIR/*
+    rm -f $TEMPDIR/*
+    rm -f $OUTFILE
+    rmdir --ignore-fail-on-non-empty $BINDIR
+    rmdir --ignore-fail-on-non-empty $HTMLDIR
+    rmdir --ignore-fail-on-non-empty $TEMPDIR
+    make --no-print-directory -f ./arch/$REFCC/makefile.reference clean
+    make --no-print-directory -f ./arch/$TARGET/makefile.$TARGETCC clean
+}
+
+function setstandard
+{
+    echo setting standard: $1
+    case $1 in
+        ("c89")
+        export TARGETSTD=c89
+        export TARGETSTDDEF=STANDARD_C89
+            ;;
+        ("c99")
+        export TARGETSTD=c99
+        export TARGETSTDDEF=STANDARD_C99
+            ;;
+        ("cc65")
+        export TARGETSTD=cc65
+        export TARGETSTDDEF=STANDARD_CC65
+            ;;
+    esac
+
+    export OUTFILE=report-$TARGETSTD-o$TARGETOPTS.html
+
+    echo TARGETSTD:    $TARGETSTD
+    echo TARGETSTDDEF: $TARGETSTDDEF
+    echo OUTFILE:      $OUTFILE
+
+}
+
+
+
+function settarget
+{
+    echo setting target: $1
+    case $1 in
+        ("c64")
+        export TARGET=c64
+        export TARGETDEF=TARGET_C64
+        setstandard cc65
+            ;;
+        ("run6502")
+        export TARGET=run6502
+        export TARGETDEF=TARGET_RUN6502
+        setstandard c99
+            ;;
+        ("sim65")
+        export TARGET=sim65
+        export TARGETDEF=TARGET_SIM65
+        setstandard c99
+            ;;
+    esac
+
+    echo TARGET:    $TARGET
+    echo TARGETDEF: $TARGETDEF
+}
+
+
+################################################################################
+# main start
+################################################################################
+
+# default config
+export C2HTML="code2html --language-mode c --linenumbers"
+export ASM2HTML="ca65html"
+
+## cc65 / c64
+#export TARGET=c64
+#export TARGETDEF=TARGET_C64
+
+#export TARGET=run6502
+#export TARGETDEF=TARGET_RUN6502
+
+export TARGET=sim65
+export TARGETDEF=TARGET_SIM65
+
+export TARGETCC=cc65
+
+export TARGETSTD=c99
+export TARGETSTDDEF=STANDARD_C99
+
+#export TARGETSTD=c89
+#export TARGETSTDDEF=STANDARD_C89
+
+## lcc65816 / sim65816
+#export TARGET=sim65816
+#export TARGETCC=lcc65
+
+export REFCC=gcc
+
+export HTMLDIR=./html
+export BINDIR=./bin
+export TEMPDIR=./temp
+
+# add default tests dir
+export TARGETOPTS=""
+export TESTS=""
+addtestdir ./tests;
+
+export DIR=`pwd`
+
+################################################################################
+# parse commandline
+################################################################################
+for I in $*; do \
+    case $1 in \
+        ("--help"|"-h") \
+            usage;\
+            exit 0;
+            ;; \
+        ("--version") \
+            version;\
+            exit 0;
+            ;; \
+        ("--show-config") \
+            startup; \
+            config; \
+            ;;\
+        ("--list-details") \
+            startup; \
+            details; \
+            ;;\
+        ("--list") \
+            echo $TESTS; \
+             ;;\
+        ("--skip-default") \
+            export TESTS="";\
+            ;;\
+        ("--single") \
+            export TESTS="";\
+            addtest $2;\
+            shift 1; \
+            ;;\
+        ("--targetopts") \
+            export TARGETOPTS=$2;\
+            echo TARGETOPTS:$TARGETOPTS; \
+            shift 1; \
+            ;;\
+        ("--add-test") \
+            addtest $2;\
+            shift 1; \
+            ;;\
+        ("--add-dir") \
+            addtestdir $2;\
+            shift 1; \
+            ;;\
+        ("--reference") \
+            startup; \
+            makereference;\
+            ;;\
+        ("--standard") \
+            setstandard $2;\
+            shift 1; \
+            ;;\
+        ("--target") \
+            settarget $2;\
+            shift 1; \
+            ;;\
+        ("--targetprogs") \
+            startup; \
+            maketarget;\
+            ;;\
+        ("--run") \
+            startup; \
+            runtarget;\
+            ;;\
+        ("--report") \
+            startup; \
+            makereport;\
+            ;;\
+        ("--overview") \
+            startup; \
+            makeoverview;\
+            ;;\
+        ("--all") \
+            startup; \
+            makereference;\
+            maketarget;\
+            runtarget;\
+            makereport;\
+            makeoverview;\
+            ;;\
+        ("--clean") \
+            cleanup;\
+            ;;\
+        ($1) \
+            if test -e $1; then \
+                addtest $1;\
+            else \
+		    usage;\
+		    exit 0;
+            fi; \
+            ;; \
+    esac; \
+    shift 1; \
+    if test -n "$1";then echo "" ;fi;\
+done
+
+################################################################################
+# EOF
+################################################################################
+
+# print a CR when we are not at the end of the line
+echo -en "\E[6n" && read -sdR CURPOS && CURPOS=${CURPOS#*[*;}
+if test $CURPOS != 1; then
+    echo -ne "\n"
+fi
+
+exit 0 ;

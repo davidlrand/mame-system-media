@@ -1,0 +1,14 @@
+
+
+
+char alignment: 1
+short alignment: 1
+int alignment: 1
+long alignment: 1
+unsigned alignment: 1
+signed alignment: 1
+signed alignment: 1
+Section s85 returned 0.
+
+No errors detected.
+
