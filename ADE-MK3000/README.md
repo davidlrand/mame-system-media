@@ -55,3 +55,17 @@ to ADE Elettronica.
 
 Firmware copyright ADE Elettronica; preserved for emulation and historical
 reference.
+
+## MK-84 (added 2026-06-12)
+
+![MK-84 booting CP/M in MAME](mk84/mk84-cpm-mame.png)
+
+The MK-84 (1984), ADE's successor to the MK-83, now runs in MAME
+(`mame mk84`): same 256K paged memory and FD1797/FDC9229 disk system,
+with the CPU at 5 MHz and the FDC handshake moved to the Xerox-style
+HALT-gated NMI.  Firmware is ADE's "MK-84 monitor 1.1" (three
+independent dumps in `mk84/roms/` agree).  At the blank power-on
+screen press RETURN (console select), then `U21,27,A,2` and `B1`
+boots the reconstructed MK-83 CP/M 2.2 disk, unmodified, to `A>`.
+The character generator is borrowed from the MK-83 pending a dump
+from an MK-84 board; original MK-84 media is wanted.
