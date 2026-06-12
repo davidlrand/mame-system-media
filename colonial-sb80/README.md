@@ -28,6 +28,25 @@ A0>
 - **Console** is Zilog SIO channel A on `-rs232a` (default terminal), **9600 baud**.
 - **Aux / RDR: / PUN:** is SIO channel B on `-rs232b`, **300 baud at cold boot**.
 
+### Software list (MAME)
+
+MAME ships a software list for the SB-80 (`sb80_flop`), so these disks can be
+launched by name instead of an explicit `-flop1 <file>` path. Put the images
+under your MAME `roms/` tree:
+
+```
+roms/sb80_flop/cpm/sb80-dr.td0          # v1.22 CBIOS system disk
+roms/sb80_flop/cpmutils/sb80-boot.imd   # bootable + standard utilities
+roms/sb80_flop/cpmrec/sb80-004.imd      # 8" recovery image
+roms/sb80_flop/cpmcds/sb80-1k.td0       # Colonial Data OEM build (won't cold-boot)
+```
+
+then:
+
+```sh
+./mame sb80 -flop1 cpm        # or cpmutils / cpmrec
+```
+
 ### Serial aux gotcha (300 vs 9600)
 
 If you use the aux port for file transfer (`PIP PUN:=file`, `PIP file=RDR:`),
@@ -57,6 +76,18 @@ the firmware's 300-baud cold-boot rate.)
 | `disks/sb80-004.imd` | My 8" recovery image (source of the extracted BIOS) | `2ec8381df3c7384ea3f4930f34bec5b4d87c177a` |
 | `bootrom.bin` | 256-byte boot ROM — CRC32 `FA521576` | `32153db6f37e7f5666e89aa0b8712d79daafeb4b` |
 | `docs/photos/` | Photos of my boards (S/N 1692 stock, S/N 1693 bank-switch mod) | — |
+
+## Boot ROM
+
+`bootrom.bin` is a 256-byte chip that holds **two parallel 128-byte programs**,
+not one 256-byte image: the cold-boot IPL (chip `$00-$7F`) and a standalone
+"POWER ON RESET" memory-test diagnostic (chip `$80-$FF`, ends in `HLT`). The
+board reads the ROM through a 128-byte window at `$0000-$007F` with a bank bit
+selecting which half is visible — the diagnostic runs only when its half is
+banked down to `$0000` (its own SIO table sits at chip `$F2` = window offset
+`$72`, which is why its `LD HL,$0072` resolves). So on a normal cold boot only
+the IPL half is at `$0000-$007F` and `$0080-$00FF` is RAM (also the CP/M default
+DMA buffer). The MAME driver models the IPL window accordingly.
 
 ## Provenance & attribution
 
