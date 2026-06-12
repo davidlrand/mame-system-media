@@ -1,0 +1,785 @@
+;32000 rom startup routine
+;
+;(C) 1985, 1986 Dave Rand and George Scolaro
+;72 Longfellow St.
+;Thousand Oaks, CA  91360
+;805-493-1987
+;
+;Version 1.7  Fri Sep 12 18:46:00 1986
+;
+;Disclosure of this source code will result in most or all of your limbs
+;dropping off, as the result of a chainsaw intersecting with them.
+;
+
+nb8:	equ	0		; for 32008 board
+nb16:	equ	1		; for 32016 board
+nb32:	equ	0		; for 32032 board
+nb332:	equ	0		; for 32332 board
+nb3232:	equ	nb32+nb332	; for both the 32032 and 32332
+	;
+	if	nb8 == 1
+ICU:	equ	h'fffe00
+LOWRAM:	equ	h'100000
+DUARTB:	equ	h'ff8000	;duart base address
+sra:	equ	DUARTB+1
+rhra:	equ	DUARTB+3
+bytsiz:	equ	0		;byte size is one
+	endif
+	;
+	if	nb16 == 1
+LOWRAM:	equ	h'800000
+HIGHRAM:equ	h'fbffff
+PARIO:	equ	h'fc0000
+INT86:	equ	h'fc0100
+ICU:	equ	h'fffe00
+	;
+icu0:	equ	0
+icu1:	equ	4
+icu2:	equ	8
+icu3:	equ	12
+icu4:	equ	16
+icu5:	equ	20
+icu6:	equ	24
+icu7:	equ	28
+icu8:	equ	32
+icu9:	equ	36
+icu10:	equ	40
+icu11:	equ	44
+icu12:	equ	48
+icu13:	equ	52
+icu14:	equ	56
+icu15:	equ	60
+icu16:	equ	64
+icu17:	equ	68
+icu18:	equ	72
+icu19:	equ	76
+icu20:	equ	80
+icu21:	equ	84
+icu22:	equ	88
+icu23:	equ	92
+icu24:	equ	96
+icu25:	equ	100
+icu26:	equ	104
+icu27:	equ	108
+icu28:	equ	112
+icu29:	equ	116
+icu30:	equ	120
+icu31:	equ	124
+refreshc: equ	9
+	endif
+	;
+	if	nb32 == 1 
+LOWRAM:	equ	h'800000
+HIGHRAM:equ	h'f7ffff
+CSWAP:	equ	h'f80300
+PARIO:	equ	h'fc0000
+INT86:	equ	h'fc0100
+ICU:	equ	h'fffe00
+refreshc: equ	9
+	;
+icu0:	equ	0
+icu1:	equ	4
+icu2:	equ	8
+icu3:	equ	12
+icu4:	equ	16
+icu5:	equ	20
+icu6:	equ	24
+icu7:	equ	28
+icu8:	equ	32
+icu9:	equ	36
+icu10:	equ	40
+icu11:	equ	44
+icu12:	equ	48
+icu13:	equ	52
+icu14:	equ	56
+icu15:	equ	60
+icu16:	equ	64
+icu17:	equ	68
+icu18:	equ	72
+icu19:	equ	76
+icu20:	equ	80
+icu21:	equ	84
+icu22:	equ	88
+icu23:	equ	92
+icu24:	equ	96
+icu25:	equ	100
+icu26:	equ	104
+icu27:	equ	108
+icu28:	equ	112
+icu29:	equ	116
+icu30:	equ	120
+icu31:	equ	124
+	endif
+	;
+	if	nb332 == 1 
+LOWRAM:	equ	h'800000
+HIGHRAM:equ	h'ffffff
+CSWAP:	equ	h'ff000000
+INT86:	equ	h'ff000100
+PARIO:	equ	h'ff800000
+ICU:	equ	h'fffffe00
+refreshc: equ	7
+	;
+icu0:	equ	0
+icu1:	equ	4
+icu2:	equ	8
+icu3:	equ	12
+icu4:	equ	16
+icu5:	equ	20
+icu6:	equ	24
+icu7:	equ	28
+icu8:	equ	32
+icu9:	equ	36
+icu10:	equ	40
+icu11:	equ	44
+icu12:	equ	48
+icu13:	equ	52
+icu14:	equ	56
+icu15:	equ	60
+icu16:	equ	64
+icu17:	equ	68
+icu18:	equ	72
+icu19:	equ	76
+icu20:	equ	80
+icu21:	equ	84
+icu22:	equ	88
+icu23:	equ	92
+icu24:	equ	96
+icu25:	equ	100
+icu26:	equ	104
+icu27:	equ	108
+icu28:	equ	112
+icu29:	equ	116
+icu30:	equ	120
+icu31:	equ	124
+	endif
+	;
+start:	br	realst:b
+fake:
+	if	nb8 == 1
+	movb	h'fe,0(r1)	;swap ram in
+	endif
+	;
+	if	nb16 == 1
+	movb	h'fd,0(r1)	;swap ram in
+	endif
+	;
+	if	nb3232 == 1
+	movb	0(r1),r1	;swap ram in
+	endif
+	jump	r0
+	;
+	align	16
+	byte	'Version 1.7  Fri Sep 12 18:46:00 1986',0
+zvers:	byte	16
+	align	4
+realst:	movd	h'55555555,r0	;lets check things out a bit
+	movd	r0,r1
+	movd	r1,r2
+	movd	r2,r3
+	movd	r3,r4
+	movd	r4,r5
+	movd	r5,r6
+	movd	r6,r7
+	comd	r7,r7		;now we should have an AAAA
+	cmpd	h'AAAAAAAA,r7	;do we have it?
+	bne	abort		;no, abort, abort
+	movd	r7,r6
+	movd	r6,r5
+	movd	r5,r4
+	movd	r4,r3
+	movd	r3,r2
+	movd	r2,r1
+	movd	r1,r0
+	comd	r0,r0
+	cmpd	h'55555555,r0	;do we have a match?
+	bne	abl:w		;no, so error (led will not go on)
+	;
+	; We now have basic funtionality established
+	; let us establish RAM addressibility
+	;
+	if	nb8 == 1
+	movd	DUARTB,r0		; {init usarts}
+	movb	h'10,2 << bytsiz(r0)	;program channel a first
+	movb	h'13,0(r0)		;8 bits (initially) changes later
+	movb	h'07,0(r0)		;1 stop bit
+	movb	h'bb,1 << bytsiz(r0)
+	movb	h'05,2 << bytsiz(r0)
+	movb	h'10,h'a << bytsiz(r0)	;now program channel b
+	movb	h'13,8 << bytsiz(r0)	;8 bits
+	movb	h'07,8 << bytsiz(r0)	;1 stop bit
+	movb	h'bb,9 << bytsiz(r0)
+	movb	h'05,h'a << bytsiz(r0)
+	endif
+	;
+	if	nb16 == 1
+	movd	ICU,r0		;point to the ICU
+	movb	h'40,icu16(r0)		;init mctl
+	movb	h'20,icu22(r0)		;init cctl (zero detect of H counter)
+	movb	refreshc & 255,icu26(r0);low part of refresh count (16 usec)
+	movb	refreshc >> 8,icu27(r0)	;high part
+	movqb	0,icu18(r0)		;set ICU to interrupt zero
+	movb	refreshc & 255,icu30(r0);starting count
+	movb	refreshc >> 8,icu31(r0)	;to ICU
+	movb	h'10,icu23(r0)		;initialize high counter/no interrupt
+	movb	h'10,icu1(r0)		;software vector is zero
+	movqb	0,icu2(r0)		;set to edge sensitive
+	movqb	0,icu3(r0)		;for all inputs
+	movqb	0,icu4(r0)		;set to falling edge
+	movqb	0,icu5(r0)		;for all inputs
+	movqb	2,icu20(r0)		;set to all I/O channel
+	movb	h'f5,icu21(r0)		;set to chan 3 as output
+	movb	h'f7,icu19(r0)		;turn on the led for now
+	movqb	0,icu14(r0)		;set to #0 as priority int
+	movqb	0,icu15(r0)		;set to #0 as priority int
+	movqb	0,icu16(r0)		;set COUTD
+	movb	h'28,icu22(r0)		;set coutd as high zero cross
+	movb	h'ff,icu10(r0)		;set imsk on all interrupts
+	movb	h'ff,icu11(r0)		;set all other masks
+	endif
+	;
+	if	nb3232 == 1
+	movd	ICU,r0		;point to the ICU
+	movb	h'40,icu16(r0)		;init mctl
+	movb	h'20,icu22(r0)		;init cctl (zero detect of H counter)
+	movb	refreshc & 255,icu26(r0);low part of refresh count (16 usec)
+	movb	refreshc >> 8,icu27(r0)	;high part
+	movqb	0,icu18(r0)		;set ICU to interrupt zero
+	movb	refreshc & 255,icu30(r0);starting count
+	movb	refreshc >> 8,icu31(r0)	;to ICU
+	movb	h'10,icu23(r0)		;initialize high counter/no interrupt
+	movb	h'10,icu1(r0)		;software vector is zero
+	movqb	0,icu2(r0)		;set to edge sensitive
+	movqb	0,icu3(r0)		;for all inputs
+	movqb	0,icu4(r0)		;set to falling edge
+	movqb	0,icu5(r0)		;for all inputs
+	movqb	0,icu20(r0)		;set to all I/O channel
+	movb	h'f7,icu21(r0)		;set to chan 3 as output
+	movb	h'f7,icu19(r0)		;turn on the led for now
+	movqb	0,icu14(r0)		;set to #0 as priority int
+	movqb	0,icu15(r0)		;set to #0 as priority int
+	movqb	0,icu16(r0)		;set COUTD
+	movb	h'28,icu22(r0)		;set coutd as high zero cross
+	movb	h'ff,icu10(r0)		;set imsk on all interrupts
+	movb	h'ff,icu11(r0)		;set all other masks
+	endif				;refresh is running
+	;
+	; Note: Do not damage R0, its needed below
+	;
+	addrd	@10000,r1	;wait a few msec for refresh to wake up
+wait1:	acbd	-1,r1,wait1
+	;
+	if	nb3232 == 1
+	lprd	sp,h'400000	;a dummy stack in case of parity errors
+	lprw	mod,(modtab-start)	;load up the module table
+	lprd	intbase,(inttab-start)	;and the interrupt table
+	;
+	tbitb	2,icu19(r0)	;check if a power on reset
+	bfs	qtest:w		;no, just do the quick test instead
+	endif
+	;
+	if	nb16 == 1
+	tbitb	2,@ICU+icu19	;check if doing self test
+	bfs	qtest:w		;no, do quick test instead
+	endif
+	;
+	if	nb3232 != 1
+	cmpw	h'10ea,@LOWRAM ; is ram already there?
+	beq	qtest:w		 ;yes, just do a quick test
+	endif
+	;
+	addrd	@256,r0		;do 256 writes to wake ram up
+	addrd	@LOWRAM,r7	;use register just because
+	;
+wait2:	movd	h'55AA55AA,0(r7) ;do some writes (who knows why?)
+	acbd	-1,r0,wait2
+	;
+	; Now, ram is awake, and we can begin the ram test
+	; This is a destructive ram test, and does very little checking
+	;
+	movd	h'55AAAA55,r2	;1st pattern
+	movd	h'55555555,r3	;2nd pattern
+	comd	r2,r0		;complement of pattern 1
+	movd	h'deaddead,r1	;This is to tell NMI it is ok...
+	;
+memsz:	movd	r2,0(r7)	;save a pattern
+	cmpd	r2,0(r7)	;is it the same?
+	bne	memszx:w	;no, exit now
+	movd	r0,0(r7)	;stuff complement of pattern 1
+	cmpd	r0,0(r7)	;check to see if it wrote ok
+	bne	memszx:w	;if not the same, exit now
+	addrd	h'10000(r7),r7	;bump to next 64K
+	cmpd	r7,HIGHRAM	;if we are still in ram
+	ble	memsz		;back for more
+	;
+memszx:	addr	@LOWRAM,r1	;point back at low ram (NMI invalid now )
+	cmpd	r1,r7		;do we have any ram?
+	beq	abort		;no, abort now
+	movd	r7,r4		;copy 'top of ram' to r4
+	addr	4(r1),r7	;start at bottom of ram
+	;
+mem1:	movqd	0,0(r1)		;set low memory with zero
+	movd	r2,0(r7)	;stuff pattern 1
+	cmpqd	0,0(r1)		;did we wrap?
+	bne	abort		;yes, fail now.
+	cmpd	r2,0(r7)	;check pattern 1
+	bne	abort		;all done
+	comd	r2,r0		;complement pattern 1
+	movd	r0,0(r7)	;com pattern 1
+	cmpd	r0,0(r7)	;check com pattern 1
+	bne	abort		;all done
+	movd	r3,0(r7)	;stuff pattern 2
+	cmpd	r3,0(r7)	;check pattern 2
+	bne	abort		;all done
+	comd	r3,r0		;complement pattern 2
+	movd	r0,0(r7)	;com pattern 2
+	cmpd	r0,0(r7)	;check com pattern 2
+	bne	abort		;all done
+	addqd	4,r7		;go to next address
+	cmpd	r7,r4		;are we at end of ram?
+	blt	mem1		;no, back for more
+	br	memok		;memory is OK
+	;
+	; Note that quick test is non-destructive, it assumes that the
+	; ram has already been written (to satify parity) by the cold
+	; start ram test.
+	;
+qtest:	movd	LOWRAM,r7	;start at bottom
+	movd	h'deadffff,r1
+	br	qtest2:b
+	;
+qtest1:	movd	0(r7),r0	;get current value
+	comd	r0,r2		;complement
+	movd	r2,0(r7)	;stuff back
+	cmpd	r2,0(r7)	;is it the same?
+	movd	r0,0(r7)	;return old value
+	bne	memerr2:w	;no, so work it out
+qtest2:	addr	1024(r7),r7	;go to next 1K
+	;
+	if	nb3232
+	cmpd	r7,HIGHRAM	;are we at end of ram?
+	bge	memerr2:w	;we are, exit
+	endif
+	;
+	br	qtest1		;and loop for more
+	;
+memok:	movd	r4,r7		;point to last memory address (+1)
+	movd	r7,r0		;get high memory indicated
+	subd	r1,r0		;subtract to get actual length
+	cmpqd	0,r0		;if no memory, abort
+	beq	abort
+	ashd	-2,r0		;divide to get number of doubles
+	addqd	-1,r0		;less one to get number of words
+	movd	r1,r2		;point to memory
+	addqd	4,r2		;point to next double
+	movqd	0,0(r1)		;zero memory
+	movsd			;all of it
+	;
+memerr2:
+	if	nb3232 == 1
+	movd	ICU,r1
+	sbitb	3,icu19(r1)	;turn the led off now
+	endif
+	;
+	if	nb16 == 1
+	sbitb	3,@ICU+icu19	;turn the led off now
+	endif
+	;
+	movd	LOWRAM,r1	;point back at low ram
+	lprd	sp,r7		;get us a stack
+	addrd	16(r1),r4	;point to the local IPC
+	;
+	movqd	0,r5		;send a zero to let everyone know we are ok
+	bsr	xbyte:w		;send it out
+	;
+loop:	movqd	6,r0		;6 bytes coming
+	movd	r4,r2		;point to IPC
+	bsr	read:w		;read block in
+	movzwd	1(r4),r0	;get length
+	movd	3(r4),r6	;get address
+	andd	h'FFFFFF,r6	;only 24 bits significant
+	addd	LOWRAM,r6	;add in offset
+	cmpb	'R',0(r4)	;is it a read?
+	beq	lread:b		;yes, do it
+	cmpb	'W',0(r4)	;is it a write?
+	beq	lwrite:b	;yes, do it
+	cmpb	'E',0(r4)	;is it an execute?
+	bne	loop
+	movb	zvers,0(r4)	;copy the version number into 0x10
+	lprd	sb,@(LOWRAM + h'20)
+	lprw	mod,h'20
+	movd	@(LOWRAM + h'2c),r0
+	;
+	if	nb8 == 1
+	addrd	@ICU,r1			;get address of ICU
+	movb	h'fe,21(r1)		;This is going to be an I/O port
+	movqb	0,19(r1)		;set up initial value in port
+	addrd	20(r1),r1		;set up for poke in low memory
+	endif
+	;
+	if	nb16 == 1
+	addrd	@ICU,r1			;get address of ICU
+	movb	h'fd,icu21(r1)		;This is going to be an I/O port
+	movqb	0,icu19(r1)		;set up initial value in port
+	addrd	icu20(r1),r1		;set up for poke in low memory
+	endif
+	;
+	if	nb32 == 1
+	movd	CSWAP,r1		;get swap address
+	endif
+	;
+	if	nb332 == 1
+	movd	CSWAP,r1
+	endif
+	;
+	br	fake
+	;
+	; Start of generic read/write routines. These routines call the
+	; actual low level read/write routines.
+	;
+lread:	movd	r6,r2		;point to input buffer
+	bsr	read:b		;get it in
+	br	loop
+	;
+lwrite:	movd	r6,r1		;point to output buffer
+	bsr	write:w		;stuff it out
+	br	loop
+	;
+	; The 32008 low level read/write routines =======================
+	;
+	if	nb8 == 1
+xbyte:	tbitb	2,@sra		;are we ready
+	bfc	xbyte		;no, loop
+	movb	r5,@rhra	;send it out
+	ret	0
+	;
+read:	tbitb	0,@sra		;do we have a char ready?
+	bfc	read		;no, so poll till we do
+	movb	@rhra,0(r2)	;get the char
+	addqd	1,r2		;move pointer
+	acbd	-1,r0,read	;and back for more
+	ret	0		;we are done
+	;
+write:	tbitb	2,@sra		;can we transmit?
+	bfc	write		;no, wait until buffer ready
+	movb	0(r1),@rhra	;send the char
+	addqd	1,r1		;move pointer
+	acbd	-1,r0,write	;back for more
+	ret	0		;we are done
+	endif
+	;
+	; The 32016 low level read/write routines =======================
+	;
+	if	nb16 == 1
+xbyte:	tbitb	0,@INT86	;interrupt IBM
+	movb	r5,@PARIO	;send out this byte
+	ret	0
+	;
+read:	movd	r3,tos		;get a spare register or two
+	movd	ICU,r1		;point to icu
+read1:	tbitb	5,icu7(r1)	;is an interrupt pending?
+	bfc	read1		;no, wait for a bit
+	movb	h'ff,icu3(r1)	;clear pending interrupt by changing to level
+	movqb	0,icu3(r1)	;then back to edge
+	tbitb	0,r0		;are we transferring odd number of bytes?
+	bfc	readf		;no, is ok
+	addqd	1,r0		;yes, make it even
+readf:	cmpqd	0,r0		;are we transferring nothing?
+	beq	rdlx:w		;if so - exit now
+	addrd	@PARIO,r1
+rdodd:	movqd	3,r3		;get mask
+	andd	r0,r3		;and it off
+cs3:	caseb	dotab2:b[r3:b]	;what now?
+	.align	4
+dotab2:	byte	rdl1 - cs3	;exact multiple of 4
+	byte	rdw1 - cs3	;one over
+	byte	rdw2 - cs3	;two over
+	byte	rdw3 - cs3	;three over
+	;
+rdw1:	addqd	-3,r2		;back off address
+	addqd	3,r0		;increment count
+	br	rd1:b		;into loop
+	;
+rdw2:	addqd	-2,r2		;back off address
+	addqd	2,r0		;increment count
+	br	rd2:b		;into loop
+	;
+rdw3:	addqd	-1,r2		;back off address
+	addqd	1,r0		;increment count
+	br	rd3:b		;into loop
+	;
+	.align	4
+	;
+rdl1:	movb	0(r1),0(r2)	;move the data 
+rd3:	movb	0(r1),1(r2)
+rd2:	movb	0(r1),2(r2)	;move the data
+rd1:	movb	0(r1),3(r2)
+	addqd	4,r2		;increment address
+	acbd	-4,r0,rdl1	;back for more
+rdlx:
+	movd	tos,r3
+	ret	0		;and we are done
+	;
+write:	movd	r3,tos		;we need a register
+	addrd	@PARIO,r2	;point again to port A
+	tbitb	0,@INT86	;interrupt 8086
+	tbitb	0,r0		;are we transferring odd?
+	bfc	writf		;no, it is ok
+	addqd	1,r0		;else it is ok
+writf:	movqd	3,r3		;get our mask
+	andd	r0,r3		;mask off count
+cs2:	caseb	dotb1:b[r3:b]	;figure out what we have left
+	.align	4
+dotb1:	byte	wrl1 - cs2	;case zero, we are done
+	byte	wrw1 - cs2	;case 1 - one word to write
+	byte	wrw2 - cs2	;case 2 - two words to ...
+	byte	wrw3 - cs2	;case 3 - three words to 
+	byte	wrl1 - cs2	;case 4 - we should not be here
+
+wrw1:	addqd	-3,r1		;fix address for one byte
+	addqd	3,r0		;and the count
+	br	w1:b
+	;
+wrw2:	addqd	-2,r1		;fix address for two bytes
+	addqd	2,r0		;and the count
+	br	w2:b
+	;
+wrw3:	addqd	-1,r1		;fix the address for three bytes
+	addqd	1,r0		;and the count
+	br	w3:b
+	;
+	.align 4
+wrl1:	movb	0(r1),0(r2)	;move the data
+w3:	movb	1(r1),0(r2)	;keep going
+w2:	movb	2(r1),0(r2)	;and so on...
+w1:	movb	3(r1),0(r2)	;and like that
+	addqd	4,r1		;increment address
+	acbd	-4,r0,wrl1	;back for more
+wrlx:	movd	tos,r3
+	ret	0
+	endif
+	;
+	; The 32032 low level read/write routines =======================
+	;
+	if	nb32 == 1
+xbyte:	tbitb	0,@INT86	;interrupt IBM
+	movw	r5,@PARIO	;send out this byte
+	ret	0
+	;
+read:	save	[r3,r4]		;get a spare register or two
+	movd	ICU,r1		;point to icu
+read1:	tbitb	5,icu7(r1)	;is an interrupt pending?
+	bfc	read1		;no, wait for a bit
+	movb	h'ff,icu3(r1)	;clear pending interrupt by changing to level
+	movqb	0,icu3(r1)	;then back to edge
+	cmpqd	0,r0		;are we transferring nothing?
+	beq	rdlx:w		;if so - exit now
+	addrd	@PARIO,r1
+rdodd:	movd	r0,r4		;save original count
+	ashd	-1,r0		;divide by two
+	movqd	3,r3		;get mask
+	andd	r0,r3		;and it off
+cs3:	caseb	dotab2:b[r3:b]	;what now?
+	.align	4
+dotab2:	byte	rdw0 - cs3	;exact multiple of 8
+	byte	rdw1 - cs3	;one over
+	byte	rdw2 - cs3	;two over
+	byte	rdw3 - cs3	;three over
+	;
+rdw0:	cmpqd	0,r0
+	beq	rd4:w
+	br	rdl1:b		;and branch into working loop
+	;
+rdw1:	addqd	-6,r2		;back off address
+	addqd	3,r0		;increment count
+	br	rd1:b		;into loop
+	;
+rdw2:	addqd	-4,r2		;back off address
+	addqd	2,r0		;increment count
+	br	rd2:b		;into loop
+	;
+rdw3:	addqd	-2,r2		;back off address
+	addqd	1,r0		;increment count
+	br	rd3:b		;into loop
+	;
+	.align	4
+	;
+rdl1:	movw	0(r1),0(r2)	;move the data 
+rd3:	movw	0(r1),2(r2)
+rd2:	movw	0(r1),4(r2)	;move the data
+rd1:	movw	0(r1),6(r2)
+	addrd	8(r2),r2	;increment address
+	acbd	-4,r0,rdl1	;back for more
+	tbitb	0,r4		;was it an odd transfer?
+	bfc	rdlx:b		;no, exit now
+	;
+rd4:	movw	0(r1),r0	;else get the last word
+	movb	r0,0(r2)	;stuff the last byte
+	;
+rdlx:	restore	[r3,r4]
+	ret	0		;and we are done
+	;
+write:	movd	r3,tos		;we need a register
+	addrd	@PARIO,r2	;point again to port A
+	tbitb	0,@INT86	;interrupt 8086
+	tbitb	0,r0		;is this an even transfer
+	bfc	wrla:b		;yes, it is ok
+	addqd	1,r0		;else increment number of bytes
+wrla:	ashd	-1,r0		;get number of words
+	movqd	3,r3		;get our mask
+	andd	r0,r3		;mask off count
+cs2:	caseb	dotb1:b[r3:b]	;figure out what we have left
+	.align	4
+dotb1:	byte	wrl1 - cs2	;case zero, we are done
+	byte	wrw1 - cs2	;case 1 - one word to write
+	byte	wrw2 - cs2	;case 2 - two words to ...
+	byte	wrw3 - cs2	;case 3 - three words to 
+	byte	wrl1 - cs2	;case 4 - we should not be here
+	;
+wrw1:	addqd	-6,r1		;fix address for one byte
+	addqd	3,r0		;and the count
+	br	w1:b
+	;
+wrw2:	addqd	-4,r1		;fix address for two bytes
+	addqd	2,r0		;and the count
+	br	w2:b
+	;
+wrw3:	addqd	-2,r1		;fix the address for three bytes
+	addqd	1,r0		;and the count
+	br	w3:b
+	;
+	.align 4
+wrl1:	movw	0(r1),0(r2)	;move the data
+w3:	movw	2(r1),0(r2)	;keep going
+w2:	movw	4(r1),0(r2)	;and so on...
+w1:	movw	6(r1),0(r2)	;and like that
+	addrd	8(r1),r1	;increment address
+	acbd	-4,r0,wrl1	;back for more
+wrlx:	movd	tos,r3
+	ret	0
+	endif
+	;
+	; The 32332 low level read/write routines =======================
+	;
+	if	nb332 == 1
+xbyte:	movd	r0,tos
+	movd	INT86,r0
+	tbitb	0,0(r0)		;interrupt IBM
+	movd	PARIO,r0
+	movb	r5,0(r0)	;send out this byte
+	movd	tos,r0
+	ret	0
+	;
+read:	movd	r3,tos
+	movd	ICU,r1
+read1:	tbitb	5,icu7(r1)
+	bfc	read1		;wait for a request
+	movqb	-1,icu3(r1)	;clear pending interrupt by changing to level
+	movqb	0,icu3(r1)	; and back to edge
+	tbitb	0,r0		;odd?
+	bfc	readf:b		;no
+	addqd	1,r0
+readf:	cmpqd	0,r0		;anything to transfer ?
+	beq	rdlx:b		;no, exit
+	movd	PARIO,r1
+	movqd	3,r3
+	andd	r0,r3		;leave the dregs
+	ashd	-2,r0		;convert to quads (32 bit items)
+	cmpqd	0,r3		;any dregs ?
+	beq	readn:b		;no, just quads
+	cmpqd	0,r0		;any quads
+	beq	readn1:b	;no, just dregs
+	movsd
+readn1:	movd	r3,r0		;amount of dregs
+	movsb
+rdlx:	movd	tos,r3		;get reg back
+	ret	0
+	;
+readn:	movsd
+	movd	tos,r3
+	ret	0
+	;
+write:	movd	r3,tos		;get reg
+	movd	INT86,r2
+	tbitb	0,0(r2)		;set service request (interrupt 86)
+	movd	PARIO,r2
+	tbitb	0,r0		;odd ?
+	bfc	writf:b		;no
+	addqd	1,r0
+writf:	cmpqd	0,r0		;anything to transfer ?
+	beq	wrlx:b		;no, exit
+	movqd	3,r3
+	andd	r0,r3		;the dregs
+	ashd	-2,r0
+	cmpqd	0,r3		;any dregs ?
+	beq	writn:b		;no, just quads
+	cmpqd	0,r0		;any quads ?
+	beq	writn1:b	;no just dregs
+	movsd
+writn1:	movd	r3,r0		;the dregs
+	movsb
+wrlx:	movd	tos,r3		;get reg back
+	ret	0
+	;
+writn:	movsd
+	movd	tos,r3
+	ret	0
+	endif
+	;
+	; End of low level read/write routines ===========================
+	;
+	; If we get here when nb3232 == 1 then the LED will remain on
+	; to signify that there is a permanent error. Also the data
+	; full LED will also be on.
+	;
+abort:
+	if	nb16 == 1
+	tbitb	0,@INT86	;wake up 86
+	movb	h'5a,@PARIO	;error!
+	endif
+	;
+	if	nb32 == 1
+	tbitb	0,@INT86	;wake up 86
+	movw	h'5a5a,@PARIO	;error!
+	endif
+	;
+	if	nb332 == 1
+	movd	INT86,r0
+	tbitb	0,0(r0)		;wake up 86
+	movd	PARIO,r0
+	movb	h'5a,0(r0)	;error!
+	endif
+	;
+abl:	br	$		;and loop
+	;
+	if	nb3232 == 1
+nmi:	cmpd	h'deaddead,r1	;are we in memory size routine?
+	beq	memszx		;yes, exit now
+	cmpd	h'deadffff,r1	;are we in quick ram test?
+	beq	memerr2		;yep
+	br	abort		;else abort
+	;
+	.align	16
+modtab:	double	0,0,0,0		;sb, linkbase, program, and reserved
+	;
+umod:	equ	modtab - start
+	;
+inttab:	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	word	umod,nmi-start	;for all operations,nmi (parity err)
+	endif
+

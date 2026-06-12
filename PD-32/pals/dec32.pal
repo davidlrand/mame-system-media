@@ -1,0 +1,49 @@
+PAL16L8
+32016 (16 BIT INTERFACE) FOR IBM PC
+(C) 1986,87 GEORGE SCOLARO				16:34 870103
+ADDRESS DECODER PAL FOR 32016 MEMORY SPACE
+LA23 LA22 LA21 LA08 /RD SWAP /CAS LA00 /HBE GND
+/FLT /CASH /CASL /ICU /RAMS /EPROM /PPORT /DIR646 /INT86 VCC
+
+IF (VCC) CASH	= HBE * CAS * RAMS
+		+ FLT * CAS * RAMS
+
+IF (VCC) CASL	= /LA00 * CAS * RAMS
+
+IF (VCC) ICU 	= LA23 * LA22 * LA21 * /LA08
+
+IF (VCC) RAMS 	= /SWAP * /LA23 * /LA22 * /LA21	; NORMALLY AT 0H
+		+  SWAP *  LA23 * /LA22	* /LA21 ; AT POWER ON MOVES TO 800000H
+
+IF (VCC) EPROM	= /LA23 * /LA22 * /LA21 * SWAP
+
+IF (VCC) PPORT	= LA23 * /LA22 * LA21	; DON'T USE LOW ADDRESS BITS FOR
+					; DECODE SINCE WE WANT BIG TRANSFERS
+
+IF (VCC) DIR646	= PPORT * RD
+
+IF (VCC) INT86	= LA23 * LA22 * /LA21 * LA08 * RD
+
+FUNCTION TABLE
+SWAP    LA23 LA22 LA21    LA08    /RD    /CAS    LA00 /HBE /FLT
+/CASL /CASH    /ICU /RAMS /EPROM /PPORT    /DIR646 /INT86
+------------------------------------------------------------------------
+X HHH L X X XXX XX LHHH HH 	; SELECT ICU
+L LLL X X X XXX XX HLHH HH 	; SELECT RAM AT 0H
+H HLL X X X XXX XX HLHH HH 	; SELECT RAM AT 800000H
+H LLL X X X XXX XX HHLH HH 	; SELECT EPROM AT 0H
+X HLH X X X XXX XX HHHL LH 	; SELECT THE PPORT
+X HHL L X X XXX XX HHHL LH 	; GENERATE DIR646
+X HHL H X X XXX XX HHHH HL 	; GENERATE INT86
+L LLL X X L LHH LH HLHH HH	; CHECK CASL VIA CPU ACCESS
+L LLL X X L HLH HL HLHH HH	; CHECK CASH VIA CPU ACCESS
+L LLL X X L HHL HL HLHH HH	; CHECK CASH VIA MMU ACCESS
+------------------------------------------------------------------------
+DESCRIPTION
+This pal performs the decoding for the 32016 memory space. The signal
+'SWAP' is used to select either EPROM or RAM at low memory. At power on
+or after a reset EPROM is selected at low memory. The EPROM contains the
+necessary bootstrap software to communicate with the host system (pc).
+Note: Since the interface is a fairly generic 8 bit parallel port any
+system (not just the PC) can become the host for the 32016.
+

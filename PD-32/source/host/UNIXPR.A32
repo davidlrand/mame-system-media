@@ -1,0 +1,13 @@
+.module	unixpr.c
+.program
+.endseg
+.program
+_DOIO:-
+
+	movqd	0,L14
+	cxp	_EXEC
+	br	L11
+L1:
+	cxp	_readnxt
+L7:
+	cxp	_INT

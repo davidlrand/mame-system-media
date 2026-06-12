@@ -1,0 +1,4 @@
+name daver
+dosdisk 0 1000 c:/unix/root
+dosdisk 1 5040 c:/unix/swap
+nbuf 200

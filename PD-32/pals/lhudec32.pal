@@ -1,0 +1,53 @@
+PAL20L8
+32016 PC/Z80 BOARD
+(C) 1986 GEORGE SCOLARO
+ADDRESS DECODER PAL FOR 32016 MEMORY SPACE
+LA23 LA22 LA21 LA08 LA09 /RSTO /ISEL IA1 IA2 /IOR /IOW GND
+IRESET /RD /ICU /RAMS /EPROM /SREQC /INT86 /RSTI /INT32 /PPORT SWAP VCC
+
+; NOTE /IOR NOT USED IN PAL
+; NOTE /RSTO NOT USED IN PAL
+
+IF (VCC) ICU	= LA23 * LA22 * LA21 * LA09 * /LA08
+
+IF (VCC) RAMS	= /SWAP * /LA23 * /LA22 * /LA21
+		+  SWAP *  LA23 * /LA22 * /LA21
+
+IF (VCC) EPROM	= SWAP * /LA23 * /LA22 * /LA21
+
+IF (VCC) PPORT	= LA23 * LA22 * LA21 * /LA09 * /LA08
+
+IF (VCC) SREQC	= ISEL * IA1 * IA2 * IOW
+		+ RSTI
+		+ IRESET
+
+IF (VCC) INT86 = LA23 * LA22 * LA21 * /LA09 * LA08 * RD
+
+IF (VCC) RSTI	= ISEL * IA1 * /IA2 * IOW	;IBM SOFTWARE RESET
+		+ RSTI * /INT32 * /IRESET	;LATCH RESET IF NOT PON RESET
+
+IF (VCC) INT32 = ISEL * /IA1 * IA2 * IOW
+
+FUNCTION TABLE
+/RD SWAP LA23 LA22 LA21 LA09 LA08 /ISEL IA1 IA2 /IOW IRESET
+/ICU /RAMS /EPROM /PPORT /INT86 /SREQC /RSTI /INT32
+----------------------------------------------------------------------------
+X X HHHHL X XX X X L H H H H X X X	;TEST ICU SELECT
+X L LLLXX X XX X X H L H H H X X X	;TEST RAMS IF SWAP LOW
+X H HLLXX X XX X X H L H H H X X X	;TEST RAMS IF SWAP HIGH
+X H LLLXX X XX X X H H L H H X X X	;TEST EPROM IF SWAP HIGH
+X X HHHLL X XX X X H H H L H X X X	;TEST PPORT SELECT
+L X HHHLH X XX X X H H H H L X X X	;TEST INT86 SIGNAL
+X X XXXXX L HH L X X X X X X L X H	;TEST SREQC AND NO INT32
+X X XXXXX L HL L X X X X X X L L H	;TEST RSTI -> SREQC BUT NO INT32
+X X XXXXX L LH L L X X X X X H H L	;TEST INT32 SIGNAL
+----------------------------------------------------------------------------
+DESCRIPTION
+This pal generates the chip selects for RAM, EPROM, ICU and PPORT on the
+PD32. The signal INT86 is a software signal from the PD32 that both generates
+an interrupt on the host (if connected) and sets a status request flip flop
+that the host may poll. The pal also generates the software reset, software
+interrupt and SREQC signals. The host may at anytime reset the PD32 via a
+write to a special port. The SREQC signal is used by the host to clear the
+status request flip flop (indicating that it is servicing the PD32 interrupt).
+

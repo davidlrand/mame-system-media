@@ -1,0 +1,57 @@
+PAL20L8
+32016 PC/Z80 BOARD
+(C) 1986 GEORGE SCOLARO
+PARALLEL PORT CONTROL PAL
+/PPORT /DDIN /TSO FULL /DBE SREQ /ISEL IA1 IA2 /IOR /IOW GND
+NC NC /GATE /CBA /CAB /CLK /CWAIT /IDO /FIX /IWAIT NC VCC
+
+IF (VCC) CLK	= PPORT * TSO * /DDIN * /FULL
+		+ PPORT * TSO *  DDIN *  FULL
+		+ ISEL * /IA1 * /IA2 * IOW * /FULL
+		+ ISEL * /IA1 * /IA2 * IOR *  FULL
+
+IF (VCC) GATE	= PPORT * TSO * DDIN * DBE
+		+ ISEL * /IA1 * /IA2 * IOR
+
+IF (VCC) CBA	= ISEL * /IA1 * /IA2 * IOW
+
+IF (VCC) CAB	= PPORT * TSO * /DDIN
+
+IF (PPORT) CWAIT = FULL * /DDIN
+		 + /FULL * DDIN
+
+IF (ISEL * IA1 * IOR) IDO	= FULL * /IA2
+				+ SREQ * IA2
+
+IF (VCC) FIX	= IOR * ISEL * /IA1 * /IA2 * /FULL
+		+ IOW * ISEL * /IA1 * /IA2 * FULL
+
+IF (FIX) IWAIT	= FIX
+
+FUNCTION TABLE
+/PPORT /TSO /DDIN FULL /DBE SREQ /ISEL IA1 IA2 /IOR /IOW
+/CLK /GATE /CBA /CAB /CWAIT /IDO /FIX /IWAIT
+--------------------------------------------------------------------------
+L L H L H  X H XX XX L X X L H X X X	;TEST CLK, CAB AND CWAIT FROM PD32
+L L L H H  X H XX XX L X X H H X X X	;TEST CLK, CAB AND CWAIT FROM PD32
+L L L X L  X H XX XX X L X X X X X X	;TEST GATE ON PD32 READ
+H X X L X  X L LL HL L H L H Z X H X	;TEST CLK, CBA AND FIX FROM HOST
+H X X H X  X L LL LH L L H H Z X H X	;TEST CLK, GATE, CBA AND FIX
+L X H H X  X X XX XX X X X X L X X X	;TEST CWAIT ON FULL WRITE
+L X L L X  X X XX XX X X X X L X X X	;TEST CWAIT ON EMPTY READ
+X X X L X  X L HL LH X X X X X H X X	;TEST STATUS READ OF FULL BY HOST
+X X X H X  X L HL LH X X X X X L X X	; DITTO
+X X X X X  L L HH LH X X X X X H X X	;TEST STATUS READ OF SREQ BY HOST
+X X X X X  H L HH LH X X X X X L X X	; DITTO
+X X X L X  X L LL LH X X X X X X L L	;CHECK WAIT ON HOST READ EMPTY
+X X X H X  X L LL HL X X X X X X L L	;CHECK WAIT ON HOST FULL WRITE
+--------------------------------------------------------------------------
+DESCRIPTION
+This pal generates all the control signals for the 74AS646 data flow latch
+as well as the CWAIT (for PD32) and IWAIT (for the host) syncronization
+signals. The CLK signal is used to clock the data flow flip flop. The
+GATE signal enables the output of the 74AS646 (the direction comes from
+a separate ic). The IDO signal is a single status bit that the host can read
+to determine whether any data is left in the 74AS646 (regardless of direction)
+or the state of the PD32 service request flip flop.
+
