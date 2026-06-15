@@ -20,7 +20,9 @@ archive — not here.
 | [`Xerox-820-16-8/`](Xerox-820-16-8/) | Xerox 16/8 (820-II Z80 CP/M-80 + 8086 coprocessor, CP/M-86) | [mamedev/mame#15485](https://github.com/mamedev/mame/pull/15485) |
 | [`Xerox-820-line-roms/`](Xerox-820-line-roms/) | Xerox 820 line ROM lineage (820, 820-II, 16/8; sources + recovered sets) | [mamedev/mame#15485](https://github.com/mamedev/mame/pull/15485) |
 | [`ADE-MK3000/`](ADE-MK3000/) | ADE Elettronica MK3000 / MK-83 (Z80 CP/M, multi-format disk gateway) | [mamedev/mame#15489](https://github.com/mamedev/mame/pull/15489) |
-| [`Definicon-DSI-32/`](Definicon-DSI-32/) | Definicon DSI-32 (NS32032 coprocessor ISA card for the IBM PC) | bring-up complete, PR pending |
+| [`Definicon-DSI-32/`](Definicon-DSI-32/) | Definicon DSI-32 (NS32032 coprocessor ISA card for the IBM PC) | [mamedev/mame#15494](https://github.com/mamedev/mame/pull/15494) |
+| [`PD-32/`](PD-32/) | PD-32 (public-domain NS32016 coprocessor ISA card, 1986) | [mamedev/mame#15501](https://github.com/mamedev/mame/pull/15501) |
+| [`ICM-3216/`](ICM-3216/) | National Semiconductor ICM-3216 (NS32016 UNIX System V; Z80 IOP + NCR5385 SCSI) | [mamedev/mame#15531](https://github.com/mamedev/mame/pull/15531) |
 
 More machines will be added as their drivers land.
 
