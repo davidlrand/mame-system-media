@@ -98,9 +98,10 @@ These are the decisions that took real digging — keep them in mind before
    only after `SETCFG` has set the M bit. While the MMU is idle/just-reset, every
    address is physical and the page tables are ignored regardless of a stale MSR.
    Without this, a slave released into stale state translated through a stale page
-   table → opconfig MMU abort. **NOTE:** this is a shared-CPU change — it must be
-   made conditional before an NS32532 board (the 32532's on-chip MMU does not gate
-   on CFG_M), and it wants a regression-check against other ns32k machines.
+   table → opconfig MMU abort. This is a shared-CPU change, so it is gated by a
+   `m_mmu_uses_cfg_m` flag (default on for the external-MMU cores 32016/32032/
+   32332); the NS32532's on-chip MMU clears it and keeps gating internally via
+   MSR/MCR, so `pc532` is unaffected.
 
 4. **Reset before every GO/RUN + a reset-recovery hold** (`CPU_RESET_HOLD_US`,
    500 ms): each GO/RUN strobe first does a full `reset_card()` (MMU/FPU + every
