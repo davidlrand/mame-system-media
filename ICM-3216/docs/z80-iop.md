@@ -8,8 +8,11 @@ board's **MiniBus**. The host hands the IOP I/O requests through a one-byte
 mailbox and gets completion interrupts back.
 
 This note documents that interface as reverse-engineered from the firmware
-ROM and verified against a working boot. It is the contract the MAME
-`icm3216` driver implements in its emulated-IOP (LLE) mode.
+ROM and validated against a working boot — the emulated bridge reproduces
+the hardware's main-memory address for every one of the ~266,700 MiniBus
+transfers in a full UNIX boot (see the validation note at the end). It is
+the contract the MAME `icm3216` driver implements in its emulated-IOP (LLE)
+mode.
 
 Clocks: NS32016 host = 10 MHz, Z80 IOP = 5 MHz.
 
@@ -78,69 +81,119 @@ The IOP firmware uses memory-mapped registers only (no Z80 I/O-space ports):
 
 Bridge registers:
 
-| reg    | read                                   | write                                   |
-|--------|----------------------------------------|-----------------------------------------|
-| `C010` | host command (consuming it clears BUSY) | low byte of the MiniBus address strobe |
-| `C011` | bus status: bit7 ready, bit6 cmd pending | DMA data path (NMI handler)            |
-| `C012` | main-memory data, low byte of the word  | —                                       |
-| `C013` | main-memory data, high byte (advances)  | host-facing status byte (BUSY/IRS)      |
-| `C015` | —                                       | per-word transfer index                 |
-| `C016` | —                                       | main-memory write, low byte             |
-| `C017` | —                                       | strobe / main-memory write, high byte   |
+| reg    | read                                     | write                                              |
+|--------|------------------------------------------|----------------------------------------------------|
+| `C010` | host command (consuming it clears BUSY)  | MiniBus address low — loads counter U44 (AD01-08)  |
+| `C011` | bus status: bit7 ready, bit6 cmd pending | MiniBus address high — latch U59 (AD09-15 + AD00)  |
+| `C012` | main-memory data, low byte of the word   | MiniBus address page — latch U76 (A16-23)          |
+| `C013` | main-memory data, high byte (advances)   | host-facing status byte (BUSY/IRS)                 |
+| `C014` | —                                        | DMA control register (PAL U36)                     |
+| `C015` | —                                        | interrupt / DMA control (PAL U38: ZINT, ZWAIT, …)  |
+| `C016` | —                                        | main-memory write, low byte (74LS646)              |
+| `C017` | —                                        | main-memory write, high byte / strobe (74LS646)    |
+
+The `C011` and `C012` writes do not come from ordinary firmware stores — the
+firmware never targets them directly. They are written only by the IOP's NMI
+handler, as explained next.
 
 ## The MiniBus address protocol (U44 / U59 / U76)
 
 This is the heart of the design. The bridge is **word-addressed**
-(byte address = word address << 1), and a 24-bit physical address is split
-between two sources latched at the address strobe:
+(byte address = word address << 1), and a 24-bit physical address is held
+across three data-bus-loaded latches:
 
 ```
-byte_address = (page << 16) | ((offset & 0x7FFF) << 1)
+word_address = (U76 << 15) | ((U59 >> 1) << 8) | U44
+byte_address = word_address << 1
 ```
 
-- **page** (bits 16–23, the 64 KB page) is the high byte the IOP holds in its
-  `DE` register; it is captured into the bridge's **high latch (U76)** at the
-  first of the firmware's three address-strobe writes to `C010`.
-- **offset** (the low 15 word-bits) is the value the IOP holds in `HL` at the
-  final strobe, latched into **U59/U44**. The firmware deliberately masks its
-  computed offset to `0x7FFF` (and the NMI data-mover masks `H & 0x7F`) because
-  bit 15 and above — the page — belong to the bridge's high latch, not to the
-  offset.
+- **U44** (AD01-08) is a CTTL-clocked `PAL20X8` **counter**, loaded from `C010`.
+  It supplies the low 256 word-addresses (512 bytes) of a segment and counts up
+  once per transferred word.
+- **U59** (AD09-15 plus the AD00 byte-lane bit) and **U76** (page, A16-23) are
+  latches holding the high address and 64 KB page. (`U59 >> 1` drops AD00, which
+  selects the byte lane within the 16-bit word.)
 
-The firmware's address-load routine writes `C010` three times — `0xFF`, `0x00`,
-then the offset low byte — with `DE` holding the address high half at the `0xFF`
-write and `HL` the full word offset at the third.
+The subtle part is how U59/U76 get loaded, because **the firmware never writes
+`C011` or `C012`**. It writes only the low byte to `C010`. The high address and
+page reach U59/U76 from the data bus through the IOP's **NMI handler** (ROM
+`0x0233`):
+
+```
+0233: exx                ; switch to the alternate set holding this segment's address
+      ld   ($C011),hl    ; HL' -> C011/C012 : low byte = U59, high byte = U76
+      ld   ($C014),a     ; DMA control (PAL U36)
+      ...
+      retn
+```
+
+That handler runs on **ADOVF** — the U44 counter's carry-out, latched as ADOVF2
+on CTTL and gating the `74HCT74` that drives the Z80 `/NMI`. ADOVF asserts in two
+situations:
+
+1. **At transfer setup.** The firmware leads each address load by writing
+   `C010 = 0xFF`, i.e. it preloads the counter to terminal count. That asserts
+   ADOVF at once, NMIs the IOP, and the handler latches this segment's high
+   address and page. The firmware then writes the offset low byte to `C010`.
+   (The full firmware sequence is three `C010` writes — `0xFF`, `0x00`, low byte
+   — at ROM `0x10C2`–`0x10E1`.)
+2. **Across a 512-byte boundary.** As the counter rolls over mid-transfer it
+   asserts ADOVF again, and the handler reloads U59/U76 with the next segment —
+   so a transfer walks across page boundaries, whether the buffer is flat or
+   scatter-gathered through the NS32082 page table.
+
+Because the page comes from the IOP's own running pointer (the `dataptr` it
+fetched from the `iocb`), disk data lands on the buffer's physical page even
+when that differs from the command table's page — which is exactly what booting
+UNIX requires (the kernel's buffer cache lives on different pages from its
+`cpt`).
 
 Reads stream a 16-bit word at a time and auto-increment: a `C012` read returns
 the low byte, a `C013` read the high byte and advances to the next word. Writes
 post the low byte to `C016` and commit on the high byte to `C017`.
 
-Because the page is taken from the IOP's own `DE` (i.e. from the `dataptr` it
-fetched), disk data lands on the buffer's physical page even when that differs
-from the command table's page — which is exactly what booting UNIX requires
-(the kernel's buffer cache lives on different pages from its `cpt`).
-
 ## SCSI data movement (74LS646)
 
 The NCR5385 is an 8-bit device on the Z80 bus; main memory is the 16-bit NS32016
-bus. On each NCR5385 DREQ the controller raises the Z80 **NMI** (handler at ROM
-`0x0233`); a 74LS646 transceiver pair (U60/U61) shuttles one byte per request,
-packing two SCSI bytes into one main-memory word on input (or unpacking one word
-into two SCSI bytes on output). The Z80 only programs the address latch and arms
-the chip — it is not in the per-byte loop. On completion the NCR5385 interrupts
-the IOP, which writes the result into the `iocb` and raises the host interrupt
-on the NS32202 ICU (IR13).
+bus. A 74LS646 transceiver pair (U60/U61) bridges the two: on each NCR5385 DREQ
+it shuttles one byte, packing two SCSI bytes into one main-memory word on input
+(or unpacking one word into two SCSI bytes on output). This runs in hardware —
+the DREQ cycle clocks the byte through the '646 and advances the U44 word
+counter; the Z80 is **not** in the per-byte loop. It only sets up the address
+latch and arms the chip.
+
+The Z80's only per-transfer involvement is the **ADOVF NMI** described above:
+when U44 reaches terminal count (every 512 bytes, and once at setup via the
+`C010 = 0xFF` preload) the handler reloads U59/U76 for the next segment. On
+completion the NCR5385 interrupts the IOP, which writes the result into the
+`iocb` and raises the host interrupt on the NS32202 ICU (IR13).
 
 ## The two MAME emulation paths
 
 The `icm3216` driver can emulate the IOP two ways, selected by the
 **"I/O Processor"** machine-configuration setting:
 
-- **Simulated (HLE)** — the default. The Z80 is suspended and the mailbox is
-  serviced in software, running SCSI commands directly against the disk/tape
-  images. Chosen as the default purely for performance.
-- **Emulated (LLE)** — the real Z80 firmware runs and drives the NCR5385 over
-  MAME's nscsi bus, reproducing everything above byte for byte. Slower, fully
-  supported, and the faithful model of the hardware.
+- **Emulated Z80 (LLE)** — the default. The real Z80 firmware runs and drives
+  the NCR5385 over MAME's nscsi bus, reproducing everything above. This is the
+  faithful model of the hardware.
+- **Simulated (HLE)** — the Z80 is suspended and the mailbox is serviced in
+  software, running SCSI commands directly against the disk/tape images. Faster,
+  but less faithful.
 
 Both boot National Semiconductor UNIX System V to single user.
+
+## Validation
+
+The LLE address path was checked exhaustively rather than spot-checked. A
+reference build captured the MiniBus byte address of every transfer across a
+full UNIX boot; the data-bus-faithful build (the one described here, with no
+inspection of the IOP's CPU registers) was then compared against it transfer
+for transfer: **266,701 transfers, identical** — same sequence, same hash.
+
+One implementation note on the LLE path: MAME's nscsi DMA has no equivalent of
+the board's ZWAIT line (PAL U38), which on real hardware stalls the '646 byte
+mover while the ADOVF NMI handler reloads the address latch mid-burst. MAME
+instead advances the full 24-bit word counter directly within a transfer —
+equivalent to the hardware for the contiguous in-burst case — and relies on the
+handler's latch loads only at transfer boundaries. The byte-exact validation
+above confirms the two are indistinguishable over a real workload.

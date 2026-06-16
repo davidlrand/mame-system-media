@@ -53,22 +53,22 @@ Unzip the disk image first:
 unzip boot-disks/icm3216_disk.zip
 ```
 
-Then start the machine. The driver emulates the SCSI I/O processor two ways,
-chosen by the **"I/O Processor"** machine-configuration setting:
-
-**Simulated I/O processor (HLE — the default, and faster):**
+Then start the machine. The disk attaches on the SCSI bus at ID 1 (`-hard`),
+and a tape, if any, at ID 7 (`-tape`) — the same in both I/O-processor modes:
 
 ```
 mame icm3216 -hard icm3216_disk.chd
 ```
 
-**Emulated Z80 I/O processor (LLE — the faithful hardware model):** set
-*Machine Configuration → I/O Processor → Emulated Z80 (LLE)*, then attach the
-disk on the SCSI bus:
+The driver emulates the SCSI I/O processor two ways, chosen by the
+**"I/O Processor"** machine-configuration setting; the command line above is the
+same for either:
 
-```
-mame icm3216 -scsi:1 harddisk -hard1 icm3216_disk.chd
-```
+- **Emulated Z80 (LLE) — the default.** The real Z80 IOP firmware runs and drives
+  the NCR5385 over the SCSI bus: the faithful hardware model.
+- **Simulated (HLE) — faster.** The Z80 is held suspended and the host mailbox is
+  serviced in software against the same disk/tape image. Select it under
+  *Machine Configuration → I/O Processor → Simulated (HLE)*.
 
 > **ROM monitor:** the machine defaults to the **V1.283** monitor, which is the
 > one that boots this UNIX image. The other monitor, **V2.44** (`-bios v244`),
