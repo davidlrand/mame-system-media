@@ -61,6 +61,17 @@ involved were all discontinued decades ago. These items include:
       trs80m3 romset, and the "CP/M Cheap" circuit modification is the work of
       Bill Brewer, 80 Microcomputing, March 1983.)
 
+    - the Opus5 operating system contained in Opus-PM/opus5_unix_hd.chd.
+      Opus5 is Opus Systems' port of AT&T UNIX System V Release 2; UNIX is a
+      trademark of AT&T Bell Laboratories. The disk image was built by me by
+      installing Opus's surviving distribution media, but the software on it is
+      not mine. (The MAME driver and this disk image's layout, the screenshot,
+      and the README/notes are my work, covered by section 1 above.)
+
+    - Opus-PM/800-00237-000_Opus_100pm_User_Manual_1987.pdf
+          The Opus 100PM User Manual (1987), copyright Opus Systems. Preserved
+          by Al Kossow / bitsavers.org; also available there.
+
 They are included in good faith for historical preservation, research, and use
 with the MAME emulator, on the basis that the original product is decades out of
 production and otherwise unavailable. No copyright claim is made over them, and
