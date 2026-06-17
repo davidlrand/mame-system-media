@@ -1,5 +1,7 @@
 # ADE Elettronica MK3000 / MK83
 
+![ADE MK-84 booting CP/M in MAME (mame mk84) — the runnable member of the MK family](mk84/mk84-cpm-mame.png)
+
 Preservation and MAME-emulation tree for the **MK3000**, a 1983 multi-format
 disk-gateway system by **ADE Elettronica** (Palazzolo Milanese, Italy), built
 around the **MK83** Z80A board — a Ferguson Big Board I derivative (Xerox 820
@@ -57,8 +59,6 @@ Firmware copyright ADE Elettronica; preserved for emulation and historical
 reference.
 
 ## MK-84 (added 2026-06-12)
-
-![MK-84 booting CP/M in MAME](mk84/mk84-cpm-mame.png)
 
 The MK-84 (1984), ADE's successor to the MK-83, now runs in MAME
 (`mame mk84`): same 256K paged memory and FD1797/FDC9229 disk system,
