@@ -1,5 +1,7 @@
 # Xerox 820-II 16/8
 
+![Xerox 16/8 (8" floppy, x168) booting CP/M-80 in MAME — the directory shows the Xerox menu system (XERMAIN, SOFTKEYS, TERMINAL) alongside the CP/M-86 tools (CPM86, LOAD86, 86CON)](xerox-16-8-cpm-mame.png)
+
 Everything in one place for emulating and understanding the **Xerox 16/8** — a
 Xerox 820-II (Z80, CP/M-80) with the **"816 PC"** 8086 coprocessor board
 (CP/M-86 or MS-DOS) bolted on, the two processors linked by a shared-RAM doorbell
