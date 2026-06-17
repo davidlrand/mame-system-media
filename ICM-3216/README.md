@@ -29,6 +29,7 @@ The original distribution tape is preserved on Bitsavers:
 boot-disks/icm3216_disk.zip   the installed UNIX hard-disk image (CHD), zipped
 roms/icm3216.zip              the ICM-3216 ROM set (monitor V2.44 + V1.283, Z80 IOP)
 docs/z80-iop.md               the Z80 I/O processor + MiniBus SCSI bridge
+icm3216-console-8n1.lua       console-framing workaround for MAME's terminal (see Running)
 icm3216-unix-boot.png         the hero screenshot above
 ```
 
@@ -54,21 +55,22 @@ unzip boot-disks/icm3216_disk.zip
 ```
 
 Then start the machine. The disk attaches on the SCSI bus at ID 1 (`-hard`),
-and a tape, if any, at ID 7 (`-tape`) — the same in both I/O-processor modes:
+and a tape, if any, at ID 7 (`-tape`):
 
 ```
-mame icm3216 -hard icm3216_disk.chd
+mame icm3216 -hard icm3216_disk.chd -autoboot_script icm3216-console-8n1.lua
 ```
 
-The driver emulates the SCSI I/O processor two ways, chosen by the
-**"I/O Processor"** machine-configuration setting; the command line above is the
-same for either:
+The driver runs the real Z80 I/O processor: the IOP firmware drives the NCR5385
+over the SCSI bus, the faithful hardware model.
 
-- **Emulated Z80 (LLE) — the default.** The real Z80 IOP firmware runs and drives
-  the NCR5385 over the SCSI bus: the faithful hardware model.
-- **Simulated (HLE) — faster.** The Z80 is held suspended and the host mailbox is
-  serviced in software against the same disk/tape image. Select it under
-  *Machine Configuration → I/O Processor → Simulated (HLE)*.
+**Console framing.** Once UNIX goes interrupt-driven it reprograms the console
+DUART to 7E1. Real hardware drove a 7E1 terminal, but MAME's built-in serial
+terminal only displays 8N1, so the console turns to garbage. The included
+`icm3216-console-8n1.lua` (loaded with `-autoboot_script` above) pins the framing
+back to 8N1 — a pure host-side convenience that rewrites only the framing bits the
+guest writes, leaving the emulated hardware untouched. If instead you attach a real
+7E1-capable terminal via `-serial3`, you don't need the script.
 
 > **ROM monitor:** the machine defaults to the **V1.283** monitor, which is the
 > one that boots this UNIX image. The other monitor, **V2.44** (`-bios v244`),
@@ -80,8 +82,7 @@ At the ROM monitor `%` prompt, boot UNIX with:
 B
 ```
 
-(equivalent to `x unix`). The system boots to single user; both I/O-processor
-paths produce the same result.
+(equivalent to `x unix`). The system boots to single user.
 
 ## How the I/O works
 
