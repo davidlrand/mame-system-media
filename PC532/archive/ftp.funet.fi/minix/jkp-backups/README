@@ -1,0 +1,118 @@
+This directory contains backups of jkp@cs.hut.fi's pc532 Minix system.
+They were taken on Feb 8 1991 and later.
+
+The stuff in the directory 1.3 is for the now obsolete 1.3 version
+of pc532 Minix.
+
+The dir 1.5 contains diffs and binaries for the current 1.5.10 / 1.3 kernel
+hybrid version of Minix.  The GNU binaries for 1.5 are not there yet,
+but perhaps soon.  Note that many of the GNU binaries for 1.3 won't work
+with 1.5 kernel because a bit different mechanism for non-blocking IO is
+used (at least I think that's the reason).
+
+But anyway, if you have a working environment in your machine the diffs for
+gcc, emacs, binutils, gas etc. are all there.  Many of them are not that
+clean yet, 'cause I was in a hurry to get a decent environment up,
+and suggestions and fixes are welcome.
+
+Copyright notice for the GNU stuff is in the file COPYING.  Sources for the GNU
+programs can be found in prep.ai.mit.edu and nic.funet.fi dir pub/gnu, and
+many other places as well, see the FTP file in the emacs distribution or
+nic.funet.fi:pub/gnu/etc.  Diffs to produce the binaries under this directory
+are in the tar files 1.{3,5}/dif*.Z.  Note that you might also need somewhat
+changed Minix libraries or kernel - the diffs for the kernel and the include
+files (and somewhat obsolete versions for the lib stuff) are in the diff tars.
+
+The library setup I use for myself is different from the original
+distribution, so it's not easy to take diffs.  There might be some somewhat
+old lib diffs in the diffs tars.
+
+Some of the changes to the library and kernel I'm using:
+- FIONREAD for ttys (kernel & lib)
+- bumped up many constants
+- some fixes for tty SIGINT handling
+- some other fixes for ttys
+
+Notably, emacs for 1.5 probably won't work properly without FIONREAD
+(and perhaps it also won't work without O_NONBLOCK for 1.3), and ckermit won't
+work properly without FIONREAD.  Also, emacs subprocesses (M-x shell and such)
+won't work unless you fix the library function fcntl.
+
+I also use the GNU tools whenever they're available (assembler, binutils,
+make, bash as /bin/sh, grep, awk etc.) so many installation scripts
+and such might not work if you don't have the GNU stuff installed.  GNU
+binaries are available for the 1.3 in the dir 1.3, and might soon be for
+the hybrid 1.5 as well.
+
+The binaries provided all only for bootstrapping purposes, so when you get
+a decent environment it's a good idea to really get the original sources,
+apply the diffs and recompile & reinstall everything.  You might not use
+the same pathnames for things, emacs binary doesn't contain the info, lisp, etc
+directories and so on.
+
+Contents of the 1.3 dir tars, the 1.5 contents should be pretty much
+the same, and more.
+
+  /u/backup:
+  total 10856
+  drwxrwxrwx   2 jkp      user          176 Feb  8 18:58 .
+  drwxrwxrwx   8 jkp      system        208 Feb  8 13:54 ..
+  -rw-rw-rw-   1 jkp      user       346447 Feb  8 17:35 diff8Feb91.t.Z
+
+Dirs /usr/diffs for diffs to various GNU and other free software
+distributions needed to make to get them compile under my system.
+Also diffs for my minix kernel against the one in Bruce distribution
+(/usr/minixdiffs).
+
+  -rw-rw-rw-   1 jkp      user        20784 Feb  8 17:40 doc-8Feb91.t.Z
+
+The ChangeLog and some other doc files for my system - can be useful
+to track down bugs etc.  Especially the libraries stuff are quite a
+mess with different stdio libraries.
+
+  -rw-rw-rw-   1 jkp      user        47208 Feb  8 17:42 etc-8Feb91.t.Z
+
+/etc directory
+
+  -rw-rw-rw-   1 jkp      user      3433707 Feb  8 17:38 gnu-8Feb91.t.Z
+
+The directory /usr/gnu (bin, lib, man):
+
+GNU binaries, including awk 2.11.1, bash 1.05.1, bison ??.??,
+fileutils 1.4, compress, cpio, diff 1.15, grep & egrep, elvis 1.4,
+emacs 18.57 (get the lisp files from the emacs distribution), find
+2.0, gcc 1.39 with Bruce syntax, same with gas syntax, some GNU
+binutils, make 3.59, makeinfo, patch, sed 1.06, tar 1.09, texindex.
+The library files and manual pages for the above.
+
+  -rw-rw-rw-   1 jkp      user        54170 Feb  8 17:22 incl8Feb91.t.Z
+
+The /usr/include tree (required for the various Minix kernel patches)
+
+  -rw-rw-rw-   1 jkp      user       284373 Feb  8 13:56 kern8Feb91.t.Z
+
+/usr/src/kernel:
+
+Kernel sources for the version of Minix I'm using.
+
+  -rw-rw-rw-   1 jkp      user       224667 Feb  8 13:56 lib-8Feb91.t.Z
+
+/usr/src/lib:
+
+Sources for the libraries I'm using (doesn't contain estdio, get that
+from the distribution).
+
+  -rw-rw-rw-   1 jkp      user       981449 Feb  8 18:54 locl8Feb91.t.Z
+
+/usr/local:
+
+Contents of my /usr/local/{bin,lib}.
+
+  -rw-rw-rw-   1 jkp      user       157882 Feb  8 18:58 man-8Feb91.t.Z
+
+Contents of my /usr/man.
+
+
+The minix stuff (lib, kernel) is not available the same way as the others,
+please contact me for details if you already have pc532 minix and want to get
+a dump of my kernel, libs & includes.

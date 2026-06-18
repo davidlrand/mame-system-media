@@ -1,0 +1,22 @@
+Newsgroups: santra.pc32532
+From: jem@robin.hut.fi
+Subject: Fix for PC532 Minix od(1)
+Message-ID: <9101090903.AA21286@robin.hut.fi>
+Precedence: bulk
+Reply-To: pc532@bungi.com
+Organization: Helsinki University of Technology, Finland
+X-Path: robin.hut.fi!jem
+Date: Wed, 9 Jan 91 11:03:01 +0200
+X-From: daver!owner-pc532@relay.EU.net Wed Jan  9 14:14:54 1991
+Lines: 10
+
+
+Minix od for the pc532 is broken, as you may have noticed. Did anybody
+post a fix already? Anyway, here is mine. It is quite simple, just
+recompile with:
+
+	cc -O -Dint=short -Dunsigned="unsigned short" od.c -o od
+
+--
+Johan Myreen
+jem@cs.hut.fi

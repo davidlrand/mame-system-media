@@ -1,0 +1,1064 @@
+diff -cr emacs-18.57.or/etc/Makefile emacs-18.57/etc/Makefile
+*** emacs-18.57.or/etc/Makefile	Mon Jan  7 04:21:30 1991
+--- emacs-18.57/etc/Makefile	Tue Feb  5 11:28:36 1991
+***************
+*** 1,4 ****
+! CFLAGS= -g
+  # For Xenix.  Needed for movemail
+  #  LOADLIBES= -lx
+  # For Mips.  Needed for who knows what.
+--- 1,5 ----
+! CC = gcc
+! CFLAGS= -O
+  # For Xenix.  Needed for movemail
+  #  LOADLIBES= -lx
+  # For Mips.  Needed for who knows what.
+diff -cr emacs-18.57.or/src/Makefile emacs-18.57/src/Makefile
+*** emacs-18.57.or/src/Makefile	Sat Sep 29 22:14:10 1990
+--- emacs-18.57/src/Makefile	Tue Feb  5 11:34:11 1991
+***************
+*** 1,3 ****
+--- 1,4 ----
++ CC = gcc
+  CPP = $(CC) -E
+  MAKE = make  # BSD doesn't have it as a default.
+  #Note: an alternative is  CPP = /lib/cpp
+diff -cr emacs-18.57.or/src/callint.c emacs-18.57/src/callint.c
+*** emacs-18.57.or/src/callint.c	Sat Jan  5 00:13:13 1991
+--- emacs-18.57/src/callint.c	Tue Feb  5 11:26:47 1991
+***************
+*** 24,30 ****
+  #include "commands.h"
+  #include "window.h"
+  
+! Lisp_Object global_map;
+  
+  extern int num_input_chars;
+  
+--- 24,30 ----
+  #include "commands.h"
+  #include "window.h"
+  
+! extern Lisp_Object global_map;
+  
+  extern int num_input_chars;
+  
+diff -cr emacs-18.57.or/src/callproc.c emacs-18.57/src/callproc.c
+*** emacs-18.57.or/src/callproc.c	Sat Jan  5 00:13:47 1991
+--- emacs-18.57/src/callproc.c	Tue Feb  5 20:14:17 1991
+***************
+*** 379,385 ****
+--- 379,387 ----
+  
+  #ifdef USG
+  #ifndef HAVE_PTYS
++ #ifndef NO_SETPGRP
+    setpgrp ();			/* No arguments but equivalent in this case */
++ #endif
+  #endif
+  #else
+    setpgrp (pid, pid);
+diff -cr emacs-18.57.or/src/config.h-dist emacs-18.57/src/config.h-dist
+*** emacs-18.57.or/src/config.h-dist	Tue Jan  8 18:24:37 1991
+--- emacs-18.57/src/config.h-dist	Tue Feb  5 20:57:30 1991
+***************
+*** 18,29 ****
+  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  
+  
+  
+  /* Include here a s- file that describes the system type you are using.
+     See the file ../etc/MACHINES for a list of systems and
+     the names of the s- files to use for them.
+     See s-template.h for documentation on writing s- files.  */
+! #include "s-bsd4-2.h"
+  
+  /* Include here a m- file that describes the machine and system you use.
+     See the file ../etc/MACHINES for a list of machines and
+--- 18,34 ----
+  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  
+  
++ /* Use gcc's builtin alloca when available */
+  
++ #ifdef __GNUC__
++ #define alloca __builtin_alloca
++ #endif
++ 
+  /* Include here a s- file that describes the system type you are using.
+     See the file ../etc/MACHINES for a list of systems and
+     the names of the s- files to use for them.
+     See s-template.h for documentation on writing s- files.  */
+! #include "s-minix-1.3.h"
+  
+  /* Include here a m- file that describes the machine and system you use.
+     See the file ../etc/MACHINES for a list of machines and
+***************
+*** 30,36 ****
+     the names of the m- files to use for them.
+     See m-template.h for info on what m- files should define.
+     */
+! #include "m-vax.h"
+  
+  /* Load in the conversion definitions if this system
+     needs them and the source file being compiled has not
+--- 35,41 ----
+     the names of the m- files to use for them.
+     See m-template.h for info on what m- files should define.
+     */
+! #include "m-pc532.h"
+  
+  /* Load in the conversion definitions if this system
+     needs them and the source file being compiled has not
+***************
+*** 85,91 ****
+  /* Define AMPERSAND_FULL_NAME if you use the convention
+     that & in the full name stands for the login id.  */
+  
+! /* #define AMPERSAND_FULL_NAME */
+  
+  /* # bytes of pure Lisp code to leave space for.
+     Note that s-vms.h and m-sun2.h may override this default.  */
+--- 90,96 ----
+  /* Define AMPERSAND_FULL_NAME if you use the convention
+     that & in the full name stands for the login id.  */
+  
+! #define AMPERSAND_FULL_NAME
+  
+  /* # bytes of pure Lisp code to leave space for.
+     Note that s-vms.h and m-sun2.h may override this default.  */
+diff -cr emacs-18.57.or/src/dispnew.c emacs-18.57/src/dispnew.c
+*** emacs-18.57.or/src/dispnew.c	Tue Jan  8 17:25:28 1991
+--- emacs-18.57/src/dispnew.c	Tue Feb  5 21:11:22 1991
+***************
+*** 40,46 ****
+--- 40,51 ----
+  #endif /* TCOUTQ defined */
+  #else
+  #ifndef VMS
++ #ifndef NO_SYS_IOCTL
+  #include <sys/ioctl.h>
++ #endif
++ #ifdef IOCTL_IN_SGTTY_H
++ #include <sgtty.h>
++ #endif
+  #endif /* not VMS */
+  #endif /* not HAVE_TERMIO */
+  
+diff -cr emacs-18.57.or/src/emacs.c emacs-18.57/src/emacs.c
+*** emacs-18.57.or/src/emacs.c	Sat Jan 12 03:16:31 1991
+--- emacs-18.57/src/emacs.c	Tue Feb  5 18:29:37 1991
+***************
+*** 315,328 ****
+--- 315,334 ----
+        signal (SIGQUIT, fatal_error_signal);
+        signal (SIGILL, fatal_error_signal);
+        signal (SIGTRAP, fatal_error_signal);
++ #ifdef SIGIOT
+        signal (SIGIOT, fatal_error_signal);
++ #endif
+  #ifdef SIGEMT
+        signal (SIGEMT, fatal_error_signal);
+  #endif
+        signal (SIGFPE, fatal_error_signal);
+        signal (SIGBUS, fatal_error_signal);
++ #ifdef SIGSEGV
+        signal (SIGSEGV, fatal_error_signal);
++ #endif
++ #ifdef SIGSYS
+        signal (SIGSYS, fatal_error_signal);
++ #endif
+        signal (SIGTERM, fatal_error_signal);
+  #ifdef SIGXCPU
+        signal (SIGXCPU, fatal_error_signal);
+diff -cr emacs-18.57.or/src/filelock.c emacs-18.57/src/filelock.c
+*** emacs-18.57.or/src/filelock.c	Tue Jan  8 17:32:34 1991
+--- emacs-18.57/src/filelock.c	Tue Feb  5 20:20:03 1991
+***************
+*** 152,158 ****
+--- 152,162 ----
+  
+    if ((fd = open (lfname, mode, 0666)) >= 0)
+      {
++ #ifdef NO_FCHMOD
++       chmod (lfname, 0666);
++ #else
+        fchmod (fd, 0666);
++ #endif
+        sprintf (buf, "%d ", getpid ());
+        write (fd, buf, strlen (buf));
+        close (fd);
+***************
+*** 255,261 ****
+--- 259,269 ----
+      }
+    if (fd >= 0)
+      {
++ #ifdef NO_FCHMOD
++       chmod (PATH_SUPERLOCK, 0666);
++ #else
+        fchmod (fd, 0666);
++ #endif
+        write (fd, lfname, strlen (lfname));
+        close (fd);
+      }
+diff -cr emacs-18.57.or/src/keyboard.c emacs-18.57/src/keyboard.c
+*** emacs-18.57.or/src/keyboard.c	Wed Jan  9 01:40:31 1991
+--- emacs-18.57/src/keyboard.c	Tue Feb  5 23:38:36 1991
+***************
+*** 40,46 ****
+--- 40,51 ----
+  
+  /* Get FIONREAD, if it is available.  */
+  #ifdef USG
++ #ifdef HAVE_TERMIO
+  #include <termio.h>
++ #endif
++ #ifdef IOCTL_IN_SGTTY_H
++ #include <sgtty.h>
++ #endif
+  #include <fcntl.h>
+  #else /* not USG */
+  #ifndef VMS
+***************
+*** 2117,2123 ****
+  #else
+    interrupt_input = 0;
+  #endif
+! 
+    sigfree ();
+    dribble = 0;
+  
+--- 2122,2130 ----
+  #else
+    interrupt_input = 0;
+  #endif
+! #ifdef INTERRUPT_INPUT_MINIX
+!   interrupt_input = 1;
+! #endif
+    sigfree ();
+    dribble = 0;
+  
+diff -cr emacs-18.57.or/src/paths.h-dist emacs-18.57/src/paths.h-dist
+*** emacs-18.57.or/src/paths.h-dist	Wed Sep 12 00:51:18 1990
+--- emacs-18.57/src/paths.h-dist	Tue Feb  5 20:56:34 1991
+***************
+*** 1,19 ****
+  /* The default search path for Lisp function "load".
+     This sets load-path.  */
+! #define PATH_LOADSEARCH "/usr/local/emacs/lisp"
+  
+  /* the extra search path for programs to invoke.
+   This is appended to whatever the PATH environment variable says
+   to set the Lisp variable exec-path and the first file namein it
+    sets the Lisp variable exec-directory.  */
+! #define PATH_EXEC "/usr/local/emacs/etc"
+  
+  /* the name of the directory that contains lock files
+   with which we record what files are being modified in Emacs.
+   This directory should be writable by everyone.
+   THE STRING MUST END WITH A SLASH!!!  */
+! #define PATH_LOCK "/usr/local/emacs/lock/"
+  
+  /* the name of the file !!!SuperLock!!! in the directory
+   specified by PATH_LOCK.  Yes, this is redundant.  */
+! #define PATH_SUPERLOCK "/usr/local/emacs/lock/!!!SuperLock!!!"
+--- 1,19 ----
+  /* The default search path for Lisp function "load".
+     This sets load-path.  */
+! #define PATH_LOADSEARCH "/u/gnu/emacs-18.57/lisp/local:/u/gnu/emacs-18.57/lisp"
+  
+  /* the extra search path for programs to invoke.
+   This is appended to whatever the PATH environment variable says
+   to set the Lisp variable exec-path and the first file namein it
+    sets the Lisp variable exec-directory.  */
+! #define PATH_EXEC "/u/gnu/emacs-18.57/etc"
+  
+  /* the name of the directory that contains lock files
+   with which we record what files are being modified in Emacs.
+   This directory should be writable by everyone.
+   THE STRING MUST END WITH A SLASH!!!  */
+! #define PATH_LOCK "/u/gnu/emacs-18.57/lock/"
+  
+  /* the name of the file !!!SuperLock!!! in the directory
+   specified by PATH_LOCK.  Yes, this is redundant.  */
+! #define PATH_SUPERLOCK "/u/gnu/emacs-18.57/lock/!!!SuperLock!!!"
+diff -cr emacs-18.57.or/src/process.c emacs-18.57/src/process.c
+*** emacs-18.57.or/src/process.c	Wed Jan 16 01:28:48 1991
+--- emacs-18.57/src/process.c	Tue Feb  5 20:28:14 1991
+***************
+*** 45,51 ****
+--- 45,56 ----
+  #endif /* HAVE_PTYS and no O_NDELAY */
+  #endif /* BSD or STRIDE */
+  #ifdef USG
++ #ifdef HAVE_TERMIO
+  #include <termio.h>
++ #endif
++ #ifdef IOCTL_IN_SGTTY_H
++ #include <sgtty.h>
++ #endif
+  #include <fcntl.h>
+  #endif /* USG */
+  
+***************
+*** 102,108 ****
+  #include "termopts.h"
+  #include "commands.h"
+  
+! Lisp_Object Qrun, Qstop, Qsignal, Qexit, Qopen, Qclosed;
+  
+  /* a process object is a network connection when its childp field is neither
+     Qt nor Qnil but is instead a string (name of foreign host we
+--- 107,114 ----
+  #include "termopts.h"
+  #include "commands.h"
+  
+! Lisp_Object Qrun, Qstop, Qsignal, Qopen, Qclosed;
+! extern Lisp_Object Qexit;
+  
+  /* a process object is a network connection when its childp field is neither
+     Qt nor Qnil but is instead a string (name of foreign host we
+diff -cr emacs-18.57.or/src/sysdep.c emacs-18.57/src/sysdep.c
+*** emacs-18.57.or/src/sysdep.c	Wed Jan 16 02:43:59 1991
+--- emacs-18.57/src/sysdep.c	Tue Feb  5 22:52:00 1991
+***************
+*** 167,178 ****
+--- 167,184 ----
+  #define SETOSPEED(str,new) (str.sg_ospeed = (new))
+  #define TABS_OK(str) ((str.sg_flags & XTABS) != XTABS)
+  #undef TCSETAW
++ #ifdef TIOCSETN
+  #define TCSETAW TIOCSETN
++ #else
++ #define TCSETAW TIOCSETP
++ #endif
+  #endif /* not VMS */
+  #endif /* not HAVE_TERMIO */
+  
+  #ifdef USG
++ #ifndef NO_SYS_UTSNAME_H
+  #include <sys/utsname.h>
++ #endif
+  #include <memory.h>
+  #include <string.h>
+  #ifdef TIOCGWINSZ
+***************
+*** 439,447 ****
+--- 445,460 ----
+  	break;
+        wait (0);
+  #else /* neither BSD nor UNIPLUS: random sysV */
++ #ifdef WAIT_FOR_SUB
++       int status;
++       status = wait (0);
++       if (status == pid || status == -1)
++ 	break;
++ #else
+        if (0 > kill (pid, 0))
+  	break;
+        pause ();
++ #endif
+  #endif /* not UNIPLUS */
+  #endif /* not BSD, and not HPUX version >= 6 */
+  #else /* not subprocesses */
+***************
+*** 532,541 ****
+  #endif /* AIX */
+  
+  #else /* not HAVE_TERMIO */
+!   s.sg_flags &= ~(ECHO | CRMOD | ANYP | ALLDELAY | RAW | LCASE | CBREAK | TANDEM);
+  #endif /* not HAVE_TERMIO */
+  
+    ioctl (out, TIOCSETN, &s);
+  
+  #ifdef BSD4_1
+    if (interrupt_input)
+--- 545,577 ----
+  #endif /* AIX */
+  
+  #else /* not HAVE_TERMIO */
+!   s.sg_flags &= ~(ECHO | CRMOD
+! #ifdef ANYP
+! 		| ANYP
+! #endif
+! #ifdef ALLDELAY
+! 		| ALLDELAY
+! #endif
+! #ifdef RAW
+! 		| RAW
+! #endif
+! #ifdef LCASE
+! 		| LCASE
+! #endif
+! #ifdef CBREAK
+! 		| CBREAK
+! #endif
+! #ifdef TANDEM
+! 		| TANDEM
+! #endif
+! 		);
+  #endif /* not HAVE_TERMIO */
+  
++ #ifdef TIOCSETN
+    ioctl (out, TIOCSETN, &s);
++ #else
++   ioctl (out, TIOCSETP, &s);
++ #endif
+  
+  #ifdef BSD4_1
+    if (interrupt_input)
+***************
+*** 923,929 ****
+--- 959,967 ----
+        tty.tt2_char |= TT2$M_PASTHRU | TT2$M_XON;
+  #else /* not VMS (BSD, that is) */
+        tty.sg_flags &= ~(ECHO | CRMOD | XTABS);
++ #ifdef ANYP
+        tty.sg_flags |= ANYP;
++ #endif
+        tty.sg_flags |= interrupt_input ? RAW : CBREAK;
+  #endif /* not VMS (BSD, that is) */
+  #endif /* not HAVE_TERMIO */
+***************
+*** 932,938 ****
+--- 970,980 ----
+        SYS$QIOW (0, input_chan, IO$_SETMODE, &input_iosb, 0, 0,
+  		&tty.class, 12, 0, 0, 0, 0);
+  #else
++ #ifdef TIOCSETN
+        ioctl (0, TIOCSETN, &tty);
++ #else
++       ioctl (0, TIOCSETP, &tty);
++ #endif
+  #endif /* not VMS */
+  
+        /* This code added to insure that, if flow-control is not to be used,
+***************
+*** 980,986 ****
+--- 1022,1030 ----
+  #ifndef HAVE_TERMIO
+  #ifdef TIOCGETC
+        ioctl (0, TIOCGETC, &old_tchars);
++ #ifdef TIOCLGET
+        ioctl (0, TIOCLGET, &old_lmode);
++ #endif
+  
+        /* Note: if not using CBREAK mode, it makes no difference how we set this */
+        tchars = new_tchars;
+***************
+*** 999,1008 ****
+  #define LNOFLSH 0100000
+  #endif
+  
+!       lmode = LDECCTQ | LLITOUT | LPASS8 | LNOFLSH | old_lmode;
+  
+        ioctl (0, TIOCSETC, &tchars);
+        ioctl (0, TIOCLSET, &lmode);
+  #endif /* TIOCGETC */
+  #endif /* not HAVE_TERMIO */
+  #ifdef TIOCGLTC
+--- 1043,1067 ----
+  #define LNOFLSH 0100000
+  #endif
+  
+!       lmode = 
+! #ifdef LPASS8
+! 		LPASS8
+! #endif
+! #ifdef LDECCTQ
+! 		| LDECCTQ
+! #endif
+! #ifdef LLITOUT
+! 		| LLITOUT
+! #endif
+! #ifdef LNOFLSH
+! 		| LNOFLSH
+! #endif
+! 		| old_lmode;
+  
+        ioctl (0, TIOCSETC, &tchars);
++ #ifdef TIOCLSET
+        ioctl (0, TIOCLSET, &lmode);
++ #endif
+  #endif /* TIOCGETC */
+  #endif /* not HAVE_TERMIO */
+  #ifdef TIOCGLTC
+***************
+*** 1143,1149 ****
+--- 1202,1210 ----
+  #ifndef HAVE_TERMIO
+  #ifdef TIOCGETC
+    ioctl (0, TIOCSETC, &old_tchars);
++ #ifdef TIOCLSET
+    ioctl (0, TIOCLSET, &old_lmode);
++ #endif
+  #endif /* TIOCGETC */
+  #endif /* not HAVE_TERMIO */
+  #ifdef F_SETFL
+***************
+*** 1563,1577 ****
+--- 1624,1647 ----
+  
+  #ifdef USG
+  /* Can't have this within the function since `static' is #defined to nothing */
++ #ifdef NO_UNAME
++ static char system_name_saved[32];
++ #else
+  static struct utsname get_system_name_name;
+  #endif
++ #endif
+  
+  char *
+  get_system_name ()
+  {
+  #ifdef USG
++ #ifdef NO_UNAME
++   strcpy (system_name_saved, SYSTEM_NAME);
++   return system_name_saved;
++ #else
+    uname (&get_system_name_name);
+    return (get_system_name_name.nodename);
++ #endif
+  #else /* Not USG */
+  #ifdef BSD4_1
+    return sysname;
+***************
+*** 2217,2222 ****
+--- 2287,2316 ----
+    "HFT sound done",			/* 30 SIGSOUND */
+    "HFT input ready",			/* 31 SIGMSG */
+  #else /* not AIX */
++ #ifdef MINIX_13_SIGNALS
++   "bogus signal",			/* 0 */
++   "hangup",				/* 1  SIGHUP */
++   "interrupt",				/* 2  SIGINT */
++   "quit",				/* 3  SIGQUIT */
++   "illegal instruction",		/* 4  SIGILL */
++   "trace trap",				/* 5  SIGTRAP */
++   "out of memory",			/* 6  SIGMEM */
++   "divide by zero",			/* 7  SIGDVZ */
++   "floating point exception",		/* 8  SIGFPE */
++   "kill",				/* 9  SIGKILL */
++   "bus error",				/* 10 SIGBUS */
++   "flag trap",				/* 11 SIGFLAG */
++   "breakpoint",				/* 12 SIGBGT */
++   "write on a pipe with no one to read it", /* 13 SIGPIPE */
++   "alarm clock",			/* 14 SIGALRM */
++   "software termination signum",	/* 15 SIGTERM */
++ #if 0
++   "user defined signal 1",		/* 16 SIGUSR1 */
++   "user defined signal 2",		/* 17 SIGUSR2 */
++   "death of a child",			/* 18 SIGCLD */
++   "power-fail restart",			/* 19 SIGPWR */
++ #endif
++ #else /* not MINIX 1.3 */
+    "bogus signal",			/* 0 */
+    "hangup",				/* 1  SIGHUP */
+    "interrupt",				/* 2  SIGINT */
+***************
+*** 2237,2242 ****
+--- 2331,2337 ----
+    "user defined signal 2",		/* 17 SIGUSR2 */
+    "death of a child",			/* 18 SIGCLD */
+    "power-fail restart",			/* 19 SIGPWR */
++ #endif /* not MINIX 1.3 */
+  #endif /* not AIX */
+    0
+    };
+***************
+*** 2257,2272 ****
+--- 2352,2378 ----
+  getwd (pathname)
+       char *pathname;
+  {
++ #ifdef GETCWD_NEEDS_BUF
++   char buf[MAXPATHLEN];
++ #endif
+    char *npath, *spath;
+    extern char *getcwd ();
+  
++ #ifdef GETCWD_NEEDS_BUF
++   getcwd (buf, MAXPATHLEN);
++   spath = npath = buf;
++ #else
+    spath = npath = getcwd ((char *) 0, MAXPATHLEN);
++ #endif
+    /* On Altos 3068, getcwd can return @hostname/dir, so discard
+       up to first slash.  Should be harmless on other systems.  */
+    while (*npath && *npath != '/')
+      npath++;
+    strcpy (pathname, npath);
++ #ifndef GETCWD_NEEDS_NO_FREE
+    free (spath);			/* getcwd uses malloc */
++ 				/* no it doesn't, often */
++ #endif
+    return pathname;
+  }
+  
+diff -cr emacs-18.57.or/src/unexec.c emacs-18.57/src/unexec.c
+*** emacs-18.57.or/src/unexec.c	Tue Jan  8 18:16:12 1991
+--- emacs-18.57/src/unexec.c	Tue Feb  5 23:59:44 1991
+***************
+*** 166,172 ****
+--- 166,178 ----
+  
+  #ifndef CANNOT_UNEXEC /* most of rest of file */
+  
++ 
++ #ifdef GNU_A_OUT
++ #include <a.out.gnu.h>
++ #undef USG
++ #else
+  #include <a.out.h>
++ #endif
+  /* Define getpagesize () if the system does not.
+     Note that this may depend on symbols defined in a.out.h
+   */
+***************
+*** 647,652 ****
+--- 653,662 ----
+  #else /* not NO_REMAP */
+    hdr.a_text = data_start - unexec_text_start;
+  
++ #ifdef NS32K_MINIX
++   hdr.a_tstart = unexec_text_start;
++   hdr.a_dstart = data_start;
++ #endif
+  #ifdef A_TEXT_OFFSET
+    hdr.a_text += A_TEXT_OFFSET (ohdr);
+  #endif
+diff -cr emacs-18.57.or/src/xdisp.c emacs-18.57/src/xdisp.c
+*** emacs-18.57.or/src/xdisp.c	Tue Jan  8 18:21:59 1991
+--- emacs-18.57/src/xdisp.c	Tue Feb  5 23:41:24 1991
+***************
+*** 418,425 ****
+--- 418,427 ----
+    /* Prevent various kinds of signals during display update.
+       stdio is not robust about handling signals,
+       which can cause an apparent I/O error.  */
++ #ifndef INTERRUPT_INPUT_MINIX
+    if (interrupt_input)
+      unrequest_sigio ();
++ #endif
+    stop_polling ();
+  
+    pause = update_screen (0, 0);
+***************
+*** 479,486 ****
+--- 481,490 ----
+       in the system buffer here.
+       But it is much hairier to try to do anything about that.  */
+  
++ #ifndef INTERRUPT_INPUT_MINIX
+    if (interrupt_input)
+      request_sigio ();
++ #endif
+    start_polling ();
+  
+    do_pending_window_change ();
+diff -cr emacs-18.57.or/src/ymakefile emacs-18.57/src/ymakefile
+*** emacs-18.57.or/src/ymakefile	Tue Jan  8 18:23:01 1991
+--- emacs-18.57/src/ymakefile	Wed Feb  6 00:23:43 1991
+***************
+*** 118,127 ****
+  #endif
+  
+  #ifndef LINKER
+! #define LINKER ld
+  #endif
+  LD=LINKER
+  LDFLAGS = LD_SWITCH_SYSTEM LD_SWITCH_MACHINE
+  
+  /* Figure out whether the system cpp can handle long names.
+     Do it by testing it right now.
+--- 118,128 ----
+  #endif
+  
+  #ifndef LINKER
+! #define LINKER gld
+  #endif
+  LD=LINKER
+  LDFLAGS = LD_SWITCH_SYSTEM LD_SWITCH_MACHINE
++ CC = gcc
+  
+  /* Figure out whether the system cpp can handle long names.
+     Do it by testing it right now.
+***************
+*** 144,150 ****
+  SHORT= shortnames
+  #endif /* SHORTNAMES */
+  
+! CFLAGS= C_DEBUG_SWITCH -Demacs $(MYCPPFLAG) C_SWITCH_MACHINE C_SWITCH_SYSTEM
+  /* DO NOT use -R.  There is a special hack described in lastfile.c
+     which is used instead.  Some initialized data areas are modified
+     at initial startup, then labeled as part of the text area when
+--- 145,151 ----
+  SHORT= shortnames
+  #endif /* SHORTNAMES */
+  
+! CFLAGS= C_OPTIMIZE_SWITCH -Demacs $(MYCPPFLAG) C_SWITCH_MACHINE C_SWITCH_SYSTEM
+  /* DO NOT use -R.  There is a special hack described in lastfile.c
+     which is used instead.  Some initialized data areas are modified
+     at initial startup, then labeled as part of the text area when
+***************
+*** 200,206 ****
+  /* Fix linking if compiled with GCC.  */
+  #ifdef __GNUC__
+  #ifndef LIB_GCC
+! #define LIB_GCC /usr/local/lib/gcc-gnulib
+  #endif
+  GNULIB_VAR = `if [ -f LIB_GCC ] ; then echo LIB_GCC; else echo; fi`
+  #else
+--- 201,207 ----
+  /* Fix linking if compiled with GCC.  */
+  #ifdef __GNUC__
+  #ifndef LIB_GCC
+! #define LIB_GCC /usr/gnu/lib/gcc-1.39-gas/gcc-gnulib
+  #endif
+  GNULIB_VAR = `if [ -f LIB_GCC ] ; then echo LIB_GCC; else echo; fi`
+  #else
+*** emacs-18.57.or/src/m-pc532.h	Wed Feb  6 01:25:31 1991
+--- emacs-18.57/src/m-pc532.h	Tue Feb  5 21:06:00 1991
+***************
+*** 0 ****
+--- 1,55 ----
++ /* m-pc532.h		A free hardware machine with ns32532
++    Copyright (C) 1991 Free Software Foundation, Inc.
++ 
++ This file is part of GNU Emacs.
++ 
++ GNU Emacs is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY.  No author or distributor
++ accepts responsibility to anyone for the consequences of using it
++ or for whether it serves any particular purpose or works at all,
++ unless he says so in writing.  Refer to the GNU Emacs General Public
++ License for full details.
++ 
++ Everyone is granted permission to copy, modify and redistribute
++ GNU Emacs, but only under the conditions described in the
++ GNU Emacs General Public License.   A copy of this license is
++ supposed to have been given to you along with GNU Emacs so you
++ can know your rights and responsibilities.  It should be in a
++ file named COPYING.  Among other things, the copyright notice
++ and this notice must be preserved on all copies.
++ 
++ Contributed by Jyrki Kuoppala <jkp@cs.hut.fi>, derived from m-altos.h.
++ 5 February 1991. */
++ 
++ 
++ /* The following three symbols give information on
++  the size of various data types.  */
++ 
++ #define SHORTBITS 16		/* Number of bits in a short */
++ 
++ #define INTBITS 32		/* Number of bits in an int */
++ 
++ #define LONGBITS 32		/* Number of bits in a long */
++ 
++ /* Vax is not big-endian: lowest numbered byte is least significant,
++    but 68000's are. */
++ 
++ /* #define BIG_ENDIAN*/
++ 
++ /* Define how to take a char and sign-extend into an int.
++    On machines where char is signed, this is a no-op.  */
++ 
++ #define SIGN_EXTEND_CHAR(c) (c)
++ 
++ /* Use type int rather than a union, to represent Lisp_Object */
++ 
++ #define NO_UNION_TYPE
++ 
++ /* We use gcc's builtin alloca */
++ 
++ #define HAVE_ALLOCA
++ 
++ #define LIB_STANDARD -lc
++ 
++ #define NO_REMAP
++ #define STACK_DIRECTION (-1)
+*** emacs-18.57.or/src/s-minix-1.3.h	Wed Feb  6 01:25:36 1991
+--- emacs-18.57/src/s-minix-1.3.h	Wed Feb  6 00:48:35 1991
+***************
+*** 0 ****
+--- 1,279 ----
++ /* Definitions file for GNU Emacs running on Minix 1.3
++    Copyright (C) 1991 Free Software Foundation, Inc.
++ 
++ This file is part of GNU Emacs.
++ 
++ GNU Emacs is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY.  No author or distributor
++ accepts responsibility to anyone for the consequences of using it
++ or for whether it serves any particular purpose or works at all,
++ unless he says so in writing.  Refer to the GNU Emacs General Public
++ License for full details.
++ 
++ Everyone is granted permission to copy, modify and redistribute
++ GNU Emacs, but only under the conditions described in the
++ GNU Emacs General Public License.   A copy of this license is
++ supposed to have been given to you along with GNU Emacs so you
++ can know your rights and responsibilities.  It should be in a
++ file named COPYING.  Among other things, the copyright notice
++ and this notice must be preserved on all copies.
++ 
++ Contributed by Jyrki Kuoppala <jkp@cs.hut.fi>, derived from SVR2
++ s- file.  5 February 1991. */
++ 
++ 
++ /*
++  *	Define symbols to identify the version of Unix this is.
++  *	Define all the symbols that apply correctly.
++  */
++ 
++ /* Pretty close to USG so we define these */
++ 
++ #define USG				/* System III, System V, etc */
++ 
++ #define USG5
++ 
++ /* SYSTEM_TYPE should indicate the kind of system you are using.
++  It sets the Lisp variable system-type.  */
++ 
++ #define SYSTEM_TYPE "minix"
++ 
++ #define SYSV_SYSTEM_DIR
++ 
++ /* we don't have setpgrp() */
++ 
++ #define NO_SETPGRP
++ 
++ /* we don't have <sys/ioctl.h> */
++ 
++ #define NO_SYS_IOCTL
++ 
++ /* we have ioctl #defines in <sgtty.h> */
++ 
++ #define IOCTL_IN_SGTTY_H
++ 
++ /* we don't have fchmod(2) */
++ 
++ #define NO_FCHMOD
++ 
++ /* page size is 1024 (I think) */
++ 
++ #define EXEC_PAGESIZE 1024
++ 
++ /* no ulimit() */
++ 
++ #define ULIMIT_BREAK_VALUE 10000000
++ 
++ /* no <sys/utsname.h> */
++ 
++ #define NO_SYS_UTSNAME_H
++ 
++ /* no uname() */
++ 
++ #define NO_UNAME
++ 
++ /* system name: "pc532" */
++ 
++ #define SYSTEM_NAME "pc532"
++ 
++ /* use a different set of signals */
++ 
++ #define MINIX_13_SIGNALS
++ 
++ /* getcwd() need buffer as first arg */
++ 
++ #define GETCWD_NEEDS_BUF
++ 
++ /* getcwd() doesn't use malloc */
++ 
++ #define GETCWD_NEEDS_NO_FREE
++ 
++ /* nomultiplejobs should be defined if your system's shell
++  does not have "job control" (the ability to stop a program,
++  run some other program, then continue the first one).  */
++ 
++ #define NOMULTIPLEJOBS
++ 
++ /* this is for Earl Chew's estido; edit for Minix stdio
++    For non-estdio this should be
++    PENDING_OUTPUT_COUNT(FILE) ((FILE)->_ptr - (FILE)->_buf) */
++ 
++ #define PENDING_OUTPUT_COUNT(FILE) ((FILE)->__wptr - (FILE)->__base)
++ 
++ /* Default is to set interrupt_input to 0: don't do input buffering within Emacs */
++ 
++ /* #define INTERRUPT_INPUT */
++ 
++ /* Letter to use in finding device name of first pty,
++   if system supports pty's.  'p' means it is /dev/ptyp0  */
++ 
++ #define FIRST_PTY_LETTER 'p'
++ 
++ /*
++  *	Define HAVE_TERMIO if the system provides sysV-style ioctls
++  *	for terminal control.
++  */
++ 
++ /*#define HAVE_TERMIO*/
++ 
++ /*
++  *	Define HAVE_TIMEVAL if the system supports the BSD style clock values.
++  *	Look in <sys/time.h> for a timeval structure.
++  */
++ 
++ /* #define HAVE_TIMEVAL */
++  
++ /*
++  *	Define HAVE_SELECT if the system supports the `select' system call.
++  */
++ 
++ /* #define HAVE_SELECT */
++ 
++ /*
++  *	Define HAVE_PTYS if the system supports pty devices.
++  */
++ 
++ /* #define HAVE_PTYS */
++ 
++ /* Define HAVE_SOCKETS if system supports 4.2-compatible sockets.  */
++ 
++ /* #define HAVE_SOCKETS */
++ 
++ /*
++  *	Define NONSYSTEM_DIR_LIBRARY to make Emacs emulate
++  *      The 4.2 opendir, etc., library functions.
++  */
++ 
++ /* #define NONSYSTEM_DIR_LIBRARY*/
++ 
++ /* Define this symbol if your system has the functions bcopy, etc. */
++ 
++ /* #define BSTRING */
++ 
++ /* subprocesses should be defined if you want to
++  have code for asynchronous subprocesses
++  (as used in M-x compile and M-x shell).
++  This is supposed to work now on system V release 2.  */
++ 
++ #define subprocesses
++ 
++ /* If your system uses COFF (Common Object File Format) then define the
++    preprocessor symbol "COFF". */
++ 
++ /* #define COFF */
++ 
++ /* define MAIL_USE_FLOCK if the mailer uses flock
++    to interlock access to /usr/spool/mail/$USER.
++    The alternative is that a lock file named
++    /usr/spool/mail/$USER.lock.  */
++ 
++ /* #define MAIL_USE_FLOCK */
++ 
++ /* Cannot yet dump, working on it
++    Should work now */
++ 
++ /* #define CANNOT_DUMP*/
++ 
++ /* Define CLASH_DETECTION if you want lock files to be written
++    so that Emacs can tell instantly when you try to modify
++    a file that someone else has modified in his Emacs.  */
++ 
++ #define CLASH_DETECTION
++ 
++ /* Define SHORTNAMES if the C compiler can distinguish only
++    short names.  It means that the stuff in ../shortnames
++    must be run to convert the long names to short ones.  */
++ 
++ /* #define SHORTNAMES */
++ 
++ /* We use the Berkeley (and usg5.2.2) interface to nlist.  */
++ 
++ /* #define NLIST_STRUCT */
++ 
++ /* The file containing the kernel's symbol table is called /unix.
++    Can't be used with minix.  */
++ 
++ #define KERNEL_FILE "/minix"
++ 
++ /* The symbol in the kernel where the load average is found
++    is named avenrun.  */
++ 
++ #define LDAV_SYMBOL "avenrun"
++ 
++ /* Special hacks needed to make Emacs run on this system.  */
++ 
++ /*
++  *	Make the sigsetmask function go away.  Don't know what the
++  *	ramifications of this are, but doesn't seem possible to
++  *	emulate it properly anyway at this point.
++  */
++ 
++ #define sigsetmask(mask)	/* Null expansion */
++ 
++ /* setjmp and longjmp can safely replace _setjmp and _longjmp,
++    but they will run slower.  */
++ 
++ #define _setjmp setjmp
++ #define _longjmp longjmp
++ 
++ /* On USG systems the system calls are interruptable by signals
++  that the user program has elected to catch.  Thus the system call
++  must be retried in these cases.  To handle this without massive
++  changes in the source code, we remap the standard system call names
++  to names for our own functions in sysdep.c that do the system call
++  with retries. */
++ 
++ #define read sys_read
++ #define open sys_open
++ #define write sys_write
++ 
++ #define INTERRUPTABLE_OPEN
++ #define INTERRUPTABLE_IO
++ 
++ /* On USG systems these have different names */
++ 
++ #define index strchr
++ #define rindex strrchr
++ 
++ /* USG systems tend to put everything declared static
++    into the initialized data area, which becomes pure after dumping Emacs.
++    Foil this.  Emacs carefully avoids static vars inside functions.  */
++ 
++ #define static
++ 
++ /* Compiler bug bites on many systems when default ADDR_CORRECT is used.  */
++ 
++ /* #define ADDR_CORRECT(x) (x)*/
++ 
++ /* Prevent -lg from being used for debugging.  Not implemented?  */
++ 
++ #define LIBS_DEBUG
++ 
++ /* Use /lib/crtso.o instead of /lib/crt0.o */
++ 
++ /* Actually, use this for jkp's own environment */
++ 
++ #define START_FILES pre-crt0.o /usr/gnu/lib/gcc-1.39-gas/gcc-crtso.o
++ /*#define START_FILES pre-crt0.o /lib/crtso.o*/
++ 
++ /* Use termcap */
++ 
++ #define TERMCAP
++ 
++ /* use wait () for subprocesses */
++ 
++ #define WAIT_FOR_SUB
++ 
++ /* use 0x10 for start addr */
++ 
++ #define TEXT_START 0
++ 
++ #define INTERRUPT_INPUT_MINIX
++ 
++ /* use GNU a.out.gnu.h for unexec */
++ 
++ #define GNU_A_OUT
++ 
++ /* for unexec.c, we have some extra fields in a.out.gnu.h */
++ 
++ #define NS32K_MINIX

@@ -1,0 +1,359 @@
+diff -cr NH3.0-orig/include/config.h NH3.0/include/config.h
+*** NH3.0-orig/include/config.h	Wed Jul 19 06:45:32 1989
+--- NH3.0/include/config.h	Mon Feb  4 13:17:00 1991
+***************
+*** 41,47 ****
+   */
+  
+  #ifndef WIZARD		/* allow for compile-time or Makefile changes */
+! #define WIZARD  "izchak" /* the person allowed to use the -D option */
+  #endif
+  
+  #define	LOGFILE	"logfile" /* larger file for debugging purposes */
+--- 41,47 ----
+   */
+  
+  #ifndef WIZARD		/* allow for compile-time or Makefile changes */
+! #define WIZARD  "jkp" /* the person allowed to use the -D option */
+  #endif
+  
+  #define	LOGFILE	"logfile" /* larger file for debugging purposes */
+***************
+*** 148,154 ****
+  #define	SHIRT		/* Hawaiian shirt code by Steve Linhart */
+  #define THEOLOGY	/* Smarter gods - The Unknown Hacker */
+  #define SINKS		/* Kitchen sinks - Janet Walz */
+! #define COMPRESS "/usr/local/compress"	/* the location of 'compress' */
+  			/* Compressed bones / save files - Izchak Miller */
+  /* #define ZEROCOMP	/* Zero-run compression of files - Olaf Seibert */
+  			/* Use only if COMPRESS is not used */
+--- 148,154 ----
+  #define	SHIRT		/* Hawaiian shirt code by Steve Linhart */
+  #define THEOLOGY	/* Smarter gods - The Unknown Hacker */
+  #define SINKS		/* Kitchen sinks - Janet Walz */
+! #define COMPRESS "/usr/gnu/bin/compress"	/* the location of 'compress' */
+  			/* Compressed bones / save files - Izchak Miller */
+  /* #define ZEROCOMP	/* Zero-run compression of files - Olaf Seibert */
+  			/* Use only if COMPRESS is not used */
+diff -cr NH3.0-orig/include/system.h NH3.0/include/system.h
+*** NH3.0-orig/include/system.h	Tue Jun  6 05:00:44 1989
+--- NH3.0/include/system.h	Mon Feb  4 13:21:47 1991
+***************
+*** 151,162 ****
+   * If your system doesn't agree with this breakdown, you may want to change
+   * this declaration, especially if your machine treats the types differently.
+   */
+! #if defined(BSD) || defined(ULTRIX)
+  #define OLD_SPRINTF
+  E char *sprintf();
+  #else
+  E int sprintf P((char *,const char *,...));
+  #endif
+  
+  #define Sprintf	(void) sprintf
+  #define Strcat	(void) strcat
+--- 151,164 ----
+   * If your system doesn't agree with this breakdown, you may want to change
+   * this declaration, especially if your machine treats the types differently.
+   */
+! #if (defined(BSD) || defined(ULTRIX)) &&!defined(MINIX)
+  #define OLD_SPRINTF
+  E char *sprintf();
+  #else
++ #ifndef MINIX
+  E int sprintf P((char *,const char *,...));
+  #endif
++ #endif
+  
+  #define Sprintf	(void) sprintf
+  #define Strcat	(void) strcat
+***************
+*** 176,182 ****
+  
+  E struct tm *localtime P((const time_t *));
+  
+! #if (defined(ULTRIX) || defined(SYSV) || defined(MSDOS)) && !defined(AMIGA)
+  E time_t time P((time_t *));
+  #else
+  E long time P((time_t *));
+--- 178,184 ----
+  
+  E struct tm *localtime P((const time_t *));
+  
+! #if (defined(MINIX) || defined(ULTRIX) || defined(SYSV) || defined(MSDOS)) && !defined(AMIGA)
+  E time_t time P((time_t *));
+  #else
+  E long time P((time_t *));
+diff -cr NH3.0-orig/include/unixconf.h NH3.0/include/unixconf.h
+*** NH3.0-orig/include/unixconf.h	Sun Jul 16 17:17:49 1989
+--- NH3.0/include/unixconf.h	Mon Feb  4 13:16:53 1991
+***************
+*** 19,27 ****
+   * Also, the code for suspend is only given for BSD
+   */
+  
+! /* #define BSD		/* define for 4.n BSD  */
+  			/* also for relatives like SunOS */
+! #define ULTRIX		/* define for Ultrix v3.0 or higher (but not lower) */
+  			/* Use BSD for < v3.0 */
+  			/* "ULTRIX" not to be confused with "ultrix" */
+  /* #define SYSV		/* define for System V */
+--- 19,28 ----
+   * Also, the code for suspend is only given for BSD
+   */
+  
+! #define BSD		/* define for 4.n BSD  */
+  			/* also for relatives like SunOS */
+! #define MINIX
+! /*#define ULTRIX		/* define for Ultrix v3.0 or higher (but not lower) */
+  			/* Use BSD for < v3.0 */
+  			/* "ULTRIX" not to be confused with "ultrix" */
+  /* #define SYSV		/* define for System V */
+***************
+*** 36,42 ****
+  
+  /* #define PYRAMID_BUG 	/* avoid a bug on the Pyramid */
+  /* #define APOLLO	/* same for the Apollo */
+! /* #define RANDOM	/* if neither random/srandom nor lrand48/srand48
+  			   is available from your system */
+  
+  /*
+--- 37,43 ----
+  
+  /* #define PYRAMID_BUG 	/* avoid a bug on the Pyramid */
+  /* #define APOLLO	/* same for the Apollo */
+! #define RANDOM	/* if neither random/srandom nor lrand48/srand48
+  			   is available from your system */
+  
+  /*
+***************
+*** 55,61 ****
+   * A stat system call is done on the mailbox every MAILCKFREQ moves.
+   */
+  
+! #define	MAIL
+  #define	DEF_MAILREADER	"/usr/ucb/Mail"		/* or e.g. /bin/mail */
+  #define	MAILCKFREQ	50
+  
+--- 56,62 ----
+   * A stat system call is done on the mailbox every MAILCKFREQ moves.
+   */
+  
+! /*#define	MAIL*/
+  #define	DEF_MAILREADER	"/usr/ucb/Mail"		/* or e.g. /bin/mail */
+  #define	MAILCKFREQ	50
+  
+***************
+*** 75,81 ****
+   * The remainder of the file should not need to be changed.
+   */
+  
+! #if (defined(BSD) || defined(ULTRIX)) && !defined(MSDOS)
+  #include	<sys/time.h>
+  #else
+  #include	<time.h>
+--- 76,82 ----
+   * The remainder of the file should not need to be changed.
+   */
+  
+! #if (defined(BSD) || defined(ULTRIX)) && !defined(MSDOS) &&!defined(MINIX)
+  #include	<sys/time.h>
+  #else
+  #include	<time.h>
+diff -cr NH3.0-orig/src/Makefile.src NH3.0/src/Makefile.src
+*** NH3.0-orig/src/Makefile.src	Sat Jul 22 04:45:06 1989
+--- NH3.0/src/Makefile.src	Mon Feb  4 14:25:11 1991
+***************
+*** 10,15 ****
+--- 10,16 ----
+  #	'Sysatt'	-- AT&T UNIXPC, 7300, 3B1
+  #	'Systos'	-- Atari
+  #	'SysV-AT'	-- Microport 286 UNIX (put -DDUMB in CFLAGS)
++ CC = gcc
+  SYSTEM = Sysunix
+  
+  #
+***************
+*** 36,42 ****
+  # flags for debugging:
+  # CFLAGS = -g -I../include
+  
+! CFLAGS = -O -I../include
+  LFLAGS =
+  
+  # object files for makedefs
+--- 37,43 ----
+  # flags for debugging:
+  # CFLAGS = -g -I../include
+  
+! CFLAGS = -traditional -O -I../include
+  LFLAGS =
+  
+  # object files for makedefs
+***************
+*** 54,67 ****
+  # Sysatt uses shared library in lieu of this option
+  # TERMLIB = -ltermcap
+  # TERMLIB = -lcurses
+! TERMLIB = -ltermlib
+  
+  # yacc/lex programs to use to generate lev_comp.c, lev_comp.h, and lev_lex.c.
+  # if, instead of yacc/lex you have bison/flex, comment/uncomment the following.
+! YACC     = yacc
+! LEX      = lex
+! #YACC     = bison
+! #LEX      = flex
+  
+  # make NetHack
+  GAME     = nethack
+--- 55,68 ----
+  # Sysatt uses shared library in lieu of this option
+  # TERMLIB = -ltermcap
+  # TERMLIB = -lcurses
+! TERMLIB = -ltermcap
+  
+  # yacc/lex programs to use to generate lev_comp.c, lev_comp.h, and lev_lex.c.
+  # if, instead of yacc/lex you have bison/flex, comment/uncomment the following.
+! #YACC     = yacc
+! #LEX      = lex
+! YACC     = bison
+! LEX      = flex
+  
+  # make NetHack
+  GAME     = nethack
+***************
+*** 69,76 ****
+  # if you defined RANDOM in unixconf.h/pcconf.h since your system did not come
+  # with a reasonable random number generator -- also remember to get random.c
+  # into the src directory
+! # RANDOBJ = random.o
+! RANDOBJ =
+  
+  # nothing below this line should have to be changed
+  #
+--- 70,77 ----
+  # if you defined RANDOM in unixconf.h/pcconf.h since your system did not come
+  # with a reasonable random number generator -- also remember to get random.c
+  # into the src directory
+! RANDOBJ = random.o
+! #RANDOBJ =
+  
+  # nothing below this line should have to be changed
+  #
+***************
+*** 126,132 ****
+  
+  Sysunix:	$(HOBJ) Makefile
+  	@echo "Loading ..."
+! 	@$(CC) $(LFLAGS) -o $(GAME) $(HOBJ) $(TERMLIB)
+  	@touch Sysunix
+  
+  Sysxenix:	$(HOBJ) Makefile
+--- 127,133 ----
+  
+  Sysunix:	$(HOBJ) Makefile
+  	@echo "Loading ..."
+! 	$(CC) $(LFLAGS) -o $(GAME) $(HOBJ) $(TERMLIB)
+  	@touch Sysunix
+  
+  Sysxenix:	$(HOBJ) Makefile
+diff -cr NH3.0-orig/src/ioctl.c NH3.0/src/ioctl.c
+*** NH3.0-orig/src/ioctl.c	Sat Jun 24 17:40:32 1989
+--- NH3.0/src/ioctl.c	Mon Feb  4 13:36:25 1991
+***************
+*** 12,18 ****
+--- 12,22 ----
+  
+  #if defined(BSD) || defined(ULTRIX)
+  #include	<sgtty.h>
++ #ifdef MINIX
++ struct tchars ltchars, ltchars0;
++ #else
+  struct ltchars ltchars, ltchars0;
++ #endif
+  #else
+  #include	<termio.h>	/* also includes part of <sgtty.h> */
+  struct termio termio;
+***************
+*** 21,28 ****
+--- 25,37 ----
+  void
+  getioctls() {
+  #if defined(BSD) || defined(ULTRIX)
++ #ifdef MINIX
++ 	(void) ioctl(fileno(stdin), (int) TIOCGETC, (char *) &ltchars);
++ 	(void) ioctl(fileno(stdin), (int) TIOCSETC, (char *) &ltchars0);
++ #else
+  	(void) ioctl(fileno(stdin), (int) TIOCGLTC, (char *) &ltchars);
+  	(void) ioctl(fileno(stdin), (int) TIOCSLTC, (char *) &ltchars0);
++ #endif
+  #else
+  	(void) ioctl(fileno(stdin), (int) TCGETA, &termio);
+  #endif
+***************
+*** 31,37 ****
+--- 40,50 ----
+  void
+  setioctls() {
+  #if defined(BSD) || defined(ULTRIX)
++ #ifdef MINIX
++ 	(void) ioctl(fileno(stdin), (int) TIOCSETC, (char *) &ltchars);
++ #else
+  	(void) ioctl(fileno(stdin), (int) TIOCSLTC, (char *) &ltchars);
++ #endif
+  #else
+  	/* Now modified to run under Sys V R3.	- may have to be #ifdef'ed */
+  	(void) ioctl(fileno(stdin), (int) TCSETAW, &termio);
+diff -cr NH3.0-orig/src/lev_lex.c NH3.0/src/lev_lex.c
+*** NH3.0-orig/src/lev_lex.c	Sat Jul 22 04:49:57 1989
+--- NH3.0/src/lev_lex.c	Mon Feb  4 14:01:36 1991
+***************
+*** 146,151 ****
+--- 146,152 ----
+  	{ yylval.i=W_WEST; return DIRECTION; }
+  break;
+  case 31:
++ # define RANDOM_TYPE 279
+  	{ yylval.i = -1; return RANDOM_TYPE; }
+  break;
+  case 32:
+diff -cr NH3.0-orig/src/pager.c NH3.0/src/pager.c
+*** NH3.0-orig/src/pager.c	Sat Jul 15 22:38:10 1989
+--- NH3.0/src/pager.c	Mon Feb  4 13:42:26 1991
+***************
+*** 13,19 ****
+  #ifndef TOS
+  #include <signal.h>
+  #endif
+! #if defined(BSD) || defined(ULTRIX)
+  #include <sys/wait.h>
+  #endif
+  
+--- 13,19 ----
+  #ifndef TOS
+  #include <signal.h>
+  #endif
+! #if (defined(BSD) || defined(ULTRIX)) &&!defined(MINIX)
+  #include <sys/wait.h>
+  #endif
+  
+diff -cr NH3.0-orig/src/termcap.c NH3.0/src/termcap.c
+*** NH3.0-orig/src/termcap.c	Sat Jul 15 15:06:19 1989
+--- NH3.0/src/termcap.c	Mon Feb  4 13:56:41 1991
+***************
+*** 8,14 ****
+  #define MONATTK_H
+  #include "hack.h"	/* for ROWNO, COLNO, *HI, *HE, *AS, *AE */
+  
+! #if !defined(SYSV) || defined(TOS) || defined(UNIXPC)
+  # ifndef LINT
+  extern			/* it is defined in libtermlib (libtermcap) */
+  # endif
+--- 8,14 ----
+  #define MONATTK_H
+  #include "hack.h"	/* for ROWNO, COLNO, *HI, *HE, *AS, *AE */
+  
+! #if (!defined(SYSV) || defined(TOS) || defined(UNIXPC)) && !defined(MINIX)
+  # ifndef LINT
+  extern			/* it is defined in libtermlib (libtermcap) */
+  # endif

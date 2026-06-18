@@ -1,0 +1,20 @@
+                     ASC-88 SCSI Manager 3 documentation
+
+File Descriptions:
+------------------
+
+     ASC_MODE.EXE  - utility for changing various
+                     ASC-88 host adapter parameters, eg. Host ID.
+                     (see ASC-88 User's Manual)
+
+     SCSITEST.COM  - single screen utility for issuing single SCSI commands
+                     and viewing data.  It includes a psuedo logic analyser
+                     capability for seeing the current condition of SCSI
+                     bus signals.
+
+     SCSI.HLP      - help file for SCSITEST.COM.
+
+     SCSI_MAP.COM  - monitors and displays entire SCSI address matrix showing
+                     devices that are present on the bus.  Ideal for locating
+                     device IDs.
+

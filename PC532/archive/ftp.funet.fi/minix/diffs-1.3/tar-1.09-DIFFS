@@ -1,0 +1,336 @@
+diff -cr tar-1.09.orig/Makefile tar-1.09/Makefile
+*** tar-1.09.orig/Makefile	Thu Oct  4 16:29:28 1990
+--- tar-1.09/Makefile	Mon Dec  3 21:14:49 1990
+***************
+*** 29,44 ****
+  #O = o
+  
+  # Berserkeley version
+! DEFS = -DBSD42
+! LOCAL_SRC = getdate.y  rtape_lib.c
+! LOCAL_OBJ = getdate.$O rtape_lib.$O
+! LDFLAGS =
+! LIBS =
+! LINT = lint
+! LINTFLAGS = -abchx
+! DEF_AR_FILE = \"/dev/rmt8\"
+! DEFBLOCKING = 20
+! O = o
+  
+  # USG version
+  # Add -DNDIR to DEFS if your system uses ndir.h instead of dirent.h
+--- 29,44 ----
+  #O = o
+  
+  # Berserkeley version
+! #DEFS = -DBSD42
+! #LOCAL_SRC = getdate.y  rtape_lib.c
+! #LOCAL_OBJ = getdate.$O rtape_lib.$O
+! #LDFLAGS =
+! #LIBS =
+! #LINT = lint
+! #LINTFLAGS = -abchx
+! #DEF_AR_FILE = \"/dev/rmt8\"
+! #DEFBLOCKING = 20
+! #O = o
+  
+  # USG version
+  # Add -DNDIR to DEFS if your system uses ndir.h instead of dirent.h
+***************
+*** 101,117 ****
+  
+  # V7 version
+  # Pick open3 emulation or nonexistence.  See open3.h, port.c.
+! ##DEFS = -DV7 -DEMUL_OPEN3 -Dvoid=int
+! ##DEFS = -DV7 -DNO_OPEN3 -Dvoid=int
+! #LOCAL_SRC =  getdate.y rtape_lib.c
+! #LOCAL_OBJ =  getdate.$O rtape_lib.$O
+! #LDFLAGS =
+! #LIBS = -lndir
+! #LINT = lint
+! #LINTFLAGS = -abchx
+! #DEF_AR_FILE = \"/dev/rmt8\"
+! #DEFBLOCKING = 20
+! #O = o
+  
+  # Minix version
+  # No lint, so no lintflags.  Default file is stdin/out.  (Minix "tar"
+--- 101,117 ----
+  
+  # V7 version
+  # Pick open3 emulation or nonexistence.  See open3.h, port.c.
+! DEFS = -DV7 -DUSG -DEMUL_OPEN3 -DMINIX -DDAYLIGHT_MISSING
+! #DEFS = -DV7 -DNO_OPEN3 -Dvoid=int
+! LOCAL_SRC =  getdate.y rtape_lib.c
+! LOCAL_OBJ =  getdate.$O rtape_lib.$O
+! LDFLAGS =
+! LIBS =
+! LINT = lint
+! LINTFLAGS = -abchx
+! DEF_AR_FILE = \"-\"
+! DEFBLOCKING = 20
+! O = o
+  
+  # Minix version
+  # No lint, so no lintflags.  Default file is stdin/out.  (Minix "tar"
+***************
+*** 158,164 ****
+  #DEFBLOCKING = 20
+  #O = o
+  
+! #CC = gcc
+  #TARGET_ARCH = 
+  
+  CFLAGS = $(COPTS) $(ALLDEFS)
+--- 158,164 ----
+  #DEFBLOCKING = 20
+  #O = o
+  
+! CC = gcc
+  #TARGET_ARCH = 
+  
+  CFLAGS = $(COPTS) $(ALLDEFS)
+***************
+*** 166,174 ****
+  	-DDEF_AR_FILE=$(DEF_AR_FILE) \
+  	-DDEFBLOCKING=$(DEFBLOCKING)
+  # next line for Debugging
+! COPTS = -g
+  # next line for Production
+! #COPTS = -O
+  
+  # Add things here like readdir that aren't in your standard libraries.
+  # (E.g. MSDOS needs msd_dir.c, msd_dir.obj)
+--- 166,174 ----
+  	-DDEF_AR_FILE=$(DEF_AR_FILE) \
+  	-DDEFBLOCKING=$(DEFBLOCKING)
+  # next line for Debugging
+! #COPTS = -g
+  # next line for Production
+! COPTS = -O
+  
+  # Add things here like readdir that aren't in your standard libraries.
+  # (E.g. MSDOS needs msd_dir.c, msd_dir.obj)
+***************
+*** 176,182 ****
+  SUBOBJ=	
+  
+  # Destination directory and installation program for make install
+! DESTDIR = /usr/local
+  INSTALL = cp
+  RM = rm -f
+  
+--- 176,182 ----
+  SUBOBJ=	
+  
+  # Destination directory and installation program for make install
+! DESTDIR = /usr/gnu/bin
+  INSTALL = cp
+  RM = rm -f
+  
+diff -cr tar-1.09.orig/buffer.c tar-1.09/buffer.c
+*** tar-1.09.orig/buffer.c	Thu Aug 16 15:29:33 1990
+--- tar-1.09/buffer.c	Mon Dec  3 20:53:55 1990
+***************
+*** 32,38 ****
+--- 32,40 ----
+  #include <signal.h>
+  
+  #ifndef MSDOS
++ #ifndef MINIX
+  #include <sys/ioctl.h>
++ #endif
+  #if !defined(USG) || defined(HAVE_MTIO)
+  #include <sys/mtio.h>
+  #endif
+diff -cr tar-1.09.orig/create.c tar-1.09/create.c
+*** tar-1.09.orig/create.c	Thu Sep  6 19:24:00 1990
+--- tar-1.09/create.c	Mon Dec  3 21:01:22 1990
+***************
+*** 68,79 ****
+--- 68,85 ----
+  #endif
+  #endif
+  
++ #ifndef MAXNAMLEN
++ #define MAXNAMLEN 1024
++ #endif
++ 
+  #ifndef DP_NAMELEN
+  #define DP_NAMELEN(x)	(x)->d_namlen
+  #endif
+  
+  #ifdef USG
++ #ifndef MINIX
+  #include <sys/sysmacros.h>	/* major() and minor() defined here */
++ #endif
+  #endif
+  
+  /*
+diff -cr tar-1.09.orig/diffarch.c tar-1.09/diffarch.c
+*** tar-1.09.orig/diffarch.c	Thu Sep  6 19:24:01 1990
+--- tar-1.09/diffarch.c	Mon Dec  3 20:54:49 1990
+***************
+*** 35,41 ****
+--- 35,43 ----
+  #endif
+  
+  #ifndef MSDOS
++ #ifndef MINIX
+  #include <sys/ioctl.h>
++ #endif
+  #if !defined(USG) || defined(HAVE_MTIO)
+  #include <sys/mtio.h>
+  #endif
+diff -cr tar-1.09.orig/getdate.y tar-1.09/getdate.y
+*** tar-1.09.orig/getdate.y	Wed Sep 19 17:31:35 1990
+--- tar-1.09/getdate.y	Mon Dec  3 21:17:37 1990
+***************
+*** 7,13 ****
+  
+  /* #include "defs.h" JF not used any more */
+  #include <sys/types.h>
+! #ifdef USG
+  struct timeb
+  {
+  	time_t	time;
+--- 7,13 ----
+  
+  /* #include "defs.h" JF not used any more */
+  #include <sys/types.h>
+! #if defined(USG) &&  !defined(MINIX)
+  struct timeb
+  {
+  	time_t	time;
+***************
+*** 610,616 ****
+--- 610,620 ----
+  ftime(timeb)
+  struct timeb *timeb;
+  {
++ #ifdef MINIX
++ 	long timezone = 2 * 60 * 60;
++ #else
+  	extern long timezone;
++ #endif
+  #ifndef DAYLIGHT_MISSING	/* Not all non-BSD libraries have `daylight'. */
+  	extern int daylight;
+  #endif
+diff -cr tar-1.09.orig/gnu.c tar-1.09/gnu.c
+*** tar-1.09.orig/gnu.c	Thu Oct 11 15:24:27 1990
+--- tar-1.09/gnu.c	Mon Dec  3 21:10:55 1990
+***************
+*** 42,47 ****
+--- 42,54 ----
+  
+  extern VOIDSTAR malloc();
+  
++ /*
++  * If there are no symbolic links, there is no lstat().  Use stat().
++  */
++ #ifndef S_IFLNK
++ #define lstat stat
++ #endif
++ 
+  #include "tar.h"
+  
+  extern time_t new_time;
+diff -cr tar-1.09.orig/list.c tar-1.09/list.c
+*** tar-1.09.orig/list.c	Thu Sep  6 16:36:12 1990
+--- tar-1.09/list.c	Mon Dec  3 20:54:14 1990
+***************
+*** 35,41 ****
+--- 35,43 ----
+  #endif	/* MSDOS */
+  
+  #ifdef USG
++ #ifndef MINIX
+  #include <sys/sysmacros.h>	/* major() and minor() defined here */
++ #endif
+  #endif
+  
+  char *ctime();				/* From libc.a */
+diff -cr tar-1.09.orig/port.c tar-1.09/port.c
+*** tar-1.09.orig/port.c	Fri Jul  6 17:37:53 1990
+--- tar-1.09/port.c	Mon Dec  3 21:04:45 1990
+***************
+*** 104,109 ****
+--- 104,111 ----
+  
+  #ifdef MINIX
+  #define WANT_BZERO
++ #define WANT_FTRUNCATE
++ #define WANT_MKDIR
+  #endif
+  
+  #ifdef MSDOS
+***************
+*** 376,381 ****
+--- 378,384 ----
+  }
+  #endif
+  
++ #if 0
+  #ifdef WANT_BZERO
+  /* Minix has bcopy but not bzero, and no memset.  Thanks, Andy. */
+  void
+***************
+*** 509,514 ****
+--- 512,518 ----
+  	free(fnbuffer);
+  	return -1;
+  }
++ #endif
+  #endif
+  
+  
+diff -cr tar-1.09.orig/rtape_lib.c tar-1.09/rtape_lib.c
+*** tar-1.09.orig/rtape_lib.c	Tue Jan 23 19:22:26 1990
+--- tar-1.09/rtape_lib.c	Mon Dec  3 21:01:15 1990
+***************
+*** 76,82 ****
+   *	WRITE --- Return the number of the write side file descriptor
+   */
+  
+! #define RMTIOCTL	1
+  /* #define USE_REXEC	1	/* rexec code courtesy of Dan Kegel, srs!dan */
+  
+  #include <stdio.h>
+--- 76,82 ----
+   *	WRITE --- Return the number of the write side file descriptor
+   */
+  
+! /*#define RMTIOCTL	1*/
+  /* #define USE_REXEC	1	/* rexec code courtesy of Dan Kegel, srs!dan */
+  
+  #include <stdio.h>
+diff -cr tar-1.09.orig/tar.c tar-1.09/tar.c
+*** tar-1.09.orig/tar.c	Tue Oct 16 14:58:20 1990
+--- tar-1.09/tar.c	Mon Dec  3 21:05:26 1990
+***************
+*** 120,126 ****
+--- 120,128 ----
+  void	options();
+  
+  #ifndef S_IFLNK
++ #ifndef MINIX
+  #define lstat stat
++ #endif
+  #endif
+  
+  #ifndef DEFBLOCKING
+diff -cr tar-1.09.orig/update.c tar-1.09/update.c
+*** tar-1.09.orig/update.c	Fri Jul  6 17:08:45 1990
+--- tar-1.09/update.c	Mon Dec  3 20:54:33 1990
+***************
+*** 40,46 ****
+--- 40,48 ----
+  #endif
+  
+  #ifdef USG
++ #ifndef MINIX
+  #include <sys/sysmacros.h>	/* major() and minor() defined here */
++ #endif
+  #endif
+  
+  /*

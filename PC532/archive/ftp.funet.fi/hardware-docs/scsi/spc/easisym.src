@@ -1,0 +1,145 @@
+;**********************************************************
+;*	This File contains the value of constants used in *
+;*	PRINTER.SRC to supply immediate data values.These *
+;*	are written in lower case to distinguish them 	  *
+;*	from the address constants stored in PRNSYM.SRC.  *
+;*							  *
+;**********************************************************
+
+true:	EQU	1
+false:	EQU	0
+dont_care: EQU	0
+led_on:	EQU	8
+
+;*****************************
+;*        SCSI Phases        *
+;*****************************
+
+data_out:	EQU	0
+data_in:	EQU	1
+command_out:	EQU	2
+status_in:	EQU	3
+message_out:	EQU	6
+message_in:	EQU	7
+
+;*****************************
+;*	Register bits	     *
+;*****************************
+
+;*	TCR	*
+
+as_io:	EQU	1
+as_cd:	EQU	2
+as_msg:	EQU	4
+req:	EQU	8
+ck_eedma:	EQU	080h
+
+;*	ICR	*
+
+as_dbus:	EQU	1		;* The prefix as_ should be read as assert *
+as_atn:	EQU	2
+as_sel:	EQU	4
+as_bsy:	EQU	8
+as_ack:	EQU	010h
+la:	EQU	020h
+mode_e:	EQU	040h
+aip:	EQU	040h
+as_rst:	EQU	080h
+
+;*	MR2	*
+
+en_arb:	EQU	1		;* The prefix en_ should be read as enable *
+en_dma:	EQU	2
+en_bsyint:	EQU	4
+en_eop:	EQU	8
+en_pint:	EQU	010h
+en_pchk:	EQU	020h
+target:	EQU	040h
+en_blk:	EQU	080h
+;
+single_mode_dma:EQU 07ah	;* This is the combinations of bits required *
+blk_mode_dma:	EQU 0fah	;* to carry out these tasks		     *
+;
+
+;*	CSB	*
+
+ck_dbp:	EQU	1		;* The prefix ck_ should be read as check  *
+ck_sel:	EQU	2
+ck_io:	EQU	4
+ck_cd:	EQU	8
+ck_msg:	EQU	010h
+ck_req:	EQU	020h
+ck_bsy: EQU	040h
+ck_rst:	EQU	080h
+
+;*	BSR	*
+
+ck_ack:	EQU	1
+ck_atn:	EQU	2
+bsy_int:EQU     4
+phase_int:	EQU	8
+interrupt:	EQU	010h
+sper:	EQU	020h
+ck_drq:	EQU	040h
+edma:	EQU	080h
+
+;*****************************
+;*	   EMR		     *
+;*****************************
+
+en_eearb:	EQU	1
+no_op:	EQU	0
+rpi:	EQU	2
+sdir:	EQU	4
+isr:	EQU	6
+imr:	EQU	6
+loop:	EQU	8
+spol:	EQU	010h
+mpol:	EQU	020h
+mpen:	EQU	040h
+en_aphs:	EQU	080h
+
+;*****************************
+;*	  ISR & IMR	     *
+;*****************************
+
+earb:	EQU	1
+esel:	EQU	2
+ebsy:	EQU	4
+aphs:	EQU	8
+dphs:	EQU	010h
+eedma:	EQU	020h
+mpe:	EQU	040h
+esper:	EQU	080h
+
+;*****************************
+;*      Printer Signals      *
+;*****************************
+
+printer_ack:	EQU	1
+printer_busy:	EQU	2
+printer_pe:	EQU	4
+printer_error:	EQU	8
+
+printer_strobe:	EQU	1
+printer_select:	EQU	2
+printer_init:	EQU	4
+
+;****************************
+;*	DMA Signals	    *
+;****************************
+
+single_mode:	EQU 040h
+block_mode:	EQU 080h
+write_transfer:	EQU 4
+read_transfer:	EQU 8
+channel0:	EQU 0eh
+
+;**************************
+;*	Miscellaneous	  *
+;**************************
+
+jump:	EQU	0c3h
+test1:	EQU	054h
+test2:	EQU	0aah
+

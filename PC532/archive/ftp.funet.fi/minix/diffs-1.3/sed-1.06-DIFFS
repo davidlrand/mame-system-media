@@ -1,0 +1,42 @@
+diff -cr sed-1.06.orig/Makefile sed-1.06/Makefile
+*** sed-1.06.orig/Makefile	Thu Mar 23 23:09:42 1989
+--- sed-1.06/Makefile	Tue Dec  4 14:59:27 1990
+***************
+*** 21,27 ****
+  SRC = README sed.c regex.c glob.c regex.h Makefile
+  # on SysV systems, comment out the next line and comment out the one below it
+  #CFLAGS = -g -DUSG -I.
+! CFLAGS = -g -I.
+  # if your machine doesn't have vfprintf() add -DNO_VFPRINTF to the above lines
+  
+  sed:	$(OBJS)
+--- 21,28 ----
+  SRC = README sed.c regex.c glob.c regex.h Makefile
+  # on SysV systems, comment out the next line and comment out the one below it
+  #CFLAGS = -g -DUSG -I.
+! CC = gcc
+! CFLAGS = -O -DUSG -I. -DUSGr3
+  # if your machine doesn't have vfprintf() add -DNO_VFPRINTF to the above lines
+  
+  sed:	$(OBJS)
+diff -cr sed-1.06.orig/sed.c sed-1.06/sed.c
+*** sed-1.06.orig/sed.c	Wed Sep 27 23:40:40 1989
+--- sed-1.06/sed.c	Tue Dec  4 14:58:19 1990
+***************
+*** 1503,1510 ****
+  #include "stdarg.h"
+  
+  /* Print an error message and exit */
+! panic(str)
+! char *str;
+  {
+  	va_list iggy;
+  
+--- 1503,1509 ----
+  #include "stdarg.h"
+  
+  /* Print an error message and exit */
+! panic(char *str, ...)
+  {
+  	va_list iggy;
+  

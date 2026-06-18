@@ -1,0 +1,1560 @@
+cpu		1	+cpu_a<22>
+cpu		2	+cpu_a<21>
+cpu		3	+cpu_a<20>
+cpu		4	+cpu_a<19>
+cpu		5	+cpu_a<18>
+cpu		6	+cpu_a<17>
+cpu		7	+cpu_a<16>
+cpu		8	+cpu_ad<15>
+cpu		9	+cpu_ad<14>
+cpu		10	+cpu_ad<13>
+cpu		11	+cpu_ad<12>
+cpu		12	+cpu_ad<11>
+cpu		13	+cpu_ad<10>
+cpu		14	+cpu_ad<9>
+cpu		15	+cpu_ad<8>
+cpu		16	+cpu_ad<7>
+cpu		17	+cpu_ad<6>
+cpu		18	+cpu_ad<5>
+cpu		19	+cpu_ad<4>
+cpu		20	+cpu_ad<3>
+cpu		21	+cpu_ad<2>
+cpu		22	+cpu_ad<1>
+cpu		23	+cpu_ad<0>
+cpu		24	gnd	!connect to cpu.25 -- not gnd plane
+cpu		25	gnd
+cpu		26	+phi1	!short
+cpu		27	+phi2	!short
+cpu		28	+rdy
+cpu		29	+bbg
+cpu		30	-hold
+cpu		31	-hlda_mmu
+cpu		32	-hbe
+cpu		33	-flt
+cpu		34	-abt
+cpu		35	-spc
+cpu		36	-supervisor
+cpu		37	-ads
+cpu		38	-ddin
+cpu		39	-pfs
+cpu		40	+st3
+cpu		41	+st2
+cpu		42	+st1
+cpu		43	+st0
+cpu		44	n/c		!-ilo
+cpu		45	-nmi
+cpu		46	-int
+cpu		47	+cpu_a<23>
+cpu		48	+5v
+bbg_cap1	1	+bbg
+bbg_cap1	2	gnd
+bbg_cap2	1	+bbg		!-pin
+bbg_cap2	2	gnd		!+pin
+mmu		1	+cpu_a<22>
+mmu		2	+cpu_a<21>
+mmu		3	+cpu_a<20>
+mmu		4	+cpu_a<19>
+mmu		5	+cpu_a<18>
+mmu		6	+cpu_a<17>
+mmu		7	+cpu_a<16>
+mmu		8	+cpu_ad<15>
+mmu		9	+cpu_ad<14>
+mmu		10	+cpu_ad<13>
+mmu		11	+cpu_ad<12>
+mmu		12	+cpu_ad<11>
+mmu		13	+cpu_ad<10>
+mmu		14	+cpu_ad<9>
+mmu		15	+cpu_ad<8>
+mmu		16	+cpu_ad<7>
+mmu		17	+cpu_ad<6>
+mmu		18	+cpu_ad<5>
+mmu		19	+cpu_ad<4>
+mmu		20	+cpu_ad<3>
+mmu		21	+cpu_ad<2>
+mmu		22	+cpu_ad<1>
+mmu		23	+cpu_ad<0>
+mmu		24	gnd		!attach to pin 25 -- not gnd plane
+mmu		25	gnd
+mmu		26	+phi1
+mmu		27	+phi2
+mmu		28	+rdy
+mmu		29	-system_reset
+mmu		30	-hold
+mmu		31	-hlda_mmu
+mmu		32	-hlda
+mmu		33	-flt
+mmu		34	-abt
+mmu		35	-spc
+mmu		36	-supervisor
+mmu		37	-ads
+mmu		38	-ddin
+mmu		39	-pfs
+mmu		40	+st3
+mmu		41	+st2
+mmu		42	+st1
+mmu		43	+st0
+mmu		44	-pav
+mmu		45	n/c		!-mmu_int
+mmu		46	+mmu_a24
+mmu		47	+cpu_a<23>
+mmu		48	+5v
+fpu		1	+cpu_ad<10>
+fpu		2	+cpu_ad<9>
+fpu		3	+cpu_ad<8>
+fpu		4	+cpu_ad<7>
+fpu		5	+cpu_ad<6>
+fpu		6	+cpu_ad<5>
+fpu		7	+cpu_ad<4>
+fpu		8	+cpu_ad<3>
+fpu		9	+cpu_ad<2>
+fpu		10	+cpu_ad<1>
+fpu		11	+cpu_ad<0>
+fpu		12	gnd
+fpu		13	gnd
+fpu		14	+cttl
+fpu		15	-system_reset
+fpu		16	+cpu_ad<15>
+fpu		17	+cpu_ad<14>
+fpu		18	+cpu_ad<13>
+fpu		19	+cpu_ad<12>
+fpu		20	+cpu_ad<11>
+fpu		21	-spc
+fpu		22	+st1
+fpu		23	+st0
+fpu		24	+5v
+icu		1	+uart1_ir	!ir15
+icu		2	-int
+icu		3	+st1		!better: (+st1)(-adr<6>)
+icu		4	+uart2_ir	!ir14
+icu		5	+fdc_ir		!ir12
+icu		6	+scsi_ir	!ir10
+icu		7	-dma_ir		!ir8
+icu		8	n/c		!ir6
+icu		9	n/c		!ir4
+icu		10	n/c		!ir2
+icu		11	n/c		!ir0
+icu		12	+io_data<7>
+icu		13	+io_data<6>
+icu		14	+io_data<5>
+icu		15	+io_data<4>
+icu		16	+io_data<3>
+icu		17	+io_data<2>
+icu		18	+io_data<1>
+icu		19	+io_data<0>
+icu		20	gnd
+icu		21	-io_cs_fffe
+icu		22	+adr<1>
+icu		23	+adr<2>
+icu		24	+adr<3>
+icu		25	+adr<4>
+icu		26	+adr<5>
+icu		27	-system_reset
+icu		28	gnd		!-hbe
+icu		29	n/c		!count output
+icu		30	-rd
+icu		31	-wr
+icu		32	+cttl
+icu		33	n/c		!ir1
+icu		34	n/c		!ir3
+icu		35	n/c		!ir5
+icu		36	n/c		!ir7
+icu		37	n/c		!ir9
+icu		38	n/c		!ir11
+icu		39	n/c		!ir13
+icu		40	+5v
+tcu		1	-dbe
+tcu		2	gnd
+tcu		3	-rd
+tcu		4	-wr
+tcu		5	-ddin
+tcu		6	-pav
+tcu		7	-rst_sw
+tcu		8	-system_reset
+tcu		9	+rdy
+tcu		10	+phi2
+tcu		11	+phi1
+tcu		12	gnd
+tcu		13	+tcu_clk_in	!+xin
+tcu		14	n/c		!+xout
+tcu		15	+fclk
+tcu		16	+cttl
+tcu		17	-tso
+tcu		18	+tie_high	!-wait8
+tcu		19	+tie_high	!-wait4
+tcu		20	-eprom_cs	!-wait2
+tcu		21	+tie_high	!-wait1
+tcu		22	-cwait
+tcu		23	-io_cs_fff0	!-per (-uart_cs)
+tcu		24	+5v
+rst_sw		1	gnd
+rst_sw		2	-rst_sw
+rst_cap		1	gnd
+rst_cap		2	-rst_sw
+rst_diode	1	+5v
+rst_diode	2	-rst_sw
+rst_res		1	+5v
+rst_res		2	-rst_sw
+tcu_osc		1	n/c
+tcu_osc		7	gnd
+tcu_osc		8	+tcu_clk_in	!actually pin1 on HP clock
+tcu_osc		14	+5v
+ph1_cap		1	gnd
+ph1_cap		2	+phi1
+ph2_cap		1	gnd
+ph2_cap		2	+phi2
+eprom_e		1	+5v		!vpp
+eprom_e		2	+adr<13>
+eprom_e		3	+adr<8>
+eprom_e		4	+adr<7>
+eprom_e		5	+adr<6>
+eprom_e		6	+adr<5>
+eprom_e		7	+adr<4>
+eprom_e		8	+adr<3>
+eprom_e		9	+adr<2>
+eprom_e		10	+adr<1>
+eprom_e		11	+mem_data<0>
+eprom_e		12	+mem_data<1>
+eprom_e		13	+mem_data<2>
+eprom_e		14	gnd
+eprom_e		15	+mem_data<3>
+eprom_e		16	+mem_data<4>
+eprom_e		17	+mem_data<5>
+eprom_e		18	+mem_data<6>
+eprom_e		19	+mem_data<7>
+eprom_e		20	-eprom_cs
+eprom_e		21	+adr<11>
+eprom_e		22	-rd		!-oe
+eprom_e		23	+adr<12>
+eprom_e		24	+adr<10>
+eprom_e		25	+adr<9>
+eprom_e		26	+adr<14>
+eprom_e		27	+eprom_a15
+eprom_e		28	+5v
+eprom_o		1	+5v		!vpp
+eprom_o		2	+adr<13>
+eprom_o		3	+adr<8>
+eprom_o		4	+adr<7>
+eprom_o		5	+adr<6>
+eprom_o		6	+adr<5>
+eprom_o		7	+adr<4>
+eprom_o		8	+adr<3>
+eprom_o		9	+adr<2>
+eprom_o		10	+adr<1>
+eprom_o		11	+mem_data<8>
+eprom_o		12	+mem_data<9>
+eprom_o		13	+mem_data<10>
+eprom_o		14	gnd
+eprom_o		15	+mem_data<11>
+eprom_o		16	+mem_data<12>
+eprom_o		17	+mem_data<13>
+eprom_o		18	+mem_data<14>
+eprom_o		19	+mem_data<15>
+eprom_o		20	-eprom_cs
+eprom_o		21	+adr<11>
+eprom_o		22	-rd		!-oe
+eprom_o		23	+adr<12>
+eprom_o		24	+adr<10>
+eprom_o		25	+adr<9>
+eprom_o		26	+adr<14>
+eprom_o		27	+eprom_a15
+eprom_o		28	+5v
+sram_e		1	+adr<15>
+sram_e		2	+adr<13>
+sram_e		3	+adr<8>
+sram_e		4	+adr<7>
+sram_e		5	+adr<6>
+sram_e		6	+adr<5>
+sram_e		7	+adr<4>
+sram_e		8	+adr<3>
+sram_e		9	+adr<2>
+sram_e		10	+adr<1>
+sram_e		11	+mem_data<0>
+sram_e		12	+mem_data<1>
+sram_e		13	+mem_data<2>
+sram_e		14	gnd
+sram_e		15	+mem_data<3>
+sram_e		16	+mem_data<4>
+sram_e		17	+mem_data<5>
+sram_e		18	+mem_data<6>
+sram_e		19	+mem_data<7>
+sram_e		20	-sram_cs
+sram_e		21	+adr<11>
+sram_e		22	-rd		!-oe
+sram_e		23	+adr<12>
+sram_e		24	+adr<10>
+sram_e		25	+adr<9>
+sram_e		26	+adr<14>
+sram_e		27	-wr_e		!(-wr)+(+adr<0>)
+sram_e		28	+5v
+sram_o		1	+adr<15>
+sram_o		2	+adr<13>
+sram_o		3	+adr<8>
+sram_o		4	+adr<7>
+sram_o		5	+adr<6>
+sram_o		6	+adr<5>
+sram_o		7	+adr<4>
+sram_o		8	+adr<3>
+sram_o		9	+adr<2>
+sram_o		10	+adr<1>
+sram_o		11	+mem_data<8>
+sram_o		12	+mem_data<9>
+sram_o		13	+mem_data<10>
+sram_o		14	gnd
+sram_o		15	+mem_data<11>
+sram_o		16	+mem_data<12>
+sram_o		17	+mem_data<13>
+sram_o		18	+mem_data<14>
+sram_o		19	+mem_data<15>
+sram_o		20	-sram_cs
+sram_o		21	+adr<11>
+sram_o		22	-rd		!-oe
+sram_o		23	+adr<12>
+sram_o		24	+adr<10>
+sram_o		25	+adr<9>
+sram_o		26	+adr<14>
+sram_o		27	-wr_o		!(-wr)+(-hbe)
+sram_o		28	+5v
+mem_data_xcv_e	1	-ddin_buf	!+mem_data_out
+mem_data_xcv_e	2	+cpu_ad<0>
+mem_data_xcv_e	3	+cpu_ad<1>
+mem_data_xcv_e	4	+cpu_ad<2>
+mem_data_xcv_e	5	+cpu_ad<3>
+mem_data_xcv_e	6	+cpu_ad<4>
+mem_data_xcv_e	7	+cpu_ad<5>
+mem_data_xcv_e	8	+cpu_ad<6>
+mem_data_xcv_e	9	+cpu_ad<7>
+mem_data_xcv_e	10	gnd
+mem_data_xcv_e	11	+mem_data<7>
+mem_data_xcv_e	12	+mem_data<6>
+mem_data_xcv_e	13	+mem_data<5>
+mem_data_xcv_e	14	+mem_data<4>
+mem_data_xcv_e	15	+mem_data<3>
+mem_data_xcv_e	16	+mem_data<2>
+mem_data_xcv_e	17	+mem_data<1>
+mem_data_xcv_e	18	+mem_data<0>
+mem_data_xcv_e	19	-mem_data_oe
+mem_data_xcv_e	20	+5v
+mem_data_xcv_o	1	-ddin_buf	!+mem_data_out
+mem_data_xcv_o	2	+cpu_ad<8>
+mem_data_xcv_o	3	+cpu_ad<9>
+mem_data_xcv_o	4	+cpu_ad<10>
+mem_data_xcv_o	5	+cpu_ad<11>
+mem_data_xcv_o	6	+cpu_ad<12>
+mem_data_xcv_o	7	+cpu_ad<13>
+mem_data_xcv_o	8	+cpu_ad<14>
+mem_data_xcv_o	9	+cpu_ad<15>
+mem_data_xcv_o	10	gnd
+mem_data_xcv_o	11	+mem_data<15>
+mem_data_xcv_o	12	+mem_data<14>
+mem_data_xcv_o	13	+mem_data<13>
+mem_data_xcv_o	14	+mem_data<12>
+mem_data_xcv_o	15	+mem_data<11>
+mem_data_xcv_o	16	+mem_data<10>
+mem_data_xcv_o	17	+mem_data<9>
+mem_data_xcv_o	18	+mem_data<8>
+mem_data_xcv_o	19	-mem_data_oe
+mem_data_xcv_o	20	+5v
+io_data_xcv_e	1	-ddin_buf	!+io_data_out
+io_data_xcv_e	2	+cpu_ad<0>
+io_data_xcv_e	3	+cpu_ad<1>
+io_data_xcv_e	4	+cpu_ad<2>
+io_data_xcv_e	5	+cpu_ad<3>
+io_data_xcv_e	6	+cpu_ad<4>
+io_data_xcv_e	7	+cpu_ad<5>
+io_data_xcv_e	8	+cpu_ad<6>
+io_data_xcv_e	9	+cpu_ad<7>
+io_data_xcv_e	10	gnd
+io_data_xcv_e	11	+io_data<7>
+io_data_xcv_e	12	+io_data<6>
+io_data_xcv_e	13	+io_data<5>
+io_data_xcv_e	14	+io_data<4>
+io_data_xcv_e	15	+io_data<3>
+io_data_xcv_e	16	+io_data<2>
+io_data_xcv_e	17	+io_data<1>
+io_data_xcv_e	18	+io_data<0>
+io_data_xcv_e	19	-io_edata_oe
+io_data_xcv_e	20	+5v
+io_data_xcv_o	1	-ddin_buf	!+io_data_out
+io_data_xcv_o	2	+cpu_ad<8>
+io_data_xcv_o	3	+cpu_ad<9>
+io_data_xcv_o	4	+cpu_ad<10>
+io_data_xcv_o	5	+cpu_ad<11>
+io_data_xcv_o	6	+cpu_ad<12>
+io_data_xcv_o	7	+cpu_ad<13>
+io_data_xcv_o	8	+cpu_ad<14>
+io_data_xcv_o	9	+cpu_ad<15>
+io_data_xcv_o	10	gnd
+io_data_xcv_o	11	+io_data<7>
+io_data_xcv_o	12	+io_data<6>
+io_data_xcv_o	13	+io_data<5>
+io_data_xcv_o	14	+io_data<4>
+io_data_xcv_o	15	+io_data<3>
+io_data_xcv_o	16	+io_data<2>
+io_data_xcv_o	17	+io_data<1>
+io_data_xcv_o	18	+io_data<0>
+io_data_xcv_o	19	+tie_high	!-io_odata_oe
+io_data_xcv_o	20	+5v
+adr_latch_l	1	gnd		!-oe, maybe +hlda later
+adr_latch_l	2	+adr<0>
+adr_latch_l	3	+cpu_ad<0>
+adr_latch_l	4	+cpu_ad<2>
+adr_latch_l	5	+adr<2>
+adr_latch_l	6	+adr<4>
+adr_latch_l	7	+cpu_ad<4>
+adr_latch_l	8	+cpu_ad<6>
+adr_latch_l	9	+adr<6>
+adr_latch_l	10	gnd
+adr_latch_l	11	+pav		!transparent hi
+adr_latch_l	12	+adr<7>
+adr_latch_l	13	+cpu_ad<7>
+adr_latch_l	14	+cpu_ad<5>
+adr_latch_l	15	+adr<5>
+adr_latch_l	16	+adr<3>
+adr_latch_l	17	+cpu_ad<3>
+adr_latch_l	18	+cpu_ad<1>
+adr_latch_l	19	+adr<1>
+adr_latch_l	20	+5v
+adr_latch_m	1	gnd		!-oe, maybe +hlda later
+adr_latch_m	2	+adr<8>
+adr_latch_m	3	+cpu_ad<8>
+adr_latch_m	4	+cpu_ad<10>
+adr_latch_m	5	+adr<10>
+adr_latch_m	6	+adr<12>
+adr_latch_m	7	+cpu_ad<12>
+adr_latch_m	8	+cpu_ad<14>
+adr_latch_m	9	+adr<14>
+adr_latch_m	10	gnd
+adr_latch_m	11	+pav		!transparent hi
+adr_latch_m	12	+adr<15>
+adr_latch_m	13	+cpu_ad<15>
+adr_latch_m	14	+cpu_ad<13>
+adr_latch_m	15	+adr<13>
+adr_latch_m	16	+adr<11>
+adr_latch_m	17	+cpu_ad<11>
+adr_latch_m	18	+cpu_ad<9>
+adr_latch_m	19	+adr<9>
+adr_latch_m	20	+5v
+adr_buf_h	1	gnd		!-oe, maybe +hlda later
+adr_buf_h	2	+cpu_a<16>
+adr_buf_h	3	+adr<17>
+adr_buf_h	4	+cpu_a<18>
+adr_buf_h	5	+adr<19>
+adr_buf_h	6	+cpu_a<20>
+adr_buf_h	7	+adr<21>
+adr_buf_h	8	+cpu_a<22>
+adr_buf_h	9	+adr<23>
+adr_buf_h	10	gnd
+adr_buf_h	11	+cpu_a<23>
+adr_buf_h	12	+adr<22>
+adr_buf_h	13	+cpu_a<21>
+adr_buf_h	14	+adr<20>
+adr_buf_h	15	+cpu_a<19>
+adr_buf_h	16	+adr<18>
+adr_buf_h	17	+cpu_a<17>
+adr_buf_h	18	+adr<16>
+adr_buf_h	19	gnd		!-oe, maybe +hlda later
+adr_buf_h	20	+5v
+uart1		1	+io_data<0>
+uart1		2	+io_data<1>
+uart1		3	+io_data<2>
+uart1		4	+io_data<3>
+uart1		5	+io_data<4>
+uart1		6	+io_data<5>
+uart1		7	+io_data<6>
+uart1		8	+io_data<7>
+uart1		9	+uart1_clk_out
+uart1		10	-rxd1
+uart1		11	-txd1
+uart1		12	-adr<6>		!+cs, cs = 0xfff08x
+uart1		13	+adr<7>		!+cs
+uart1		14	-io_cs_fff0	!-cs
+uart1		15	+uart1_clk_out
+uart1		16	+uart_xtal1
+uart1		17	+uart_xtal2
+uart1		18	-wr		!-dostr (data out strobe)
+uart1		19	gnd		!+dostr (or'd with -dostr)
+uart1		20	gnd
+uart1		21	-rd		!-distr
+uart1		22	gnd		!+distr (or'd with -distr)
+uart1		23	n/c		!out: driver disable
+uart1		24	n/c		!out: cs
+uart1		25	gnd		!-adr strobe
+uart1		26	+adr<3>
+uart1		27	+adr<2>
+uart1		28	+adr<1>
+uart1		29	n/c
+uart1		30	+uart1_ir
+uart1		31	n/c		!-out2
+uart1		32	-rts1
+uart1		33	n/c		!-dtr
+uart1		34	n/c		!-out1
+uart1		35	+system_reset
+uart1		36	-cts1
+uart1		37	gnd		!-dsr
+uart1		38	gnd		!-dcd
+uart1		39	gnd		!-ri
+uart1		40	+5v
+uart2		1	+io_data<0>
+uart2		2	+io_data<1>
+uart2		3	+io_data<2>
+uart2		4	+io_data<3>
+uart2		5	+io_data<4>
+uart2		6	+io_data<5>
+uart2		7	+io_data<6>
+uart2		8	+io_data<7>
+uart2		9	+uart2_clk_out
+uart2		10	-rxd2
+uart2		11	-txd2
+uart2		12	+adr<6>		!cs = 0xfff0cx
+uart2		13	+adr<7>
+uart2		14	-io_cs_fff0
+uart2		15	+uart2_clk_out
+uart2		16	+uart_xtal1
+uart2		17	+uart_xtal2
+uart2		18	-wr
+uart2		19	gnd
+uart2		20	gnd
+uart2		21	-rd
+uart2		22	gnd
+uart2		23	n/c
+uart2		24	n/c
+uart2		25	gnd
+uart2		26	+adr<3>
+uart2		27	+adr<2>
+uart2		28	+adr<1>
+uart2		29	n/c
+uart2		30	+uart2_ir
+uart2		31	n/c
+uart2		32	-rts2
+uart2		33	n/c		!-dtr
+uart2		34	n/c
+uart2		35	+system_reset
+uart2		36	-cts2
+uart2		37	gnd		!-dsr
+uart2		38	gnd		!-dcd
+uart2		39	gnd		!-ri
+uart2		40	+5v
+uart_xtal	1	+uart_xtal1	
+uart_xtal	2	+uart_xtal3
+uart_s_res	1	+uart_xtal2
+uart_s_res	2	+uart_xtal3
+uart_p_res	1	+uart_xtal1
+uart_p_res	2	+uart_xtal3
+uart_cap1	1	+uart_xtal1
+uart_cap1	2	gnd
+uart_cap2	1	+uart_xtal3
+uart_cap2	2	gnd
+rs232_rcv	1	+rxd1_rs232
+rs232_rcv	2	n/c
+rs232_rcv	3	-rxd1
+rs232_rcv	4	+cts1_rs232
+rs232_rcv	5	n/c
+rs232_rcv	6	-cts1
+rs232_rcv	7	gnd
+rs232_rcv	8	-cts2
+rs232_rcv	9	n/c
+rs232_rcv	10	+cts2_rs232
+rs232_rcv	11	-rxd2
+rs232_rcv	12	n/c
+rs232_rcv	13	+rxd2_rs232
+rs232_rcv	14	+5v
+rs232_drv	1	-12v
+rs232_drv	2	-txd1
+rs232_drv	3	+txd1_rs232
+rs232_drv	4	-rts1
+rs232_drv	5	-rts1
+rs232_drv	6	+rts1_rs232
+rs232_drv	7	gnd
+rs232_drv	8	+rts2_rs232
+rs232_drv	9	-rts2
+rs232_drv	10	-rts2
+rs232_drv	11	+txd2_rs232
+rs232_drv	12	-txd2
+rs232_drv	13	-txd2
+rs232_drv	14	+12v
+io_decode1	1	+adr<23>
+io_decode1	2	+adr<22>
+io_decode1	3	+adr<21>
+io_decode1	4	+adr<20>
+io_decode1	5	+adr<19>
+io_decode1	6	+adr<18>
+io_decode1	7	+adr<17>
+io_decode1	8	gnd
+io_decode1	9	-io_cs		!low for adr=0xfffxxx
+io_decode1	10	+adr<16>
+io_decode1	11	+adr<15>
+io_decode1	12	+adr<14>
+io_decode1	13	+adr<13>
+io_decode1	14	+adr<12>
+io_decode1	15	+tie_high
+io_decode1	16	+5v
+dma_decode	1	+adr<23>
+dma_decode	2	+adr<22>
+dma_decode	3	+adr<21>
+dma_decode	4	+adr<20>
+dma_decode	5	+adr<19>
+dma_decode	6	+adr<18>
+dma_decode	7	+adr<17>
+dma_decode	8	gnd
+dma_decode	9	-dma_cs1	!low for adr=0xffecxx
+dma_decode	10	+adr<16>
+dma_decode	11	+adr<15>
+dma_decode	12	+adr<14>
+dma_decode	13	+adr<13>
+dma_decode	14	+adr<11>
+dma_decode	15	+adr<10>
+dma_decode	16	+5v
+io_decode2	1	+adr<9>
+io_decode2	2	+adr<10>
+io_decode2	3	+adr<11>
+io_decode2	4	-io_cs		!-enable
+io_decode2	5	+adr<8>		!-enable
+io_decode2	6	+tie_high	!+enable
+io_decode2	7	-io_cs_fffe	!icu
+io_decode2	8	gnd
+io_decode2	9	n/c		!-io_cs_fffc
+io_decode2	10	n/c		!-io_cs_fffa formerly dma controller
+io_decode2	11	-io_cs_fff8	!scsi -dack
+io_decode2	12	-io_cs_fff6	!scsi -cs
+io_decode2	13	-io_cs_fff4	!floppy controller
+io_decode2	14	n/c		!-io_cs_fff2
+io_decode2	15	-io_cs_fff0	!uart's
+io_decode2	16	+5v
+or_1		1	-wr
+or_1		2	+adr<0>
+or_1		3	-wr_e		!write even byte
+or_1		4	-dbe		!change later for DMA
+or_1		5	-io_cs		!change later for DMA
+or_1		6	-io_edata_oe	!change later for DMA
+or_1		7	gnd
+or_1		8	-mem_data_oe
+or_1		9	+adr<23>	!change for ram beyond 8meg
+or_1		10	-dbe
+or_1		11	-wr_o		!write odd byte
+or_1		12	-hbe_buf
+or_1		13	-wr
+or_1		14	+5v
+invert_1	1	+adr<6>
+invert_1	2	-adr<6>		!for uarts
+invert_1	3	-pav
+invert_1	4	+pav		!for adr latches
+invert_1	5	-system_reset
+invert_1	6	+system_reset	!for uarts
+invert_1	7	gnd
+invert_1	8	+ddin_buf
+invert_1	9	-ddin		!was -ddin_buf
+invert_1	10	-dma_req1
+invert_1	11	+dma_req1
+invert_1	12	-dma_req0
+invert_1	13	+dma_req0
+invert_1	14	+5v
+3st_buf1	1	-hlda
+3st_buf1	2	-hbe
+3st_buf1	3	-hbe_buf
+3st_buf1	4	+tie_high
+3st_buf1	5	-ddin
+3st_buf1	6	-ddin_buf
+3st_buf1	7	gnd
+3st_buf1	8	n/c
+3st_buf1	9	gnd
+3st_buf1	10	gnd
+3st_buf1	11	n/c
+3st_buf1	12	gnd
+3st_buf1	13	gnd
+3st_buf1	14	+5v
+memcspal	1	+adr<15>
+memcspal	2	+adr<16>
+memcspal	3	+adr<17>
+memcspal	4	+adr<18>
+memcspal	5	+adr<19>
+memcspal	6	+adr<20>
+memcspal	7	+adr<21>
+memcspal	8	+adr<22>
+memcspal	9	+adr<23>
+memcspal	10	gnd
+memcspal	11	+swap_jumper
+memcspal	12	-eprom_cs
+memcspal	13	+eprom_a15
+memcspal	14	-sram_cs
+memcspal	15	-dram_cs
+memcspal	16	n/c
+memcspal	17	n/c
+memcspal	18	n/c
+memcspal	19	n/c
+memcspal	20	+5v
+nmipal		1	+cttl
+nmipal		2	-nmi_up
+nmipal		3	-nmi_down
+nmipal		4	-tso
+nmipal		5	n/c
+nmipal		6	n/c
+nmipal		7	n/c
+nmipal		8	n/c
+nmipal		9	n/c
+nmipal		10	gnd
+nmipal		11	gnd		!-oe
+nmipal		12	-nmi
+nmipal		13	n/c
+nmipal		14	n/c
+nmipal		15	n/c
+nmipal		16	n/c
+nmipal		17	n/c
+nmipal		18	n/c
+nmipal		19	n/c
+nmipal		20	+5v
+nmi_sw		1	-nmi_up
+nmi_sw		2	gnd
+nmi_sw		3	-nmi_down
+pullup		1	-spc
+pullup		2	-int
+pullup		3	-hold
+pullup		4	+mmu_a24
+pullup		5	-nmi_up
+pullup		6	-nmi_down
+pullup		7	+swap_jumper
+pullup		8	-pav
+pullup		9	-cwait
+uart_header	1	+uart_xtal2
+uart_header	2	+uart_xtal1
+uart_header	3	n/c
+uart_header	4	gnd
+uart_header	5	+txd1_rs232
+uart_header	6	+rts1_rs232
+uart_header	7	+cts1_rs232
+uart_header	8	+rxd1_rs232
+uart_header	9	+rxd2_rs232
+uart_header	10	+cts2_rs232
+uart_header	11	+rts2_rs232
+uart_header	12	+txd2_rs232
+uart_header	13	gnd	
+uart_header	14	n/c
+uart_header	15	gnd
+uart_header	16	+uart_xtal3
+sw_header	1	-nmi_up
+sw_header	2	-nmi_down
+sw_header	3	-rst_sw
+sw_header	4	gnd
+sw_header	5	n/c
+sw_header	6	n/c
+sw_header	7	gnd
+sw_header	8	+swap_jumper
+sw_header	9	n/c
+sw_header	10	n/c
+sw_header	11	n/c
+sw_header	12	n/c
+sw_header	13	n/c
+sw_header	14	+5v
+or_2		1	-dma_cs1
+or_2		2	+adr<12>
+or_2		3	-dma_cs		!low for adr=0xffecxx
+or_2		4	gnd		!unused gate
+or_2		5	gnd
+or_2		6	
+or_2		7	gnd
+or_2		8	-we_h0
+or_2		9	+ddin_buf
+or_2		10	-hbe_buf
+or_2		11	-we_l0
+or_2		12	+ddin_buf
+or_2		13	+adr<0>
+or_2		14	+5v
+scsi_ctl	1	+io_data<0>
+scsi_ctl	2	-sc_db<7>
+scsi_ctl	3	-sc_db<6>
+scsi_ctl	4	-sc_db<5>
+scsi_ctl	5	-sc_db<4>
+scsi_ctl	6	-sc_db<3>
+scsi_ctl	7	-sc_db<2>
+scsi_ctl	8	-sc_db<1>
+scsi_ctl	9	-sc_db<0>
+scsi_ctl	10	-sc_dbp
+scsi_ctl	11	gnd
+scsi_ctl	12	-sc_sel
+scsi_ctl	13	-sc_bsy
+scsi_ctl	14	-sc_ack
+scsi_ctl	15	-sc_atn
+scsi_ctl	16	-sc_rst
+scsi_ctl	17	-sc_io
+scsi_ctl	18	-sc_cd
+scsi_ctl	19	-sc_msg
+scsi_ctl	20	-sc_req
+scsi_ctl	21	-io_cs_fff6	!-cs
+scsi_ctl	22	+dma_req1
+scsi_ctl	23	+scsi_ir	!int req
+scsi_ctl	24	-rd
+scsi_ctl	25	n/c		!ready
+scsi_ctl	26	-io_cs_fff8	!-dack
+scsi_ctl	27	+tie_high	!-eop
+scsi_ctl	28	-system_reset
+scsi_ctl	29	-wr
+scsi_ctl	30	+adr<1>
+scsi_ctl	31	+5v
+scsi_ctl	32	+adr<2>
+scsi_ctl	33	+adr<3>
+scsi_ctl	34	+io_data<7>
+scsi_ctl	35	+io_data<6>
+scsi_ctl	36	+io_data<5>
+scsi_ctl	37	+io_data<4>
+scsi_ctl	38	+io_data<3>
+scsi_ctl	39	+io_data<2>
+scsi_ctl	40	+io_data<1>
+sc_pullup1	1	-sc_db<7>
+sc_pullup1	2	-sc_db<6>
+sc_pullup1	3	-sc_db<5>
+sc_pullup1	4	-sc_db<4>
+sc_pullup1	5	-sc_db<3>
+sc_pullup1	6	-sc_db<2>
+sc_pullup1	7	-sc_db<1>
+sc_pullup1	8	-sc_db<0>
+sc_pullup1	9	-sc_dbp
+sc_pullup1	10	+5v
+sc_pullup2	1	-sc_sel
+sc_pullup2	2	-sc_bsy
+sc_pullup2	3	-sc_ack
+sc_pullup2	4	-sc_atn
+sc_pullup2	5	-sc_rst
+sc_pullup2	6	-sc_io
+sc_pullup2	7	-sc_cd
+sc_pullup2	8	-sc_msg
+sc_pullup2	9	-sc_req
+sc_pullup2	10	+5v
+sc_pulldown1	1	-sc_db<7>
+sc_pulldown1	2	-sc_db<6>
+sc_pulldown1	3	-sc_db<5>
+sc_pulldown1	4	-sc_db<4>
+sc_pulldown1	5	-sc_db<3>
+sc_pulldown1	6	-sc_db<2>
+sc_pulldown1	7	-sc_db<1>
+sc_pulldown1	8	-sc_db<0>
+sc_pulldown1	9	-sc_dbp
+sc_pulldown1	10	gnd
+sc_pulldown2	1	-sc_sel
+sc_pulldown2	2	-sc_bsy
+sc_pulldown2	3	-sc_ack
+sc_pulldown2	4	-sc_atn
+sc_pulldown2	5	-sc_rst
+sc_pulldown2	6	-sc_io
+sc_pulldown2	7	-sc_cd
+sc_pulldown2	8	-sc_msg
+sc_pulldown2	9	-sc_req
+sc_pulldown2	10	gnd
+sc_conn		1	gnd
+sc_conn		2	-sc_db<0>
+sc_conn		3	gnd
+sc_conn		4	-sc_db<1>
+sc_conn		5	gnd
+sc_conn		6	-sc_db<2>
+sc_conn		7	gnd
+sc_conn		8	-sc_db<3>
+sc_conn		9	gnd
+sc_conn		10	-sc_db<4>
+sc_conn		11	gnd
+sc_conn		12	-sc_db<5>
+sc_conn		13	gnd
+sc_conn		14	-sc_db<6>
+sc_conn		15	gnd
+sc_conn		16	-sc_db<7>
+sc_conn		17	gnd
+sc_conn		18	-sc_dbp
+sc_conn		19	gnd
+sc_conn		20	gnd
+sc_conn		21	gnd
+sc_conn		22	gnd
+sc_conn		23	gnd
+sc_conn		24	gnd
+sc_conn		25	n/c
+sc_conn		26	+sc_term
+sc_conn		27	gnd
+sc_conn		28	gnd
+sc_conn		29	gnd
+sc_conn		30	gnd
+sc_conn		31	gnd
+sc_conn		32	-sc_atn
+sc_conn		33	gnd
+sc_conn		34	gnd
+sc_conn		35	gnd
+sc_conn		36	-sc_bsy
+sc_conn		37	gnd
+sc_conn		38	-sc_ack
+sc_conn		39	gnd
+sc_conn		40	-sc_rst
+sc_conn		41	gnd
+sc_conn		42	-sc_msg
+sc_conn		43	gnd
+sc_conn		44	-sc_sel
+sc_conn		45	gnd
+sc_conn		46	-sc_cd
+sc_conn		47	gnd
+sc_conn		48	-sc_req
+sc_conn		49	gnd
+sc_conn		50	-sc_io
+sc_diode	1	+5v		!anode
+sc_diode	2	+sc_term
+dma_ctl		1	+cpu_a<22>
+dma_ctl		2	+cpu_a<21>
+dma_ctl		3	+cpu_a<20>
+dma_ctl		4	+cpu_a<19>
+dma_ctl		5	+cpu_a<18>
+dma_ctl		6	+cpu_a<17>
+dma_ctl		7	+cpu_a<16>
+dma_ctl		8	+cpu_ad<15>
+dma_ctl		9	+cpu_ad<14>
+dma_ctl		10	+cpu_ad<13>
+dma_ctl		11	+cpu_ad<12>
+dma_ctl		12	+cpu_ad<11>
+dma_ctl		13	+cpu_ad<10>
+dma_ctl		14	+cpu_ad<9>
+dma_ctl		15	+cpu_ad<8>
+dma_ctl		16	+cpu_ad<7>
+dma_ctl		17	+cpu_ad<6>
+dma_ctl		18	+cpu_ad<5>
+dma_ctl		19	+cpu_ad<4>
+dma_ctl		20	+cpu_ad<3>
+dma_ctl		21	+cpu_ad<2>
+dma_ctl		22	+cpu_ad<1>
+dma_ctl		23	+cpu_ad<0>
+dma_ctl		24	gnd
+dma_ctl		25	+cttl
+dma_ctl		26	+rdy
+dma_ctl		27	-pav		!needs pullup
+dma_ctl		28	n/c		!-iowr
+dma_ctl		29	n/c		!-iord
+dma_ctl		30	-ddin
+dma_ctl		31	-hbe_buf
+dma_ctl		32	-dma_ack0	!fdc channel
+dma_ctl		33	-dma_req0
+dma_ctl		34	n/c		!-dma_ack1
+dma_ctl		35	-dma_req1	!scsi channel
+dma_ctl		36	n/c		!-dma_ack2
+dma_ctl		37	+tie_high	!-dma_req2
+dma_ctl		38	n/c		!-dma_ack3
+dma_ctl		39	+tie_high	!-dma_req3
+dma_ctl		40	-hlda
+dma_ctl		41	-hold
+dma_ctl		42	-dma_ir		!int
+dma_ctl		43	-system_reset
+dma_ctl		44	n/c		!-bgrt
+dma_ctl		45	+tie_high	!-breq
+dma_ctl		46	-dma_cs		!cs = 0xffecxx
+dma_ctl		47	+cpu_a<23>
+dma_ctl		48	+5v
+dramc		1	+rfshclk
+dramc		2	+cttl
+dramc		3	+tie_high	!m0
+dramc		4	+tie_high	!15ns ras hold
+dramc		5	-mode		!m2
+dramc		6	+tie_high	!-ads
+dramc		7	+adr<1>
+dramc		8	+adr<2>
+dramc		9	+adr<3>
+dramc		10	+adr<4>
+dramc		11	+adr<5>
+dramc		12	+adr<6>
+dramc		13	gnd
+dramc		14	+adr<7>
+dramc		15	+adr<8>
+dramc		16	+adr<9>
+dramc		17	+adr<10>
+dramc		18	+adr<11>
+dramc		19	+adr<12>
+dramc		20	+adr<13>
+dramc		21	+adr<14>
+dramc		22	+adr<15>
+dramc		23	+adr<16>
+dramc		24	+adr<17>	!dram change was +tie_high
+dramc		25	+adr<18>	!dram change was gnd
+dramc		26	+adr<22>	!b1
+dramc		27	+adr<21>	!b0
+dramc		28	-ras01
+dramc		29	-ras11		!200000-3fffff
+dramc		30	-ras21		!400000-5fffff
+dramc		31	-ras31		!600000-7fffff
+dramc		32	-cas1
+dramc		33	+dram_adr1<8>	!dram change was +dram_mux_sel
+dramc		34	+dram_adr1<7>
+dramc		35	+dram_adr1<6>
+dramc		36	+5v
+dramc		37	+dram_adr1<5>
+dramc		38	gnd
+dramc		39	+dram_adr1<4>
+dramc		40	+dram_adr1<3>
+dramc		41	+dram_adr1<2>
+dramc		42	+dram_adr1<1>
+dramc		43	+dram_adr1<0>
+dramc		44	n/c		!-we
+dramc		45	+tie_high	!-win
+dramc		46	+rfio
+dramc		47	-dram_cs
+dramc		48	-rasin
+dramc_cap1	1	gnd		!close to dramc pin 38
+dramc_cap1	2	+5v		!close to dramc pin 36
+dramc_cap2	1	gnd		!close to dramc pin 38
+dramc_cap2	2	+5v		!close to dramc pin 36
+dram_delay0	1	-rasin
+dram_delay0	2	n/c
+dram_delay0	3	n/c		!20%
+dram_delay0	4	n/c		!40%
+dram_delay0	5	n/c		!60%
+dram_delay0	6	n/c		!80%
+dram_delay0	7	gnd
+dram_delay0	8	+ras_dly100	!100% this tap seems to work
+dram_delay0	9	n/c		!90%
+dram_delay0	10	n/c		!70%
+dram_delay0	11	n/c		!50%
+dram_delay0	12	n/c		!30%
+dram_delay0	13	n/c		!10%
+dram_delay0	14	+5v
+dram_delay1	1	+ras_dly100	!more delay if needed
+dram_delay1	2	n/c
+dram_delay1	3	n/c		!120%
+dram_delay1	4	n/c		!140%
+dram_delay1	5	n/c		!160%
+dram_delay1	6	n/c		!180%
+dram_delay1	7	gnd
+dram_delay1	8	n/c		!200%
+dram_delay1	9	n/c		!190%
+dram_delay1	10	n/c		!170%
+dram_delay1	11	n/c		!150%
+dram_delay1	12	n/c		!130%
+dram_delay1	13	n/c		!110%
+dram_delay1	14	+5v
+rfshpal		1	+cttl
+rfshpal		2	gnd
+rfshpal		3	gnd
+rfshpal		4	gnd
+rfshpal		5	gnd
+rfshpal		6	gnd
+rfshpal		7	gnd
+rfshpal		8	gnd
+rfshpal		9	gnd
+rfshpal		10	gnd
+rfshpal		11	gnd
+rfshpal		12	n/c
+rfshpal		13	n/c
+rfshpal		14	n/c
+rfshpal		15	n/c
+rfshpal		16	n/c
+rfshpal		17	n/c
+rfshpal		18	n/c
+rfshpal		19	+rfshclk
+rfshpal		20	+5v
+dramcpal	1	+fclk
+dramcpal	2	-tso
+dramcpal	3	+rfio
+dramcpal	4	-pav
+dramcpal	5	-ddin_buf
+dramcpal	6	+tie_high	!-waitwr
+dramcpal	7	+cttl
+dramcpal	8	-dram_cs
+dramcpal	9	+tie_high	!-waitrd
+dramcpal	10	gnd
+dramcpal	11	gnd		!-oe
+dramcpal	12	-cwait
+dramcpal	13	n/c		!4dly
+dramcpal	14	n/c		!3dly
+dramcpal	15	n/c		!2dly
+dramcpal	16	-mode
+dramcpal	17	-rasin
+dramcpal	18	n/c		!-cycled
+dramcpal	19	n/c		!-incy
+dramcpal	20	+5v
+dram_mux	1	+ras_dly100	!dram change was +dram_mux_sel
+dram_mux	2	gnd		!dram change was +adr<17>
+dram_mux	3	gnd		!dram change was +adr<18>
+dram_mux	4	n/c		!dram change was +dram_adr0<8>
+dram_mux	5	+adr<19>
+dram_mux	6	+adr<20>
+dram_mux	7	+dram_adr0<9>
+dram_mux	8	gnd
+dram_mux	9	n/c
+dram_mux	10	gnd
+dram_mux	11	gnd
+dram_mux	12	n/c
+dram_mux	13	gnd
+dram_mux	14	gnd
+dram_mux	15	gnd		!enable
+dram_mux	16	+5v
+dram_drv	1	gnd
+dram_drv	2	-we_l0
+dram_drv	3	n/c		!dram change was +dram_adr1<8>
+dram_drv	4	-we_h0
+dram_drv	5	+dram_adr1<9>
+dram_drv	6	gnd		!dram change was -cas1
+dram_drv	7	n/c 		!dram change was -cas3
+dram_drv	8	gnd		!dram change was -cas3
+dram_drv	9	n/c 		!dram change was -cas5
+dram_drv	10	gnd
+dram_drv	11	gnd		!dram change was -cas4
+dram_drv	12	n/c		!dram change was -cas4
+dram_drv	13	gnd		!dram change was -cas2
+dram_drv	14	n/c		!dram change was -cas2
+dram_drv	15	+dram_adr0<9>
+dram_drv	16	-we_h1
+dram_drv	17	gnd		!dram change was +dram_adr0<8>
+dram_drv	18	-we_l1
+dram_drv	19	gnd
+dram_drv	20	+5v
+dram_term1	1	+dram_adr1<0>
+dram_term1	2	+dram_adr1<1>
+dram_term1	3	+dram_adr1<2>
+dram_term1	4	+dram_adr1<3>
+dram_term1	5	+dram_adr1<4>
+dram_term1	6	+dram_adr1<5>
+dram_term1	7	+dram_adr1<6>
+dram_term1	8	+dram_adr1<7>
+dram_term1	9	+dram_adr2<7>
+dram_term1	10	+dram_adr2<6>
+dram_term1	11	+dram_adr2<5>
+dram_term1	12	+dram_adr2<4>
+dram_term1	13	+dram_adr2<3>
+dram_term1	14	+dram_adr2<2>
+dram_term1	15	+dram_adr2<1>
+dram_term1	16	+dram_adr2<0>
+dram_term2	1	n/c		!WBC has pullup here
+dram_term2	2	-ras31
+dram_term2	3	-ras21
+dram_term2	4	-ras11
+dram_term2	5	-ras01
+dram_term2	6	-cas1
+dram_term2	7	+dram_adr1<8>
+dram_term2	8	n/c
+dram_term2	9	n/c
+dram_term2	10	+dram_adr2<8>
+dram_term2	11	-cas2
+dram_term2	12	n/c		!-ras02
+dram_term2	13	-ras12
+dram_term2	14	n/c		!-ras22
+dram_term2	15	n/c		!-ras32
+dram_term2	16	n/c		!WBC has pullup here
+dram_term3	1	n/c
+dram_term3	2	n/c
+dram_term3	3	n/c
+dram_term3	4	n/c
+dram_term3	5	+dram_adr2<9>
+dram_term3	6	-we_l2
+dram_term3	7	-we_h2
+dram_term3	8	n/c
+dram_term3	9	n/c
+dram_term3	10	-we_h1
+dram_term3	11	-we_l1
+dram_term3	12	+dram_adr1<9>
+dram_term3	13	n/c
+dram_term3	14	n/c
+dram_term3	15	n/c
+dram_term3	16	n/c
+dram0		1	+mem_data<0>
+dram0		2	-we_l2
+dram0		3	-ras12
+dram0		4	n/c
+dram0		5	+dram_adr2<0>
+dram0		6	+dram_adr2<1>
+dram0		7	+dram_adr2<2>
+dram0		8	+dram_adr2<3>
+dram0		9	+5v
+dram0		10	+dram_adr2<4>
+dram0		11	+dram_adr2<5>
+dram0		12	+dram_adr2<6>
+dram0		13	+dram_adr2<7>
+dram0		14	+dram_adr2<8>
+dram0		15	+dram_adr2<9>
+dram0		16	-cas2		!dram change was -cas6
+dram0		17	+mem_data<0>
+dram0		18	gnd
+dram1		1	+mem_data<1>
+dram1		2	-we_l2
+dram1		3	-ras12
+dram1		4	n/c
+dram1		5	+dram_adr2<0>
+dram1		6	+dram_adr2<1>
+dram1		7	+dram_adr2<2>
+dram1		8	+dram_adr2<3>
+dram1		9	+5v
+dram1		10	+dram_adr2<4>
+dram1		11	+dram_adr2<5>
+dram1		12	+dram_adr2<6>
+dram1		13	+dram_adr2<7>
+dram1		14	+dram_adr2<8>
+dram1		15	+dram_adr2<9>
+dram1		16	-cas2		!dram change was -cas6
+dram1		17	+mem_data<1>
+dram1		18	gnd
+dram2		1	+mem_data<2>
+dram2		2	-we_l2
+dram2		3	-ras12
+dram2		4	n/c
+dram2		5	+dram_adr2<0>
+dram2		6	+dram_adr2<1>
+dram2		7	+dram_adr2<2>
+dram2		8	+dram_adr2<3>
+dram2		9	+5v
+dram2		10	+dram_adr2<4>
+dram2		11	+dram_adr2<5>
+dram2		12	+dram_adr2<6>
+dram2		13	+dram_adr2<7>
+dram2		14	+dram_adr2<8>
+dram2		15	+dram_adr2<9>
+dram2		16	-cas2		!dram change was -cas6
+dram2		17	+mem_data<2>
+dram2		18	gnd
+dram3		1	+mem_data<3>
+dram3		2	-we_l2
+dram3		3	-ras12
+dram3		4	n/c
+dram3		5	+dram_adr2<0>
+dram3		6	+dram_adr2<1>
+dram3		7	+dram_adr2<2>
+dram3		8	+dram_adr2<3>
+dram3		9	+5v
+dram3		10	+dram_adr2<4>
+dram3		11	+dram_adr2<5>
+dram3		12	+dram_adr2<6>
+dram3		13	+dram_adr2<7>
+dram3		14	+dram_adr2<8>
+dram3		15	+dram_adr2<9>
+dram3		16	-cas2		!dram change was -cas6
+dram3		17	+mem_data<3>
+dram3		18	gnd
+dram4		1	+mem_data<4>
+dram4		2	-we_l2
+dram4		3	-ras12
+dram4		4	n/c
+dram4		5	+dram_adr2<0>
+dram4		6	+dram_adr2<1>
+dram4		7	+dram_adr2<2>
+dram4		8	+dram_adr2<3>
+dram4		9	+5v
+dram4		10	+dram_adr2<4>
+dram4		11	+dram_adr2<5>
+dram4		12	+dram_adr2<6>
+dram4		13	+dram_adr2<7>
+dram4		14	+dram_adr2<8>
+dram4		15	+dram_adr2<9>
+dram4		16	-cas2		!dram change was -cas6
+dram4		17	+mem_data<4>
+dram4		18	gnd
+dram5		1	+mem_data<5>
+dram5		2	-we_l2
+dram5		3	-ras12
+dram5		4	n/c
+dram5		5	+dram_adr2<0>
+dram5		6	+dram_adr2<1>
+dram5		7	+dram_adr2<2>
+dram5		8	+dram_adr2<3>
+dram5		9	+5v
+dram5		10	+dram_adr2<4>
+dram5		11	+dram_adr2<5>
+dram5		12	+dram_adr2<6>
+dram5		13	+dram_adr2<7>
+dram5		14	+dram_adr2<8>
+dram5		15	+dram_adr2<9>
+dram5		16	-cas2		!dram change was -cas6
+dram5		17	+mem_data<5>
+dram5		18	gnd
+dram6		1	+mem_data<6>
+dram6		2	-we_l2
+dram6		3	-ras12
+dram6		4	n/c
+dram6		5	+dram_adr2<0>
+dram6		6	+dram_adr2<1>
+dram6		7	+dram_adr2<2>
+dram6		8	+dram_adr2<3>
+dram6		9	+5v
+dram6		10	+dram_adr2<4>
+dram6		11	+dram_adr2<5>
+dram6		12	+dram_adr2<6>
+dram6		13	+dram_adr2<7>
+dram6		14	+dram_adr2<8>
+dram6		15	+dram_adr2<9>
+dram6		16	-cas2		!dram change was -cas6
+dram6		17	+mem_data<6>
+dram6		18	gnd
+dram7		1	+mem_data<7>
+dram7		2	-we_l2
+dram7		3	-ras12
+dram7		4	n/c
+dram7		5	+dram_adr2<0>
+dram7		6	+dram_adr2<1>
+dram7		7	+dram_adr2<2>
+dram7		8	+dram_adr2<3>
+dram7		9	+5v
+dram7		10	+dram_adr2<4>
+dram7		11	+dram_adr2<5>
+dram7		12	+dram_adr2<6>
+dram7		13	+dram_adr2<7>
+dram7		14	+dram_adr2<8>
+dram7		15	+dram_adr2<9>
+dram7		16	-cas2		!dram change was -cas6
+dram7		17	+mem_data<7>
+dram7		18	gnd
+dram8		1	+mem_data<8>
+dram8		2	-we_h2
+dram8		3	-ras12
+dram8		4	n/c
+dram8		5	+dram_adr2<0>
+dram8		6	+dram_adr2<1>
+dram8		7	+dram_adr2<2>
+dram8		8	+dram_adr2<3>
+dram8		9	+5v
+dram8		10	+dram_adr2<4>
+dram8		11	+dram_adr2<5>
+dram8		12	+dram_adr2<6>
+dram8		13	+dram_adr2<7>
+dram8		14	+dram_adr2<8>
+dram8		15	+dram_adr2<9>
+dram8		16	-cas2		!dram change was -cas6
+dram8		17	+mem_data<8>
+dram8		18	gnd
+dram9		1	+mem_data<9>
+dram9		2	-we_h2
+dram9		3	-ras12
+dram9		4	n/c
+dram9		5	+dram_adr2<0>
+dram9		6	+dram_adr2<1>
+dram9		7	+dram_adr2<2>
+dram9		8	+dram_adr2<3>
+dram9		9	+5v
+dram9		10	+dram_adr2<4>
+dram9		11	+dram_adr2<5>
+dram9		12	+dram_adr2<6>
+dram9		13	+dram_adr2<7>
+dram9		14	+dram_adr2<8>
+dram9		15	+dram_adr2<9>
+dram9		16	-cas2		!dram change was -cas6
+dram9		17	+mem_data<9>
+dram9		18	gnd
+dram10		1	+mem_data<10>
+dram10		2	-we_h2
+dram10		3	-ras12
+dram10		4	n/c
+dram10		5	+dram_adr2<0>
+dram10		6	+dram_adr2<1>
+dram10		7	+dram_adr2<2>
+dram10		8	+dram_adr2<3>
+dram10		9	+5v
+dram10		10	+dram_adr2<4>
+dram10		11	+dram_adr2<5>
+dram10		12	+dram_adr2<6>
+dram10		13	+dram_adr2<7>
+dram10		14	+dram_adr2<8>
+dram10		15	+dram_adr2<9>
+dram10		16	-cas2		!dram change was -cas6
+dram10		17	+mem_data<10>
+dram10		18	gnd
+dram11		1	+mem_data<11>
+dram11		2	-we_h2
+dram11		3	-ras12
+dram11		4	n/c
+dram11		5	+dram_adr2<0>
+dram11		6	+dram_adr2<1>
+dram11		7	+dram_adr2<2>
+dram11		8	+dram_adr2<3>
+dram11		9	+5v
+dram11		10	+dram_adr2<4>
+dram11		11	+dram_adr2<5>
+dram11		12	+dram_adr2<6>
+dram11		13	+dram_adr2<7>
+dram11		14	+dram_adr2<8>
+dram11		15	+dram_adr2<9>
+dram11		16	-cas2		!dram change was -cas6
+dram11		17	+mem_data<11>
+dram11		18	gnd
+dram12		1	+mem_data<12>
+dram12		2	-we_h2
+dram12		3	-ras12
+dram12		4	n/c
+dram12		5	+dram_adr2<0>
+dram12		6	+dram_adr2<1>
+dram12		7	+dram_adr2<2>
+dram12		8	+dram_adr2<3>
+dram12		9	+5v
+dram12		10	+dram_adr2<4>
+dram12		11	+dram_adr2<5>
+dram12		12	+dram_adr2<6>
+dram12		13	+dram_adr2<7>
+dram12		14	+dram_adr2<8>
+dram12		15	+dram_adr2<9>
+dram12		16	-cas2		!dram change was -cas6
+dram12		17	+mem_data<12>
+dram12		18	gnd
+dram13		1	+mem_data<13>
+dram13		2	-we_h2
+dram13		3	-ras12
+dram13		4	n/c
+dram13		5	+dram_adr2<0>
+dram13		6	+dram_adr2<1>
+dram13		7	+dram_adr2<2>
+dram13		8	+dram_adr2<3>
+dram13		9	+5v
+dram13		10	+dram_adr2<4>
+dram13		11	+dram_adr2<5>
+dram13		12	+dram_adr2<6>
+dram13		13	+dram_adr2<7>
+dram13		14	+dram_adr2<8>
+dram13		15	+dram_adr2<9>
+dram13		16	-cas2		!dram change was -cas6
+dram13		17	+mem_data<13>
+dram13		18	gnd
+dram14		1	+mem_data<14>
+dram14		2	-we_h2
+dram14		3	-ras12
+dram14		4	n/c
+dram14		5	+dram_adr2<0>
+dram14		6	+dram_adr2<1>
+dram14		7	+dram_adr2<2>
+dram14		8	+dram_adr2<3>
+dram14		9	+5v
+dram14		10	+dram_adr2<4>
+dram14		11	+dram_adr2<5>
+dram14		12	+dram_adr2<6>
+dram14		13	+dram_adr2<7>
+dram14		14	+dram_adr2<8>
+dram14		15	+dram_adr2<9>
+dram14		16	-cas2		!dram change was -cas6
+dram14		17	+mem_data<14>
+dram14		18	gnd
+dram15		1	+mem_data<15>
+dram15		2	-we_h2
+dram15		3	-ras12
+dram15		4	n/c
+dram15		5	+dram_adr2<0>
+dram15		6	+dram_adr2<1>
+dram15		7	+dram_adr2<2>
+dram15		8	+dram_adr2<3>
+dram15		9	+5v
+dram15		10	+dram_adr2<4>
+dram15		11	+dram_adr2<5>
+dram15		12	+dram_adr2<6>
+dram15		13	+dram_adr2<7>
+dram15		14	+dram_adr2<8>
+dram15		15	+dram_adr2<9>
+dram15		16	-cas2		!dram change was -cas6
+dram15		17	+mem_data<15>
+dram15		18	gnd
+fdc		1	-dma_ack0
+fdc		2	-rd
+fdc		3	-wr
+fdc		4	-io_cs_fff4
+fdc		5	+adr<1>
+fdc		6	+io_data<0>
+fdc		7	+io_data<1>
+fdc		8	+io_data<2>
+fdc		9	+io_data<3>
+fdc		10	+io_data<4>
+fdc		11	+io_data<5>
+fdc		12	+io_data<6>
+fdc		13	+io_data<7>
+fdc		14	+dma_req0
+fdc		15	gnd		!terminal count
+fdc		16	+fdb_idx
+fdc		17	+fdc_ir
+fdc		18	+system_reset
+fdc		19	+fdc_clk
+fdc		20	n/c		!crystal
+fdc		21	gnd
+fdc		22	gnd		!retain values on reset
+fdc		23	+fdb_rddata
+fdc		24	+fdb_ld		!low density
+fdc		25	gnd
+fdc		26	gnd		!separate connection to plane
+fdc		27	+fdb_we
+fdc		28	n/c		!mfm if external pll
+fdc		29	+motor
+fdc		30	+fdb_hdsel
+fdc		31	n/c		!drive sel 1
+fdc		32	+drv_sel0
+fdc		33	+fdb_wrdata
+fdc		34	+fdb_trk0
+fdc		35	+fdb_wp
+fdc		36	+tie_high	!+fdb_rdy
+fdc		37	n/c		!+fdb_hld 8" drives only
+fdc		38	+fdb_stp
+fdc		39	+fdb_dir
+fdc		40	+5v
+fd_drv1		1	+drv_sel0
+fd_drv1		2	+drv_sel0
+fd_drv1		3	-fdb_ds1
+fd_drv1		4	-drv_sel0
+fd_drv1		5	-drv_sel0
+fd_drv1		6	-fdb_ds0
+fd_drv1		7	gnd
+fd_drv1		8	-fdb_motor0
+fd_drv1		9	+motor
+fd_drv1		10	-drv_sel0
+fd_drv1		11	-fdb_motor1
+fd_drv1		12	+motor
+fd_drv1		13	+drv_sel0
+fd_drv1		14	+5v
+fd_drv2		1	+fdb_dir
+fd_drv2		2	-fdb_dir
+fd_drv2		3	+fdb_stp
+fd_drv2		4	-fdb_stp
+fd_drv2		5	+fdb_hdsel
+fd_drv2		6	-fdb_hdsel
+fd_drv2		7	gnd
+fd_drv2		8	-fdb_we
+fd_drv2		9	+fdb_we
+fd_drv2		10	-fdb_wrdata
+fd_drv2		11	+fdb_wrdata
+fd_drv2		12	-fdb_ld
+fd_drv2		13	+fdb_ld
+fd_drv2		14	+5v
+fd_rcv		1	+drv_sel0
+fd_rcv		2	-drv_sel0
+fd_rcv		3	gnd
+fd_rcv		4	n/c
+fd_rcv		5	-fdb_rddata
+fd_rcv		6	+fdb_rddata
+fd_rcv		7	gnd
+fd_rcv		8	+fdb_idx
+fd_rcv		9	-fdb_idx
+fd_rcv		10	+fdb_wp
+fd_rcv		11	-fdb_wp
+fd_rcv		12	+fdb_trk0
+fd_rcv		13	-fdb_trk0
+fd_rcv		14	+5v
+fd_osc		1	n/c
+fd_osc		7	gnd
+fd_osc		8	+fdc_clk
+fd_osc		14	+5v
+fd_conn		1	gnd
+fd_conn		2	-fdb_ld
+fd_conn		3	gnd
+fd_conn		4	n/c		!not used
+fd_conn		5	gnd
+fd_conn		6	n/c		!not used
+fd_conn		7	gnd
+fd_conn		8	-fdb_idx
+fd_conn		9	gnd
+fd_conn		10	-fdb_motor0
+fd_conn		11	gnd
+fd_conn		12	-fdb_ds1
+fd_conn		13	gnd
+fd_conn		14	-fdb_ds0
+fd_conn		15	gnd
+fd_conn		16	-fdb_motor1
+fd_conn		17	gnd
+fd_conn		18	-fdb_dir
+fd_conn		19	gnd
+fd_conn		20	-fdb_stp	!low=toward spindle
+fd_conn		21	gnd
+fd_conn		22	-fdb_wrdata
+fd_conn		23	gnd
+fd_conn		24	-fdb_we
+fd_conn		25	gnd
+fd_conn		26	-fdb_trk0
+fd_conn		27	gnd
+fd_conn		28	-fdb_wp
+fd_conn		29	gnd
+fd_conn		30	-fdb_rddata
+fd_conn		31	gnd
+fd_conn		32	-fdb_hdsel	!low=head1, hi=head0
+fd_conn		33	gnd
+fd_conn		34	n/c		!door open
+fd_pullup	1	+5v
+fd_pullup	2	+fdc_clk	!fake MOS level
+fd_pullup	3	-fdb_ld
+fd_pullup	4	-fdb_trk0
+fd_pullup	5	-fdb_wp
+fd_pullup	6	-fdb_idx
+fd_pullup	7	-fdb_rddata
+fd_pullup	8	n/c

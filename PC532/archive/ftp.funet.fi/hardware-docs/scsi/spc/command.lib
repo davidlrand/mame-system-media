@@ -1,0 +1,337 @@
+/*********************************************************************
+*								     *
+*	select(): This routine checks the interrupt on A to ensure   *
+*		  it is a valid selection, and responds by asserting *
+*		  busy.						     *
+*								     *
+*********************************************************************/
+
+select()
+{
+	if (DP8490) 
+	{
+		write(EASIEMR,ISR);
+		if ((temp=read(EASIISR)) & ESPER)		error(8);	/* SCSI parity error	*/
+		if (!(temp & ESEL))				error(9);	/* No Selection		*/
+	}
+	else
+	{
+		if ((read(EASIBSR) & BUS_MASK) ^ (INTERRUPT | PHASE_INT))	 error(4);	/* Invalid interrupt	*/  
+		if (!(read(EASICSB) & CK_SEL)) 				 error(5);	/* Interrupt on A while SEL inactive	*/
+	}
+	if (!((temp=read(EASICSD)) & SCSIID)) 		 		 error(6);	/* Interrupt on A with wrong ID on bus	*/
+	if ((IDtest(initid=temp ^ SCSIID)) > 1)
+	{
+		error(7);					/* Selection with more than two bits active on bus	*/
+	}
+	if (DP8490)	write(EASIICR,(AS_BSY | MODE_E));	/* Assert BSY	*/
+	else		write(EASIICR,AS_BSY);
+	while(read(EASICSB) & CK_SEL);				/* Wait for initiator to deassert SEL	*/
+}
+
+
+
+/************************************************************************
+*									*
+*	set_up(): This saves the ID and command of the previous		*
+*		  initiator, enters target mode, sets up the interrupt  *
+*		  response and receives the initiators message, if 	*
+*		  appropriate.The discon flag is set if the initiator	*
+*		  supports disconnection. i.e If it puts its own ID 	*
+*		  onto the bus during selection, and sends an IDENTIFY	*
+*		  message with the disconnection bit enabled.		*
+*									*
+************************************************************************/
+
+
+set_up()
+{
+	write(EASISER,FALSE);			/* This prevents any possibility of a selection		*/
+	if (DP8490)
+	{
+		write(EASIEMR,IMR);		/* Set up interrupts to only allow phase and SCSI parity interrupts	*/
+		write(EASIIMR,(MPE | EEDMA | DPHS | EBSY | ESEL | EARB));
+		write(EASIEMR,RPI);
+		write(EASIEMR,EN_APHS);
+	}
+	else read(EASIRPI);
+	RESETA=gen_int;
+	intA();
+	stat=GOOD;						/* status defaults to GOOD through program if no errors	*/
+	mescon=FALSE;						/* Set up flag for use in messin, if required.	*/
+	if ((read(EASIBSR) & CK_ATN) &&  !fail)			/* Check if initiator has a message	*/
+	{
+		getmes();
+		messout();
+	}
+	else discon=FALSE;				/* No IDENTIFY message so disconnection impossible	*/
+	if (!initid) discon=FALSE;			/* No initiator ID so disconnection impossible		*/
+
+}
+
+/*********************************************************************
+*                                                                    *
+*	fetch_cmd(): This routine enters the command phase and	     *
+*		     reads in the command block from the initiator   *
+*		     , storing it in the buffer com[6].		     *
+*								     *
+*********************************************************************/
+
+fetch_cmd()
+{
+	int i;
+	write(EASITCR,COMMAND_OUT);
+	point=&com[0];			/* Set pointer to base of command buffer	*/
+	for (i=0;i<=(COMMAND_BYTES-1);i++)
+	{
+		write(EASITCR,(COMMAND_OUT|REQ));
+		while(!(read(EASIBSR) & CK_ACK));
+		*point++=read(EASICSD);			/* Fill up command buffer	*/
+		write(EASITCR,COMMAND_OUT);
+		while(read(EASIBSR) & CK_ACK);
+	}
+}
+
+/*********************************************************************
+*								     *
+*	status(): This routine enters the status phase and           *
+*                 sends stat.      				     *	
+*								     *
+*********************************************************************/
+
+status()
+{
+	write(EASITCR,STATUS_IN);
+	write(EASIODR,stat);
+	if (DP8490)	write(EASIICR,(AS_BSY | AS_DBUS | MODE_E));
+	else		write(EASIICR,(AS_BSY | AS_DBUS));
+	write(EASITCR,(STATUS_IN | REQ));
+	while(!(read(EASIBSR) & CK_ACK));
+	write(EASITCR,STATUS_IN);
+	if (DP8490)	write(EASIICR,(AS_BSY | MODE_E));
+	else		write(EASIICR,AS_BSY);
+	while(read(EASIBSR) & CK_ACK);
+}
+
+/*********************************************************************
+*								     *
+*	messin(): This routine enters the message in phase and       *
+*	          sends 'message' to the initiator.  		     *
+*								     *
+*********************************************************************/
+
+messin()
+{
+	write(EASITCR,MESSAGE_IN);
+	write(EASIODR,message);
+	if (DP8490)	write(EASIICR,(AS_BSY | AS_DBUS | MODE_E));
+	else		write(EASIICR,(AS_BSY|AS_DBUS));
+	write(EASITCR,(MESSAGE_IN|REQ));
+	while(!(read(EASIBSR) & CK_ACK));
+	write(EASITCR,MESSAGE_IN);
+	if (DP8490)	write(EASIICR,(AS_BSY | MODE_E));
+	else		write(EASIICR,AS_BSY);
+	while(read(EASIBSR) & CK_ACK);
+	if ((read(EASIBSR) & CK_ATN) && !mescon)	/* If the initiator detects an error in the message and 	*/
+	{						/* wishes to respond it asserts ATN				*/
+		mescon=TRUE;		/* This stops the program cycling forever between messin & messout on error	*/
+		getmes();
+		messout();
+	}
+}
+
+
+/************************************************************************
+*									*
+*	getmes(): This fetches a message from the initiator.Although	*
+*		  this software only supports a single byte message it  *
+*		  will accept up to 256 bytes.However it will only 	*
+*		  process the first byte.				*
+*									*
+************************************************************************/
+
+getmes()
+{
+	int i=0;
+	parity_error=FALSE;
+	write(EASITCR,MESSAGE_OUT);
+	while(((read(EASIBSR) & CK_ATN) || mess_err) && (i<=(MESSAGE_BYTES-1)))	/* mess_err allows the message to be resent	*/
+	{								/* after an error, even though ATN is inactive.		*/
+		mess_err=FALSE;
+		write(EASITCR,(MESSAGE_OUT | REQ));
+		while(!(read(EASIBSR) & CK_ACK));
+		mess_out[i++]=read(EASICSD);
+		write(EASITCR,MESSAGE_OUT);
+		while(read(EASIBSR) & CK_ACK);
+	}
+}
+
+
+/**********************************************************************
+*								      *
+*	messout(): This follows getmes(), processing the command      *
+*		   which getmes returns.If there is a message parity  *
+*		   error it will attempt to recover the error.	      *
+*								      *
+**********************************************************************/
+
+messout()
+{
+	if (read(EASIBSR) & CK_ATN)		/* Initiator attempting to send more than 256 message bytes	*/
+	{
+		message=MESSAGE_REJECT;
+		messin();
+		sense[0]=ABORTED_COMMAND;
+		stat=CHECK_CONDITION;
+		fail=TRUE;
+	}
+	else
+	{
+		if (parity_error) 
+		{
+			mess_err=TRUE;
+			getmes();
+			if (!parity_error)
+			{
+				sense[0]=NO_SENSE;	/* On parity error this was set to aborted command and	*/
+				stat=GOOD;		/* check condition, which is now untrue.		*/
+			}
+		}
+		if (!parity_error)
+		{
+			switch (mess_out[0])
+			{
+				case ABORT:	if (initid && (reserved == initid))	/* Only print initiator causes abortion   */
+							restrt();
+						break;
+				case MESSAGE_REJECT:	messin();
+							if (read(EASIBSR) & CK_ATN)	/* Initiator finds fault with message     */
+							{
+								switch (message)	/* Next action depends on message 	*/
+								{			/* target attempted to send		*/
+									case COMMAND_COMPLETE:	break;	/* Not identified as    */
+													/* an error		*/
+									case DISCONNECT:	discon=FALSE;	/* No available   */
+												break;		/* disconnection  */
+
+									case MESSAGE_REJECT:	discon=recon=FALSE;
+												fail=TRUE;
+												sense[0]=HARDWARE_ERROR;
+												stat=CHECK_CONDITION;
+												break;
+
+									case (IDENTIFY | EN_DISCON):	sense[0]=HARDWARE_ERROR;
+													recon=FALSE;
+													fail=TRUE;
+													break;
+
+									default: restrt();  /* Attempted to send illegal message  */
+								}
+							}
+							break;
+
+				case MESSAGE_PARITY_ERROR:	messin();		/* Resend previous message.	*/
+								if (read(EASIBSR) & CK_ATN)
+								{
+									sense[0]=HARDWARE_ERROR;
+									stat=CHECK_CONDITION;
+									fail=TRUE;
+								}
+								break;
+				case BUS_DEVICE_RESET:	restrt();		/* Resets system regardless of message sender	*/
+	
+				case IDENTIFY:	discon=FALSE;		/* Initiator does not support disconnection	*/
+						break;
+				case (IDENTIFY | EN_DISCON):	discon=TRUE;	/* Initiator supports disconnection	*/
+								break;
+				default:	message=MESSAGE_REJECT;
+						messin();
+			}
+		}
+		else
+		{
+			sense[0]=ABORTED_COMMAND;
+			stat=CHECK_CONDITION;
+			fail=TRUE;
+		}
+	}
+	mescon=FALSE;
+}
+
+
+/**********************************************************************
+*								      *
+*	reset(): This sets up the SCSI to wait for the next selection *
+*		 Interrupts are disabled during this routine, so      *
+*		 to avoid missing a selection BSY is not deasserted   *
+*		 until late in the routine.(Thus freeing the bus)     *
+*		 In the DP8490 all interrupts are masked off except   *
+*		 selection and SCSI parity error.(Checks parity	      *
+*		 on selection)					      *
+* 								      *
+**********************************************************************/
+
+reset()
+{
+	dsi();
+	RESETA=main;
+	write(EASISER,SCSIID);
+	write(EASITCR,FALSE);			/* Deassert all SCSI signals			*/
+	if (DP8490)
+	{
+		write(EASIEMR,RPI);
+		write(EASIEMR,IMR);
+		write(EASIIMR,(EARB | EBSY | APHS | DPHS | EEDMA | MPE));
+		write(EASIICR,MODE_E);
+	}
+	else
+	{
+		read(EASIRPI);
+		write(EASIICR,FALSE);
+	}
+	parity_error=phase_error=fail=FALSE;
+}
+
+
+/********************************************************************
+*								    *
+*	gen_int(): This reponds to an unexpected SCSI interrupt.    *
+*		   resets are handled in machine code, so the only  *
+*		   other relevant general interrupts are parity     *
+*		   errors and phase mismatches.Errors associated    *
+*		   with DMA are handled by DMA routines.On error    *
+*		   the relevant command is not carried out and      *
+*		   sense is set to aborted command.Check condition  *
+*		   is the returned status.			    *
+*								    *
+********************************************************************/
+
+gen_int()
+{
+	parity_error=phase_error=FALSE;		/* Reset any previous errors	*/
+	if (DP8490)
+	{
+		write(EASIEMR,(ISR | EN_APHS));
+		if ((temp=read(EASIISR)) & ESPER)
+			parity_error=TRUE;
+		if (temp & APHS)
+			phase_error=TRUE;
+		write(EASIEMR,RPI);
+		write(EASIEMR,EN_APHS);
+	}
+	else
+	{
+		if ((temp = read(EASIBSR)) & SPER)
+			parity_error=TRUE;
+		if (!(temp & PHASE_INT))
+			phase_error=TRUE;
+		read(EASIRPI);
+	}
+	if (fail=(parity_error | phase_error))		/* Set fail flag if any errors	*/
+	{
+		sense[0]=ABORTED_COMMAND;
+		stat=CHECK_CONDITION;
+	}
+	RESETA=gen_int;
+	eni();
+}

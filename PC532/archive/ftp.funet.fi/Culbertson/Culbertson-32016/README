@@ -1,0 +1,51 @@
+This is the hardware design for a simple computer based on the National
+Semiconductor NS32016 microprocessor.  A wire-wrap prototype has been
+built and tested running at 10MHz.  It consists of the basic National
+chipset (CPU, TCU, MMU, FPU, ICU, DMA), memory (64K EPROM, 64K SRAM,
+multiples of 2M DRAM), and I/O (2 UARTS, IBM-PC compatible floppy, SCSI).
+The chip count is in the vicinity of 50 IC's.  It was designed to run in
+a stand-alone configuration with a terminal attached via RS-232.
+
+The design is specified by two files: a netlist and a parts list.  The
+netlist consists of a number of triples.  A triple is a part name, a pin
+number, and the net to which the part/pin is attached.  In some cases,
+there is an exclamation mark and a comment following triple, before the
+end of the line.
+
+The parts list consists of pairs: a part name, matching a name used in the
+netlist; and the type of that part, e.g. 74ALS00.  Some lines have comments
+similar to those in the netlist.
+
+There are a few special nets:
+
+     gnd       ground plane
+     +5v       5 volt power plane
+     +tie_high logic one (up to about 8 of these may be tied together and
+               connected to +5v through a resister between 1K and 5K ohms)
+     n/c       no connection
+
+Some nets must be pulled high with a resister, e.g. to create a wire-and.
+This is indicated in the netlist by connecting the net to a part called
+"pullup".  Ignore the pin numbers on the pullup pseudo-part.  SIP's can
+be used here if convenient.
+
+Of course, there are many details of good engineering practice which the
+design files fail to convey.  A prototype board with effective low
+inductance ground and power planes is recommended.  Bypass capacitors
+should be used liberally.  In the DRAM region, in particular, I
+recommend using .47uf monolithics.  Pay attention to recommendations
+in the National manuals about power and grounding on particular pins.
+
+In some cases the design reflects particular parts which were available
+to me.  For example, two delay lines are indicated simply because I did
+not have a single part with an appropriate delay.  The delay lines could
+have been avoided all together had I had a DRAM controller capable of
+driving one megabyte DRAM's.  The 20ns tap on the delay line has worked
+well for me.  The delay lines could be replaced with a chain of buffers,
+though this could introduce some temperature sensitivity.
+
+I would be interested in hearing from people using this design.  Good
+luck.
+
+Bruce Culbertson
+culberts@hplabs.hp.com

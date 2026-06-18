@@ -1,0 +1,107 @@
+/*************************************************************************
+*							  		 *
+*	single_dma_in(phase): Enters 'phase' and transfers data using    *
+*			      single mode DMA. (Writes to initiator)	 *
+*									 *
+*************************************************************************/
+
+single_dma_in(phase)
+int phase;
+{
+	int i;
+	write(EASITCR,phase);
+	write(EASIMR2,SINGLE_MODE_DMA);
+	if (DP8490)	write(EASIICR,(AS_BSY | AS_DBUS | MODE_E));
+	else		write(EASIICR,(AS_BSY | AS_DBUS));
+	dma(EASISDS);
+	if (DP8490)	write(EASIICR,(AS_BSY | MODE_E));
+	else		write(EASIICR,AS_BSY);
+}
+
+/************************************************************************
+*									*
+*	blk_dma_in(phase): Enters 'phase' and transfers data using      *
+*			   block mode DMA. (Writes to initiator)	*
+*									*
+************************************************************************/
+
+blk_dma_in(phase)
+int phase;
+{
+	write(EASITCR,phase);
+	write(EASIMR2,BLK_MODE_DMA);
+	if (DP8490)	write(EASIICR,(AS_BSY | AS_DBUS | MODE_E));
+	else		write(EASIICR,(AS_BSY | AS_DBUS));
+	dma(EASISDS);
+	if (DP8490)	write(EASIICR,(AS_BSY | MODE_E));
+	else		write(EASIICR,AS_BSY);
+}
+
+/************************************************************************
+*									*
+*	dma(reg): This initiates a DMA transfer and checks for 		*
+*		  successful completion.Type of transfer must be set 	*
+*		  before calling this routine.				*
+*									*
+************************************************************************/
+
+dma(reg)
+char reg;
+{
+	int i;
+	if (DP8490) 
+	{
+		write(EASIEMR,(IMR | EN_APHS));			/* Allow DMA error interrupts	*/
+		write(EASIIMR,(MPE | EBSY | ESEL | EARB));
+	}
+	RESETA=serva;
+	ano_interrupt=TRUE;
+	write(reg,DONT_CARE);
+	while(ano_interrupt);
+	if (DP8490)
+	{
+		write(EASIEMR,(ISR | EN_APHS));
+		if (read(EASIISR) ^ EEDMA)				/* Check only end of DMA interrupt active	*/
+		{
+			sense[0]=ABORTED_COMMAND;
+			stat=CHECK_CONDITION;
+			print_on=FALSE;				/* Reset command to stop print taking place	*/
+		}
+		write(EASIEMR,(IMR | EN_APHS));			/* Reset interrupt mask for general operation	*/
+		write(EASIIMR,(MPE | EEDMA | DPHS | EBSY | ESEL | EARB));
+		RESETA=gen_int;
+		write(EASIMR2,(TARGET | EN_PINT | EN_PCHK));	/* Reset DMA bits	*/
+		write(EASIEMR,RPI);
+		write(EASIEMR,EN_APHS);
+		eni();
+	}
+	else
+	{
+		for(i=1;i<=3;i++)							/* In mode N to decode TRUE end of*/
+			while((read(EASICSB) & CK_REQ) || (read(EASIBSR) & CK_ACK)); 	/* DMA REQ & ACK must be inactive */
+											/* on three succsesive reads.	  */
+		if(!(read(EASIBSR) & EDMA))
+		{
+			sense[0]=ABORTED_COMMAND;
+			stat=CHECK_CONDITION;
+			print_on=FALSE;				/* Reset command to stop print taking place	*/
+		}
+		else
+		{
+			write(EASIMR2,(TARGET | EN_PINT | EN_PCHK));		/* Reset DMA bits	*/
+			gen_int();						/* Check for phase or parity error	*/
+		}
+	}
+}
+
+/************************************************************************
+*									*
+*	serva(): This routine responds to an interrupt during a DMA 	*
+*		 cycle, by resetting the interrupt flag.		*
+*									*
+************************************************************************/
+
+serva()
+{
+	ano_interrupt=FALSE;
+}

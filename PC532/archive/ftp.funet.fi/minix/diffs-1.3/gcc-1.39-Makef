@@ -1,0 +1,141 @@
+*** ../Makefile	Sun Feb  3 17:54:17 1991
+--- Makefile	Sun Feb  3 17:57:43 1991
+***************
+*** 21,28 ****
+  # Variables that exist for you to override.
+  # See below for how to change them for certain systems.
+  
+! CFLAGS = -g $(XCFLAGS)
+! CC = cc
+  BISON = bison
+  BISONFLAGS = -v
+  # This should be the version of ar to use with output from GCC.
+--- 21,28 ----
+  # Variables that exist for you to override.
+  # See below for how to change them for certain systems.
+  
+! CFLAGS = -O $(XCFLAGS)
+! CC = gcc
+  BISON = bison
+  BISONFLAGS = -v
+  # This should be the version of ar to use with output from GCC.
+***************
+*** 38,44 ****
+  
+  # Compiler to use for compiling gnulib.
+  # OLDCC should not be the GNU C compiler.
+! OLDCC = cc
+  
+  # CFLAGS for use with OLDCC, for compiling gnulib.
+  # NOTE: -O does not work on some Unix systems!
+--- 38,44 ----
+  
+  # Compiler to use for compiling gnulib.
+  # OLDCC should not be the GNU C compiler.
+! OLDCC = gcc
+  
+  # CFLAGS for use with OLDCC, for compiling gnulib.
+  # NOTE: -O does not work on some Unix systems!
+***************
+*** 54,69 ****
+  # Directory where sources are, from where we are.
+  srcdir = .
+  # Directory in which to put the executable for the command `gcc'
+! bindir = $(prefix)/usr/local/bin
+  # Directory in which to put the subprograms used by the compiler.
+! libdir = $(prefix)/usr/local/lib
+  # Directory in which to put man pages.
+! mandir = $(prefix)/usr/local/man/man1
+  # Number to put in man-page filename.
+  manext = 1
+  
+  # Additional system libraries to link with.
+! CLIB=
+  
+  # Change this to a null string if obstacks are installed in the
+  # system library.
+--- 54,69 ----
+  # Directory where sources are, from where we are.
+  srcdir = .
+  # Directory in which to put the executable for the command `gcc'
+! bindir = $(prefix)/usr/gnu/bin
+  # Directory in which to put the subprograms used by the compiler.
+! libdir = $(prefix)/usr/gnu/lib/gcc-1.39
+  # Directory in which to put man pages.
+! mandir = $(prefix)/usr/gnu/man/man1
+  # Number to put in man-page filename.
+  manext = 1
+  
+  # Additional system libraries to link with.
+! CLIB=-lflt
+  
+  # Change this to a null string if obstacks are installed in the
+  # system library.
+***************
+*** 285,291 ****
+  	  rm -f $${name}.c; \
+  	  cp $(srcdir)/gnulib.c $${name}.c; \
+  	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $${name}.c; \
+! 	  $(OLDAR) qc tmpgnulib $${name}.o; \
+  	  rm -f $${name}.[co]; \
+  	done
+  	-if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ;then $(RANLIB) tmpgnulib; else true; fi
+--- 285,291 ----
+  	  rm -f $${name}.c; \
+  	  cp $(srcdir)/gnulib.c $${name}.c; \
+  	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $${name}.c; \
+! 	  $(OLDAR) -a tmpgnulib $${name}.o; \
+  	  rm -f $${name}.[co]; \
+  	done
+  	-if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ;then $(RANLIB) tmpgnulib; else true; fi
+***************
+*** 303,309 ****
+  	do \
+  	  echo $${name}; \
+  	  ./gcc -B./ -fstrength-reduce -O $(INCLUDES) $(GNULIB2_CFLAGS) -c -DL$${name} $(srcdir)/gnulib2.c -o $${name}.o; \
+! 	  $(AR) rc gnulib $${name}.o; \
+  	  rm -f $${name}.o; \
+  	done
+  	-if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ; then $(RANLIB) gnulib; else true; fi
+--- 303,309 ----
+  	do \
+  	  echo $${name}; \
+  	  ./gcc -B./ -fstrength-reduce -O $(INCLUDES) $(GNULIB2_CFLAGS) -c -DL$${name} $(srcdir)/gnulib2.c -o $${name}.o; \
+! 	  $(AR) -a gnulib $${name}.o; \
+  	  rm -f $${name}.o; \
+  	done
+  	-if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ; then $(RANLIB) gnulib; else true; fi
+***************
+*** 326,332 ****
+  
+  # Compile hard-params with standard cc.  It avoids some headaches.
+  hard-params: hard-params.o
+! 	$(OLDCC) $(HARD_PARAMS_FLAGS) $(LDFLAGS) hard-params.o -o $@
+  hard-params.o: $(srcdir)/hard-params.c
+  	-cp $(srcdir)/hard-params.c . > /dev/null 2>&1
+  	$(OLDCC) $(HARD_PARAMS_FLAGS) $(CPPFLAGS) -DNO_SC -c hard-params.c
+--- 326,332 ----
+  
+  # Compile hard-params with standard cc.  It avoids some headaches.
+  hard-params: hard-params.o
+! 	$(OLDCC) $(HARD_PARAMS_FLAGS) $(LDFLAGS) hard-params.o -o $@ -lflt
+  hard-params.o: $(srcdir)/hard-params.c
+  	-cp $(srcdir)/hard-params.c . > /dev/null 2>&1
+  	$(OLDCC) $(HARD_PARAMS_FLAGS) $(CPPFLAGS) -DNO_SC -c hard-params.c
+***************
+*** 642,648 ****
+  		echo Installing a dummy libg.a into /usr/lib; \
+  		echo "_no_libg(){}" > _no_libg.c; \
+  		./gcc -B./ -c _no_libg.c; \
+! 		$(AR) rc libg.a _no_libg.o; \
+  		$(INSTALL) libg.a /usr/lib/libg.a; \
+  		if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ; then (cd /usr/lib; $(RANLIB) libg.a) ; else true; fi; \
+  		rm -f _no_libg.[co] libg.a; \
+--- 642,648 ----
+  		echo Installing a dummy libg.a into /usr/lib; \
+  		echo "_no_libg(){}" > _no_libg.c; \
+  		./gcc -B./ -c _no_libg.c; \
+! 		$(AR) -a libg.a _no_libg.o; \
+  		$(INSTALL) libg.a /usr/lib/libg.a; \
+  		if [ -f /usr/bin/ranlib -o -f /bin/ranlib ] ; then (cd /usr/lib; $(RANLIB) libg.a) ; else true; fi; \
+  		rm -f _no_libg.[co] libg.a; \

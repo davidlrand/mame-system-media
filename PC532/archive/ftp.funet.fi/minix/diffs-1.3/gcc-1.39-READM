@@ -1,0 +1,20 @@
+patch -p1 < /usr/diffs/gcc-1.39-DIFFS
+
+change -g to -O (debugging doesn't currently work)
+
+edit makefile to use gcc
+
+edit makefile to put the cc1 etc. in a suitable place
+
+edit makefile to use gcc as OLDCC
+
+edit makefile to contain -lflt in CLIB
+
+edit makefile to use ar -a instead of other flags when doing gnulib and gnulib2
+
+edit build of hard-params to contain -lflt
+
+edit build of libg.a to use ar -a
+
+./config.gcc pc532-wbc (gas version currently doesn't work)
+

@@ -1,0 +1,33 @@
+diff -cr m4.orig/Makefile m4/Makefile
+*** m4.orig/Makefile	Mon Jun 18 00:17:24 1990
+--- m4/Makefile	Sun Dec  9 18:40:03 1990
+***************
+*** 1,13 ****
+  INCL	= 
+! COPTS	= -O -g
+  CFLAGS	= $(COPTS) $(CEXT) $(INCL)
+  CC	= gcc
+  DEPEND	= $(CC) -MM $(INCL)
+  LOADLIBES =
+  INSTALL	= install
+! INSTFLAGS = -c -s -m 755
+  
+! PREFIX	= /usr/local
+  BINDIR	= ${PREFIX}/bin
+  MANDIR	= ${PREFIX}/man
+  LIBDIR	= ${PREFIX}/lib
+--- 1,14 ----
+  INCL	= 
+! COPTS	= -O
+  CFLAGS	= $(COPTS) $(CEXT) $(INCL)
+  CC	= gcc
+  DEPEND	= $(CC) -MM $(INCL)
+  LOADLIBES =
+  INSTALL	= install
+! INSTFLAGS = -c
+! CEXT	= -DUSG
+  
+! PREFIX	= /usr/gnu
+  BINDIR	= ${PREFIX}/bin
+  MANDIR	= ${PREFIX}/man
+  LIBDIR	= ${PREFIX}/lib

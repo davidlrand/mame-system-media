@@ -1,0 +1,20 @@
+From owner-pc532%daver@mips.com Wed Mar 21 04:12:34 1990
+Reply-To: pc532@daver.bungi.com
+To: pc532@daver.bungi.com
+Subject: gcc 1.37.1 and the ns32k (update)
+Date: Wed, 21 Mar 90 01:46:22 EST
+From: David Taylor <taylor@Think.COM>
+
+I got a patch to gcc 1.37.1 from rms and it now successfully cross
+compiles itself on both a vax and a sun4.  The patch is short; here it
+is -- replace the ashlsi3 pattern in ns32k.md with:
+
+(define_insn "ashlsi3"
+  [(set (match_operand:SI 0 "general_operand" "=g,g")
+	(ashift:SI (match_operand:SI 1 "general_operand" "r,0")
+		   (match_operand:SI 2 "general_operand" "I,rmn")))]
+  ""
+  "* return output_shift_insn (operands);")
+
+David
+

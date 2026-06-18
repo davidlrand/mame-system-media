@@ -1,0 +1,65 @@
+From owner-pc532%daver@mips.com Thu Mar 22 01:08:34 1990
+Reply-To: pc532@daver.bungi.com
+To: pc532@daver.bungi.com
+Subject: a couple of small ns32k.md changes (gcc 1.37.1)
+Date: Wed, 21 Mar 90 18:36:57 EST
+From: David Taylor <taylor@Think.COM>
+
+Here's a copy of a message that I just sent to bug-gcc and rms
+concerning a couple of small changes to ns32k.md to allow it to get
+along with gas 1.35.
+
+David
+
+There are three lines in the gcc 1.37.1 file ns32k.md, that gas 1.35
+doesn't like -- gas configured for the ns32k supports `#' as a comment
+character at the beginning of a line, but it uses `|', not `#', as the
+comment character within lines.
+
+Here are the changes to use `|' when USE_GAS is defined.  Even simpler
+would be to remove the comments, but I felt that they were useful, so I
+left them.
+
+RCS file: RCS/ns32k.md,v
+retrieving revision 1.6
+diff -c -r1.6 ns32k.md
+*** /tmp/,RCSt1019710	Wed Mar 21 18:19:37 1990
+--- ns32k.md	Wed Mar 21 18:10:51 1990
+***************
+*** 810,818 ****
+--- 810,826 ----
+    "*
+  {
+    if (INTVAL (operands[0]) == 8)
++ #if defined(USE_GAS)
++     return \"cmpd tos,tos | adjsp -8\";
++ #else
+      return \"cmpd tos,tos # adjsp -8\";
++ #endif
+    if (INTVAL (operands[0]) == 4)
++ #if defined(USE_GAS)
++     return \"cmpqd %$0,tos | adjsp -4\";
++ #else
+      return \"cmpqd %$0,tos # adjsp -4\";
++ #endif
+    if (INTVAL (operands[0]) < 64 && INTVAL (operands[0]) > -64)
+      return \"adjspb %$%n0\";
+    else if (INTVAL (operands[0]) < 8192 && INTVAL (operands[0]) >= -8192)
+***************
+*** 1932,1938 ****
+--- 1940,1950 ----
+        else
+  	output_asm_insn (\"movzbd 3(sp),%0\", operands);
+      }
++ #if defined(USE_GAS)
++   return \"cmpqd %$0,tos | adjsp -4\";
++ #else
+    return \"cmpqd %$0,tos # adjsp -4\";
++ #endif
+  }")
+  
+  (define_insn ""
+--
+David Taylor
+taylor@think.com, ...{ames,bloom-beacon,harvard}!think!taylor
+

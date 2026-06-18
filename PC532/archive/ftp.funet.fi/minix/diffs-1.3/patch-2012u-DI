@@ -1,0 +1,86 @@
+diff -cr patch.orig/Configure patch-2.0.12u/Configure
+*** patch.orig/Configure	Mon Dec  3 04:46:47 1990
+--- patch-2.0.12u/Configure	Mon Dec  3 16:27:17 1990
+***************
+*** 15,21 ****
+  # working with this copy of Configure, you may wish to get metaconfig.)
+  
+  : sanity checks
+! PATH='.:/bin:/usr/bin:/usr/local/bin:/usr/ucb:/usr/local:/usr/lbin:/etc:/usr/new:/usr/new/bin:/usr/nbin'
+  export PATH || (echo "OOPS, this isn't sh.  Desperation time.  I will feed myself to sh."; sh $0; kill $$)
+  
+  if test ! -t 0; then
+--- 15,22 ----
+  # working with this copy of Configure, you may wish to get metaconfig.)
+  
+  : sanity checks
+! #PATH='.:/bin:/usr/bin:/usr/local/bin:/usr/ucb:/usr/local:/usr/lbin:/etc:/usr/new:/usr/new/bin:/usr/nbin'
+! PATH=".:$PATH"
+  export PATH || (echo "OOPS, this isn't sh.  Desperation time.  I will feed myself to sh."; sh $0; kill $$)
+  
+  if test ! -t 0; then
+***************
+*** 858,864 ****
+  exit 0; _ _ _ _\1\\	 \1\\
+  #endif\\
+  /' >/tmp/Cppsym\$\$
+! echo exit 1 >>/tmp/Cppsym\$\$
+  $cppstdin $cppminus </tmp/Cppsym\$\$ >/tmp/Cppsym2\$\$
+  case "\$list" in
+  true) awk 'NF > 5 {print substr(\$6,2,100)}' </tmp/Cppsym2\$\$ ;;
+--- 859,865 ----
+  exit 0; _ _ _ _\1\\	 \1\\
+  #endif\\
+  /' >/tmp/Cppsym\$\$
+! echo exit 1 | tee -a /tmp/Cppsym\$\$ > /dev/null
+  $cppstdin $cppminus </tmp/Cppsym\$\$ >/tmp/Cppsym2\$\$
+  case "\$list" in
+  true) awk 'NF > 5 {print substr(\$6,2,100)}' </tmp/Cppsym2\$\$ ;;
+diff -cr patch.orig/Makefile patch-2.0.12u/Makefile
+*** patch.orig/Makefile	Mon Dec  3 16:38:26 1990
+--- patch-2.0.12u/Makefile	Mon Dec  3 16:39:13 1990
+***************
+*** 13,18 ****
+--- 13,20 ----
+  addedbyconf = Makefile.old bsd config.h config.sh eunice loc pdp11 usg v7
+  
+  # grrr
++ CC = gcc
++ CFLAGS = -O
+  SHELL = /bin/sh
+  
+  .c.o:
+diff -cr patch.orig/common.h patch-2.0.12u/common.h
+*** patch.orig/common.h	Mon Dec  3 04:18:09 1990
+--- patch-2.0.12u/common.h	Mon Dec  3 16:40:19 1990
+***************
+*** 28,34 ****
+  #define Close (void)close
+  #define Fclose (void)fclose
+  #define Fflush (void)fflush
+! #define Sprintf (void)sprintf
+  #define Mktemp (void)mktemp
+  #define Strcpy (void)strcpy
+  #define Strcat (void)strcat
+--- 28,34 ----
+  #define Close (void)close
+  #define Fclose (void)fclose
+  #define Fflush (void)fflush
+! #define Sprintf (int)sprintf
+  #define Mktemp (void)mktemp
+  #define Strcpy (void)strcpy
+  #define Strcat (void)strcat
+***************
+*** 153,161 ****
+--- 153,163 ----
+  long atol();
+  long lseek();
+  char *mktemp();
++ #if 0
+  #ifdef CHARSPRINTF
+  char *sprintf();
+  #else
+  int sprintf();
++ #endif
+  #endif
+  char *getenv();

@@ -1,0 +1,78 @@
+diff -cr elvis-1.4.orig/Makefile.mix elvis-1.4/Makefile.mix
+*** elvis-1.4.orig/Makefile.mix	Wed Dec  5 16:50:35 1990
+--- elvis-1.4/Makefile.mix	Thu Dec  6 16:54:43 1990
+***************
+*** 128,154 ****
+  #DOC=	doc/
+  
+  #---- These settings are recommended for Minix-ST ----
+! #O=	.o
+! #E=
+! #EXTRA=
+! #EXTRA2=
+! #LIBS=
+! #BIN=	/usr/bin
+! #CC=	cc
+! #CFLAGS=
+! #OF=	-o 
+! #RF=	-c
+! #DATE=	-DDATE=\'\"`date`\"\'
+! #EVAL=	eval 
+! #PROGS=	elvis$E ctags$E ref$E virec$E refont$E
+  #CHMEM=	chmem =18000 elvis
+! #SORT=
+! #INST=	inst.unix
+! #RM=	rm -f
+! #PR1=	lpr
+! #PR2=
+! #DUMMY=
+! #DOC=	doc/
+  
+  #---- These settings are recommended for Minix-PC ----
+  #O=	.s
+--- 128,154 ----
+  #DOC=	doc/
+  
+  #---- These settings are recommended for Minix-ST ----
+! O=	.o
+! E=
+! EXTRA=
+! EXTRA2=
+! LIBS=
+! BIN=	/usr/gnu/bin
+! CC=	gcc
+! CFLAGS= -O
+! OF=	-o 
+! RF=	-c
+! DATE=	-DDATE=\'\"`date`\"\'
+! EVAL=	eval 
+! PROGS=	elvis$E ctags$E ref$E virec$E refont$E
+  #CHMEM=	chmem =18000 elvis
+! SORT=
+! INST=	inst.unix
+! RM=	rm -f
+! PR1=	lpr
+! PR2=
+! DUMMY=
+! DOC=	doc/
+  
+  #---- These settings are recommended for Minix-PC ----
+  #O=	.s
+***************
+*** 345,352 ****
+  
+  inst.unix: $(DUMMY)
+  	cp $(PROGS) $(BIN)
+! 	(cd $(BIN); chmod 755 $(PROGS))
+! 	(cd $(BIN); chown bin $(PROGS))
+  	-ln $(BIN)/elvis $(BIN)/vi
+  	-ln $(BIN)/elvis $(BIN)/ex
+  	-ln $(BIN)/elvis $(BIN)/view
+--- 345,351 ----
+  
+  inst.unix: $(DUMMY)
+  	cp $(PROGS) $(BIN)
+! 	(cd $(BIN); chmod a+x $(PROGS))
+  	-ln $(BIN)/elvis $(BIN)/vi
+  	-ln $(BIN)/elvis $(BIN)/ex
+  	-ln $(BIN)/elvis $(BIN)/view

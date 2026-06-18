@@ -1,0 +1,73 @@
+/************************************************************************/
+/* This pal generates the 4 CAS selects	based upon refresh and byte	*/
+/* enables. It supports 0 wait state read/write on first access if	*/
+/* in page.								*/
+/************************************************************************/
+
+#define DESIGNER George Scolaro		/* (C) 1988,89 */
+#define REVISION 01 	05/07/88
+#define PARTNUM U19	PAL20L8B | GAL20V8A-15
+
+dramen(	in	!be0l,		/* latched byte enables */
+		!be1l,
+		!be2l,
+		!be3l,
+		!rfcyc,		/* doing a refresh cycle */
+		!bmt,		/* begin memory transaction */
+		!cas,		/* cas from DRAMC pal */
+		dram,		/* dram bank select, A22 or A24 */
+		qo0,		/* two phase signals */
+		qo1,
+		!hsa,		/* high speed access to dram in progress */
+		!conf,		/* bus cycle confirmed */
+		!ddin,		/* data direction from 32gx32 */
+		!ras,		/* ras for drams */
+		!rfrqi,		/* refresh request is pending */
+		!ddinl;		/* /bclk latched ddin */
+	out
+		!cas0,		/* cas 0, output only */
+		!cas3;		/* cas 3, output only */
+	io
+		!cas1,		/* cas 1 */
+		!cas2;		/* cas 2 */
+)
+{
+
+[cas0, cas1, cas2, cas3].oe = HI;
+
+cas0	= cas & rfcyc
+	| cas & !ddin & be0l
+	| hsa & dram & conf & ddin & bmt & !rfrqi & !rfcyc & ras /* fast cas */
+	| cas1 & hsa & dram & conf & ddin & !cas & !rfcyc
+	| cas & ddinl & qo0
+	| cas & ddinl & qo1;
+
+cas1	= cas & rfcyc
+	| cas & !ddin & be1l
+	| hsa & dram & conf & ddin & bmt & !rfrqi & !rfcyc & ras /* fast cas */
+	| cas1 & hsa & dram & conf & ddin & !cas & !rfcyc
+	| cas & ddinl & qo0
+	| cas & ddinl & qo1;
+
+cas2	= cas & rfcyc
+	| cas & !ddin & be2l
+	| hsa & dram & conf & ddin & bmt & !rfrqi & !rfcyc & ras /* fast cas */
+	| cas1 & hsa & dram & conf & ddin & !cas & !rfcyc
+	| cas & ddinl & qo0
+	| cas & ddinl & qo1;
+
+cas3	= cas & rfcyc
+	| cas & !ddin & be3l
+	| hsa & dram & conf & ddin & bmt & !rfrqi & !rfcyc & ras /* fast cas */
+	| cas1 & hsa & dram & conf & ddin & !cas & !rfcyc
+	| cas & ddinl & qo0
+	| cas & ddinl & qo1;
+
+
+putpart("p20l8", "dramen",
+	be0l, be1l, be2l, be3l, rfcyc, bmt, cas, dram, qo0, qo1,
+	hsa, GND,
+	conf, ddin, cas0, cas1, cas2, cas3, _, ras, rfrqi, _,
+	ddinl, VCC);
+}
+

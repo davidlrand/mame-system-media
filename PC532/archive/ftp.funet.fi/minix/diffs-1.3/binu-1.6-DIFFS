@@ -1,0 +1,712 @@
+diff -crN binutils.orig/Makefile binut-1.6-snar/Makefile
+*** binutils.orig/Makefile	Tue Aug 14 02:25:27 1990
+--- binut-1.6-snar/Makefile	Sun Feb 10 20:53:52 1991
+***************
+*** 24,42 ****
+  # But you might need to use your old C compiler to compile the other
+  # programs (ld at least), if you can't run gcc without them
+  # (particularly on COFF systems).
+! CC = cc
+  
+! bindir=/usr/local/bin
+  
+  # For BSD:
+  # For SunOS 4.x, take out -DVPRINTF_MISSING.
+! CFLAGS = -g -DVPRINTF_MISSING
+  # Don't add robotussin; it won't compile on BSD or GNU systems.
+  # objdump is not here because it (at least used to) not compile
+  # on most systems (trouble with N_DATADDR).  Some of those problems
+  # have been fixed, though.
+  PROGS = $(archpfx)gprof $(archpfx)ld $(archpfx)size \
+!         $(archpfx)nm $(archpfx)strip $(archpfx)ar $(archpfx)ranlib
+  
+  # For USG systems using COFF_ENCAPSULATE:
+  # Also, you will want to make the target libc.a (but it takes a long time).
+--- 24,43 ----
+  # But you might need to use your old C compiler to compile the other
+  # programs (ld at least), if you can't run gcc without them
+  # (particularly on COFF systems).
+! CC = $(GNUCC)
+  
+! bindir=/usr/gnu/bin
+  
+  # For BSD:
+  # For SunOS 4.x, take out -DVPRINTF_MISSING.
+! CFLAGS = -DUSG -DMINIX -DESTDIO -DPSIGNAL_MISSING -DSYS_SIGLIST_MISSING -I. #-g -DVPRINTF_MISSING
+  # Don't add robotussin; it won't compile on BSD or GNU systems.
+  # objdump is not here because it (at least used to) not compile
+  # on most systems (trouble with N_DATADDR).  Some of those problems
+  # have been fixed, though.
+  PROGS = $(archpfx)gprof $(archpfx)ld $(archpfx)size \
+!         $(archpfx)nm $(archpfx)strip $(archpfx)ar $(archpfx)ranlib \
+! 	$(archpfx)objdump
+  
+  # For USG systems using COFF_ENCAPSULATE:
+  # Also, you will want to make the target libc.a (but it takes a long time).
+***************
+*** 44,50 ****
+  # after you install it, since `ranlib' will try to run it from here.
+  #CFLAGS = -g -DUSG -DCOFF_ENCAPSULATE -DPORTAR -DNON_NATIVE -DPIGNAL_MISSING
+  #PROGS = ld size nm strip ar robotussin objdump ranlib gprof
+! #SIGNAME = $(archpfx)signame.o
+  # On ALTOS systems, add -DALTOS to CFLAGS.
+  
+  #It's better to move a copy of alloca into your libc than to risk getting some
+--- 45,51 ----
+  # after you install it, since `ranlib' will try to run it from here.
+  #CFLAGS = -g -DUSG -DCOFF_ENCAPSULATE -DPORTAR -DNON_NATIVE -DPIGNAL_MISSING
+  #PROGS = ld size nm strip ar robotussin objdump ranlib gprof
+! SIGNAME = $(archpfx)signame.o
+  # On ALTOS systems, add -DALTOS to CFLAGS.
+  
+  #It's better to move a copy of alloca into your libc than to risk getting some
+***************
+*** 93,126 ****
+  
+  all: $(PROGS)
+  
+! $(archpfx)ld: $(archpfx)ld.o $(GNU_GETOPT_LONG) $(CPLUS_DEM)
+  # LIBS is used here since ld needs to use alloca.
+  # Alternatively, compile it with GNU C--then the compiler handles alloca.
+  	$(CC) $(CFLAGS) -o $(archpfx)ld $(archpfx)ld.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  
+! $(archpfx)size: $(archpfx)size.o
+  	$(CC) $(CFLAGS) -o $(archpfx)size $(archpfx)size.o
+  
+! $(archpfx)nm: $(archpfx)nm.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(MALLOC)
+  	$(CC) $(CFLAGS) -o $(archpfx)nm $(archpfx)nm.o \
+  		$(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS) $(MALLOC)
+  
+! $(archpfx)strip: $(archpfx)strip.o $(archpfx)error.o $(GNU_GETOPT_LONG)
+  	$(CC) $(CFLAGS) -o $(archpfx)strip $(archpfx)strip.o $(archpfx)error.o $(GNU_GETOPT_LONG) $(LIBS)
+  
+! $(archpfx)ar: $(archpfx)ar.o
+  	$(CC) $(CFLAGS) -o $(archpfx)ar $(archpfx)ar.o $(LIBS)
+  
+! $(archpfx)gprof: $(archpfx)gprof.o $(GNU_GETOPT_LONG) $(CPLUS_DEM)
+  	$(GNUCC) $(CFLAGS) -o $(archpfx)gprof $(archpfx)gprof.o \
+  		$(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  $(archpfx)gprof.o: gprof.c gmon.h 
+  	$(GNUCC) $(CFLAGS) -c gprof.c $(OUTPUT_OPTION)
+  
+! $(archpfx)ranlib: $(archpfx)ranlib.o $(GNU_GETOPT_LONG)
+  	$(CC) $(CFLAGS) -o $(archpfx)ranlib $(archpfx)ranlib.o $(GNU_GETOPT_LONG) $(LIBS)
+! $(archpfx)ranlib.o: ranlib.c
+! 	$(CC) -c $(CFLAGS) -DAR_PROG=\"$(bindir)/ar\" ranlib.c $(OUTPUT_OPTION)
+  
+  $(archpfx)objdump: $(archpfx)objdump.o $(archpfx)error.o $(GNU_GETOPT_LONG) a.out.gnu.h
+  	$(CC) $(CFLAGS) -o $(archpfx)objdump $(archpfx)objdump.o $(archpfx)error.o \
+--- 94,127 ----
+  
+  all: $(PROGS)
+  
+! $(archpfx)ld: $(archpfx)ld.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  # LIBS is used here since ld needs to use alloca.
+  # Alternatively, compile it with GNU C--then the compiler handles alloca.
+  	$(CC) $(CFLAGS) -o $(archpfx)ld $(archpfx)ld.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  
+! $(archpfx)size: $(archpfx)size.o  $(LIBS)
+  	$(CC) $(CFLAGS) -o $(archpfx)size $(archpfx)size.o
+  
+! $(archpfx)nm: $(archpfx)nm.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(MALLOC)  $(LIBS)
+  	$(CC) $(CFLAGS) -o $(archpfx)nm $(archpfx)nm.o \
+  		$(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS) $(MALLOC)
+  
+! $(archpfx)strip: $(archpfx)strip.o $(archpfx)error.o $(GNU_GETOPT_LONG) $(LIBS)
+  	$(CC) $(CFLAGS) -o $(archpfx)strip $(archpfx)strip.o $(archpfx)error.o $(GNU_GETOPT_LONG) $(LIBS)
+  
+! $(archpfx)ar: $(archpfx)ar.o $(LIBS)
+  	$(CC) $(CFLAGS) -o $(archpfx)ar $(archpfx)ar.o $(LIBS)
+  
+! $(archpfx)gprof: $(archpfx)gprof.o $(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  	$(GNUCC) $(CFLAGS) -o $(archpfx)gprof $(archpfx)gprof.o \
+  		$(GNU_GETOPT_LONG) $(CPLUS_DEM) $(LIBS)
+  $(archpfx)gprof.o: gprof.c gmon.h 
+  	$(GNUCC) $(CFLAGS) -c gprof.c $(OUTPUT_OPTION)
+  
+! $(archpfx)ranlib: $(archpfx)ranlib.o $(GNU_GETOPT_LONG) $(LIBS)
+  	$(CC) $(CFLAGS) -o $(archpfx)ranlib $(archpfx)ranlib.o $(GNU_GETOPT_LONG) $(LIBS)
+! $(archpfx)ranlib.o: ranlib.c $(LIBS)
+! 	$(CC) -c $(CFLAGS) -DAR_PROG=\"$(bindir)/gar\" ranlib.c $(OUTPUT_OPTION)
+  
+  $(archpfx)objdump: $(archpfx)objdump.o $(archpfx)error.o $(GNU_GETOPT_LONG) a.out.gnu.h
+  	$(CC) $(CFLAGS) -o $(archpfx)objdump $(archpfx)objdump.o $(archpfx)error.o \
+diff -crN binutils.orig/README-jkp binut-1.6-snar/README-jkp
+*** binutils.orig/README-jkp
+--- binut-1.6-snar/README-jkp	Sun Feb 10 21:52:10 1991
+***************
+*** 0 ****
+--- 1,7 ----
++ - copy ar.h from a BSD system
++ - copy a.out.gnu.h to a.out.h
++ - use -I.
++ - copy stab.def from old binutils
++ - use gcc-wbc to compile ld - for some reason it doesn't work when
++   compiled with GNU tools, I get 'virtual memory exhausted' after the -t
++   output "Digesting symbol information:"
+diff -crN binutils.orig/a.out.gnu.h binut-1.6-snar/a.out.gnu.h
+*** binutils.orig/a.out.gnu.h	Sun Feb 10 01:16:10 1991
+--- binut-1.6-snar/a.out.gnu.h	Sun Feb 10 20:45:17 1991
+***************
+*** 5,10 ****
+--- 5,11 ----
+  
+  #ifndef __STRUCT_EXEC_OVERRIDE__
+  
++ #define __MINIX__
+  struct exec
+  {
+    unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
+***************
+*** 11,20 ****
+--- 12,34 ----
+    unsigned a_text;		/* length of text, in bytes */
+    unsigned a_data;		/* length of data, in bytes */
+    unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
++ #ifdef __MINIX__
++   unsigned a_trsize;		/* length of text relocation table */
++   unsigned a_drsize;		/* length of data relocation table */
++ #endif
+    unsigned a_syms;		/* length of symbol table data in file, in bytes */
++ #ifdef __MINIX__
++   unsigned a_str;		/* length of string table */
++ #endif
+    unsigned a_entry;		/* start address */
++ #ifdef __MINIX__
++   unsigned a_tstart;		/* text load point (see ld -T option) */
++   unsigned a_dstart;		/* data load point (see ld -D option) */
++   unsigned dummy;
++ #else
+    unsigned a_trsize;		/* length of relocation info for text, in bytes */
+    unsigned a_drsize;		/* length of relocation info for data, in bytes */
++ #endif
+  };
+  
+  #endif /* __STRUCT_EXEC_OVERRIDE__ */
+***************
+*** 68,76 ****
+--- 82,96 ----
+  /* Code indicating object file or impure executable.  */
+  #define OMAGIC 0407
+  /* Code indicating pure executable.  */
++ #ifdef __MINIX__
++ #define NMAGIC 0x9ec0L
++ /* Code indicating demand-paged executable.  */
++ #define ZMAGIC 0x9ec0L
++ #else
+  #define NMAGIC 0410
+  /* Code indicating demand-paged executable.  */
+  #define ZMAGIC 0413
++ #endif
+  
+  #if !defined (N_BADMAG)
+  #define N_BADMAG(x)					\
+***************
+*** 129,135 ****
+  #ifdef is68k
+  #define SEGMENT_SIZE 0x20000
+  #endif
+! #if defined(m68k) && defined(PORTAR)
+  #define PAGE_SIZE 0x400
+  #define SEGMENT_SIZE PAGE_SIZE
+  #endif
+--- 149,155 ----
+  #ifdef is68k
+  #define SEGMENT_SIZE 0x20000
+  #endif
+! #if (defined(m68k) && defined(PORTAR)) || defined(__MINIX__)
+  #define PAGE_SIZE 0x400
+  #define SEGMENT_SIZE PAGE_SIZE
+  #endif
+***************
+*** 251,259 ****
+--- 271,285 ----
+            r_symbolnum is N_TEXT, N_DATA, N_BSS or N_ABS
+  	  (the N_EXT bit may be set also, but signifies nothing).  */
+    unsigned int r_extern:1;
++ #ifdef __MINIX__
++   unsigned r_bsr:1;
++   unsigned r_disp:2; /* 0 if immed, 1 if disp, 2 if twos comp */
++   unsigned r_pad:1;
++ #else
+    /* Four bits that aren't used, but when writing an object file
+       it is desirable to clear them.  */
+    unsigned int r_pad:4;
++ #endif
+  };
+  #endif /* no N_RELOCATION_INFO_DECLARED.  */
+  
+diff -crN binutils.orig/ar.h binut-1.6-snar/ar.h
+*** binutils.orig/ar.h
+--- binut-1.6-snar/ar.h	Sun Feb 10 19:42:57 1991
+***************
+*** 0 ****
+--- 1,23 ----
++ /* Stolen from a Sun //jkp@cs.hut.fi 4 Feb 1991 */
++ 
++ /*	@(#)ar.h 1.6 88/08/19 SMI; from UCB 4.1 83/05/03	*/
++ 
++ #ifndef _ar_h
++ #define _ar_h
++ 
++ #define	ARMAG	"!<arch>\n"
++ #define	SARMAG	8
++ 
++ #define	ARFMAG	"`\n"
++ 
++ struct ar_hdr {
++ 	char	ar_name[16];
++ 	char	ar_date[12];
++ 	char	ar_uid[6];
++ 	char	ar_gid[6];
++ 	char	ar_mode[8];
++ 	char	ar_size[10];
++ 	char	ar_fmag[2];
++ };
++ 
++ #endif /*!_ar_h*/
+diff -crN binutils.orig/gprof.c binut-1.6-snar/gprof.c
+*** binutils.orig/gprof.c	Wed Sep 26 16:45:42 1990
+--- binut-1.6-snar/gprof.c	Sun Feb 10 20:48:45 1991
+***************
+*** 34,39 ****
+--- 34,47 ----
+  typedef unsigned int size_t;
+  #endif /* no __STDC__ */
+  
++ #ifdef MINIX
++ #define HZ 60
++ #endif
++ #ifdef ESTDIO
++ #define _IOWRT _IOWRITE
++ #define _flag __flag
++ #endif
++ 
+  #undef NULL
+  #include <stdio.h>
+  #undef NULL
+***************
+*** 678,684 ****
+--- 686,694 ----
+  int	fputs EXT2(const char *, FILE *);
+  
+  int	fputc EXT2(int, FILE *);
++ #ifndef ESTDIO
+  size_t	fread EXT4(void *, size_t, size_t, FILE *);
++ #endif
+  
+  int	nlist EXT2(const char *, struct nlist *);
+  
+diff -crN binutils.orig/ld.c binut-1.6-snar/ld.c
+*** binutils.orig/ld.c	Sun Feb 10 01:16:12 1991
+--- binut-1.6-snar/ld.c	Sun Feb 10 21:31:07 1991
+***************
+*** 343,357 ****
+  #define	MAX_ALIGNMENT	(sizeof (double))
+  #endif
+  
+! #ifdef sequent
+  #define RELOC_ADDRESS(r)		((r)->r_address)
+  #define RELOC_EXTERN_P(r)		((r)->r_extern)
+  #define RELOC_TYPE(r)		((r)->r_symbolnum)
+  #define RELOC_SYMBOL(r)		((r)->r_symbolnum)
+  #define RELOC_MEMORY_SUB_P(r)	((r)->r_bsr)
+  #define RELOC_MEMORY_ADD_P(r)	1
+  #undef RELOC_ADD_EXTRA
+  #define RELOC_PCREL_P(r)		((r)->r_pcrel || (r)->r_bsr)
+  #define RELOC_VALUE_RIGHTSHIFT(r)	0
+  #define RELOC_TARGET_SIZE(r)		((r)->r_length)
+  #define RELOC_TARGET_BITPOS(r)	0
+--- 343,365 ----
+  #define	MAX_ALIGNMENT	(sizeof (double))
+  #endif
+  
+! #if defined(sequent) || defined(MINIX)
+  #define RELOC_ADDRESS(r)		((r)->r_address)
+  #define RELOC_EXTERN_P(r)		((r)->r_extern)
+  #define RELOC_TYPE(r)		((r)->r_symbolnum)
+  #define RELOC_SYMBOL(r)		((r)->r_symbolnum)
++ #ifdef sequent
+  #define RELOC_MEMORY_SUB_P(r)	((r)->r_bsr)
++ #else
++ #define RELOC_MEMORY_SUB_P(r) 0
++ #endif
+  #define RELOC_MEMORY_ADD_P(r)	1
+  #undef RELOC_ADD_EXTRA
++ #ifdef sequent
+  #define RELOC_PCREL_P(r)		((r)->r_pcrel || (r)->r_bsr)
++ #else
++ #define RELOC_PCREL_P(r)		((r)->r_pcrel)
++ #endif
+  #define RELOC_VALUE_RIGHTSHIFT(r)	0
+  #define RELOC_TARGET_SIZE(r)		((r)->r_length)
+  #define RELOC_TARGET_BITPOS(r)	0
+***************
+*** 979,987 ****
+--- 987,999 ----
+  #ifdef NON_NATIVE
+    {"/usr/local/lib/gnu"};
+  #else
++ #ifdef MINIX
++   {"/usr/gnu/lib"};
++ #else
+    {"/lib", "/usr/lib", "/usr/local/lib"};
+  #endif
+  #endif
++ #endif
+  
+  /* If set STANDARD_SEARCH_DIRS is not searched.  */
+  int no_standard_dirs;
+***************
+*** 3917,3922 ****
+--- 3929,3940 ----
+  #endif
+    output_syms_offset = N_SYMOFF (outheader);
+    output_strs_offset = N_STROFF (outheader);
++ #ifdef MINIX
++   outheader.a_tstart = 0;
++   outheader.a_dstart = text_size;
++   outheader.a_str = 0;
++   outheader.dummy = 0;
++ #endif /* MINIX */
+  }
+  
+  /* Compute more section offsets once the size of the string table is known.  */
+***************
+*** 4905,4910 ****
+--- 4923,4958 ----
+        relocation <<= RELOC_TARGET_BITPOS(p);
+        mask <<= RELOC_TARGET_BITPOS(p);
+  
++ #ifdef MINIX
++       /* This code by Ian Dall */
++       {
++ 	char * loc = (data + addr);
++ 	int bytes = (1 << RELOC_TARGET_SIZE(p));
++ 	void put_num(), put_disp(), put_imm();
++ 	int get_num(), get_disp(), get_imm();
++ 	switch(p->r_disp)
++ 	  {
++ 	  case 0:
++ 	    if (RELOC_MEMORY_SUB_P(p))
++ 	      put_imm(loc, relocation - get_imm(loc, bytes), bytes);
++ 	    else if (RELOC_MEMORY_ADD_P(p))
++ 	      put_imm(loc, relocation + get_imm(loc, bytes), bytes);
++ 	    break;
++ 	  case 1:
++ 	    if (RELOC_MEMORY_SUB_P(p))
++ 	      put_disp(loc, relocation - get_disp(loc, bytes), bytes);
++ 	    else if (RELOC_MEMORY_ADD_P(p))
++ 	      put_disp(loc, relocation + get_disp(loc, bytes), bytes);
++ 	    break;
++ 	  case 2:
++ 	    if (RELOC_MEMORY_SUB_P(p))
++ 	      put_num(loc, relocation - get_num(loc, bytes), bytes);
++ 	    else if (RELOC_MEMORY_ADD_P(p))
++ 	      put_num(loc, relocation + get_num(loc, bytes), bytes);
++ 	    break;
++ 	  }
++       }
++ #else
+        switch (RELOC_TARGET_SIZE(p))
+  	{
+  	case 0:
+***************
+*** 4954,4959 ****
+--- 5002,5008 ----
+  	default:
+  	  fatal_with_file ("Unimplemented relocation field length in ", entry);
+  	}
++ #endif /* MINIX */
+      }
+  }
+  
+***************
+*** 5947,5956 ****
+--- 5996,6012 ----
+    memcpy (to, from, n);
+  }
+  
++ #ifdef MINIX
++ getpagesize ()
++ {
++   return (1024);
++ }
++ #else
+  getpagesize ()
+  {
+    return (4096);
+  }
++ #endif
+  
+  #endif
+  
+***************
+*** 5959,5963 ****
+--- 6015,6185 ----
+  getpagesize ()
+  {
+    return 8192;
++ }
++ #endif
++ #ifdef MINIX
++ /* code by Ian Dall for the ns32k */
++ /* Just put out the twos complement value with arbitrary alignment could
++  * just do an assignment if we know we are on a little endian. */
++ void put_num(buf,val,n)
++      char	*buf;
++      long	val;
++      char       n;
++ { 
++   for (; n > 0; n--)
++     {
++       *buf++ = val & 0xff; val >>= 8;
++     }
++ }
++ 
++ int get_num(buf, n)
++      char *buf;
++      int n;
++ {
++   int val = 0;
++   buf += (n - 1);
++   for (; n > 0; n--)
++     {
++       val = val * 256 + (*buf-- & 0xff);
++     }
++   return val;
++ }
++ 
++ /* Immediate operands are bigendian */
++ void put_imm(buf,val,n)
++      char	*buf;
++      long	val;
++      char       n;
++ { 
++   int i;
++   buf += (n - 1);
++   for (i = n - 1; i >= 0; i--)
++     {
++       *buf-- = (val & 0xff); val >>= 8;
++     }
++ }
++ 
++ int get_imm(buf, n)
++      char *buf;
++      int n;
++ {
++   int val = 0;
++   for (; n > 0; n--)
++     {
++       val = (val * 256) + (*buf++ & 0xff);
++     }
++   return val;
++ }
++ 
++ /* This converts an integer "val" to a displacement. The reason for its'
++    existence is the fact that ns32k uses Huffman coded displacements.
++    This implies that the bit order is reversed in displacements and
++    that they are prefixed with a size-tag.
++ 
++    binary: msb -> lsb	0xxxxxxx				byte
++    			10xxxxxx xxxxxxxx			word
++    			11xxxxxx xxxxxxxx xxxxxxxx xxxxxxxx	double word
++           
++    This must be taken care of and we do it here! 		  
++  */
++ void put_disp(buf,val,n)
++      char	*buf;
++      long	val;
++      char       n;
++ { 
++   switch(n) {
++   case 1:
++     if (val < -64 || val > 63)
++       fprintf(stderr,"Byte displacement %d, out of range.\n", val);
++     val&=0x7f;
++ #ifdef SHOW_NUM
++ 		printf("%x ",val & 0xff);
++ #endif
++     *buf++=val;
++     break;
++   case 2:
++     if (val < -8192 || val > 8191)
++       fprintf(stderr,"Word displacement %d, out of range.\n", val);
++     val&=0x3fff;
++     val|=0x8000;
++ #ifdef SHOW_NUM
++ 		printf("%x ",val>>8 & 0xff);
++ #endif
++     *buf++=(val>>8);
++ #ifdef SHOW_NUM
++ 		printf("%x ",val & 0xff);
++ #endif
++     *buf++=val;
++     break;
++   case 4:
++     if (val < -0x1f000000 || val >= 0x20000000)
++     /* if (val < -0x20000000 || val >= 0x20000000) */
++       fprintf(stderr,"Double word displacement %d, out of range\n", val);
++     val|=0xc0000000;
++ #ifdef SHOW_NUM
++ 		printf("%x ",val>>24 & 0xff);
++ #endif
++     *buf++=(val>>24);
++ #ifdef SHOW_NUM
++ 		printf("%x ",val>>16 & 0xff);
++ #endif
++     *buf++=(val>>16);
++ #ifdef SHOW_NUM
++ 		printf("%x ",val>>8 & 0xff);
++ #endif
++     *buf++=(val>>8);
++ #ifdef SHOW_NUM
++ 		printf("%x ",val & 0xff);
++ #endif
++     *buf++=val;
++     break;
++   default:
++     error("Internal logic error");
++   }
++ }
++ 
++ int sign_extend (value, bits)
++      int value, bits;
++ {
++   value = value & ((1 << bits) - 1);
++   return (value & (1 << (bits-1))
++ 	  ? value | (~((1 << bits) - 1))
++ 	  : value);
++ }
++ 
++ int get_disp (buffer, n)
++      char *buffer;
++      int n;
++ {
++   int Ivalue;
++ 
++   Ivalue = *buffer++ & 0xff;
++   if (n == 0)
++     if (Ivalue & 0x80)
++       if (Ivalue & 0x40)
++ 	n = 4;
++       else
++ 	n = 2;
++     else
++       n = 1;
++   switch (n)
++     {
++     case 1:
++       Ivalue = sign_extend (Ivalue, 7);
++       break;
++     case 2:
++       Ivalue = sign_extend (Ivalue, 6);
++       Ivalue = (Ivalue << 8) | (0xff & *buffer);
++       break;
++     case 4:
++       Ivalue = sign_extend (Ivalue, 6);
++       Ivalue = (Ivalue << 8) | (0xff & *buffer++);
++       Ivalue = (Ivalue << 8) | (0xff & *buffer++);
++       Ivalue = (Ivalue << 8) | (0xff & *buffer);
++       break;
++     default:
++       fprintf(stderr, "get_disp: invalid argument\n");
++     }
++   return Ivalue;
+  }
+  #endif
+diff -crN binutils.orig/nm.c binut-1.6-snar/nm.c
+*** binutils.orig/nm.c	Thu Aug  9 17:47:11 1990
+--- binut-1.6-snar/nm.c	Sun Feb 10 20:52:41 1991
+***************
+*** 1196,1204 ****
+--- 1196,1211 ----
+  
+  #ifdef USG
+  
++ #ifdef MINIX
+  getpagesize ()
+  {
++   return (1024);
++ }
++ #else
++ getpagesize ()
++ {
+    return (4096);
+  }
++ #endif
+  
+  #endif
+diff -crN binutils.orig/objdump.c binut-1.6-snar/objdump.c
+*** binutils.orig/objdump.c	Tue Jul 10 08:31:28 1990
+--- binut-1.6-snar/objdump.c	Sun Feb 10 20:53:23 1991
+***************
+*** 21,26 ****
+--- 21,27 ----
+  #include "getopt.h"
+  
+  #ifndef COFF_ENCAPSULATE
++ #ifndef MINIX
+  #include <a.out.h>
+  /* Tell a.out.gnu.h not to try to redefine some things.  */
+  #define __STRUCT_EXEC_OVERRIDE__
+***************
+*** 27,32 ****
+--- 28,34 ----
+  #define N_NLIST_DECLARED
+  #define N_RELOCATION_INFO_DECLARED
+  #define N_MAGIC(exec) ((exec).a_magic)
++ #endif
+  #include "a.out.gnu.h"
+  #else
+  #include "a.out.encap.h"
+***************
+*** 393,403 ****
+--- 395,413 ----
+  }
+  
+  #ifdef USG
++ #ifdef MINIX
++ int
++ getpagesize ()
++ {
++   return 1024;
++ }
++ #else
+  int
+  getpagesize ()
+  {
+    return 4096;
+  }
++ #endif
+  #endif
+  
+  #if defined(sun) && defined(sparc)
+diff -crN binutils.orig/signame.c binut-1.6-snar/signame.c
+*** binutils.orig/signame.c	Sun Feb 10 01:16:12 1991
+--- binut-1.6-snar/signame.c	Sun Feb 10 21:33:18 1991
+***************
+*** 62,67 ****
+--- 62,68 ----
+  static void init_sigs ()
+  {
+  #ifdef SYS_SIGLIST_MISSING
++ 	int i;
+    /* Initialize signal names.  */
+  	for (i = 0; i < NSIG; i++)
+  		sys_siglist[i] = undoc;
+diff -crN binutils.orig/signame.h binut-1.6-snar/signame.h
+*** binutils.orig/signame.h	Wed Mar  7 04:31:13 1990
+--- binut-1.6-snar/signame.h	Sun Feb 10 20:25:22 1991
+***************
+*** 16,22 ****
+--- 16,24 ----
+  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  
+  /* Names for signals from 0 to NSIG-1.  */
++ #ifndef SYS_SIGLIST_MISSING
+  extern char *sys_siglist[];
++ #endif
+  
+  #ifdef __STDC__
+  /* Return the abbreviation (e.g. ABRT, FPE, etc.) for signal NUMBER.

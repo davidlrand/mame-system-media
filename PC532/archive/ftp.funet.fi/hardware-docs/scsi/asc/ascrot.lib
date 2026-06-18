@@ -1,0 +1,172 @@
+/************************************************
+*	These functions are called by ASC.C to	*
+*	process information returned from the 	*
+*	ASC-88.					*
+************************************************/
+
+/************************************************
+*	This function checks the status 	*
+*	returned after a SCSI command was	*
+*	attempted.				*
+************************************************/
+ 
+status()
+{
+	switch (jcb_1.status_byte)
+	{
+		case GOOD:	try_again=FALSE;	/* Command has been correctly implemented so user can stop sending it	*/
+				break;
+
+		case CHECK_CONDITION:	error();	/* An error was detected by SPC so it set up sense and returned this	*/
+					break;		/* status. This is dealt with in error().				*/
+
+		case BUSY:	break;			/* Resend command as SPC was busy processing data	*/
+
+		case RESERVATION_CONFLICT:	break;	/* Resend command as SPC was reserved by another initiator	*/
+
+		case ARBITRATION_TIMEOUT:	break;	/* Re-attempt to get bus and send command	*/
+
+		case FAULT:	printf("Cannot find SCSI port");	/* The ASC-88 has failed to respond to the MS-DOS	*/
+				fail=TRUE;				/* interrupt, leaving status at the preset FAULT value.	*/
+				try_again=FALSE;			/* This causes the error message to be displayed and	*/
+				break;					/* the program to be terminated.			*/
+
+		default:	printf("Target returns incompatible status");	/* Status not supported by SPC has been 	*/
+				putout();					/* returned. This indicates an error detected 	*/
+				fail=TRUE;					/* by ASC-88 i.e. DMA over-run, selection 	*/
+				try_again=FALSE;				/* timeout etc. Relevant data, such as status, 	*/
+				break;						/* is put on the screen to allow the user to 	*/
+	}									/* solve the problem, and the program is	*/
+}										/* terminated.					*/
+
+/************************************************
+*	This function is called if the SPC	*
+*	returns a status of CHECK CONDITION.	*
+************************************************/
+
+error()
+{
+	try_again=TRUE;
+	while(try_again)
+	{
+		request();
+		if (jcb_1.status_byte != (BUSY | ARBITRATION_TIMEOUT))	/* This command is only retried if the	*/
+			try_again=FALSE;				/* SPC is BUSY or cannot get the bus.	*/
+	}
+	if (jcb_1.status_byte != GOOD)
+	{
+		printf("ERROR:sense not returned");
+		fail=TRUE;
+		try_again=FALSE;
+	}
+	else
+	{
+		switch (sense[0])
+		{
+			case NO_SENSE:	printf("ERROR:'no sense '");	/* If CHECK CONDITION was sent, sense should	*/
+					fail=TRUE;			/* have been sent to indicate the error source.	*/
+					try_again=FALSE;
+					break;
+
+			case MEDIUM_ERROR:	printf("out of paper");
+						carry_on();
+						break;
+
+			case HARDWARE_ERROR:	printf("ERROR:'hardware error'");
+						fail=TRUE;
+						try_again=FALSE;
+						break;
+
+			case ILLEGAL_REQUEST:	printf("ERROR:'illegal request';Target does not support command or data length");
+						fail=TRUE;
+						try_again=FALSE;
+						break;
+
+			case UNIT_ATTENTION:	printf("printer off line");
+						carry_on();
+						break;
+
+			case ABORTED_COMMAND:	printf("ERROR:'aborted command'");	/* SPC detected an error in phase	*/
+						fail=TRUE;				/* or parity.				*/
+						try_again=FALSE;
+						break;
+
+			default:	printf("ERROR:Target returns illegal sense");
+					fail=TRUE;
+					try_again=FALSE;
+					break;
+		}
+	}
+}
+
+
+/****************************************************************
+*	This function allows the user to decide whether a 	*
+*	print continues after a printer error. This allows	*
+*	the user to correct the error before continuing.	*
+****************************************************************/
+
+carry_on()
+{
+	printf("\nDo you wish to continue?");
+	printf("\n\nIf NO then press ESCAPE");
+	printf("\nIf YES then prepare printer and strike a key\n");
+	if (getch() == ESCAPE)
+	{
+		fail=TRUE;
+		try_again=FALSE;
+	}
+	else
+	{
+		try_again=TRUE;
+		while (try_again)
+		{
+			test();
+			status();
+		}
+		if (status == GOOD)
+			try_again = TRUE;
+	}
+}
+
+
+/************************************************
+*	This is called after the SPC has 	*
+*	returned sense following a PRINT. Its	*
+*	purpose is to process the sense data 	*
+*	and return a message to the user.	*
+************************************************/
+
+message()
+{
+	if (jcb_1.status_byte != GOOD)
+	{
+		printf("Sense not returned after print");
+	}
+	else
+	{
+		switch (sense[0])
+		{
+			case NO_SENSE:	printf("Print completed successfully");
+					break;
+
+			case MEDIUM_ERROR:	printf("Out of paper");
+						break;
+
+			case HARDWARE_ERROR:	printf("ERROR:'hardware error'");
+						break;
+
+			case ILLEGAL_REQUEST:	printf("ERROR:'illegal request';Target does not support command or data length");
+						break;
+
+			case UNIT_ATTENTION:	printf("Printer off or off line");
+						break;
+
+			case ABORTED_COMMAND:	printf("ERROR:'aborted command'");	/* SPC detected an error in phase	*/
+						break;					/* or parity.				*/
+
+			default:	printf("Printer returns illegal sense after print");
+					break;
+		}
+	}
+}

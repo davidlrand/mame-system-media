@@ -1,0 +1,388 @@
+;
+; ET532 monitor v0.2 -- console + examine (D), deposit (S), go (G).
+; Reset entry = address 0 (EPROM).  Single position-independent unit,
+; extracted from the .o32 (DSI ln is broken; see ns32k-dsi32-toolchain).
+;
+; Register convention:
+;   r7 = console base (sacred)      r6 = command-line parse pointer (sacred)
+;   utility routines clobber only r0/r1/r2, so command handlers own r3/r4/r5.
+;
+; SCC2698 ch A @ 0x10000000: +0 MR1/MR2  +1 CSR(w)/SR(r)  +2 CR(w)  +3 THR(w)/RHR(r)
+; SR: bit0 = RxRDY, bit2 = TxRDY.
+;
+con:	equ	h'10000000	; console (SCC2698 ch A)
+ram:	equ	h'04000000	; DRAM
+buf:	equ	ram+h'200	; command-line buffer
+ldbuf:	equ	ram+h'400	; 512-byte boot-block buffer
+magic:	equ	h'e5320bb0	; boot-block signature
+scsib:	equ	h'11000000	; DP8490 SCSI control registers
+stk:	equ	ram+h'10000	; stack top
+;
+; ---- reset / console init ----
+start:	lprd	sp,stk
+	movd	con,r7
+	movb	h'10,2(r7)	; CR: reset MR pointer
+	movb	h'20,2(r7)	; CR: reset receiver
+	movb	h'30,2(r7)	; CR: reset transmitter
+	movb	h'40,2(r7)	; CR: reset error status
+	movb	h'13,0(r7)	; MR1: 8 bits, no parity
+	movb	h'07,0(r7)	; MR2: 1 stop bit
+	movb	h'bb,1(r7)	; CSR: 9600 baud
+	movb	h'05,2(r7)	; CR: enable rx + tx
+	addr	banner,r0
+	bsr	puts
+	bsr	scsiboot	; autoboot: try SCSI block 0; returns here if none
+;
+; ---- command loop ----
+main:	addr	prompt,r0
+	bsr	puts
+	bsr	getline
+	movd	buf,r6		; r6 = parse pointer
+	bsr	skipsp
+	movzbd	0(r6),r0
+	orb	h'20,r0		; fold to lower case
+	cmpb	r0,h'64		; 'd'
+	beq	cmd_dump
+	cmpb	r0,h'73		; 's'
+	beq	cmd_dep
+	cmpb	r0,h'67		; 'g'
+	beq	cmd_go
+	cmpb	r0,h'6c		; 'l'
+	beq	cmd_load
+	cmpb	r0,h'62		; 'b'
+	beq	cmd_scsi
+	movzbd	0(r6),r0
+	cmpqb	0,r0
+	beq	main		; blank line
+	addr	huh,r0
+	bsr	puts
+	br	main
+;
+; ---- D addr : dump 8 lines of 16 bytes ----
+cmd_dump:
+	addqd	1,r6
+	bsr	gethex
+	movd	r0,r5		; r5 = dump pointer
+	movd	8,r6		; r6 = line counter (parse ptr free now)
+cd_ln:	bsr	crlf
+	movd	r5,r0
+	bsr	puthexl
+	movb	h'3a,r0		; ':'
+	bsr	putc
+	movd	r5,r4		; r4 = line start for ASCII pass
+	movd	16,r3
+cd_hx:	movb	h'20,r0
+	bsr	putc
+	movzbd	0(r5),r0
+	bsr	puthexb
+	addqd	1,r5
+	acbd	-1,r3,cd_hx
+	movb	h'20,r0
+	bsr	putc
+	movd	16,r3
+cd_as:	movzbd	0(r4),r0
+	cmpb	r0,h'20
+	blo	cd_dot
+	cmpb	r0,h'7e
+	bhi	cd_dot
+	br	cd_pa
+cd_dot:	movb	h'2e,r0		; '.'
+cd_pa:	bsr	putc
+	addqd	1,r4
+	acbd	-1,r3,cd_as
+	acbd	-1,r6,cd_ln
+	br	main
+;
+; ---- S addr b b b ... : deposit bytes ----
+cmd_dep:
+	addqd	1,r6
+	bsr	gethex
+	movd	r0,r5		; r5 = dest pointer
+cdp:	bsr	skipsp
+	movzbd	0(r6),r0
+	cmpqb	0,r0
+	beq	main
+	bsr	gethex
+	movb	r0,0(r5)
+	addqd	1,r5
+	br	cdp
+;
+; ---- G addr : jump ----
+cmd_go:	addqd	1,r6
+	bsr	gethex
+	movd	r0,tos		; push target
+	ret	0		; "return" to it: PC <- target
+;
+; ---- L : receive a 512-byte boot block from the console, then autoboot ----
+cmd_load:
+	movd	ldbuf,r5
+	movd	512,r3
+cl1:	bsr	getc
+	movb	r0,0(r5)
+	addqd	1,r5
+	addqd	-1,r3
+	cmpqd	0,r3
+	bne	cl1
+	bsr	boot
+	br	main
+;
+; ---- boot: validate + load + run the 512-byte block at ldbuf ----
+;   +0 magic  +4 load addr  +8 start addr  +12 length  +16 checksum  +20 payload
+boot:	movd	ldbuf,r5
+	cmpd	magic,0(r5)
+	bne	bfail
+	movd	12(r5),r3	; length
+	addr	20(r5),r4	; payload pointer
+	movqd	0,r2		; checksum accumulator
+bsum:	cmpqd	0,r3
+	beq	bsumd
+	movzbd	0(r4),r0
+	addd	r0,r2
+	addqd	1,r4
+	addqd	-1,r3
+	br	bsum
+bsumd:	cmpd	16(r5),r2	; verify checksum
+	bne	bfail
+	movd	12(r5),r3	; length
+	addr	20(r5),r4	; source
+	movd	4(r5),r6	; destination = load address
+bcpy:	cmpqd	0,r3
+	beq	bcpyd
+	movzbd	0(r4),r0
+	movb	r0,0(r6)
+	addqd	1,r4
+	addqd	1,r6
+	addqd	-1,r3
+	br	bcpy
+bcpyd:	movd	8(r5),r0	; start address
+	movd	r0,tos		; push start address
+	ret	0		; "return" to it: PC <- start
+bfail:	addr	bferr,r0
+	bsr	puts
+	ret	0
+;
+; ---- B : load block 0 from SCSI target 1 into ldbuf, then autoboot ----
+; DP8490 (NCR5380) @ scsib: +0 data +1 ICR +2 MODE +3 TCR +4 STAT1
+; ICR: ENABLE_DB=01 SEL=04 ACK=10   STAT1: SEL=02 REQ=20 BSY=40
+; phase=(STAT1>>2)&7: 1=data-in 2=command 3=status 7=msg-in
+cmd_scsi:
+	bsr	scsiboot	; 'B' command: try SCSI boot, return to monitor on failure
+	br	main
+scsiboot:
+	movd	scsib,r5
+	movqb	0,2(r5)		; MODE = 0
+	movqb	0,1(r5)		; ICR = 0
+	movqb	0,3(r5)		; TCR = 0
+	movqb	0,0(r5)		; ODR = 0
+	movd	h'80000,r3	; bus-free timeout
+sc_bf:	movb	4(r5),r0
+	andb	h'42,r0		; BSY | SEL
+	cmpqb	0,r0
+	beq	sc_sel
+	acbd	-1,r3,sc_bf
+	br	sc_fail
+sc_sel:	movb	h'02,0(r5)	; ODR = target ID 1 bit
+	movb	h'05,1(r5)	; ICR = SEL | ENABLE_DB
+	movd	h'80000,r3
+sc_ws:	movb	4(r5),r0
+	andb	h'40,r0		; BSY (target responded)
+	cmpqb	0,r0
+	bne	sc_seld
+	acbd	-1,r3,sc_ws
+	br	sc_fail
+sc_seld:
+	movqb	0,1(r5)		; ICR = 0
+	movqb	0,0(r5)		; ODR = 0
+	addr	cdb,r4		; CDB pointer
+	movd	ldbuf,r6	; data-in buffer
+sc_ph:	movb	4(r5),r0
+	andb	h'40,r0		; BSY still asserted?
+	cmpqb	0,r0
+	beq	sc_pdone	; target released bus -> done
+	movb	4(r5),r0
+	andb	h'20,r0		; REQ?
+	cmpqb	0,r0
+	beq	sc_ph
+	movzbd	4(r5),r0	; phase = (STAT1 >> 2) & 7
+	ashd	-2,r0
+	andb	h'7,r0
+	movd	r0,r3
+	movb	r3,3(r5)	; TCR = phase
+	cmpb	r3,h'2		; command-out?
+	beq	sc_pcmd
+	movb	0(r5),r1	; data byte (CSDR)
+	cmpqb	1,r3		; data-in?
+	bne	sc_pack
+	movb	r1,0(r6)
+	addqd	1,r6
+sc_pack:
+	movb	h'10,1(r5)	; ICR = ACK
+sc_pa2:	movb	4(r5),r0
+	andb	h'20,r0
+	cmpqb	0,r0
+	bne	sc_pa2		; wait REQ deassert
+	movqb	0,1(r5)		; ICR = 0
+	br	sc_ph
+sc_pcmd:
+	movb	0(r4),r1
+	movb	r1,0(r5)	; ODR = CDB byte
+	addqd	1,r4
+	movb	h'01,1(r5)	; ICR = ENABLE_DB
+	movb	h'11,1(r5)	; ICR = ENABLE_DB | ACK
+sc_pc2:	movb	4(r5),r0
+	andb	h'20,r0
+	cmpqb	0,r0
+	bne	sc_pc2		; wait REQ deassert
+	movb	h'01,1(r5)	; ICR = ENABLE_DB
+	br	sc_ph
+sc_pdone:
+	movqb	0,1(r5)		; ICR = 0
+	bsr	boot		; validate+load+run; returns only if block invalid
+	ret	0
+sc_fail:
+	movqb	0,1(r5)
+	addr	scerr,r0
+	bsr	puts
+	ret	0
+;
+; ---- getline: read a line into buf, echo, BS/DEL edit, CR ends ----
+getline:
+	movd	buf,r5		; r5 = write pointer
+gl1:	bsr	getc
+	cmpb	r0,h'd
+	beq	gl_end
+	cmpb	r0,h'8
+	beq	gl_bs
+	cmpb	r0,h'7f
+	beq	gl_bs
+	movb	r0,0(r5)
+	addqd	1,r5
+	bsr	putc		; echo
+	br	gl1
+gl_bs:	movd	buf,r0
+	cmpd	r5,r0
+	beq	gl1		; nothing to erase
+	addqd	-1,r5
+	addr	bsseq,r0
+	bsr	puts
+	br	gl1
+gl_end:	movqb	0,0(r5)		; null-terminate
+	bsr	crlf
+	ret	0
+;
+; ---- skipsp: advance r6 past spaces ----
+skipsp:	movzbd	0(r6),r0
+	cmpb	r0,h'20
+	bne	ss1
+	addqd	1,r6
+	br	skipsp
+ss1:	ret	0
+;
+; ---- gethex: parse hex at r6 -> r0, advance r6 ----
+gethex:	bsr	skipsp
+	movqd	0,r2
+gh1:	movzbd	0(r6),r0
+	cmpb	r0,h'30
+	blo	gh_end
+	cmpb	r0,h'39
+	bhi	gh_af
+	subb	h'30,r0
+	br	gh_ac
+gh_af:	orb	h'20,r0
+	cmpb	r0,h'61
+	blo	gh_end
+	cmpb	r0,h'66
+	bhi	gh_end
+	subb	h'57,r0
+gh_ac:	ashd	4,r2
+	addd	r0,r2
+	addqd	1,r6
+	br	gh1
+gh_end:	movd	r2,r0
+	ret	0
+;
+; ---- puthexl: r0 as 8 hex digits ----
+puthexl:
+	movd	r0,r2
+	movd	r2,r0
+	ashd	-28,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-24,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-20,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-16,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-12,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-8,r0
+	bsr	pnib
+	movd	r2,r0
+	ashd	-4,r0
+	bsr	pnib
+	movd	r2,r0
+	bsr	pnib
+	ret	0
+;
+; ---- puthexb: r0 low byte as 2 hex digits ----
+puthexb:
+	movd	r0,r2
+	movd	r2,r0
+	ashd	-4,r0
+	bsr	pnib
+	movd	r2,r0
+	bsr	pnib
+	ret	0
+;
+; ---- pnib: low nibble of r0 ----
+pnib:	andd	h'f,r0
+	cmpb	r0,h'a
+	blo	pn1
+	addqb	7,r0
+pn1:	addb	h'30,r0
+	bsr	putc
+	ret	0
+;
+crlf:	movb	h'd,r0
+	bsr	putc
+	movb	h'a,r0
+	bsr	putc
+	ret	0
+;
+; ---- puts: null-terminated string at r0 ----
+puts:	movd	r0,r2
+ps1:	movzbd	0(r2),r0
+	cmpqb	0,r0
+	beq	ps2
+	bsr	putc
+	addqd	1,r2
+	br	ps1
+ps2:	ret	0
+;
+putc:	movb	1(r7),r1
+	tbitb	2,r1
+	bfc	putc
+	movb	r0,3(r7)
+	ret	0
+;
+getc:	movb	1(r7),r1
+	tbitb	0,r1
+	bfc	getc
+	movzbd	3(r7),r0
+	ret	0
+;
+	align	4
+banner:	.byte	13,10,69,84,53,51,50,32,109,111,110,32,86,48,46,50
+	.byte	13,10,68,61,100,117,109,112,32,83,61,115,101,116,32,71,61,103,111
+	.byte	13,10,0
+prompt:	.byte	13,10,62,32,0
+huh:	.byte	63,13,10,0
+bsseq:	.byte	8,32,8,0
+bferr:	.byte	13,10,98,111,111,116,63,13,10,0	; "boot?" cr lf nul
+scerr:	.byte	13,10,115,99,115,105,63,13,10,0	; "scsi?" cr lf nul
+cdb:	.byte	8,0,0,0,1,0			; READ(6) LBA 0, 1 block

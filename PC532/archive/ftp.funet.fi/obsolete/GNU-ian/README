@@ -1,0 +1,60 @@
+		GCC, GDB, GAS and GLD for the ICM3216
+
+This directory contains patch files to make GCC, GDB, GAS and GLD work
+for the ICM3216. Some of the changes are to get around operating
+system peculiarities and others are enhancements. The patches enable
+building either native coff format executables or the FSF's
+coff-encapsulated-a.out format.
+
+RMS has said that he is not interested in maintaining seperate
+configurations for "obscure" computers --- by implication the icm3216
+is obscure :-). He will accept fixes which are generic to all 32k
+systems, but as I don't have an Encore and a Sequent, I sometimes have
+difficulty convincing him that my enhancements *are* generic.  Also,
+even when RMS *has* accepted something as a good idea, *and* I've
+signed over the copyright as requested, it *still* seems to be no
+guarantee that it will actually get into the distribution. I have no
+idea why that is. Maybe somethings just get lost? Anyway, for all
+those reasons, I am maintaining this archive for Ns32k users. These
+changes may or may not make it into future FSF distributions.
+
+I welcome corrections/bug reports.
+
+	     Applicability to non ICM3216, Ns32k systems.
+
+The icm3216 is a fairly basic (but very functional) machine based on
+the ns32016 cpu.  The patches here are all for the NS Sys V.2.2
+operating system although many of the changes are more widely
+applicable. In particular, if you are using GAS and GLD, there should
+be very little which would need to be changed to run on a BSD system.
+
+			How to Get
+
+The follwowing files are available in the gnu/ns32k directory of the
+public area on augean.ua.oz.au:
+
+README:		This file
+
+INSTALL.Z	Details on how to apply the patches, configure and make the
+		programs.
+
+gcc-1.37.1.patch1.0.Z
+		Compressed patches for gcc 1.37.1
+
+gdb-3.5.patch1.1.Z
+		Compressed patches for gdb 3.5
+
+gas-1.35.patch1.0.Z
+		Compressed patches for gas 1.35
+
+binutils.patch1.0.Z
+		Compressed patches for the GNU binutils package, including
+		the loader and robotussin.
+
+They are accessable by anonymous ftp to augean.ua.oz.au.
+
+ACSnet users can fetchfile from augean.eleceng.ua.oz. Eg
+
+  "fetchfile -daugean.ua.oz gnu/ns32k/README"
+
+should get you this file.

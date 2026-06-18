@@ -1,0 +1,302 @@
+diff -cr perl-3.0.41.or/Configure perl-3.0.41/Configure
+*** perl-3.0.41.or/Configure	Wed Dec  5 18:14:20 1990
+--- perl-3.0.41/Configure	Thu Dec  6 19:05:16 1990
+***************
+*** 255,262 ****
+  : Now test for existence of everything in MANIFEST
+  
+  echo "First let's make sure your kit is complete.  Checking..."
+! (cd ..; awk '' `awk '$1 !~ /PACKINGLIST/ {print $1}' MANIFEST` >/dev/null || kill $$)
+  echo "Looks good..."
+  
+  attrlist="mc68000 sun gcos unix ibm gimpel interdata tss os mert pyr"
+  attrlist="$attrlist vax pdp11 i8086 z8000 u3b2 u3b5 u3b20 u3b200"
+--- 255,264 ----
+  : Now test for existence of everything in MANIFEST
+  
+  echo "First let's make sure your kit is complete.  Checking..."
+! #(cd ..; awk '' `awk '$1 !~ /PACKINGLIST/ {print $1}' MANIFEST` >/dev/null || kill $$)
+  echo "Looks good..."
++ sleep 2
++ echo "Ha, fooled you .. I'm not checking because of this Minix's brainbrain-damaged limit on arg line length"
+  
+  attrlist="mc68000 sun gcos unix ibm gimpel interdata tss os mert pyr"
+  attrlist="$attrlist vax pdp11 i8086 z8000 u3b2 u3b5 u3b20 u3b200"
+***************
+*** 1473,1481 ****
+  	echo " "
+  	echo "nm didn't seem to work right."
+  	echo "Trying ar instead..."
+! 	if ar t $libc > libc.tmp; then
+  	    for thisname in $libnames; do
+! 		ar t $thisname >>libc.tmp
+  	    done
+  	    $sed -e 's/\.o$//' < libc.tmp > libc.list
+  	    echo "Ok."
+--- 1475,1483 ----
+  	echo " "
+  	echo "nm didn't seem to work right."
+  	echo "Trying ar instead..."
+! 	if ar -t $libc > libc.tmp; then
+  	    for thisname in $libnames; do
+! 		ar -t $thisname >>libc.tmp
+  	    done
+  	    $sed -e 's/\.o$//' < libc.tmp > libc.list
+  	    echo "Ok."
+***************
+*** 1486,1492 ****
+  		for thisname in $libnames; do
+  		    bld t $libnames | \
+  			$sed -e 's/.*\///' -e 's/\.o:.*$//' >>libc.list
+! 		    ar t $thisname >>libc.tmp
+  		done
+  		echo "Ok."
+  	    else
+--- 1488,1494 ----
+  		for thisname in $libnames; do
+  		    bld t $libnames | \
+  			$sed -e 's/.*\///' -e 's/\.o:.*$//' >>libc.list
+! 		    ar -t $thisname >>libc.tmp
+  		done
+  		echo "Ok."
+  	    else
+***************
+*** 1852,1858 ****
+  	echo "Hmmm...you don't have Berkeley networking in libc.a..."
+  	: look for an optional networking library
+  	if test -f /usr/lib/libnet.a; then
+! 	    (ar t /usr/lib/libnet.a ||
+  		nm -g /usr/lib/libnet.a) 2>/dev/null >> libc.list
+  	    if $contains socket libc.list >/dev/null 2>&1; then
+  		echo "but the Wollongong group seems to have hacked it in."
+--- 1854,1860 ----
+  	echo "Hmmm...you don't have Berkeley networking in libc.a..."
+  	: look for an optional networking library
+  	if test -f /usr/lib/libnet.a; then
+! 	    (ar -t /usr/lib/libnet.a ||
+  		nm -g /usr/lib/libnet.a) 2>/dev/null >> libc.list
+  	    if $contains socket libc.list >/dev/null 2>&1; then
+  		echo "but the Wollongong group seems to have hacked it in."
+***************
+*** 2851,2859 ****
+  for file in $*; do
+      case "$file" in
+      */*)
+! 	dir=`$expr X$file : 'X\(.*\)/'`
+! 	file=`$expr X$file : 'X.*/\(.*\)'`
+  	(cd $dir && . $file)
+  	;;
+      *)
+  	. $file
+--- 2853,2867 ----
+  for file in $*; do
+      case "$file" in
+      */*)
+! 	echo $file | $sed 's/\(.*\)\/.*/\1/' > .xx
+! 	dir=`$cat .xx`
+! 	echo $file | $sed 's/.*\/\(.*\)/\1/' > .xx
+! 	file=`$cat .xx`
+  	(cd $dir && . $file)
++ 	$rm -f .xx
++ #	dir=`$expr X$file : 'X\(.*\)/'`
++ #	file=`$expr X$file : 'X.*/\(.*\)'`
++ #	(cd $dir && . $file)
+  	;;
+      *)
+  	. $file
+diff -cr perl-3.0.41.or/doio.c perl-3.0.41/doio.c
+*** perl-3.0.41.or/doio.c	Wed Dec  5 18:14:22 1990
+--- perl-3.0.41/doio.c	Thu Dec  6 20:25:51 1990
+***************
+*** 276,282 ****
+  	    stio->type = 's';	/* in case a socket was passed in to us */
+  #endif
+      }
+! #if defined(FCNTL) && defined(F_SETFD)
+      fd = fileno(fp);
+      fcntl(fd,F_SETFD,fd >= 3);
+  #endif
+--- 276,282 ----
+  	    stio->type = 's';	/* in case a socket was passed in to us */
+  #endif
+      }
+! #if defined(FCNTL) && defined(F_SETFD) && defined(FOO)
+      fd = fileno(fp);
+      fcntl(fd,F_SETFD,fd >= 3);
+  #endif
+***************
+*** 607,613 ****
+  #ifdef MSDOS
+  	fatal("fcntl is not implemented");
+  #else
+! #ifdef I_FCNTL
+  	retval = fcntl(fileno(stio->ifp), func, s);
+  #else
+  	fatal("fcntl is not implemented");
+--- 607,613 ----
+  #ifdef MSDOS
+  	fatal("fcntl is not implemented");
+  #else
+! #if defined(I_FCNTL) && defined(FOO)
+  	retval = fcntl(fileno(stio->ifp), func, s);
+  #else
+  	fatal("fcntl is not implemented");
+***************
+*** 2037,2047 ****
+--- 2037,2049 ----
+  	(void)astore(ary, ++sp, str = str_static(&str_no));
+  	str_numset(str, (double)grent->gr_gid);
+  	(void)astore(ary, ++sp, str = str_static(&str_no));
++ #if 0
+  	for (elem = grent->gr_mem; *elem; elem++) {
+  	    str_cat(str, *elem);
+  	    if (elem[1])
+  		str_ncat(str," ",1);
+  	}
++ #endif
+      }
+  
+      return sp;
+diff -cr perl-3.0.41.or/eval.c perl-3.0.41/eval.c
+*** perl-3.0.41.or/eval.c	Wed Dec  5 18:14:25 1990
+--- perl-3.0.41/eval.c	Thu Dec  6 20:23:44 1990
+***************
+*** 1808,1814 ****
+  	goto one_liner;		/* see above in MKDIR */
+  #endif
+      case O_GETPPID:
+! #ifdef GETPPID
+  	value = (double)getppid();
+  	goto donumset;
+  #else
+--- 1808,1814 ----
+  	goto one_liner;		/* see above in MKDIR */
+  #endif
+      case O_GETPPID:
+! #ifdef GETPPID_FOO
+  	value = (double)getppid();
+  	goto donumset;
+  #else
+diff -cr perl-3.0.41.or/makedepend.SH perl-3.0.41/makedepend.SH
+*** perl-3.0.41.or/makedepend.SH	Wed Dec  5 18:13:07 1990
+--- perl-3.0.41/makedepend.SH	Thu Dec  6 19:23:19 1990
+***************
+*** 101,108 ****
+  	$echo *.SH | $tr ' ' '\012' | $egrep -v '\*' >.shlist)
+  if $test -s .deptmp; then
+      for file in `cat .shlist`; do
+! 	$echo `$expr X$file : 'X\(.*\).SH`: $file config.sh \; \
+! 	    /bin/sh $file >> .deptmp
+      done
+      $echo "Updating Makefile..."
+      $echo "# If this runs make out of memory, delete /usr/include lines." \
+--- 101,110 ----
+  	$echo *.SH | $tr ' ' '\012' | $egrep -v '\*' >.shlist)
+  if $test -s .deptmp; then
+      for file in `cat .shlist`; do
+! 	$expr X$file : 'X\(.*\).SH' > .xx
+! 	$echo `$cat .xx`: $file config.sh >> .deptmp
+! 	$echo '	' /bin/sh $file >> .deptmp
+! 	$rm -f .xx
+      done
+      $echo "Updating Makefile..."
+      $echo "# If this runs make out of memory, delete /usr/include lines." \
+diff -cr perl-3.0.41.or/perl.h perl-3.0.41/perl.h
+*** perl-3.0.41.or/perl.h	Wed Dec  5 18:12:35 1990
+--- perl-3.0.41/perl.h	Thu Dec  6 19:51:41 1990
+***************
+*** 651,658 ****
+  
+  EXT struct stat statbuf;
+  EXT struct stat statcache;
+! STAB *statstab INIT(Nullstab);
+! STR *statname;
+  #ifndef MSDOS
+  EXT struct tms timesbuf;
+  #endif
+--- 651,658 ----
+  
+  EXT struct stat statbuf;
+  EXT struct stat statcache;
+! EXT STAB *statstab INIT(Nullstab);
+! EXT STR *statname;
+  #ifndef MSDOS
+  EXT struct tms timesbuf;
+  #endif
+diff -cr perl-3.0.41.or/toke.c perl-3.0.41/toke.c
+*** perl-3.0.41.or/toke.c	Wed Dec  5 18:14:24 1990
+--- perl-3.0.41/toke.c	Thu Dec  6 20:30:37 1990
+***************
+*** 665,671 ****
+  		    stab->str_pok |= SP_MULTI;
+  		    stab_io(stab) = stio_new();
+  		    stab_io(stab)->ifp = rsfp;
+! #if defined(FCNTL) && defined(F_SETFD)
+  		    fd = fileno(rsfp);
+  		    fcntl(fd,F_SETFD,fd >= 3);
+  #endif
+--- 665,671 ----
+  		    stab->str_pok |= SP_MULTI;
+  		    stab_io(stab) = stio_new();
+  		    stab_io(stab)->ifp = rsfp;
+! #if defined(FCNTL) && defined(F_SETFD) && defined(FOO)
+  		    fd = fileno(rsfp);
+  		    fcntl(fd,F_SETFD,fd >= 3);
+  #endif
+diff -cr perl-3.0.41.or/util.c perl-3.0.41/util.c
+*** perl-3.0.41.or/util.c	Wed Dec  5 18:12:23 1990
+--- perl-3.0.41/util.c	Thu Dec  6 19:41:33 1990
+***************
+*** 1086,1092 ****
+  #endif
+  
+  #ifdef VARARGS
+! #ifndef VPRINTF
+  
+  #ifdef CHARVSPRINTF
+  char *
+--- 1086,1092 ----
+  #endif
+  
+  #ifdef VARARGS
+! #ifdef VPRINTF_MINIX_KUKKUU
+  
+  #ifdef CHARVSPRINTF
+  char *
+diff -cr perl-3.0.41.or/x2p/a2p.h perl-3.0.41/x2p/a2p.h
+*** perl-3.0.41.or/x2p/a2p.h	Wed Dec  5 18:12:11 1990
+--- perl-3.0.41/x2p/a2p.h	Thu Dec  6 20:51:47 1990
+***************
+*** 230,236 ****
+  #else
+  #define OPSMAX 50000
+  #endif						 	/* 80286 hack */
+! union u_ops ops[OPSMAX];
+  
+  #include <stdio.h>
+  #include <ctype.h>
+--- 230,236 ----
+  #else
+  #define OPSMAX 50000
+  #endif						 	/* 80286 hack */
+! EXT union u_ops ops[OPSMAX];
+  
+  #include <stdio.h>
+  #include <ctype.h>
+***************
+*** 308,314 ****
+  EXT int saw_FS INIT(0);
+  EXT int maxfld INIT(0);
+  EXT int arymax INIT(0);
+! char *nameary[100];
+  
+  EXT STR *opens;
+  
+--- 308,314 ----
+  EXT int saw_FS INIT(0);
+  EXT int maxfld INIT(0);
+  EXT int arymax INIT(0);
+! EXT char *nameary[100];
+  
+  EXT STR *opens;
+  

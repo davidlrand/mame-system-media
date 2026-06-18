@@ -1,0 +1,65 @@
+/************************************************************************/
+/* This pal generates the 4 CAS selects	based upon refresh and byte	*/
+/* enables. It supports 0 wait state read/write on first access if	*/
+/* in page.								*/
+/************************************************************************/
+
+#define DESIGNER George Scolaro		/* (C) 1988,89,90 */
+#define REVISION 01 	12/11/89
+#define PARTNUM U19	GAL20V8A-15
+
+copeth(	in
+		clk,		/* cop select decode */
+		!ddin,		/* data direction from 32532 */
+		!cops,		/* cop select decode (same as pin 1) */
+		bd00,		/* peripheral data lines */
+		bd01,
+		bd02,
+		!ether,		/* ethernet i/o select */
+		!etherd,	/* ethernet pseudo-dma i/o select */
+		!iord,		/* read i/o cycle */
+		!iowr,		/* write i/o cycle */
+		prqs,		/* synchronized prq from nic */
+		!oe,
+		din,		/* input data from cop */
+		!acks;		/* synchronized ack from nic */
+	io
+		dout,		/* it's input data */
+		!sk,		/* it's clock */
+		!cs;		/* cop eeprom chips select */
+	out
+		!rack,		/* read ack to nic */
+		!wack,		/* write ack to nic */
+		bd00o,		/* output data to 532 */
+		!etherw;	/* wait on ethernet */
+)
+{
+
+[rack, wack, dout, sk, cs, etherw].oe = HI;
+
+cs	= !ddin & bd00
+	| cs & !cops; 
+
+sk	= !ddin & bd01
+	| sk & !cops;
+
+dout	= !ddin & bd02
+	| dout & !cops;
+
+bd00o.oe = cops & ddin;
+
+bd00o	= cops & ddin & din;
+
+rack	= etherd & iord & prqs;
+
+wack	= etherd & iowr & prqs;
+
+etherw	= etherd & !prqs
+	| ether & !acks;
+
+putpart("g20v8", "copeth",
+	clk, ddin, cops, bd00, bd01, bd02, ether, etherd, iord, iowr, prqs,
+	GND, oe, din,
+	rack, wack, dout, sk, cs, bd00o, _, etherw, acks, VCC);
+}
+

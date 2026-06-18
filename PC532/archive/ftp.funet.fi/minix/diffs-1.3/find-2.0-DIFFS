@@ -1,0 +1,192 @@
+diff -cr find-2.0.orig/Makefile find-2.0/Makefile
+*** find-2.0.orig/Makefile	Tue Nov 20 22:16:14 1990
+--- find-2.0/Makefile	Thu Dec  6 21:17:09 1990
+***************
+*** 52,58 ****
+  #-DSTRSTR_MISSING -DLIMITS_MISSING
+  
+  # more/BSD 4.3.
+! DEFS = -DFS_MNTENT -DWAIT_MACROS_MISSING -DVPRINTF_MISSING -DSTPCPY_MISSING \
+  -DSTRDUP_MISSING -DSTRSPN_MISSING -DSTRSTR_MISSING -DSTRTOL_MISSING \
+  -DLIMITS_MISSING 
+  
+--- 52,58 ----
+  #-DSTRSTR_MISSING -DLIMITS_MISSING
+  
+  # more/BSD 4.3.
+! #DEFS = -DFS_MNTENT -DWAIT_MACROS_MISSING -DVPRINTF_MISSING -DSTPCPY_MISSING \
+  -DSTRDUP_MISSING -DSTRSPN_MISSING -DSTRSTR_MISSING -DSTRTOL_MISSING \
+  -DLIMITS_MISSING 
+  
+***************
+*** 66,80 ****
+  #DEFS = -DVPRINTF_MISSING -DSTPCPY_MISSING -DFS_MNTENT -DUSG
+  
+  # System V Release 2
+! #DEFS = -DUSG -DDIRENT -DLIMITS_MISSING -DWAIT_MACROS_MISSING \
+! #-DSTPCPY_MISSING -DSTRDUP_MISSING -DSTRSTR_MISSING
+  
+  # System V Release 3.2
+  #DEFS = -DUSG -DDIRENT -DWAIT_MACROS_MISSING -DSTPCPY_MISSING \
+  #-DSTRSTR_MISSING -DFS_USG_STATFS
+  
+! CFLAGS = -I. -I../lib -g $(DEFS)
+! LDFLAGS = -g
+  # System libraries (e.g., directory functions or -lPW for alloca).
+  LIBS = 
+  
+--- 66,80 ----
+  #DEFS = -DVPRINTF_MISSING -DSTPCPY_MISSING -DFS_MNTENT -DUSG
+  
+  # System V Release 2
+! DEFS = -DUSG -DDIRENT -DLIMITS_MISSING -DWAIT_MACROS_MISSING \
+! -DSTPCPY_MISSING -DSTRDUP_MISSING -DSTRSTR_MISSING -DMINIX -DSTRTOL_MISSING
+  
+  # System V Release 3.2
+  #DEFS = -DUSG -DDIRENT -DWAIT_MACROS_MISSING -DSTPCPY_MISSING \
+  #-DSTRSTR_MISSING -DFS_USG_STATFS
+  
+! CFLAGS = -I. -I../lib $(DEFS)
+! LDFLAGS =
+  # System libraries (e.g., directory functions or -lPW for alloca).
+  LIBS = 
+  
+***************
+*** 88,100 ****
+  DIRINSTALL = install -d
+  
+  # Directory in which to install `find' and `locate'.
+! BINDIR=/usr/local/gnubin
+  
+  # Directory in which to install programs to create the `locate' database.
+! LIBDIR=/usr/local/lib/find
+  
+  # Directory in which to install manual pages.
+! MANDIR=/usr/local/man/man1
+  
+  # Data file for `locate'.
+  FCODES=$(LIBDIR)/find.codes
+--- 88,100 ----
+  DIRINSTALL = install -d
+  
+  # Directory in which to install `find' and `locate'.
+! BINDIR=/usr/gnu/bin
+  
+  # Directory in which to install programs to create the `locate' database.
+! LIBDIR=/usr/gnu/lib/find
+  
+  # Directory in which to install manual pages.
+! MANDIR=/usr/gnu/man/man1
+  
+  # Data file for `locate'.
+  FCODES=$(LIBDIR)/find.codes
+***************
+*** 104,112 ****
+  # Arguments to pass to subdirectory makes.
+  MDEFINES = BINDIR=$(BINDIR) LIBDIR=$(LIBDIR) MANDIR=$(MANDIR) \
+  FCODES=$(FCODES) INSTALL='$(INSTALL)' DOCINSTALL='$(DOCINSTALL)' \
+! DIRINSTALL='$(DIRINSTALL)' AR='$(AR)' RANLIB='$(RANLIB)'
+  # Add for versions of make that don't pass them in $(MAKE):
+- # CFLAGS='$(CFLAGS)' LDFLAGS='$(LDFLAGS)' LIBS='$(LIBS)' CC='$(CC)'
+  
+  SUBDIRS = lib find xargs locate man
+  
+--- 104,112 ----
+  # Arguments to pass to subdirectory makes.
+  MDEFINES = BINDIR=$(BINDIR) LIBDIR=$(LIBDIR) MANDIR=$(MANDIR) \
+  FCODES=$(FCODES) INSTALL='$(INSTALL)' DOCINSTALL='$(DOCINSTALL)' \
+! DIRINSTALL='$(DIRINSTALL)' AR='$(AR)' RANLIB='$(RANLIB)' \
+! CFLAGS='$(CFLAGS)' LDFLAGS='$(LDFLAGS)' LIBS='$(LIBS)' CC='$(CC)'
+  # Add for versions of make that don't pass them in $(MAKE):
+  
+  SUBDIRS = lib find xargs locate man
+  
+diff -cr find-2.0.orig/lib/Makefile find-2.0/lib/Makefile
+*** find-2.0.orig/lib/Makefile	Tue Nov 20 21:35:53 1990
+--- find-2.0/lib/Makefile	Thu Dec  6 21:16:03 1990
+***************
+*** 47,53 ****
+  .PHONY: dist
+  
+  libfind.a: $(OBJECTS)
+! 	$(AR) cr $@ $(OBJECTS)
+  	-$(RANLIB) $@
+  
+  getopt1.c: getopt.h
+--- 47,53 ----
+  .PHONY: dist
+  
+  libfind.a: $(OBJECTS)
+! 	$(AR) -a $@ $(OBJECTS)
+  	-$(RANLIB) $@
+  
+  getopt1.c: getopt.h
+diff -cr find-2.0.orig/lib/filemode.c find-2.0/lib/filemode.c
+*** find-2.0.orig/lib/filemode.c	Mon Nov 12 20:25:18 1990
+--- find-2.0/lib/filemode.c	Thu Dec  6 21:12:52 1990
+***************
+*** 17,22 ****
+--- 17,26 ----
+  
+  #include <sys/types.h>
+  #include <sys/stat.h>
++ #ifdef MINIX
++ #undef S_ISREG
++ #endif
++ 
+  #ifndef S_IREAD
+  #define S_IREAD S_IRUSR
+  #define S_IWRITE S_IWUSR
+diff -cr find-2.0.orig/lib/listfile.c find-2.0/lib/listfile.c
+*** find-2.0.orig/lib/listfile.c	Tue Nov 20 21:02:34 1990
+--- find-2.0/lib/listfile.c	Thu Dec  6 21:14:27 1990
+***************
+*** 30,36 ****
+--- 30,38 ----
+  #endif
+  #include <time.h>
+  #ifdef USG
++ #ifndef MINIX
+  #include <sys/sysmacros.h>
++ #endif
+  #include <string.h>
+  #else
+  #include <strings.h>
+diff -cr find-2.0.orig/locate/updatedb.sh find-2.0/locate/updatedb.sh
+*** find-2.0.orig/locate/updatedb.sh	Mon Jun 25 22:19:38 1990
+--- find-2.0/locate/updatedb.sh	Thu Dec  6 21:23:57 1990
+***************
+*** 30,36 ****
+  # Directory to hold intermediate files.
+  TMPDIR=/usr/tmp
+  
+! PATH=$LIBDIR:$BINDIR:/usr/ucb:/bin:/usr/bin export PATH
+  bigrams=$TMPDIR/f.bigrams$$
+  filelist=$TMPDIR/f.list$$
+  errs=$TMPDIR/f.errs$$
+--- 30,37 ----
+  # Directory to hold intermediate files.
+  TMPDIR=/usr/tmp
+  
+! PATH=$LIBDIR:$BINDIR:/usr/ucb:/bin:/usr/bin
+! export PATH
+  bigrams=$TMPDIR/f.bigrams$$
+  filelist=$TMPDIR/f.list$$
+  errs=$TMPDIR/f.errs$$
+diff -cr find-2.0.orig/xargs/xargs.c find-2.0/xargs/xargs.c
+*** find-2.0.orig/xargs/xargs.c	Mon Nov 12 19:25:23 1990
+--- find-2.0/xargs/xargs.c	Thu Dec  6 21:11:25 1990
+***************
+*** 118,124 ****
+--- 118,128 ----
+  #include <limits.h>
+  #else				/* LIMITS_MISSING */
+  #include <sys/param.h>
++ #ifdef MINIX
++ #define ARG_MAX 30
++ #else
+  #define ARG_MAX NCARGS
++ #endif
+  #endif				/* LIMITS_MISSING */
+  
+  /* Sanity check for systems with huge ARG_MAX defines (e.g., Suns which

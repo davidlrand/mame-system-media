@@ -1,0 +1,38 @@
+/********************************************************
+*	This defines the Job Control Block structure	*
+*	which is passed to the SCSI-PRO software.	*
+********************************************************/
+struct jcb
+{
+	unsigned char status_byte;	/* STATUS byte		*/
+	unsigned char target_id;	/* ID number 0-7	*/
+	unsigned char lun_no;		/* LUN number 0-7	*/
+	unsigned char arb;		/* Enable Arbitration? 	*/
+	unsigned char initiator_id;	/* Assert initiators ID on the bus during selection?	*/
+	unsigned char attention;	/* Send IDENTIFY message?	*/
+	unsigned char disconnect;	/* Enable disconnection?	*/
+
+	unsigned char direction;	/* Direction of data transfer	*/
+	unsigned short data_len;	/* Data length in bytes */
+	char far *data_addr;		/* Location of data	*/
+
+	unsigned char cdb_len;		/* Command Descriptor Block (CDB) length	*/
+	unsigned char cdb_0;		/* CDB data		*/
+	unsigned char cdb_1;
+	unsigned char cdb_2;
+	unsigned char cdb_3;
+	unsigned char cdb_4;
+	unsigned char cdb_5;		/* Although the SPC only supports 6 byte	*/
+	unsigned char cdb_6;		/* commands the structure must be defined	*/
+	unsigned char cdb_7;		/* like this for use by the ASC-88.		*/
+	unsigned char cdb_8;
+	unsigned char cdb_9;
+	unsigned char cdb_a;
+	unsigned char cdb_b;
+};
+
+struct jcb jcb_1;
+union REGS regs;
+struct SREGS sregs;
+unsigned char buffer[BUFFLIM +1];
+unsigned char sense[SENSE_BYTES];

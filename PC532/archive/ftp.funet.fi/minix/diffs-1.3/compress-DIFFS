@@ -1,0 +1,42 @@
+diff -cr compress.orig/Makefile compress/Makefile
+*** compress.orig/Makefile	Mon Dec  3 03:42:52 1990
+--- compress/Makefile	Mon Dec  3 03:49:04 1990
+***************
+*** 1,10 ****
+! bindir=/usr/local
+  sacred=-DSACREDMEM=256000
+! system=-DBSD4_2
+! CFLAGS=-O
+  
+  compress: compress.c USERMEM
+! 	cc $(CFLAGS) $(sacred) $(system) -DUSERMEM=`cat USERMEM` -o compress compress.c
+  
+  # USERMEM may have to be set by hand.  It should contain the amount of
+  # available user memory in bytes.  Set it to zero, for physical memory
+--- 1,11 ----
+! bindir=/usr/local/bin
+  sacred=-DSACREDMEM=256000
+! system=
+! CC= gcc
+! CFLAGS=-O -DMINIX_13
+  
+  compress: compress.c USERMEM
+! 	$(CC) $(CFLAGS) $(sacred) $(system) -DUSERMEM=`cat USERMEM` -o compress compress.c
+  
+  # USERMEM may have to be set by hand.  It should contain the amount of
+  # available user memory in bytes.  Set it to zero, for physical memory
+diff -cr compress.orig/compress.c compress/compress.c
+*** compress.orig/compress.c	Mon Dec  3 03:43:36 1990
+--- compress/compress.c	Mon Dec  3 03:47:30 1990
+***************
+*** 508,514 ****
+--- 508,516 ----
+  	signal ( SIGINT, onintr );
+  
+  #ifndef MSDOS
++ #ifndef MINIX_13
+  	signal ( SIGSEGV, oops );
++ #endif
+      }
+  #endif
+  

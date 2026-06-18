@@ -1,0 +1,42 @@
+diff -cr elvis-1.3.1.or/Makefile.s5 elvis-1.3.1/Makefile.s5
+*** elvis-1.3.1.or/Makefile.s5	Wed Aug 29 01:11:26 1990
+--- elvis-1.3.1/Makefile.s5	Mon Dec  3 16:55:14 1990
+***************
+*** 17,25 ****
+  # Use `make uue` to produce uuencoded compressed tar archives of the source
+  # Use `make sh` to produce shar archives of the source
+  
+  PROGS=	elvis ctags ref virec
+  #PROGS=	elvis.exe ctags.exe ref.exe virec.exe wildcard.exe
+! BIN=	/usr/local/bin
+  OBJS=	blk.o cmd1.o cmd2.o curses.o cut.o ex.o input.o main.o misc.o\
+  	modify.o move1.o move2.o move3.o move4.o move5.o opts.o recycle.o\
+  	redraw.o regexp.o regsub.o system.o tio.o tmp.o vars.o vcmd.o vi.o
+--- 17,26 ----
+  # Use `make uue` to produce uuencoded compressed tar archives of the source
+  # Use `make sh` to produce shar archives of the source
+  
++ CC = gcc
+  PROGS=	elvis ctags ref virec
+  #PROGS=	elvis.exe ctags.exe ref.exe virec.exe wildcard.exe
+! BIN=	/usr/gnu/bin
+  OBJS=	blk.o cmd1.o cmd2.o curses.o cut.o ex.o input.o main.o misc.o\
+  	modify.o move1.o move2.o move3.o move4.o move5.o opts.o recycle.o\
+  	redraw.o regexp.o regsub.o system.o tio.o tmp.o vars.o vcmd.o vi.o
+***************
+*** 34,40 ****
+  SRC5=	regexp.c regexp.h regsub.c sysdos.c system.c tinytcap.c tio.c tmp.c
+  SRC6=	vars.c vcmd.c vi.c vi.h ctags.c ref.c virec.c wildcard.c shell.c
+  EXTRA=
+! CFLAGS=	-O -DM_SYSV
+  LIBS=	-ltermcap
+  
+  all: $(PROGS)
+--- 35,41 ----
+  SRC5=	regexp.c regexp.h regsub.c sysdos.c system.c tinytcap.c tio.c tmp.c
+  SRC6=	vars.c vcmd.c vi.c vi.h ctags.c ref.c virec.c wildcard.c shell.c
+  EXTRA=
+! CFLAGS=	-O -DMINIX
+  LIBS=	-ltermcap
+  
+  all: $(PROGS)

@@ -1,0 +1,31 @@
+
+
+
+-------------------------------------------------------------------------------------------------------------
+BILL OF MATERIALS    32GX32 ETHERNET/SERIAL BOARD                  V 1A Mon Sep 28 19:37:01 1992    PAGE   1
+-------------------------------------------------------------------------------------------------------------
+
+
+     ITEM   QUAN.    PART NUMBER           DESCRIPTION                                        REF. DES.        
+
+       1       2                  60 WAY TRANSITION CONNECTOR                                 J17,J18         
+
+       2      24                  CAPACITOR,0.1,                                              C3,C4,C5,C6,C7  
+                                                                                              C8,C9,C10,C11
+                                                                                              C12,C13,C14,C15
+                                                                                              C16,C17,C18,C19
+                                                                                              C20,C21,C22,C23
+                                                                                              C24,C25,C26
+
+       3       3                  CAPACITOR,22UF                                              C1,C2,C27       
+
+       4      16                  JUMP10 - 10 WAY JUMPER BLOCK                                J1,J2,J3,J4,J5  
+                                                                                              J6,J7,J8,J9,J10
+                                                                                              J11,J12,J13,J14
+                                                                                              J15,J16
+
+       5      16                  MC145406 - HEX RS232 CMOS TRANSCEIVER                       U1,U2,U3,U4,U5  
+                                                                                              U6,U7,U8,U9,U10
+                                                                                              U11,U12,U13,U14
+                                                                                              U15,U16
+

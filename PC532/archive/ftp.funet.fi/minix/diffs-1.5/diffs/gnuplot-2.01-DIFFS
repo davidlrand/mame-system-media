@@ -1,0 +1,152 @@
+diff -cr gnuplot-2.01.orig/command.c gnuplot-2.01/command.c
+*** gnuplot-2.01.orig/command.c	Tue Sep 18 04:56:42 1990
+--- gnuplot-2.01/command.c	Mon Mar 18 05:00:32 1991
+***************
+*** 29,34 ****
+--- 29,35 ----
+  
+  #include <stdio.h>
+  #include <math.h>
++ #define fabs(x) (((x) > 0) ? (x) : - (x))
+  
+  #ifdef MSDOS
+  #include <process.h>
+***************
+*** 286,292 ****
+  		}
+  	}
+  	else if (almost_equals(c_token,"pwd")) {
+! #ifdef unix
+  /* unix has getwd() */
+  	  (void) getwd(sv_file);
+  #else
+--- 287,293 ----
+  		}
+  	}
+  	else if (almost_equals(c_token,"pwd")) {
+! #if defined(unix) && !defined(MINIX)
+  /* unix has getwd() */
+  	  (void) getwd(sv_file);
+  #else
+diff -cr gnuplot-2.01.orig/graphics.c gnuplot-2.01/graphics.c
+*** gnuplot-2.01.orig/graphics.c	Tue Sep 18 04:57:55 1990
+--- gnuplot-2.01/graphics.c	Mon Mar 18 05:00:43 1991
+***************
+*** 30,35 ****
+--- 30,36 ----
+  #include <stdio.h>
+  #include <math.h>
+  #include <assert.h>
++ #define fabs(x) (((x) > 0) ? (x) : - (x))
+  #include "plot.h"
+  #include "setshow.h"
+  
+diff -cr gnuplot-2.01.orig/makefile.unx gnuplot-2.01/makefile.unx
+*** gnuplot-2.01.orig/makefile.unx	Tue Sep 18 04:56:51 1990
+--- gnuplot-2.01/makefile.unx	Mon Mar 18 05:01:01 1991
+***************
+*** 3,16 ****
+  #
+  
+  # directory where to install executables on 'make install'
+! DEST=/usr/local/bin
+  # directory for installing man page on 'make man_install'
+! MANDEST=/usr/man/manl
+  # where to install help file gnuplot.gih
+! #HELPDEST=/usr/local/lib/gnuplot.gih
+! HELPDEST=docs/gnuplot.gih
+  # Where to send email about bugs and comments (locally)
+! EMAIL=\"pixar\!bug-gnuplot@sun.com\"
+  
+  # -DVFORK if you have vfork()
+  # -DBCOPY if your memcpy() is called bcopy() (a Berkeleyism, right?)
+--- 3,16 ----
+  #
+  
+  # directory where to install executables on 'make install'
+! DEST=/usr/gnu/bin
+  # directory for installing man page on 'make man_install'
+! MANDEST=/usr/gnu/man/manl
+  # where to install help file gnuplot.gih
+! HELPDEST=/usr/gnu/lib/gnuplot.gih
+! #HELPDEST=docs/gnuplot.gih
+  # Where to send email about bugs and comments (locally)
+! EMAIL=\"jkp\"
+  
+  # -DVFORK if you have vfork()
+  # -DBCOPY if your memcpy() is called bcopy() (a Berkeleyism, right?)
+***************
+*** 20,31 ****
+  # -fswitch if you are compiling on a Sun3 (or even -f68881)
+  #    (but -fswitch is buggy on some systems, so watch out)
+  # -O if you trust your compiler's optimizer
+! CFLAGS = -DVFORK -DBCOPY -DBZERO -DGAMMA #-gx #-O
+  
+  # -lplot if you have -DUNIXPLOT
+  # -lsuntool -lsunwindow -lpixrect  if you have -DSUN
+  # -lgl_s if IRIS4D
+! LIBS = -lm -lplot
+  
+  # -D<terminal> in TERMFLAGS iff you wish to support <terminal>
+  # see other terminal defines in term.h
+--- 20,32 ----
+  # -fswitch if you are compiling on a Sun3 (or even -f68881)
+  #    (but -fswitch is buggy on some systems, so watch out)
+  # -O if you trust your compiler's optimizer
+! #CFLAGS = -DVFORK -DBCOPY -DBZERO -DGAMMA #-gx #-O
+! CFLAGS = -DBCOPY -DBZERO -O -DMINIX #-gx #-O
+  
+  # -lplot if you have -DUNIXPLOT
+  # -lsuntool -lsunwindow -lpixrect  if you have -DSUN
+  # -lgl_s if IRIS4D
+! LIBS = -lm #-lplot
+  
+  # -D<terminal> in TERMFLAGS iff you wish to support <terminal>
+  # see other terminal defines in term.h
+***************
+*** 34,40 ****
+  # -DSUN         Sun Microsystems Workstation
+  # -DUNIXPLOT    unixplot
+  
+! TERMFLAGS =  -Iterm -DUNIXPLOT
+  
+  OBJS = command.o eval.o graphics.o help.o internal.o misc.o parse.o\
+      plot.o scanner.o setshow.o standard.o term.o util.o 
+--- 35,41 ----
+  # -DSUN         Sun Microsystems Workstation
+  # -DUNIXPLOT    unixplot
+  
+! TERMFLAGS =  -Iterm #-DUNIXPLOT
+  
+  OBJS = command.o eval.o graphics.o help.o internal.o misc.o parse.o\
+      plot.o scanner.o setshow.o standard.o term.o util.o 
+diff -cr gnuplot-2.01.orig/plot.h gnuplot-2.01/plot.h
+*** gnuplot-2.01.orig/plot.h	Mon Mar 26 22:59:10 1990
+--- gnuplot-2.01/plot.h	Mon Mar 18 05:08:38 1991
+***************
+*** 42,47 ****
+--- 42,48 ----
+  
+  #define TRUE 1
+  #define FALSE 0
++ #define fabs(x) (((x) > 0) ? (x) : - (x))
+  
+  
+  #define Pi 3.141592653589793
+***************
+*** 95,101 ****
+  #include <float.h>
+  #define VERYLARGE FLT_MAX
+  #else
+! #ifdef vms
+  #include <float.h>
+  #define VERYLARGE DBL_MAX
+  #else
+--- 96,102 ----
+  #include <float.h>
+  #define VERYLARGE FLT_MAX
+  #else
+! #if defined(vms) || 1
+  #include <float.h>
+  #define VERYLARGE DBL_MAX
+  #else

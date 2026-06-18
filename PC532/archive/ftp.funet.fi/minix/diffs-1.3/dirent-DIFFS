@@ -1,0 +1,520 @@
+diff -cr dirent.orig/Makefile dirent/Makefile
+*** dirent.orig/Makefile	Thu Sep 13 17:01:17 1990
+--- dirent/Makefile	Mon Feb  4 18:14:46 1991
+***************
+*** 1,6 ****
+  # Makefile and Unos port by David MacKenzie <djm@ai.mit.edu>
+  
+! DEFS = -DUFS
+  CFLAGS= -O $(DEFS)
+  
+  SRCS=closedir.c getdents.c opendir.c readdir.c rewinddir.c seekdir.c telldir.c
+--- 1,7 ----
+  # Makefile and Unos port by David MacKenzie <djm@ai.mit.edu>
+  
+! DEFS = -DUFS -DMINIX
+! CC= gcc
+  CFLAGS= -O $(DEFS)
+  
+  SRCS=closedir.c getdents.c opendir.c readdir.c rewinddir.c seekdir.c telldir.c
+***************
+*** 14,20 ****
+  MAN5DIR = /usr/man/man5
+  
+  $(ARCHIVE):	$(OBJS)
+! 	ar rc $(ARCHIVE) $(OBJS)
+  
+  install: install_lib install_man
+  
+--- 15,21 ----
+  MAN5DIR = /usr/man/man5
+  
+  $(ARCHIVE):	$(OBJS)
+! 	gar rc $(ARCHIVE) $(OBJS)
+  
+  install: install_lib install_man
+  
+diff -cr dirent.orig/closedir.c dirent/closedir.c
+*** dirent.orig/closedir.c	Mon Nov 14 16:45:11 1988
+--- dirent/closedir.c	Mon Feb  4 18:15:32 1991
+***************
+*** 4,10 ****
+  	last edit:	11-Nov-1988	D A Gwyn
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 4,10 ----
+  	last edit:	11-Nov-1988	D A Gwyn
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+diff -cr dirent.orig/getdents.c dirent/getdents.c
+*** dirent.orig/getdents.c	Thu Sep 13 16:33:26 1990
+--- dirent/getdents.c	Sun Feb  3 23:45:21 1991
+***************
+*** 2,8 ****
+  	getdents -- get directory entries in a file system independent format
+  			(SVR3 system call emulation)
+  
+! 	last edit:	15-Feb-1988	D A Gwyn
+  
+  	This single source file supports several different methods of
+  	getting directory entries from the operating system.  Define
+--- 2,8 ----
+  	getdents -- get directory entries in a file system independent format
+  			(SVR3 system call emulation)
+  
+! 	last edit:	27-Oct-1988	D A Gwyn
+  
+  	This single source file supports several different methods of
+  	getting directory entries from the operating system.  Define
+***************
+*** 12,21 ****
+  	BFS	4.2BSD (also 4.3BSD) native filesystem (long names)
+  	NFS	getdirentries() system call
+  
+! 	Also define any of the following that are pertinent:
+  
+  	ATT_SPEC	check user buffer address for longword alignment
+  	BSD_SYSV	BRL UNIX System V emulation environment on 4.nBSD
+  	UNK		have _getdents() system call, but kernel may not
+  			support it
+  
+--- 12,24 ----
+  	BFS	4.2BSD (also 4.3BSD) native filesystem (long names)
+  	NFS	getdirentries() system call
+  
+! 	Also define any of the following flags that are pertinent:
+  
+  	ATT_SPEC	check user buffer address for longword alignment
+  	BSD_SYSV	BRL UNIX System V emulation environment on 4.nBSD
++ 	INT_SIGS	<signal.h> thinks that signal handlers have
++ 			return type int (rather than the standard void)
++ 	NEG_DELS	deleted entries have inode number -1 rather than 0
+  	UNK		have _getdents() system call, but kernel may not
+  			support it
+  
+***************
+*** 29,38 ****
+  	to always work, you shouldn't be using this source file at all.
+  */
+  
+! #ifdef unos
+! #include	<errno.h>
+! #else
+  #include	<sys/errno.h>
+  #endif
+  #include	<sys/types.h>
+  #ifdef BSD_SYSV
+--- 32,43 ----
+  	to always work, you shouldn't be using this source file at all.
+  */
+  
+! #define  UFS
+! 
+! #if 0
+  #include	<sys/errno.h>
++ #else
++ #include	<errno.h>
+  #endif
+  #include	<sys/types.h>
+  #ifdef BSD_SYSV
+***************
+*** 57,66 ****
+  #include	<signal.h>
+  #endif
+  
+- #if defined(UFS) + defined(BFS) + defined(NFS) != 1	/* sanity check */
+- #include "***** ERROR ***** exactly one of UFS, BFS, or NFS must be defined"
+- #endif
+- 
+  #ifdef BSD_SYSV
+  struct dirent	__dirent;		/* (just for the DIRENTBASESIZ macro) */
+  #endif
+--- 62,67 ----
+***************
+*** 96,103 ****
+  
+  extern int	errno;
+  
+  #ifndef DIRBLKSIZ
+! #define	DIRBLKSIZ	4096		/* directory file read buffer size */
+  #endif
+  
+  #ifndef NULL
+--- 97,120 ----
+  
+  extern int	errno;
+  
++ #ifdef NEG_DELS
++ #define	DELETED	(-1)
++ #else
++ #define	DELETED	0
++ #endif
++ 
+  #ifndef DIRBLKSIZ
+! /* directory file read buffer size
+!  * For directory files with fixed sized records, this should be a
+!  * multiple of the record size.  For variable sized records, this code
+!  * is probably unreliable if the directory is larger than DIRBLKSIZ --
+!  * so make DIRBLKSIZ big.
+!  */
+! #ifdef UFS
+! #define	DIRBLKSIZ (64*sizeof(struct direct))
+! #else
+! #define	DIRBLKSIZ 4096
+! #endif
+  #endif
+  
+  #ifndef NULL
+***************
+*** 106,111 ****
+--- 123,129 ----
+  
+  #ifndef SEEK_CUR
+  #define	SEEK_CUR	1
++ #define SEEK_SET	0
+  #endif
+  
+  #ifndef S_ISDIR				/* macro to test for directory file */
+***************
+*** 122,128 ****
+  static int
+  NameLen( name )				/* return # chars in embedded name */
+  	char		name[];		/* -> name embedded in struct direct */
+! {
+  	register char	*s;		/* -> name[.] */
+  	register char	*stop = &name[DIRSIZ];	/* -> past end of name field */
+  
+--- 140,146 ----
+  static int
+  NameLen( name )				/* return # chars in embedded name */
+  	char		name[];		/* -> name embedded in struct direct */
+! 	{
+  	register char	*s;		/* -> name[.] */
+  	register char	*stop = &name[DIRSIZ];	/* -> past end of name field */
+  
+***************
+*** 133,139 ****
+  		;
+  
+  	return s - name;		/* # valid characters in name */
+! }
+  
+  #else	/* BFS || NFS */
+  
+--- 151,157 ----
+  		;
+  
+  	return s - name;		/* # valid characters in name */
+! 	}
+  
+  #else	/* BFS || NFS */
+  
+***************
+*** 147,160 ****
+  static enum	{ maybe, no, yes }	state = maybe;
+  					/* does _getdents() work? */
+  
+  /*ARGSUSED*/
+! static void
+  sig_catch( sig )
+  	int	sig;			/* must be SIGSYS */
+! {
+  	state = no;			/* attempted _getdents() faulted */
+! }
+  #endif
+  
+  int
+  getdents( fildes, buf, nbyte )		/* returns # bytes read;
+--- 165,187 ----
+  static enum	{ maybe, no, yes }	state = maybe;
+  					/* does _getdents() work? */
+  
++ #ifdef INT_SIGS
++ #define	RET_SIG	int
++ #else
++ #define	RET_SIG	void
++ #endif
++ 
+  /*ARGSUSED*/
+! static RET_SIG
+  sig_catch( sig )
+  	int	sig;			/* must be SIGSYS */
+! 	{
+  	state = no;			/* attempted _getdents() faulted */
+! #ifdef INT_SIGS
+! 	return 0;			/* telling lies */
+  #endif
++ 	}
++ #endif	/* UNK */
+  
+  int
+  getdents( fildes, buf, nbyte )		/* returns # bytes read;
+***************
+*** 162,172 ****
+  	int			fildes;	/* directory file descriptor */
+  	char			*buf;	/* where to put the (struct dirent)s */
+  	unsigned		nbyte;	/* size of buf[] */
+! {
+  	int			serrno;	/* entry errno */
+  	off_t			offset;	/* initial directory file offset */
+! 	struct stat		statb;	/* fstat() info */
+! 	union	{
+  		char		dblk[DIRBLKSIZ
+  #ifdef UFS
+  				     +1	/* for last entry name terminator */
+--- 189,201 ----
+  	int			fildes;	/* directory file descriptor */
+  	char			*buf;	/* where to put the (struct dirent)s */
+  	unsigned		nbyte;	/* size of buf[] */
+! 	{
+  	int			serrno;	/* entry errno */
+  	off_t			offset;	/* initial directory file offset */
+! 	/* The following are static just to keep the stack small. */
+! 	static struct stat	statb;	/* fstat() info */
+! 	static union
+! 		{
+  		char		dblk[DIRBLKSIZ
+  #ifdef UFS
+  				     +1	/* for last entry name terminator */
+***************
+*** 179,193 ****
+  	register struct dirent	*bp;	/* -> buf[.] */
+  
+  #ifdef UNK
+! 	switch ( state )
+  		{
+! 		void		(*shdlr)();	/* entry SIGSYS handler */
+  		register int	retval;	/* return from _getdents() if any */
+  
+- 	case yes:			/* _getdents() is known to work */
+- 		return _getdents( fildes, buf, nbyte );
+- 
+- 	case maybe:			/* first time only */
+  		shdlr = signal( SIGSYS, sig_catch );
+  		retval = _getdents( fildes, buf, nbyte );	/* try it */
+  		(void)signal( SIGSYS, shdlr );
+--- 208,221 ----
+  	register struct dirent	*bp;	/* -> buf[.] */
+  
+  #ifdef UNK
+! 	if ( state == yes )		/* _getdents() is known to work */
+! 		return _getdents( fildes, buf, nbyte );
+! 
+! 	if ( state == maybe )		/* first time only */
+  		{
+! 		RET_SIG		(*shdlr)();	/* entry SIGSYS handler */
+  		register int	retval;	/* return from _getdents() if any */
+  
+  		shdlr = signal( SIGSYS, sig_catch );
+  		retval = _getdents( fildes, buf, nbyte );	/* try it */
+  		(void)signal( SIGSYS, shdlr );
+***************
+*** 197,206 ****
+  			state = yes;	/* so _getdents() must have worked */
+  			return retval;
+  			}
+- 		/* else fall through into emulation */
+- 
+- /*	case no:	/* fall through into emulation */
+  		}
+  #endif
+  
+  	if ( buf == NULL
+--- 225,233 ----
+  			state = yes;	/* so _getdents() must have worked */
+  			return retval;
+  			}
+  		}
++ 
++ 	/* state == no; perform emulation */
+  #endif
+  
+  	if ( buf == NULL
+***************
+*** 256,266 ****
+  				}
+  #endif
+  
+! #ifdef unos
+! 			if ( dp->d_fileno >= 0 )
+! #else
+! 			if ( dp->d_fileno != 0 )
+! #endif
+  				{	/* non-empty; copy to user buffer */
+  				register int	reclen =
+  					DIRENTSIZ( NameLen( dp->d_name ) );
+--- 283,289 ----
+  				}
+  #endif
+  
+! 			if ( dp->d_fileno != DELETED )
+  				{	/* non-empty; copy to user buffer */
+  				register int	reclen =
+  					DIRENTSIZ( NameLen( dp->d_name ) );
+***************
+*** 267,274 ****
+  
+  				if ( (char *)bp + reclen > &buf[nbyte] )
+  					{
+! 					errno = EINVAL;
+! 					return -1;	/* buf too small */
+  					}
+  
+  				bp->d_ino = dp->d_fileno;
+--- 290,306 ----
+  
+  				if ( (char *)bp + reclen > &buf[nbyte] )
+  					{
+! 					/* buf too small, lseek so we get the
+! 					 * rest on next call to getdents() 
+! 					 */
+! 					if (lseek (fildes,
+! 					(long)((char *)dp-u.dblk+offset),
+! 					SEEK_SET) < 0)
+! 						{
+! 						/* errno set by lseek */
+! 						return -1;
+! 						}
+! 					break;
+  					}
+  
+  				bp->d_ino = dp->d_fileno;
+***************
+*** 298,312 ****
+  				}
+  			}
+  
+- #if !(defined(BFS) || defined(sun))	/* 4.2BSD screwed up; fixed in 4.3BSD */
+  		if ( (char *)dp > &u.dblk[size] )
+  			{
+  			errno = EIO;	/* corrupted directory */
+  			return -1;
+  			}
+- #endif
+  		}
+  
+  	errno = serrno;			/* restore entry errno */
+  	return (char *)bp - buf;	/* return # bytes read */
+! }
+--- 330,342 ----
+  				}
+  			}
+  
+  		if ( (char *)dp > &u.dblk[size] )
+  			{
+  			errno = EIO;	/* corrupted directory */
+  			return -1;
+  			}
+  		}
+  
+  	errno = serrno;			/* restore entry errno */
+  	return (char *)bp - buf;	/* return # bytes read */
+! 	}
+diff -cr dirent.orig/opendir.c dirent/opendir.c
+*** dirent.orig/opendir.c	Fri Sep  2 16:20:01 1988
+--- dirent/opendir.c	Mon Feb  4 18:15:49 1991
+***************
+*** 4,10 ****
+  	last edit:	25-Apr-1987	D A Gwyn
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 4,10 ----
+  	last edit:	25-Apr-1987	D A Gwyn
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+diff -cr dirent.orig/readdir.c dirent/readdir.c
+*** dirent.orig/readdir.c	Thu Sep 13 16:32:26 1990
+--- dirent/readdir.c	Mon Feb  4 18:16:01 1991
+***************
+*** 4,10 ****
+  	last edit:	25-Apr-1987	D A Gwyn
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 4,10 ----
+  	last edit:	25-Apr-1987	D A Gwyn
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+diff -cr dirent.orig/rewinddir.c dirent/rewinddir.c
+*** dirent.orig/rewinddir.c	Fri Sep  2 16:20:18 1988
+--- dirent/rewinddir.c	Mon Feb  4 18:16:14 1991
+***************
+*** 8,14 ****
+  	rewinddir() to forget about buffered data.
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 8,14 ----
+  	rewinddir() to forget about buffered data.
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+diff -cr dirent.orig/seekdir.c dirent/seekdir.c
+*** dirent.orig/seekdir.c	Fri Sep  2 16:20:30 1988
+--- dirent/seekdir.c	Mon Feb  4 18:17:10 1991
+***************
+*** 10,16 ****
+  		practically impossible to do right.  Avoid using them!
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 10,16 ----
+  		practically impossible to do right.  Avoid using them!
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+diff -cr dirent.orig/telldir.c dirent/telldir.c
+*** dirent.orig/telldir.c	Fri Sep  2 16:20:37 1988
+--- dirent/telldir.c	Mon Feb  4 18:16:41 1991
+***************
+*** 7,13 ****
+  		practically impossible to do right.  Avoid using them!
+  */
+  
+! #ifdef unos
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>
+--- 7,13 ----
+  		practically impossible to do right.  Avoid using them!
+  */
+  
+! #if defined(unos) || defined(MINIX)
+  #include	<errno.h>
+  #else
+  #include	<sys/errno.h>

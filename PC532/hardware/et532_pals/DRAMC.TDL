@@ -1,0 +1,165 @@
+/************************************************************************/
+/* This pal does 2 refreshes back to back, 2 t-state ras refresh, and	*/
+/* 0 wait states on initial read or write if within a page.		*/
+/* This pal generates ras/cas timing for all dram accesses including:	*/
+/* - cas before ras refresh (with precharge before & after refresh)	*/
+/* - page miss with re-ras, read or write (with precharge)		*/
+/* - page hit with cas access (for write)				*/
+/* - page hit with cas access (for read, burst access)			*/
+/************************************************************************/
+
+#define DESIGNER George Scolaro	(C) 1988,89,90
+#define REVISION 01 	05/14/88
+#define PARTNUM xx
+
+dramc( in	bclk,		/* 32532 system clock */
+		!dram,		/* dram select */
+		!conf,		/* 32532 bus cycle confirmed */
+		!hsa,		/* high speed access in progress */
+		!rfrqin,	/* refresh request */
+		!bout,		/* burst access request */
+		!bmt,		/* begin memory transfer */
+		!ddin,		/* data direction from 32532 */
+		!oe;
+	reg
+		!ras,		/* ras to rams */
+		!cas,		/* cas to rams */
+		!rfcyc,		/* refresh in progress */
+		!rfrq,		/* synchronized refresh request */
+		!nrdyr,		/* not ready to 32532 */
+		!da,		/* internal counter */
+		!rfdone;	/* refresh complete */
+)
+{
+group	state[ras, cas, rfcyc, da];
+
+#define idle	0b1000
+
+#define prech1	0b0000
+#define prech2	0b0001
+
+#define	accw	0b1001
+#define acc1	0b1100
+#define acc2	0b1101
+
+#define ref1	0b0011
+#define ref2	0b0111
+#define ref3	0b1111
+#define ref4	0b1011
+
+#define ref5	0b0010
+#define ref6	0b0110
+#define ref7	0b1110
+#define ref8	0b1010
+
+rfrq.ck = bclk;
+rfrq.oe = oe;
+rfdone.ck = bclk;
+rfdone.oe = oe;
+nrdyr.ck = bclk;
+nrdyr.oe = oe;
+state[].ck = bclk;
+state[].oe = oe;
+
+rfrq	= rfrqin & !rfdone	/* synchronise the external refresh request */
+	| rfrq & !rfcyc;
+
+rfdone = rfcyc		/* refresh done for this rfrqin */
+	 | rfdone & rfrqin;
+
+nrdyr	= dram & bmt & !hsa	/* always when not a high speed access */
+	| dram & bmt & rfrq	/* start of any dram access if refresh */
+	| dram & (conf | bmt) & rfcyc	/* during refresh cycle */
+	| (state[] == prech1) & dram & conf
+	| (state[] == prech2) & dram & conf
+	| (state[] == acc2) & bout
+	| (state[] == accw) & !(hsa & !bout) & ddin;
+
+
+switch (state[]) {
+
+case idle:
+	if (!rfrq & hsa & dram & bmt & ddin)	/* read access has no wait */
+		state[] = accw;
+	else if (!rfrq & hsa & dram & bmt & !ddin) /* write has no wait */
+		state[] = acc2;
+	else if (!rfrq & !hsa & dram & bmt)
+		state[] = prech1;
+	else if (rfrq)
+		state[] = ref1;
+	else
+		state[] = idle;
+	break;
+
+case acc1:
+	if (ddin)
+		state[] = acc2;
+	else if (!ddin)
+		state[] = idle;
+	break;
+
+case acc2:
+	if (bout)
+		state[] = acc1;
+	else if (!bout)
+		state[] = idle;
+	break;
+
+case prech1:
+	state[] = prech2;
+	break;
+
+case prech2:
+	if (rfrq & !(dram & (conf | bmt)))
+		state[] = ref2;
+	else if (dram & (conf | bmt))
+		state[] = accw;
+	else
+		state[] = prech2;
+	break;
+
+case accw:
+	if (hsa & !bout)		/* 0 wait state if in page and not */
+		state[] = idle;		/* a burst access*/
+	else
+		state[] = acc1;
+	break;
+
+case ref1:
+	state[] = ref2;
+	break;
+
+case ref2:
+	state[] = ref3;
+	break;
+
+case ref3:
+	state[] = ref4;
+	break;
+
+case ref4:
+	state[] = ref5;
+	break;
+
+case ref5:
+	state[] = ref6;
+	break;
+
+case ref6:
+	state[] = ref7;
+	break;
+
+case ref7:
+	state[] = ref8;
+	break;
+
+case ref8:
+	state[] = prech1;
+	break;
+}
+
+putpart("g16v8", "dramc",
+	bclk, dram, conf, hsa, rfrqin, bout, bmt, ddin, _, GND,
+	oe, ras, cas, rfcyc, rfrq, nrdyr, da, _, rfdone, VCC);
+}
+

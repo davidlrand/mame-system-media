@@ -1,0 +1,127 @@
+From owner-pc532%daver@mips.com Fri Mar  9 12:52:09 1990
+Reply-To: pc532@daver.bungi.com
+To: pc532@daver.bungi.com
+Subject: gcc 1.37.1 ns32k.md patch
+Date: Fri, 09 Mar 90 02:09:51 EST
+From: David Taylor <taylor@Think.COM>
+
+In tonight's mail I received the following patch, from rms, to the
+ns32k.md file in gcc version 1.37.1.  With this patch, gcc configured
+for the ns32k is able to successfully cross compile itself.
+
+Replace the movdi/movsi patterns with what follows.
+
+David
+
+(define_insn "movdi"
+  [(set (match_operand:DI 0 "general_operand" "=&g<,*f,g")
+	(match_operand:DI 1 "general_operand" "gF,g,*f"))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[0]))
+    {
+      if (FP_REG_P (operands[1]) || GET_CODE (operands[1]) == CONST_DOUBLE)
+	return \"movl %1,%0\";
+      if (REG_P (operands[1]))
+	{
+	  rtx xoperands[2];
+	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  output_asm_insn (\"movd %1,tos\", xoperands);
+	  output_asm_insn (\"movd %1,tos\", operands);
+	  return \"movl tos,%0\";
+	}
+      return \"movl %1,%0\";
+    }
+  else if (FP_REG_P (operands[1]))
+    {
+      if (REG_P (operands[0]))
+	{
+	  output_asm_insn (\"movl %1,tos\;movd tos,%0\", operands);
+	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  return \"movd tos,%0\";
+	}
+      else
+        return \"movl %1,%0\";
+    }
+  return output_move_double (operands);
+}")
+
+;; This special case must precede movsi.
+(define_insn ""
+  [(set (reg:SI 17)
+	(match_operand:SI 0 "general_operand" "rmn"))]
+  ""
+  "lprd sp,%0")
+
+(define_insn "movsi"
+  [(set (match_operand:SI 0 "general_operand" "=g<,*f,g")
+	(match_operand:SI 1 "general_operand" "gx,g,*f"))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[0]))
+    {
+      if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) < 8)
+	return \"movd %1,tos\;movf tos,%0\";
+      else
+	return \"movf %1,%0\";
+    }
+  else if (FP_REG_P (operands[1]))
+    {
+      if (REG_P (operands[0]))
+	return \"movf %1,tos\;movd tos,%0\";
+      return \"movf %1,%0\";
+    }
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      int i = INTVAL (operands[1]);
+      if (i <= 7 && i >= -8)
+	return \"movqd %1,%0\";
+      if (i < 0x4000 && i >= -0x4000)
+#ifdef GNX_V3
+	return \"addr %c1,%0\";
+#else
+	return \"addr @%c1,%0\";
+#endif
+      return \"movd %1,%0\";
+    }
+  else if (GET_CODE (operands[1]) == REG)
+    {
+      if (REGNO (operands[1]) < 16)
+        return \"movd %1,%0\";
+      else if (REGNO (operands[1]) == FRAME_POINTER_REGNUM)
+	{
+	  if (GET_CODE(operands[0]) == REG)
+	    return \"sprd fp,%0\";
+	  else
+	    return \"addr 0(fp),%0\" ;
+	}
+      else if (REGNO (operands[1]) == STACK_POINTER_REGNUM)
+	{
+	  if (GET_CODE(operands[0]) == REG)
+	    return \"sprd sp,%0\";
+	  else
+	    return \"addr 0(sp),%0\" ;
+	}
+      else abort (0);
+    }
+  else if (GET_CODE (operands[1]) == MEM)
+    return \"movd %1,%0\";
+  /* Check if this effective address can be
+     calculated faster by pulling it apart.  */
+  if (REG_P (operands[0])
+      && GET_CODE (operands[1]) == MULT
+      && GET_CODE (XEXP (operands[1], 1)) == CONST_INT
+      && (INTVAL (XEXP (operands[1], 1)) == 2
+	  || INTVAL (XEXP (operands[1], 1)) == 4))
+    {
+      rtx xoperands[3];
+      xoperands[0] = operands[0];
+      xoperands[1] = XEXP (operands[1], 0);
+      xoperands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (XEXP (operands[1], 1)) >> 1);
+      return output_shift_insn (xoperands);
+    }
+  return \"addr %a1,%0\";
+}")
+

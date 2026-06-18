@@ -1,0 +1,21 @@
+
+	National Semiconductors SCSI Printer Controller
+
+This directory contains all of the code used in the SCSI Printer Controller
+(SPC) demonstration board, documented in the application note "A SCSI Printer
+Controller using either the DP8490 EASI or DP5380 ASI".
+
+The main source code is contained in SCSI.C and the libraries COMMAND.LIB, 
+PROCESS.LIB, DMA.LIB, PRINT.LIB and ARBITRAT.LIB. The constants used in these
+files are contained in SYM.H, CONST.H and COMMANDS.H. All of these files are 
+written in the high level language 'C'.
+
+The boards diagnostic software is contained in PRINTER.SRC, with it's constants
+defined in EASISYM.SRC and PRNSYM.SRC. EASIO.SRC contains functions commonly
+used by both the diagnostics and main code. These files are written in a Z80 
+compatible assembly language, for an NSC800.
+
+The purpose of the diagnostics is to ensure that the board is operational and
+to initialize it. The main code responds to a SCSI selection and implements a
+limited set of printer commands. SCSI.ABS contains the compiled, assembled and
+linked absolute code, ready for downloading to an EPROM.

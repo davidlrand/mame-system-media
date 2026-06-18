@@ -1,0 +1,392 @@
+From owner-pc532%daver@mips.com Fri Jan 12 22:37:35 1990
+Flags: 000000000001
+Reply-To: pc532@daver.UU.NET
+Subject: Build List Release 1.02
+To: pc532%tarpit@daver.uu.NET
+Date: Fri, 12 Jan 90 20:41:35 EST
+From: John L. Connin <johnc%manatee%uunet@daver>
+X-Mailer: Elm [version 2.1 PL1]
+Status: O
+
+
+I suspect this will be the final posting of the "Build List".
+
+happy building,
+johnc
+
+----------------------------------------------------------------------------------------------------------------
+
+                        pc532 Build List
+
+        Parts List Revision :  1.02
+        Date last revision  :  12 jan 90
+        BOM reference       :  Version 1D
+        Contact             :  J.L. Connin     tarpit!manatee!johnc
+
+
+        Table of Contents   :
+                1.0  Introduction
+                1.1  Notes / History
+                1.2  Legend
+                1.3  Supplier Names and Addresses
+                2.0  Bill of Materials
+                2.1  BOM pc532, kit parts
+                2.2  BOM pc532, user supplied parts
+                2.3  BOM - Ancilary Items
+                3.0  Construction Notes
+
+----------------------------------------------------------------------------------------------------------------
+
+1.0  Introduction
+-----------------
+
+    The intent of the Build List is provide an resource of information
+    related to the physical construction of the pc532 (ie. sources of
+    supply, construction hints, etc).
+
+    Very simply, from time to time, I will post to the pc532 mailing list
+    an updated copy of the Build List based upon input I receive from YOU,
+    the pc532 members.
+
+
+1.1  Notes / Revisions:
+-----------------------
+    1)  johnc, 22dec89, received version 1D BOM (ie. pcb fab release) from george.
+    2)  johnc, 22dec89, started ancilary BOM section
+    3)  johnc, 07jan90, split BOM into kit and user supplied parts, also grouped
+                        like parts together
+    4)  johnc, 07jan90, added more ancilary parts
+    5)  johnc, 07jan90, added suppliers
+    6)  johnc, 12jan90, added part nos, supplier
+
+1.2  Legend:
+-----------
+
+    *  -  Included in pc532 kit
+
+    All other parts (ie. those not prefixed by '*') are user supplied.
+
+    Source of supply of user supplied parts, were known, is indicated
+    immediately after the part description in the BOM.  The source of
+    supply fields, from left to right are:  Distributor, catalog page
+    number, distributor part number, and part price.  For example,
+
+        JDR,            page85,         NOSLOT-CLK      29.95
+
+
+1.3  Supplier Names and Addresses:
+---------------------------------
+
+        Distributor     Reference               Minimum         Telephone
+        -----------     ------------            -------         ----------------
+        JDR             1990 Catalog,                           1-800-538-5000
+        Jameco          1990 Catalog,           $25.00          1-415-592-8097
+        Digi-key        Nov-Dec89                               1-800-344-4539
+
+        Arrow Elec.   (catalog sales)           $25.00          1-800-932-7769
+        Allied Elec.  (catalog sales)           $25.00          1-800-433-5700
+
+	Sun State Electronics                   $25.00          1-800-780-8777
+	( has access to Hamilton/Avnet stock)
+
+
+Where possible, your local surplus outlets are probably your best
+source of supply.
+
+
+
+2.0  Bill of Materials
+----------------------
+
+---------------------------------------------------------------------------------------------------
+2.1  BILL OF MATERIALS     32532 AT MOTHERBOARD        V 1D Thu Dec 21 23:25:07 1989    PAGE   1
+     pc532 kit parts
+---------------------------------------------------------------------------------------------------
+
+
+     ITEM   QUAN.               DESCRIPTION                                         REF. DES.
+
+*      5       2	CAPACITOR,50PF,                                             C23,C24         
+*      7       1	CRYSTAL, 3.6864MHZ                                          XTAL1           
+*     11       1	RESISTOR PACK,1K, 6 pin SIP, 5 common resistors             RES1            
+*     14       2	FUSE, 1 Amp Pico Fuse for SCSI                              F1,F2           
+*     16       6	RESISTOR,22, 8 pin Sip, 4 separate resistors                RES2,RES5,RES6
+*     17       2	RESISTOR,220, 8 pin Sip, 4 separate resistors               RES15,RES16     
+*     18       4	RESISTOR,47, 8 pin Sip, 4 separate resistors                RES10,RES11,RES3
+                                                                                    RES4
+*     19       1	RESISTOR,4K7, 16 pin Dip, 15 common resistors               RES13           
+*     24       4	SCSI62 - THE 62 PIN IBM PC/AT BUS CONNECTOR                 CONN12,CONN13   
+                                                                                    CONN14,CONN15
+*     35       4	2681/2692 - DUAL CHANNEL DUART                              U48,U52,U55,U60 
+*     36       1	74ALS6311 - STATIC COLUMN/PAGE MODE ACCESS DETECTOR         U36             
+*     37       4	220/330 OHM 14 PIN DIP TERMINATOR                           RES12,RES14     
+                                                                                    RES17,RES18
+*     39       1        27256 - UV ERASABLE PROM 32KX8, 200 ns                      U44
+*     41       2        PAL16L8 - PROGRAM ARRAY LOGIC, B - SPEED,                   U37,U40
+*     42       1        PAL16R6 - PROGRAM ARRAY LOGIC, B - SPEED,                   U38
+*     43       1        PAL16R8 - PROGRAM ARRAY LOGIC, D - SPEED,                   U39
+*     44       1        PAL20L8 - PROGRAM ARRAY LOGIC, D - SPEED,                   U19
+*     45       1        20V8A-CMOS-GAL-15ns ELECTRICALLY ERASABLE                   U20
+*     46       1        32202 - 32000 INTERRUPT CONTROL UNIT, 10Mhz                 U46
+*     47       1        32532 - 32000 SERIES HIGH PERF.  32 BIT BUS CPU, 25Mhz      U35
+*     48       1        32381 - 32000 SERIES 32 BIT BUS FPU, 25Mhz                     U24
+*     53       2	74AS832 - HEX 2 INPUT OR DRIVERS                            U14,U15         
+*     54       1	AIC6250 - HIGH PERFORMANCE SCSI PROTOCOL CHIP               U41             
+*     56       1	DP8490 - ENHANCED ASYNCHRONOUS SCSI INTERFACE (EASI)        U57             
+				  44 pin PLCC package
+*     57       1	IBMPOW - IBM AT POWER CONNECTOR                             CONN11          
+*     59       8	MC145406 - HEX RS232 CMOS TRANSCEIVER                       U47,U49,U51,U53 
+                                                                                    U54,U56,U59,U61
+
+*     23       1	74AC32 - AS TTL QUAD 2 INPUT OR GATE                        U58             
+			Added to pc532 kit, 11jan90, by George
+
+
+*      1       5                44 pin PLCC sockets (for scsi and duarts)
+*      2       1                68 pin PLCC sockets (for AIC-6250)
+*      3       1                175 pin PGA socket (for 32532 CPU)
+*      4       1                68 pin PGA socket (for 32381 FPU)
+*      5       8                30 pin sockets (for unleaded SIMM memory modules)
+
+
+---------------------------------------------------------------------------------------------------
+2.2  BILL OF MATERIALS     32532 AT MOTHERBOARD        V 1D Thu Dec 21 23:25:07 1989    PAGE   1
+     pc532 user supplied parts
+---------------------------------------------------------------------------------------------------
+
+     ITEM   QUAN.               DESCRIPTION                                         REF. DES.
+
+       1      69        CAPACITOR, 0.1uf, 0.3 inch spacing, Monolithic Bypass
+                               C1,C10,C11,C12
+                               C13,C14,C15,C16,C17,C18,C19,C2,C20,C21,C22,C25
+                               C26,C27,C28,C29,C3,C30,C31,C32,C33,C34,C35,C36
+                               C37,C38,C39,C4,C40,C41,C42,C43,C44,C45,C46,C48,
+                               C49,C5,C50,C51,C52,C53,C54,C55,C56,C57,C58,C6
+                               C61,C62,C63,C64,C65,C66,C69,C7,C70,C71,C72,C73,
+                               C74,C76,C78,C8,C9
+
+                	Sprague, Series 920C, DIP Monolythic Ceramic, 
+			one-section, 2-pins, 0.1uf, 50v, PN - 923CZ5U104M050B
+			Sun State Electronics,  0.29 each
+
+
+       2       1	CAPACITOR,10PF,                                             C75             
+
+       3       4	CAPACITOR,10UF,25V                                          C59,C60,C67,C68 
+
+       4       1	CAPACITOR,33UF,16V                                          C47             
+
+       6       1	CAPACITOR,5PF,                                              C77             
+----
+       8       1	DIODE, IN4148                                               D2              
+                        Digikey         p49,            1N4148         0.60/10
+
+       9       2	DIODE, IN5817 (SCSI DIODE, Schottky)                        D1,D3           
+                        Digikey         p49,            1N5817          0.48
+
+      10       4	LIGHT EMITTING DIODE, (0.1 inch centers, end stackable)     LED1,LED2,LED3  
+                                                                                    LED4
+----
+      12       1	RESISTOR,100, 1/4W, 5%                                      R2              
+
+      13       3	RESISTOR,10K, 1/4W, 5%                                      R1,R4,R5        
+
+      15       1	RESISTOR,1K, 1/4W, 5%                                       R6              
+
+      20       2        RESISTOR,???, BCLK, /BCLK terminator (TBD)                  R3,R7
+----
+      21       1	74AS00 - AS TTL QUAD TWO INPUT NAND                         U30             
+			Arrow, Allied, Sun State
+
+      22       1	74ALS14 - ALS TTL HEX INVERTER WITH SCHMITT TRIGGER         U42             
+			Arrow, Allied, Sun State
+/*-----------------------------------------------------------------
+      23       1	74AS32 - AS TTL QUAD 2 INPUT OR GATE                        U58             
+			Arrow, Allied, Sun State
+
+  Part changed to 74AS32 and moved to pc532 kit section, 11jan90
+----------------------------------------------------------------*/
+
+      25       2	74AS74 - AS TTL DUAL D FLIP-FLOP                            U31,U32         
+			Arrow, Allied, Sun State
+
+      26       1	74F138 - FAST TTL 3/8 DECODER                               U33             
+                        Digikey         p33,            74F138PC        0.79
+			Sun State
+
+      27       2	74AS174 - AS TTL HEX D FLIP-FLOP                            U26,U50         
+			Arrow,  Allied, Sun State
+
+      28       3	74AS258 - AS TTL QUAD 2 TO 1 MUX, INVERTED TS OUTPUT        U27,U28,U29     
+			Arrow, Allied, Sun State
+
+      29       4	74AS280 - AS TTL 9-BIT PARITY GEN/CHK                       U1,U2,U3,U4     
+
+      30       1	74AS374 - AS TTL OCTAL FLIP-FLOP WITH TS OUTPUT             U16             
+			Arrow, Allied, Sun State
+
+      31       1	74AS646 - AS TTL OCTAL REGISTERED/TRANS WITH TS OUT         U43             
+			Arrow, Allied
+
+      32       4	74AS1004A - AS TTL HEX INVERTING DRIVER                     U17,U21,U22,U5  
+
+      33       1	74ALS1034A - ALS TTL HEX NON-INVERTING DRIVER               U45             
+			Arrow, Allied
+
+      34       2        74AS1034A - AS TTL HEX NON-INVERTING DRIVER                 U18,U23
+			???, 
+
+----
+
+      40       8        MSC411024 -  1M X 9 BIT DYNAMIC RAM MODULE                  U10,U11,U12,U13 
+				  OR 1M X 8 (FOR NO PARITY), FAST PAGE 80 ns        U6,U7,U8,U9
+				  Toshiba part # THM81000AS-80  (1M X 8)
+                                  Toshiba part # THM91000AS-80  (1M X 9)
+				  NEC part #     MC-421000A8-80 (1M x 8)
+				  NEC part #     MC-421000A9-80 (1M x 9)
+				  Motrola        MCM91000 S80	(1M x 9)
+						 MCM91000 GS80  (1M x 9)
+
+			4 SIMMs are the minimum configuration. Note that the 
+                        devices must be unleaded, i.e. for use in sockets.
+
+---
+      38       1        XTALM - CRYSTAL OSCILLATOR MODULE, 50Mhz                    U25
+                        Digikey,        page61,         x121,           6.19
+			Sun State
+
+      52       1        CRYSTAL OSCILLATOR MODULE, 20MHZ                            U34
+                        Digikey         p51,            x119            5.78
+			Arrow, Allied, Sun State
+---
+
+  +-  49       1        JUMP1 - SINGLE JUMPER HEADER                                J3
+  +-  50       2        JUMP3 - 3 PIN JUMPER                                        J1,J2
+  |                     JDR
+  +-->         1        Header Pins, 1 x 40, straight male
+                        JDR,                            HDR-40,         $0.99
+
+  +-  51       1        JUMP4 - 4 LOCATION JUMPER BLOCK                             CONN2
+  +-  55       2        50 WAY TRANSITION CONNECTOR UNSHROUDED (JUST PINS)          CONN1,CONN16
+  +-  58       8        JUMP10 - 10 WAY JUMPER BLOCK UNSHROUDED (JUST PINS)         CONN10,CONN3
+  |
+  +-->         3        Header Pins, 2 x 40, straight male
+  |                     JDR                             HDR-80,         $2.49
+  +-->                  Header Pins, straight male
+	       4        Jameco, 2 x 20                  923862R,        $0.59
+	       2	Jameco, 2 x 50			923866R,	$1.35
+
+---------------------------------------------------------------------------------------------------
+2.3  BILL OF MATERIALS    32532 AT BOARD
+     ANCILLARY ITEMS
+---------------------------------------------------------------------------------------------------
+
+
+     100       1        NO-SLOT CLOCK
+                        JDR,    page85,         NOSLOT-CLK      29.95
+
+     101      21        IC socket, 14-pin, 0.3 inch width, solder tail, machined
+                        JDR,                    AUGAT14,        $0.59
+			Jameco,			14MLP,		$0.69
+
+     102      14        IC socket, 16-pin, 0.3 inch width, solder tail, machined
+			JDR,			AUGAT16,	$0.69
+			Jameco,			16MLP,		$0.79
+
+     103       7        IC socket, 20-pin, 0.3 inch width, solder tail, machined
+			JDR,			AUGAT20,	$0.85
+			Jameco,			20MLP,		$0.89
+
+     104       3        IC socket, 24-pin, 0.3 inch width, solder tail, machined
+                        JDR,                    AUGAT24SK,      $0.95
+			Jameco,			24SMLP,		$1.15
+
+     105       1        IC socket, 28-pin, 0.6 inch width, solder tail, machined
+                        JDR,                    AUGAT28,        $1.09
+			Jameco,			28MLP,		$1.29	
+
+     106       1        IC socket, 40-pin, 0.6 inch width, solder tail, machined
+                        JDR,                    AUGAT40,        $1.29
+			Jameco,			40MLP,		$1.49
+
+-------
+
+     110       8        Connector, IDS, 10-contact, (ie. serial cable assy)
+                        JDR, IDS10, $0.55
+                        Jameco,                 S10,            $0.59
+
+     111       4        Connector, IDS, 50-contact  (ie. scsi  cable assy)
+                        JDR,                    IDS50,          $1.69
+                        Jameco,                 S50,            $1.39
+
+     112       8        Connector, IDC, D-Sub, 9-pin, male, (ie. serial cable assy)
+                        JDR,                    IDB09P,         $1.39
+                        Jameco,                 CDE9P,          $2.39
+
+     113      ---       25 to 9=pin serial adapter
+                        JDR,                    GENDER-9-25,    $4.95
+
+     114       1        Connector, 2-pin                 (ie. reset cable assy)
+
+     115       1        Switch, momentary, normally open (ie. reset cable assy)
+
+-------
+
+     120       4        Shorting Blocks
+                        JDR,                    JUMPER,         $0.20
+			Jameco, 		JOPEN, 		$0.19
+
+3.0  Construction Notes.
+------------------------
+
+     (If this section gets to large, will split out as separate document).
+
+1). Re: CAPACITOR,0.1, 0.3inch spacing, Monolithic Bypass
+    Q.  Are these standard disc or IC-look-alike mounts?  Um, units are PF?
+
+    A.  0.1 microfarads (decoupling caps), IC look-alike-mounts.
+
+2). Re: RESISTOR,???, BCLK, /BCLK terminator (TBD)        R3,R7
+    Q.  Has this value been determined yet or is it it some sort of tuning 
+        or timing resister that must in some way be determined on a per 
+        board basis?
+    A.  George writes: The prototypes worked fine without, but when I get 
+        the new pcbs and build one up, I'll stick a 400mhz scope on and 
+        determine the best value.
+
+3). Re: 49       1	JUMP1 - SINGLE JUMPER HEADER                  J3
+        50       2	JUMP3 - 3 PIN JUMPER                          J1,J2
+        51       1	JUMP4 - 4 LOCATION JUMPER BLOCK               CONN2
+        55       2	50 WAY TRANSITION CONNECTOR UNSHROUDED (JUST PINS) 
+                        CONN1,CONN16    
+
+   George writes: JUMP1 is 2 pins 0.1 inch centers. JUMP3 is 3 pins 0.1
+   inch centers. JUMP4 is 4 x 2 pins 0.1 inch centers. The 50 way is 
+   25 x 2 pins 0.1 inch centers (unshrouded, ie just the pins in a plastic 
+   carrier).
+
+4). Question:  How static sensitive are some of these parts?  Are all the
+    critical parts socketed so that I don't need to worry about blowing
+    them during soldering etc?  Also, any requirements or advice on soldering
+    this puppy?  60-40 tin/lead rosin core solder good enough?
+
+    George writes: The only static sensitive parts are the EPROM, the DRAM, 
+    the CPU, FPU, RS232 CMOS driver/receivers, DUARTs, SCSI devices. Just 
+    use the normal precautions, ie don't touch the chips until they are 
+    ready to plug in, leave them in the antistatic package until you're ready.
+    Then when you pick them up, touch the ground on the PCB before plugging 
+    them in. Normal solder is fine.  We are supplying the sockets for the CPU,
+    FPU,DRAM,SCSIs and DUARTs. The rest of the sockets will be your problem.
+    I recommend could quality machined pin sockets, they cost a bit more but
+    are well worth it.
+
+5) George writes, due to the xtal input difference between the 2681 DUART 
+   and the 2692 DUART, the 74AS32 device must be changed to a 74AC32 device. 
+   The 2692 outputs a signal that does not reach below about 1V causing the 
+   TTL level of the 74AS32 to be violated. Using a 74AC32 gives us speed, 
+   which is needed through one of the other gates (in the same package) and 
+   50% threshold for the oscillator output of the 2692. Signetics recommends 
+   the use of a 74Cxx device to buffer the oscillator, but we need a 74AC 
+   (for speed). We will supply the 74AC32 part with the kit.
+
+

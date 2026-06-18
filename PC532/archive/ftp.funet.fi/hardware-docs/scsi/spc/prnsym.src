@@ -1,0 +1,96 @@
+	;**************************************************
+	;*	This file contains the port addresses of  *
+	;*	all I/O registers, the memory devices 	  *
+	;*	start locations, the RAM length and some  *
+	;*	miscellaneous constants.		  *
+	;**************************************************
+	;
+	;
+	;
+	;	*******************************
+	;	  NSC831 PIO REGISTER ADDRESSES
+	;	*******************************
+	;
+	PIOA:	EQU 80H			;Data Registers
+	PIOB:	EQU 81H
+	PIOC: 	EQU 82H
+	;
+	PIODDRA:EQU 84H			;Data Direction Registers
+	PIODDRB:EQU 85H
+	PIODDRC:EQU 86H
+	;
+	PIOMDR:	EQU 87H			;Mode Definition Register
+	;
+	PIOAC:	EQU 88H			;Port bit-clear
+	PIOBC:	EQU 89H
+	PIOCC:	EQU 8AH
+	;
+	PIOAS:	EQU 8CH			;Port bit-set
+	PIOBS:	EQU 8DH
+	PIOCS:	EQU 8EH
+	;
+	;
+	;	**********************************
+	;	      DMA REGISTER ADDRESSES
+	;	**********************************
+	;
+	DMAADD:	EQU 20H			;W/O Base & Current Address
+	DMARCA:	EQU 20H			;R/O Current Address
+	;
+	DMACNT:	EQU 21H			;W/O Base & Current Word Count
+	DMARWC:	EQU 21H			;R/O Current Word Count
+	;
+	DMAMOD:	EQU 2BH			;W/O Mode register
+	;
+	DMAMCL:	EQU 2DH			;W/O Master Clear register
+	;
+	DMAMSK:	EQU 2FH			;W/O Mask register (all masks)
+	;
+	;
+	;	***********************************
+	;	      EASI REGISTER ADDRESSES
+	;	***********************************
+	;
+	EASIODR:EQU 00			;W/O Output Data Register
+	EASICSD:EQU 00			;R/O Current SCSI Data
+	;
+	EASIICR:EQU 01			;R/W Initiator Command Register
+	;
+	EASIMR2:EQU 02			;R/W Mode Register 2
+	;
+	EASITCR:EQU 03			;R/W Target Command Register
+	;
+	EASISER:EQU 04			;W/O Select Enable Register
+	EASICSB:EQU 04			;R/O Current SCSI Bus Status
+	;
+	EASISDS:EQU 05			;W/O Start DMA Send
+	EASIBSR:EQU 05			;R/O Bus & Status Register
+	;
+	EASISDT:EQU 06			;W/O Start DMA Target Rx
+	EASIIDR:EQU 06			;R/O Input Data Register
+	;
+	EASISDI:EQU 07			;W/O Start DMA Initiator Rx
+	EASIRPI:EQU 07			;R/O Reset Parity & Interrupt  Latches
+	EASIEMR:EQU 07			;R/W Enhanced Mode Register
+	EASIIMR:EQU 07			;W/O Interrupt Mask Register
+	EASIISR:EQU 07			;R/O Interupt Status Register
+	;
+	;
+	;
+	;	********************
+	;	  MEMORY ADDRESSES
+	;	********************
+	;
+	ROMSTT:	EQU 00			;ROM Starting Address
+	RAMSTT:	EQU 8000H		;RAM Starting Address
+	RAMLEN:	EQU 8000H		;Number of RAM locations
+	;
+	;
+	;	*****************
+	;	  MISCELLANEOUS
+	;	*****************
+	;
+	STKDATA:EQU 00			;Initial stack value
+	DELVAL:	EQU 24038		;2.5MHz=24038, 4MHz =38641, 
+	;				;for delay counter
+	INTMSK:	EQU 0BBH		;CPU Mask register address

@@ -1,0 +1,75 @@
+PAL16R8
+BRUCE CULBERTSON   23 APRIL 1988
+DOWN COUNTER, COUNTS 0 154 153...1 0 154... ETC.  USE MOST SIGNIFICANT BIT
+(/Q7) AS REFRESH CLOCK FOR 8419 DRAM CONTROLLER.
+CLK	NC	NC	NC	NC	NC	NC	NC	NC	GND
+/OE	/Q0	/Q1	/Q2	/Q3	/Q4	/Q5	/Q6	/Q7	VCC
+
+
+Q0	:= Q7*/Q0 +				;TURN ON
+	   Q6*/Q0 +
+	   Q5*/Q0 +
+	   Q4*/Q0 +
+	   Q3*/Q0 +
+	   Q2*/Q0 +
+	   Q1*/Q0
+
+Q1	:= /Q0*/Q1*/Q2*/Q3*/Q4*/Q5*/Q6*/Q7 +	;INIT
+	   Q7*/Q1*/Q0 +				;TURN ON
+	   Q6*/Q1*/Q0 +
+	   Q5*/Q1*/Q0 +
+	   Q4*/Q1*/Q0 +
+	   Q3*/Q1*/Q0 +
+	   Q2*/Q1*/Q0 +
+	   Q1*Q0				;STAY ON
+
+Q2	:= Q7*/Q2*/Q1*/Q0 +			;TURN ON
+	   Q6*/Q2*/Q1*/Q0 +
+	   Q5*/Q2*/Q1*/Q0 +
+	   Q4*/Q2*/Q1*/Q0 +
+	   Q3*/Q2*/Q1*/Q0 +
+	   Q2*Q1 +				;STAY ON
+	   Q2*Q0
+
+Q3	:= /Q0*/Q1*/Q2*/Q3*/Q4*/Q5*/Q6*/Q7 +	;INIT
+	   Q7*/Q3*/Q2*/Q1*/Q0 +			;TURN ON
+	   Q6*/Q3*/Q2*/Q1*/Q0 +
+	   Q5*/Q3*/Q2*/Q1*/Q0 +
+	   Q4*/Q3*/Q2*/Q1*/Q0 +
+	   Q3*Q2 +			 	;STAY ON
+	   Q3*Q1 +
+	   Q3*Q0
+
+Q4	:= /Q0*/Q1*/Q2*/Q3*/Q4*/Q5*/Q6*/Q7 +	;INIT
+	   Q7*/Q4*/Q3*/Q2*/Q1*/Q0 +		;TURN ON
+	   Q6*/Q4*/Q3*/Q2*/Q1*/Q0 +
+	   Q5*/Q4*/Q3*/Q2*/Q1*/Q0 +
+	   Q4*Q3 +				;STAY ON
+	   Q4*Q2 +
+	   Q4*Q1 +
+	   Q4*Q0
+
+Q5	:= Q7*/Q5*/Q4*/Q3*/Q2*/Q1*/Q0 +		;TURN ON
+	   Q6*/Q5*/Q4*/Q3*/Q2*/Q1*/Q0 +
+	   Q5*Q4 +				;STAY ON
+	   Q5*Q3 +
+	   Q5*Q2 +
+	   Q5*Q1 +
+	   Q5*Q0
+
+Q6	:= Q7*/Q6*/Q5*/Q4*/Q3*/Q2*/Q1*/Q0 +	;TURN ON
+	   Q6*Q5 +				;STAY ON
+	   Q6*Q4 +
+	   Q6*Q3 +
+	   Q6*Q2 +
+	   Q6*Q1 +
+	   Q6*Q0
+
+Q7	:= /Q0*/Q1*/Q2*/Q3*/Q4*/Q5*/Q6*/Q7 +	;INIT
+	   Q7*Q6 +				;STAY ON
+	   Q7*Q5 +
+	   Q7*Q4 +
+	   Q7*Q3 +
+	   Q7*Q2 +
+	   Q7*Q1 +
+	   Q7*Q0

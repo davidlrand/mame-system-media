@@ -1,0 +1,14 @@
+*** uudecode.c.ori	Tue Aug  7 00:18:56 1990
+--- uudecode.c	Tue Aug  7 00:20:29 1990
+***************
+*** 28,34 ****
+--- 28,36 ----
+  #include <stdio.h>
+  #include <pwd.h>
+  #include <sys/types.h>
++ #if 0
+  #include <sys/stat.h>
++ #endif
+  
+  /* single character decode */
+  #define DEC(c)	(((c) - ' ') & 077)

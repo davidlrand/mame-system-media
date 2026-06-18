@@ -1,0 +1,486 @@
+Newsgroups: santra.pc32532
+From: Johan Myreen <jem@sauna.hut.fi>
+Subject: Driver for the real time clock
+Message-ID: <9009131903.AA18024@cs.hut.fi>
+Precedence: bulk
+Reply-To: pc532@bungi.com
+Organization: Helsinki University of Technology, Finland
+X-Path: sauna.hut.fi!jem
+Date: Thu, 13 Sep 90 22:03:52 +0300
+X-From: daver!owner-pc532@relay.eu.net Fri Sep 14 01:30:37 1990
+Lines: 474
+
+
+Here are the kernel patches for the real time clock driver (/dev/rtc).
+Also included is code for /dev/rom, a special file containing the ROM
+image.
+
+Please manually add cache.o to OBJs in the kernel Makefile, I seem to
+have forgotten that from the cdiff.
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then unpack
+# it by saving it into a file and typing "sh file".  To overwrite existing
+# files, type "sh file -c".  You can also feed this as standard input via
+# unshar, or by typing "sh <file", e.g..  If this archive is complete, you
+# will see the following message at the end:
+#		"End of shell archive."
+# Contents:  rtc rtc/Makefile rtc/README rtc/kernel.cdiff rtc/rtc.c
+# Wrapped by jem@joker.hut.fi on Thu Sep 13 21:55:23 1990
+PATH=/bin:/usr/bin:/usr/ucb ; export PATH
+if test ! -d rtc ; then
+    echo shar: Creating directory \"rtc\"
+    mkdir rtc
+fi
+if test -f rtc/Makefile -a "${1}" != "-c" ; then 
+  echo shar: Will not over-write existing file \"rtc/Makefile\"
+else
+echo shar: Extracting \"rtc/Makefile\" \(58 characters\)
+sed "s/^X//" >rtc/Makefile <<'END_OF_rtc/Makefile'
+Xrtc: rtc.o
+X	cc rtc.o -o rtc
+X
+Xclean:
+X	/bin/rm -f rtc.o rtc
+END_OF_rtc/Makefile
+if test 58 -ne `wc -c <rtc/Makefile`; then
+    echo shar: \"rtc/Makefile\" unpacked with wrong size!
+fi
+# end of overwriting check
+fi
+if test -f rtc/README -a "${1}" != "-c" ; then 
+  echo shar: Will not over-write existing file \"rtc/README\"
+else
+echo shar: Extracting \"rtc/README\" \(1497 characters\)
+sed "s/^X//" >rtc/README <<'END_OF_rtc/README'
+XThis directory contains the code for implementing a device driver for
+Xthe Dallas Semiconductor DS1216E (or compatible) SmartWatch chip. The
+Xdriver implements the 8-byte file /dev/rtc, reflecting the registers
+Xin the SmartWatch chip. The registers are:
+X
+XOffset	BCD value	Range
+X0	0.01 sec	00-99
+X1	seconds		00-59
+X2	minutes		00-59
+X3	hours		00-23 or 01-12   (*)
+X4	day		01-07		 (**)
+X5	date		01-31
+X6	month		01-12
+X7	year		00-99
+X
+X(*)  12/24 hour mode is selected by bit 7: logic high selects 12 hour
+X     mode. In 12 hour mode bit 5 is the AM/PM indicator, with logic high
+X     being PM. 
+X
+X(**) Bit 5 controls the the oscillator: logic high stops the watch.
+X
+XThe file can be read from or written to, corresponding to reading and
+Xsetting the time, respectively. The file can also be only partially
+Xwritten to, if (for example) only the time of day is to be set.
+XSeeking is also possible, although there is not much point in seeking
+Xwithin eight bytes.
+X
+XThe patches also contain code for implementing /dev/rom, a file
+Xcontaining the ROM image.
+X
+XTo use the drivers, the following entries must be made in the /dev
+Xdirectory:
+X
+Xmknod /dev/rtc c 1 4
+Xmknod /dev/rom c 1 5
+X
+X
+XAlso included in the tar file is the program rtc.c, with which the RTC
+Xcan be set and read. This code probably should be incorporated into
+Xdate(1) some day.
+X
+XContents:
+X
+Xkernel.cdiff - context diffs for implementing the driver
+Xrtc.c        - program for setting and reading the time
+XMakefile     - makefile for rtc
+XREADME       - this file
+X
+END_OF_rtc/README
+if test 1497 -ne `wc -c <rtc/README`; then
+    echo shar: \"rtc/README\" unpacked with wrong size!
+fi
+# end of overwriting check
+fi
+if test -f rtc/kernel.cdiff -a "${1}" != "-c" ; then 
+  echo shar: Will not over-write existing file \"rtc/kernel.cdiff\"
+else
+echo shar: Extracting \"rtc/kernel.cdiff\" \(8065 characters\)
+sed "s/^X//" >rtc/kernel.cdiff <<'END_OF_rtc/kernel.cdiff'
+X*** /dev/null	Sun Jul 15 01:53:36 1990
+X--- cache.s	Sat Sep  8 19:08:39 1990
+X***************
+X*** 0 ****
+X--- 1,28 ----
+X+ .globl	_disable_cache
+X+ .globl	_restore_cache
+X+ 
+X+ cfg_dc:      .equ        9
+X+ cfg_dc_mask: .equ        h'0200
+X+ .text
+X+ _disable_cache::
+X+ 	enter	[r3],0		; save r3
+X+ 	sprd	cfg,r3		; config reg -> r3
+X+ 	movd	r3,r0		; r3 -> r0
+X+ 	andd	cfg_dc_mask,r0	; test cache bit
+X+ 	sned	r0		; return value
+X+ 	cbitd	cfg_dc,r3	; clear cache bit
+X+ 	lprd	cfg,r3		; load config reg
+X+ 	exit	[r3]
+X+ 	ret	0
+X+ 
+X+ _restore_cache::
+X+ 	enter	[r3],0		; save r3
+X+ 	sprd	cfg,r3		; config reg -> r3
+X+ 	cmpqd	0,8(fp)		; set?
+X+ 	beq	foo		; yes, set cache bit
+X+ 	cbitd	cfg_dc,r3	; no, clear cache bit
+X+ 	br	bar
+X+ foo::	sbitd	cfg_dc,r3
+X+ bar::	lprd	cfg,r3		; load config reg
+X+ 	exit	[r3]		; restore r3
+X+ 	ret	0
+X*** const.h.orig	Sat May  5 18:08:14 1990
+X--- const.h	Mon Aug 20 19:07:22 1990
+X***************
+X*** 53,55 ****
+X--- 53,60 ----
+X  #define USER_Q             2	/* ready users are scheduled via queue 2 */
+X  
+X  #define printf        printk	/* the kernel really uses printk, not printf */
+X+ 
+X+ #if defined RTC
+X+ #define ROM_ORIGIN 0x10000000
+X+ #define ROM_SIZE 0x8000
+X+ #endif
+X*** memory.c.orig	Mon May 28 13:43:02 1990
+X--- memory.c	Sun Sep  9 00:12:10 1990
+X***************
+X*** 3,8 ****
+X--- 3,12 ----
+X   *     /dev/mem		- absolute memory
+X   *     /dev/kmem	- kernel virtual memory
+X   *     /dev/ram		- RAM disk
+X+ #if defined RTC
+X+  *     /dev/rom         - ROM image for symmetry :-)
+X+  *     /dev/rtc         - Real Time Clock
+X+ #endif
+X   * It accepts three messages, for reading, for writing, and for
+X   * control. All use message format m2 and with these parameters:
+X   *
+X***************
+X*** 33,39 ****
+X  #include "../h/32k.h"
+X  #include "../h/mmu.h"
+X  
+X! #define NR_RAMS            4		/* number of RAM-type devices */
+X  PRIVATE message mem_mess;		/* message buffer */
+X  unsigned long ram_origin[NR_RAMS];	/* origin of each RAM disk  */
+X  unsigned long ram_limit[NR_RAMS];	/* limit of RAM disk per minor dev. */
+X--- 37,48 ----
+X  #include "../h/32k.h"
+X  #include "../h/mmu.h"
+X  
+X! #if defined RTC
+X! #define NR_RAMS            6		/* including rtc and rom */
+X! #else
+X! #define NR_RAMS            4		/* number of RAM-type devices */
+X! #endif
+X! 
+X  PRIVATE message mem_mess;		/* message buffer */
+X  unsigned long ram_origin[NR_RAMS];	/* origin of each RAM disk  */
+X  unsigned long ram_limit[NR_RAMS];	/* limit of RAM disk per minor dev. */
+X***************
+X*** 51,57 ****
+X    ram_limit[KMEM_DEV] = TOP_VADDR;
+X    ram_origin[MEM_DEV] = 0;
+X    ram_limit[MEM_DEV] = TOP_VADDR;
+X! 
+X    /* Here is the main loop of the memory task.  It waits for a message, carries
+X     * it out, and sends a reply.
+X     */
+X--- 60,69 ----
+X    ram_limit[KMEM_DEV] = TOP_VADDR;
+X    ram_origin[MEM_DEV] = 0;
+X    ram_limit[MEM_DEV] = TOP_VADDR;
+X! #if defined RTC
+X!   ram_origin[ROM_DEV] = ROM_ORIGIN;
+X!   ram_limit[ROM_DEV] = ROM_ORIGIN + ROM_SIZE;
+X! #endif
+X    /* Here is the main loop of the memory task.  It waits for a message, carries
+X     * it out, and sends a reply.
+X     */
+X***************
+X*** 90,101 ****
+X    unsigned long mem_phys;
+X    struct proc *rp;
+X  
+X!   /* Get minor device number and check for /dev/null. */
+X    device = m_ptr->DEVICE;
+X    if (device < 0 || device >= NR_RAMS) return(ENXIO);	/* bad minor device */
+X    if (device==NULL_DEV) return(m_ptr->m_type == DISK_READ ? EOF : m_ptr->COUNT);
+X  
+X!   /* Set up 'mem_phys' for /dev/mem, /dev/kmem, or /dev/ram. */
+X    mem_phys = ram_origin[device] + m_ptr->POSITION;
+X    if (mem_phys >= ram_limit[device]) return(EOF);
+X    count = m_ptr->COUNT;
+X--- 102,127 ----
+X    unsigned long mem_phys;
+X    struct proc *rp;
+X  
+X! #if defined RTC
+X!   /* Get minor device number and check for /dev/null or /dev/rtc */
+X! #else
+X!   /* Get minor device number and check for /dev/null. */
+X! #endif
+X    device = m_ptr->DEVICE;
+X    if (device < 0 || device >= NR_RAMS) return(ENXIO);	/* bad minor device */
+X    if (device==NULL_DEV) return(m_ptr->m_type == DISK_READ ? EOF : m_ptr->COUNT);
+X  
+X! #if defined RTC
+X!   if (device==RTC_DEV)
+X!     return do_rtc(m_ptr);
+X! #endif
+X! 
+X!   /* Set up 'mem_phys' for /dev/mem, /dev/kmem, or /dev/ram. */
+X! #if defined RTC
+X!   /* Also /dev/rom */
+X!   if (device==ROM_DEV && m_ptr->m_type != DISK_READ)
+X!     return E_BAD_ADDR;
+X! #endif
+X    mem_phys = ram_origin[device] + m_ptr->POSITION;
+X    if (mem_phys >= ram_limit[device]) return(EOF);
+X    count = m_ptr->COUNT;
+X***************
+X*** 125,127 ****
+X--- 151,252 ----
+X      (long) m_ptr->COUNT * BLOCK_SIZE;
+X    return(OK);
+X  }
+X+ 
+X+ #if defined RTC
+X+ /*===========================================================================*
+X+  *                              do_rtc                                       *
+X+  *===========================================================================*/
+X+ PRIVATE int do_rtc(message *m_ptr)
+X+ {
+X+   /* Wrapper for do_rw_rtc. Disable the cache and restore it afterwards */
+X+   int cache_bit = disable_cache();
+X+   int return_value;
+X+   return_value = do_rw_rtc(m_ptr);
+X+   restore_cache(cache_bit);
+X+   return return_value;
+X+ }
+X+ 
+X+ /*===========================================================================*
+X+  *                              do_rw_rtc                                    *
+X+  *===========================================================================*/
+X+ PRIVATE int do_rw_rtc(message *m_ptr)
+X+ {
+X+   /* Read or write to the real time chip. Address line A0 functions as
+X+    * data input, A2 is used as the /write signal. Accesses to the RTC
+X+    * are always done to one of the addresses:
+X+    *
+X+    * 0x10000000  -  write a '0' bit
+X+    * 0x10000001  -  write a '1' bit
+X+    * 0x10000004  -  read a bit
+X+    *
+X+    * Data is output from the RTC using D0. To read or write time
+X+    * information, the chip has to be activated first, to distinguish
+X+    * clock accesses from normal ROM reads. This is done by writing,
+X+    * bit by bit, a magic pattern to the chip. Before that, a dummy read
+X+    * assures that the chip's pattern comparison register pointer is
+X+    * reset. The RTC register file is always read or written wholly,
+X+    * even if we are only interested in a part of it.
+X+    */
+X+ 
+X+   static unsigned char magic[8] =
+X+     {0xc5, 0x3a, 0xa3, 0x5c, 0xc5, 0x3a, 0xa3, 0x5c};
+X+   volatile unsigned char * const rom_p = (unsigned char *)ROM_ORIGIN;
+X+   unsigned char buffer[8];
+X+   unsigned char *bp;
+X+   long count;
+X+   unsigned char dummy;         /* To defeat optimization */
+X+ 
+X+   if (m_ptr->POSITION > 8) return EOF;
+X+   count = m_ptr->COUNT;
+X+   if (m_ptr->POSITION + m_ptr->COUNT > 8) count = 8 - m_ptr->POSITION;
+X+ 
+X+   /* Activate the real time chip */
+X+   dummy = rom_p[4];            /* Synchronize the comparison reg. */
+X+ 
+X+   for (bp=magic; bp<magic+8; bp++) {
+X+     int i;
+X+     for (i=0; i<8; i++)
+X+       dummy = rom_p[ (*bp>>i) & 0x01 ];
+X+   }
+X+ 
+X+   /* Read the time from the RTC. Do this even if message type is DISK_WRITE,
+X+    * since the user might have only given partial data and the RTC must
+X+    * always be written completely.
+X+    */
+X+ 
+X+   for (bp=buffer; bp<buffer+8; bp++) {
+X+     int i;
+X+     for (i=0; i<8; i++) {
+X+       *bp >>= 1;
+X+       *bp |= ((rom_p[4] & 0x01) ? 0x80 : 0x00);
+X+     }
+X+   }
+X+ 
+X+   if (m_ptr->m_type == DISK_READ) {   /* return the time from buffer */
+X+     if (OK != rw_user (m_ptr->PROC_NR, (long)(m_ptr->ADDRESS),
+X+           buffer + m_ptr->POSITION, (long)count, TO_USER))
+X+       return E_BAD_ADDR;
+X+   } else {                            /* write to the RTC */
+X+     if (OK != rw_user (m_ptr->PROC_NR, (long)(m_ptr->ADDRESS),
+X+           buffer + m_ptr->POSITION, (long)count, FROM_USER))
+X+       return E_BAD_ADDR;
+X+ 
+X+     /* Reactivate the real time chip */
+X+     dummy = rom_p[4];
+X+ 
+X+     for (bp=magic; bp<magic+8; bp++) {
+X+       int i;
+X+       for (i=0; i<8; i++)
+X+         dummy = rom_p[ (*bp>>i) & 0x01 ];
+X+     }
+X+ 
+X+     /* Write to the RTC */
+X+     for (bp=buffer; bp<buffer+8; bp++) {
+X+       int i;
+X+       for (i=0; i<8; i++)
+X+         dummy = rom_p[ (*bp>>i) & 0x01 ];
+X+     }
+X+   }
+X+   return count;
+X+ }
+X+ #endif
+END_OF_rtc/kernel.cdiff
+if test 8065 -ne `wc -c <rtc/kernel.cdiff`; then
+    echo shar: \"rtc/kernel.cdiff\" unpacked with wrong size!
+fi
+# end of overwriting check
+fi
+if test -f rtc/rtc.c -a "${1}" != "-c" ; then 
+  echo shar: Will not over-write existing file \"rtc/rtc.c\"
+else
+echo shar: Extracting \"rtc/rtc.c\" \(2763 characters\)
+sed "s/^X//" >rtc/rtc.c <<'END_OF_rtc/rtc.c'
+X#include <stdio.h>
+X#include <fcntl.h>
+X#include <ctype.h>
+X
+X#define RTCDEV "/dev/rtc"
+X
+X/* Global variables */
+Xchar *progname;
+X
+X/* Function prototypes */
+Xint setclock(char *);
+Xint readclock(void);
+Xint usage(void);
+Xint printf(char *, ...), fprintf(FILE *, char *, ...);
+Xint open(char *, int), close(int);
+Xint read(int, void *, long), write(int, void *, long);
+X
+Xint main(int argc, char **argv)
+X{
+X  progname = argv[0];
+X
+X  switch (argc) {
+X  case 1:
+X    return readclock();
+X  case 2:
+X    return setclock(argv[1]);
+X  default:
+X    return usage();
+X  }
+X}
+X
+Xint setclock(char *timestring)
+X{
+X  int clock;
+X  unsigned char buf[8], *bp;
+X  char *sp;
+X
+X  if ((clock = open(RTCDEV, O_WRONLY)) < 0) {
+X    (void) fprintf(stderr, "%s: could no open " RTCDEV "\n", progname);
+X    return 1;
+X  }
+X
+X  for (sp=timestring,bp=buf+1; bp<buf+8; bp++,sp+=2) {
+X    if (!isdigit(sp[0]) | !isdigit(sp[1])) usage();
+X    *bp = ((sp[0] - '0') << 4) | sp[1] - '0';
+X  }
+X
+X  buf[0] = 0x00;
+X  buf[4] = buf[4] & 0x7;   /* Make sure the clock keeps running */
+X
+X  if (write(clock, buf, sizeof buf) != sizeof buf) {
+X    (void) fprintf(stderr, "Write error writing to " RTCDEV "\n");
+X    (void) close(clock);
+X    return 1;
+X  }
+X  (void) close(clock);
+X
+X  return 0;
+X}
+X
+Xint readclock(void)
+X{
+X  int clock;
+X  unsigned char buf[8];
+X
+X  static char *days[] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+X  static char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+X                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+X
+X  if ((clock = open(RTCDEV, O_RDONLY)) < 0) {
+X    (void) fprintf(stderr, "%s: could not open " RTCDEV "\n", progname);
+X    return 1;
+X  }
+X
+X  if (read(clock, buf, sizeof buf) != sizeof buf) {
+X    fprintf(stderr, "Read error reading from " RTCDEV "\n");
+X    (void) close(clock);
+X    return 1;
+X  }
+X
+X  printf("%s", days[ (buf[4] & 0x7) - 1]);
+X  printf(" %s", months[ (buf[6]>>4)*10 + (buf[6] & 0xf) - 1]);
+X  printf(" %2d", (buf[5]>>4)*10 + (buf[5] & 0xf));      /* day */
+X  printf(" %02d:", (buf[3]>>4)*10 + (buf[3] & 0xf));    /* hours */
+X  printf("%02d:", (buf[2]>>4)*10 + (buf[2] & 0xf));     /* minutes */
+X  printf("%02d ", (buf[1]>>4)*10 + (buf[1] & 0xf));     /* seconds */
+X  if (buf[7]>>4 < 7)                                    /* range 1970-2069 */
+X    printf("20%2d\n", (buf[7]>>4)*10 + (buf[7] & 0xf)); /* year 20XX */
+X  else
+X    printf("19%2d\n", (buf[7]>>4)*10 + (buf[7] & 0xf)); /* year 19XX */
+X
+X  return 0;
+X}
+X
+Xint usage(void)
+X{
+X  fprintf(stderr, "Usage: %s time\n", progname);
+X  fprintf(stderr, "where 'time' is a hex string consisting of:\n");
+X  fprintf(stderr, "seconds minutes hours day-of-week day month year\n");
+X  fprintf(stderr, "Example: 00301406070990\n");
+X  fprintf(stderr, "Mon=01...Sat=06, Sun=07\n");
+X  fprintf(stderr, "Good luck\n\n");
+X  return 1;
+X}
+END_OF_rtc/rtc.c
+if test 2763 -ne `wc -c <rtc/rtc.c`; then
+    echo shar: \"rtc/rtc.c\" unpacked with wrong size!
+fi
+# end of overwriting check
+fi
+echo shar: End of shell archive.
+exit 0

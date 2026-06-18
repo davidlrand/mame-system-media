@@ -1,0 +1,184 @@
+diff -cr cpio-1.1.orig/Makefile cpio-1.1/Makefile
+*** cpio-1.1.orig/Makefile	Sat Jul  7 19:48:26 1990
+--- cpio-1.1/Makefile	Thu Dec  6 21:58:21 1990
+***************
+*** 29,38 ****
+  # -DVPRINTF_MISSING	If you lack vprintf function (but have _doprnt).
+  # -DBCOPY_MISSING	If you lack bcopy function.
+  # -DMKDIR_MISSING	If you lack mkdir system call.
+! DEFS = -I. -DDIRENT
+! CFLAGS = -g $(DEFS)
+  
+! LDFLAGS = -g
+  
+  LIBS = #-ldir -lx
+  
+--- 29,38 ----
+  # -DVPRINTF_MISSING	If you lack vprintf function (but have _doprnt).
+  # -DBCOPY_MISSING	If you lack bcopy function.
+  # -DMKDIR_MISSING	If you lack mkdir system call.
+! DEFS = -I. -DDIRENT -DMTIO_MISSING -DBCOPY_MISSING -DMKDIR_MISSING -DMINIX
+! CFLAGS = -O $(DEFS)
+  
+! LDFLAGS = 
+  
+  LIBS = #-ldir -lx
+  
+diff -cr cpio-1.1.orig/copyin.c cpio-1.1/copyin.c
+*** cpio-1.1.orig/copyin.c	Sat Jul  7 19:45:20 1990
+--- cpio-1.1/copyin.c	Thu Dec  6 21:55:52 1990
+***************
+*** 25,30 ****
+--- 25,33 ----
+  extern int errno;
+  #include <fcntl.h>
+  #include <sys/file.h>
++ #ifdef MINIX
++ #include <string.h>
++ #else
+  #ifdef USG
+  #include <time.h>
+  #include <string.h>
+***************
+*** 32,37 ****
+--- 35,41 ----
+  #else
+  #include <sys/time.h>
+  #include <strings.h>
++ #endif
+  #endif
+  #include "cpio.h"
+  #include "dstring.h"
+diff -cr cpio-1.1.orig/copyout.c cpio-1.1/copyout.c
+*** cpio-1.1.orig/copyout.c	Sat Jul  7 21:14:50 1990
+--- cpio-1.1/copyout.c	Thu Dec  6 21:56:35 1990
+***************
+*** 25,36 ****
+--- 25,41 ----
+  extern int errno;
+  #include <fcntl.h>
+  #include <sys/file.h>
++ #ifdef MINIX
++ #include <string.h>
++ #else
+  #ifdef USG
+  #include <time.h>
+  #include <string.h>
++ #include <sys/sysmacros.h>
+  #else
+  #include <sys/time.h>
+  #include <strings.h>
++ #endif
+  #endif
+  #include "cpio.h"
+  #include "dstring.h"
+diff -cr cpio-1.1.orig/copypass.c cpio-1.1/copypass.c
+*** cpio-1.1.orig/copypass.c	Tue Jul  3 03:15:50 1990
+--- cpio-1.1/copypass.c	Thu Dec  6 21:56:54 1990
+***************
+*** 25,36 ****
+--- 25,41 ----
+  extern int errno;
+  #include <fcntl.h>
+  #include <sys/file.h>
++ #ifdef MINIX
++ #include <string.h>
++ #else
+  #ifdef USG
+  #include <time.h>
+  #include <string.h>
++ #include <sys/sysmacros.h>
+  #else
+  #include <sys/time.h>
+  #include <strings.h>
++ #endif
+  #endif
+  #include "cpio.h"
+  #include "dstring.h"
+diff -cr cpio-1.1.orig/dstring.c cpio-1.1/dstring.c
+*** cpio-1.1.orig/dstring.c	Tue Jul  3 00:28:41 1990
+--- cpio-1.1/dstring.c	Thu Dec  6 21:57:14 1990
+***************
+*** 16,22 ****
+     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  
+  #include <stdio.h>
+! #ifdef USG
+  #include <string.h>
+  #else
+  #include <strings.h>
+--- 16,22 ----
+     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  
+  #include <stdio.h>
+! #if defined(USG) || defined(MINIX)
+  #include <string.h>
+  #else
+  #include <strings.h>
+diff -cr cpio-1.1.orig/glob.c cpio-1.1/glob.c
+*** cpio-1.1.orig/glob.c	Thu Jun 14 17:21:31 1990
+--- cpio-1.1/glob.c	Thu Dec  6 22:00:01 1990
+***************
+*** 53,60 ****
+--- 53,69 ----
+  #define index strchr
+  #define rindex strrchr
+  #else /* not USG */
++ #ifdef MINIX
++ #include <string.h>
++ #define bcopy(s, d, n) memcpy ((d), (s), (n))
++ #define index strchr
++ #define rindex strrchr
++ #else
+  #include <strings.h>
++ #endif
++ #ifndef MINIX
+  extern void bcopy ();
++ #endif
+  #endif /* not USG */
+  
+  extern char *malloc ();
+diff -cr cpio-1.1.orig/main.c cpio-1.1/main.c
+*** cpio-1.1.orig/main.c	Sat Jul  7 19:45:22 1990
+--- cpio-1.1/main.c	Thu Dec  6 22:00:18 1990
+***************
+*** 23,29 ****
+  #ifndef S_IFLNK
+  #define lstat stat
+  #endif
+! #ifdef USG
+  #include <string.h>
+  #else
+  #include <strings.h>
+--- 23,29 ----
+  #ifndef S_IFLNK
+  #define lstat stat
+  #endif
+! #if defined(USG) || defined(MINIX)
+  #include <string.h>
+  #else
+  #include <strings.h>
+diff -cr cpio-1.1.orig/util.c cpio-1.1/util.c
+*** cpio-1.1.orig/util.c	Sat Jul  7 19:45:23 1990
+--- cpio-1.1/util.c	Thu Dec  6 21:58:53 1990
+***************
+*** 22,29 ****
+  #include <sys/stat.h>
+  #include <errno.h>
+  extern int errno;
+  #include <sys/ioctl.h>
+! #ifdef USG
+  #include <string.h>
+  #else
+  #include <strings.h>
+--- 22,31 ----
+  #include <sys/stat.h>
+  #include <errno.h>
+  extern int errno;
++ #ifndef MINIX
+  #include <sys/ioctl.h>
+! #endif
+! #if defined(USG) || defined(MINIX)
+  #include <string.h>
+  #else
+  #include <strings.h>

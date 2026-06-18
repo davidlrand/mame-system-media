@@ -1,0 +1,148 @@
+	;****************************************
+	;*	FILENAME:  EASIO.SRC		*
+	;*	VERSION:   1.1			*
+	;*	DATE:	   23-03-88		*
+	;*	APPLICATION: EASI DEMO BOARD    *
+	;*	WRITTEN BY: ANDREW DAVIDSON	*
+	;*		    CMOS LOGIC DESIGN   *
+	;*		    NSUK GREENOCK	*
+	;****************************************
+	;
+	;
+	;**************************************************
+	;*	Assembler routines for use by 'c'	  *
+	;*	First parameters passed in hl, then de,   *
+	;*	then bc then on stack.Data returned in    *
+	;*	accumulator.				  *
+	;**************************************************
+	;
+		cseg
+		INCLUDE PRNSYM.SRC
+	;
+	;**************************************************
+	;*	read(port): This routine reads in the 	  *
+	;*	character at the specified port address   *
+	;*	and passes it back in the accumulator.    *
+	;*      Useage: temp=read(port)                   *
+	;**************************************************
+	;
+		public read
+	read:	ld	c,l
+		in	a,(c)
+		ret
+	;
+	;
+	;**************************************************
+	;*	write(port,data): This routine writes     *
+	;*	'data' to the specified port.No data	  *
+	;*	returned.				  *
+	;*	Usage: write(port,data)			  *
+	;**************************************************
+	;
+		public write
+	write:	ld	c,l
+		out	(c),e
+		ret
+	;
+	;
+	;**************************************************
+	;*	intA(): This routine sets the interrupt   *
+	;*		mask to only allow interrupts on  *
+	;*		A, and enables	interrupts.	  *
+	;**************************************************
+	;
+		public intA
+	intA:	ld	a,8
+		out	(INTMSK),a
+		ei
+		ret
+	;
+	;
+	;**********************************************************************
+	;*	dmawrit(port,data): This routine writes two bytes to a DMA    *
+	;*		   	    register.The port address is stored in hl *
+	;*		   	    and the data in de.			      *
+	;**********************************************************************
+	;
+		public dmawrit
+	dmawrit:ld	c,l
+		out	(c),e
+		out	(c),d
+		ret
+	;
+	;
+	;**********************************************************************
+	;*	dmaread(port): This reads a 16 bit DMA register, the  address *
+	;*		       of which is stored in the hl pair.The data is  *
+	;*		       also transferred back in the hl register       *
+	;**********************************************************************
+	;
+		public dmaread
+	dmaread:ld	c,l
+		in	l,(c)
+		in	h,(c)
+		ret
+	;
+	;
+	;**********************************************************************
+	;*	IDtest(id): The initiators SCSI ID ,passed in the l register, *
+	;*		    is checked to ensure no more than one bit is high.*
+	;*		    the number of high bits is returned in the	      *
+	;*		    accumulator.				      *
+	;*		    						      *
+	;*	Usage: if (IDtest(id) > 1) error();				      *
+	;**********************************************************************
+	;
+		public IDtest
+	IDtest:	push	bc
+		ld	c,00
+		ld	a,l
+		ld	b,08
+	Fin:	rla
+		jr	nc,not1
+		inc	c
+	not1:	djnz	Fin
+		ld	a,c
+		pop	bc
+		ret
+	;
+	;
+	;****************************************************************
+	;*	restrt(): This program is called to reset the board and *
+	;*		  re-run the diagnostics.			*
+	;****************************************************************
+	;
+		extrn Start
+		extrn DP8490
+		public restrt
+	restrt:	out	(DMAMCL),a
+		ld	a,4
+		out	(DMACOM),a		;Master disable
+		xor	a
+		out	(PIOA),a		;Zero printer data bus
+		out	(PIOC),a		;Disable printer signals
+		out	(EASIICR),a		;Set for Mode N
+	resact:	in	a,(EASICSB)		;Wait for reset inactive
+		and	080h
+		jr	nz,resact
+		in	a,(EASIRPI)		;Reset interrupts
+		jp	Start
+	;
+	;
+	;****************************************
+	;*	eni():This enables interrupts	*
+	;****************************************
+	;
+		public eni
+	eni:	ei
+		ret
+	;
+	;
+	;****************************************
+	;*	dsi():This disables interrupts  *
+	;****************************************
+	;
+		public dsi
+	dsi:	di
+		ret
+	;

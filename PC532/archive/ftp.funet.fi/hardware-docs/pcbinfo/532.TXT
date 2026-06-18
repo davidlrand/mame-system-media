@@ -1,0 +1,54 @@
+
+                                                              ( 12-13-89 )
+
+
+                    PHOTOPLOTTER APERTURE CONFIGURATION FORM
+
+    Station	Draft Code	Aperture Size	Shape	    Flash/Draw
+    -------	----------	-------------	-----	    ----------
+
+    1       	D10              R10           	Round       Draw
+    2       	D11              R10           	Round       Draw
+    3       	D12              R12            Round       Draw
+    4       	D13              R25           	Round       Draw
+    5       	D14              R50           	Round       Draw
+    6       	D15              R75          	Round       Draw
+    7       	D16              R100          	Round       Draw
+    8       	D17              R62            Round       Flash
+    9       	D18              R62           	Round       Flash
+    10      	D19              S62           	Square      Flash
+    11      	D70              R70           	Round       Flash
+    12      	D71              S70           	Square      Flash
+    13      	D20              R75           	Round       Flash
+    14      	D21              S75          	Square      Flash
+    15      	D22              R50            Round       Flash
+    16      	D23              R55          	Round       Flash
+    17      	D24              R80          	Round       Flash
+    18      	D25              R85          	Round       Flash
+    19      	D26              R90          	Round       Flash
+    20      	D27              R100    	Round       Flash
+    21      	D28              R125          	Round       Flash
+    22      	D29              R150          	Round       Flash
+    23      	D72              Drill target		    Flash
+    24      	D73              R100          	Round       Flash
+
+                                 R = Round  (mils)
+                                 S = Square (mils)
+
+
+    ASCII characters.
+    Measurement absolute.
+    2.3 format with leading zeros suppressed.
+
+
+Filename	Layer			Film
+------------------------------------------------------
+5321.gbr	component layer		-negative
+5322.gbr	inner layer		-negative
+5323.gbr	ground layer		-negative
+5324.gbr	power layer		-negative
+5325.gbr	inner layer		-negative
+5326.gbr	solder layer		-negative
+532drl.gbr	drill master		+positive
+532slk.gbr	silkscreen		+positive
+532smk.gbr	soldermask		-negative

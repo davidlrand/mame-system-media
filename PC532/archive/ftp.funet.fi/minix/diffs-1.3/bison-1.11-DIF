@@ -1,0 +1,52 @@
+diff -cr bison-1.11-ori/Makefile bison-1.11/Makefile
+*** bison-1.11-ori/Makefile	Sat Jun 16 23:12:32 1990
+--- bison-1.11/Makefile	Sun Dec  2 22:42:23 1990
+***************
+*** 27,40 ****
+  
+  DESTDIR=
+  # where the installed binary goes
+! BINDIR = $(DESTDIR)/usr/local/bin
+  
+  # where the parsers go
+! PARSERDIR = $(DESTDIR)/usr/local/lib
+  
+  # where manual pages go and what their extensions should be
+! MANDIR = $(DESTDIR)/usr/man/manl
+! MANEXT = l
+  
+  # names of parser files
+  PFILE = bison.simple
+--- 27,40 ----
+  
+  DESTDIR=
+  # where the installed binary goes
+! BINDIR = $(DESTDIR)/usr/gnu/bin
+  
+  # where the parsers go
+! PARSERDIR = $(DESTDIR)/usr/gnu/lib
+  
+  # where manual pages go and what their extensions should be
+! MANDIR = $(DESTDIR)/usr/gnu/man/man1
+! MANEXT = 1
+  
+  # names of parser files
+  PFILE = bison.simple
+***************
+*** 41,47 ****
+  PFILE1 = bison.hairy
+  
+  # It is unwise ever to compile a program without symbols.
+! CFLAGS = -g
+  
+  PFILES = -DXPFILE=\"$(PARSERDIR)/$(PFILE)\" \
+  	 -DXPFILE1=\"$(PARSERDIR)/$(PFILE1)\"
+--- 41,48 ----
+  PFILE1 = bison.hairy
+  
+  # It is unwise ever to compile a program without symbols.
+! CC = gcc
+! CFLAGS = -O -DUSG
+  
+  PFILES = -DXPFILE=\"$(PARSERDIR)/$(PFILE)\" \
+  	 -DXPFILE1=\"$(PARSERDIR)/$(PFILE1)\"

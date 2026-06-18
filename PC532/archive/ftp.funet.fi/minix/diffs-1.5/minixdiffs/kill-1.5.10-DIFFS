@@ -1,0 +1,45 @@
+*** kill.c.orig	Sun Mar  3 01:28:39 1991
+--- kill.c	Sun Mar  3 01:30:14 1991
+***************
+*** 2,7 ****
+--- 2,8 ----
+  
+  #include <sys/types.h>
+  #include <signal.h>
++ #include <stdio.h>
+  
+  extern char *itoa();
+  
+***************
+*** 23,30 ****
+  	proc = atoi(*argv);
+  	if (!proc && strcmp(*argv, "0")) usage();
+  	if (kill(proc, signal)) {
+! 		prints("Kill: %s no such process\n", itoa(proc));
+! 		exit(1);
+  	}
+    }
+    exit(0);
+--- 24,30 ----
+  	proc = atoi(*argv);
+  	if (!proc && strcmp(*argv, "0")) usage();
+  	if (kill(proc, signal)) {
+! 		perror ("kill");
+  	}
+    }
+    exit(0);
+***************
+*** 32,37 ****
+  
+  usage()
+  {
+!   prints("Usage: kill [-sig] pid\n");
+    exit(1);
+  }
+--- 32,37 ----
+  
+  usage()
+  {
+!   fprintf(stderr, "Usage: kill [-sig] pid [ ... ]\n");
+    exit(1);
+  }

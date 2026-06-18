@@ -1,0 +1,84 @@
+/************************************************************************/
+/* This pal performs address decoding for the 32k address space. IODEC	*/
+/* is asserted for all i/o devices except during pseudo-dma accesses.	*/
+/*  The IPERDMA field of address is reserved for performing accesses	*/
+/*  without the assertion of IODEC, and without qualifying with IOINH.	*/
+/* Note that the /dram select does not have the /conf conditioning,	*/
+/* this is to ensure that the signal is fast enough to go into a	*/
+/* clocked B pal.							*/
+/************************************************************************/
+
+#define DESIGNER George Scolaro  (C) 1988,89,90
+#define REVISION 01	10/22/88
+#define PARTNUM U37	PAL16L8B | GAL16V8A-15
+
+dec32(	in
+		a31..26,	/* 32gx32 addresses */
+		!ddin,		/* read/write */
+		!ena,		/* enable peripheral chip select */
+		!conf,		/* confirmed bus cycle */
+		!ioinh;		/* i/o inhibit */
+	out
+		!perconf,	/* confirmed peripheral cycle, 8 bits */
+		!iodec,		/* i/o device decoded */
+		!eprom,		/* eprom select */
+		!dram,		/* dram select */
+		!cops,		/* serial eeprom device */
+		!perobd,	/* off-board peripheral selects */
+		!perbd,		/* on-board peripheral selects */
+		!per;		/* peripheral devices */
+)
+{
+[perconf, iodec, eprom, dram, cops, perobd, perbd, per].oe = HI;
+
+int a0..25;
+
+[a0..25] = ?;
+
+group memadr[a31..0];
+
+#define valid	conf & !ioinh
+#define valper	valid & ena
+
+#define ieprom	(memadr[] >= 0x00000000 && memadr[] <= 0x03ffffff)
+#define idram	(memadr[] >= 0x04000000 && memadr[] <= 0x07ffffff)
+
+#define icops	(memadr[] >= 0x08000000 && memadr[] <= 0x0fffffff)
+#define iper	(memadr[] >= 0x08000000 && memadr[] <= 0x1fffffff)
+#define iperobd	(memadr[] >= 0x18000000 && memadr[] <= 0x1fffffff)
+#define iperbd	(memadr[] >= 0x10000000 && memadr[] <= 0x17ffffff)
+
+#define iperdma	(memadr[] >= 0x20000000 && memadr[] <= 0x27ffffff)
+
+dram	= idram;			/* dram select */
+
+eprom	= ieprom & conf & ddin;		/* eprom select, read */
+
+cops	= icops & valid;		/* eeprom select */
+
+per	= iper & !ioinh			/* on & off-board per's */
+	| ieprom;			/* including eprom and eeprom */
+
+perconf	= ieprom & conf & ena		/* for eprom access */
+	| iper & valid		 	/* on & off-board per's */
+	| iperdma & conf & ena; 	/* for scsi and ethernet dma */
+
+/* all off-board device selects. This signal along with several address */
+/* signals can be used to generate i/o device selects. 7 wait states are */
+/* inserted in all peripheral i/o accesses */
+
+perobd	= iperobd & valper;		/* off-board peripherals */
+
+perbd	= iperbd & valid		/* on-board peripherals */
+	| iperdma & conf;	 	/* ditto but ignore ioinh */
+
+/* iodec includes the eeprom device and all on-board and off-board */
+/* peripheral devices */
+
+iodec	= iper & conf;			/* on & off-board per's */
+
+putpart("p16l8", "dec32",
+	a26, a27, a28, a29, a30, a31, ddin, ena, conf, GND,
+	ioinh, perconf, iodec, eprom, dram, cops, perobd, perbd, per, VCC);
+}
+

@@ -1,0 +1,776 @@
+diff -cr cker-72.orig/Makefile cker-72/Makefile
+*** cker-72.orig/Makefile	Fri Feb 24 10:13:29 1989
+--- cker-72/Makefile	Sun Dec  9 23:43:59 1990
+***************
+*** 148,153 ****
+--- 148,154 ----
+  #  V7-specific variables.
+  #  These are set up for Perkin-Elmer 3230 V7 Unix:
+  # 
++ #CC=gcc -DMINIX -O
+  PROC=proc
+  DIRECT=
+  NPROC=nproc
+***************
+*** 163,177 ****
+  #
+  LNKFLAGS=
+  SHAREDLIB=
+! CC= cc
+! CC2= cc
+  #
+  ###########################################################################
+  #
+  # Dependencies Section:
+  #
+  make:
+  	@echo 'Make what?  You must tell which system to make C-Kermit for.'
+  
+  wermit: ckcmai.o ckucmd.o ckuusr.o ckuus2.o ckuus3.o ckcpro.o ckcfns.o \
+  		 ckcfn2.o ckucon.o ckutio.o ckufio.o ckudia.o ckuscr.o
+--- 164,180 ----
+  #
+  LNKFLAGS=
+  SHAREDLIB=
+! CC= gcc -DMINIX -O
+! CC2= gcc -DMINIX
+  #
+  ###########################################################################
+  #
+  # Dependencies Section:
+  #
++ 
+  make:
+  	@echo 'Make what?  You must tell which system to make C-Kermit for.'
++ 	@echo 'Use minix or minix-kludge (minix-kludge reads 6 chars at a time)'
+  
+  wermit: ckcmai.o ckucmd.o ckuusr.o ckuus2.o ckuus3.o ckcpro.o ckcfns.o \
+  		 ckcfn2.o ckucon.o ckutio.o ckufio.o ckudia.o ckuscr.o
+***************
+*** 242,250 ****
+  
+  #Version 7 Unix (see comments above)
+  v7:
+! 	make wermit "CFLAGS=-DV7 -DDEBUG -DTLOG -DPROCNAME=\\\"$(PROC)\\\" \
+  	-DBOOTNAME=\\\"$(BOOTFILE)\\\" -DNPROCNAME=\\\"$(NPROC)\\\" \
+  	-DNPTYPE=$(NPTYPE) $(DIRECT)"
+  
+  #System V R3, some things changed since Sys V R2...
+  sys5r3:
+--- 245,262 ----
+  
+  #Version 7 Unix (see comments above)
+  v7:
+! 	make wermit "CFLAGS=-traditional -DV7 -DDEBUG -DTLOG -DPROCNAME=\\\"$(PROC)\\\" \
+! 	-DBOOTNAME=\\\"$(BOOTFILE)\\\" -DNPROCNAME=\\\"$(NPROC)\\\" \
+! 	-DNPTYPE=$(NPTYPE) $(DIRECT)"
+! 
+! minix:
+! 	make wermit "CFLAGS=-traditional -DV7 -DDEBUG -DTLOG -DPROCNAME=\\\"$(PROC)\\\" \
+  	-DBOOTNAME=\\\"$(BOOTFILE)\\\" -DNPROCNAME=\\\"$(NPROC)\\\" \
+  	-DNPTYPE=$(NPTYPE) $(DIRECT)"
++ minix-kludge:
++ 	make wermit "CFLAGS=-traditional -DV7 -DDEBUG -DTLOG -DPROCNAME=\\\"$(PROC)\\\" \
++ 	-DBOOTNAME=\\\"$(BOOTFILE)\\\" -DNPROCNAME=\\\"$(NPROC)\\\" \
++ 	-DNPTYPE=$(NPTYPE) $(DIRECT) -DMINIX_JKP_KLUDGE"
+  
+  #System V R3, some things changed since Sys V R2...
+  sys5r3:
+diff -cr cker-72.orig/ckcmai.c cker-72/ckcmai.c
+*** cker-72.orig/ckcmai.c	Fri Feb 24 10:06:31 1989
+--- cker-72/ckcmai.c	Sun Dec  9 23:44:00 1990
+***************
+*** 111,117 ****
+--- 111,122 ----
+  GET filespec, SEND filespec, FINISH, BYE, REMOTE HELP\n\
+  \n\0";
+  #else
++ #ifdef MINIX
+  char *hlptxt = "C-Kermit Server REMOTE Commands:\n\
++ BYE CWD DELETE DIRECTORY FINISH GET HELP HOST SEND SPACE TYPE WHO\n\
++ \n\0";
++ #else /* MINIX */
++ char *hlptxt = "C-Kermit Server REMOTE Commands:\n\
+  \n\
+  GET files  REMOTE CWD [dir]    REMOTE DIRECTORY [files]\n\
+  SEND files REMOTE SPACE [dir]  REMOTE HOST command\n\
+***************
+*** 120,131 ****
+--- 125,144 ----
+  \n\0";
+  #endif
+  #endif
++ #endif
++ 
++ #ifdef MINIX
+  char *srvtxt = "\r\n\
++ C-Kermit server starting.\n\
++ \r\n\0";
++ #else
++ char *srvtxt = "\r\n\
+  C-Kermit server starting.  Return to your local machine by typing\r\n\
+  its escape sequence for closing the connection, and issue further\r\n\
+  commands from there.  To shut down the C-Kermit server, issue the\r\n\
+  FINISH or BYE command and then reconnect.\n\
+  \r\n\0";
++ #endif
+  
+  /* Declarations for Send-Init Parameters */
+  
+diff -cr cker-72.orig/ckudia.c cker-72/ckudia.c
+*** cker-72.orig/ckudia.c	Fri Feb 24 10:10:40 1989
+--- cker-72/ckudia.c	Sun Dec  9 23:44:01 1990
+***************
+*** 528,533 ****
+--- 528,534 ----
+      longjmp( sjbuf, F_int );
+      }
+  
++ 
+  static
+  ttolSlow(s,millisec) char *s; int millisec; {  /* output s-l-o-w-l-y */
+      for (; *s; s++) {
+***************
+*** 562,568 ****
+      return( 0 );
+  }
+  
+- 
+  /* R E S E T -- Reset alarms, etc. on exit. */
+  
+  static
+--- 563,568 ----
+***************
+*** 569,576 ****
+--- 569,578 ----
+  reset ()
+      {
+      alarm(0);
++ #ifndef MINIX
+      signal(SIGALRM,savAlrm);		/* restore alarm handler */
+      signal(SIGINT,savInt);		/* restore interrupt handler */
++ #endif
+      }
+  
+  /*  C K D I A L	 --  Dial up the remote system */
+***************
+*** 577,582 ****
+--- 579,585 ----
+  
+  ckdial(telnbr) char *telnbr; {
+  
++ #ifndef MINIX
+      char c;
+      char *i, *j;
+      int waitct, status;
+***************
+*** 965,969 ****
+--- 968,973 ----
+      reset ();				/* reset alarms, etc. */
+      if ( ! quiet )
+  	printf ( "Call completed.\07\r\n" );
++ #endif /* not MINIX */
+      return ( 0 );			/* return, and presumably connect */
+  }
+diff -cr cker-72.orig/ckufio.c cker-72/ckufio.c
+*** cker-72.orig/ckufio.c	Fri Feb 24 10:11:08 1989
+--- cker-72/ckufio.c	Sun Dec  9 23:44:02 1990
+***************
+*** 175,180 ****
+--- 175,181 ----
+  #ifndef PROVX1
+  #ifndef aegis
+  #ifndef CIE
++ #ifndef MINIX
+  #ifndef XENIX
+  /* Watch out, some versions of Xenix might need to do this include, */
+  /* but reportedly SCO Xenix 2.2 on an 80x86 system does not. */
+***************
+*** 183,188 ****
+--- 184,190 ----
+  #endif
+  #endif
+  #endif
++ #endif
+  
+  #ifdef FT18
+  #undef PROVX1
+***************
+*** 969,974 ****
+--- 971,981 ----
+  struct path *pl;
+  char *sofar,*endcur;
+  {
++ #ifdef MINIX
++ #include <dirent.h>
++ #define BSD42
++ #endif
++ 
+  #ifdef BSD42
+   DIR *fd, *opendir();
+   struct direct *dirbuf;
+diff -cr cker-72.orig/ckuscr.c cker-72/ckuscr.c
+*** cker-72.orig/ckuscr.c	Fri Feb 24 10:16:45 1989
+--- cker-72/ckuscr.c	Sun Dec  9 23:44:03 1990
+***************
+*** 33,38 ****
+--- 33,39 ----
+  #include <setjmp.h>
+  #include "ckcker.h"
+  
++ #ifndef MINIX
+  extern int local, speed, flow, seslog, mdmtyp, quiet, duplex;
+  extern char ttname[];
+  extern CHAR dopar();
+***************
+*** 222,232 ****
+      }
+  }
+  
+! 
+  /*  L O G I N  --  Login to remote system */
+  
+  login(cmdstr) char *cmdstr; {
+  
+  	SIGTYP (*saveAlm)();	/* save incoming alarm function */
+  	char *e;
+  
+--- 223,234 ----
+      }
+  }
+  
+! #endif /* not MINIX */
+  /*  L O G I N  --  Login to remote system */
+  
+  login(cmdstr) char *cmdstr; {
+  
++ #ifndef MINIX
+  	SIGTYP (*saveAlm)();	/* save incoming alarm function */
+  	char *e;
+  
+***************
+*** 299,316 ****
+      signal(SIGALRM,saveAlm);
+      if (!quiet) printf("Script successful.\r\n");
+      tlog(F100,"Script successful.","",0l);
+      return(0);
+! 
+  failRet:
+      signal(SIGALRM,saveAlm);
+      printf("Sorry, script failed\r\n");
+      tlog(F100,"Script failed","",0l);
+      return(-2);
+  }
+  
+  
+  /*  C H S T R  --  Make printable string from a character */
+  
+  static char *
+  chstr(c) char c; {
+      static char sc[4];
+--- 301,321 ----
+      signal(SIGALRM,saveAlm);
+      if (!quiet) printf("Script successful.\r\n");
+      tlog(F100,"Script successful.","",0l);
++ #endif /* not MINIX */
+      return(0);
+! #ifndef MINIX
+  failRet:
+      signal(SIGALRM,saveAlm);
+      printf("Sorry, script failed\r\n");
+      tlog(F100,"Script failed","",0l);
+      return(-2);
++ #endif /* not MINIX */
+  }
+  
+  
+  /*  C H S T R  --  Make printable string from a character */
+  
++ #ifndef MINIX
+  static char *
+  chstr(c) char c; {
+      static char sc[4];
+***************
+*** 322,328 ****
+  }
+  
+  /*  F L U S H I  --  Flush, but log, input buffer  */
+- 
+  flushi() {
+      int n;
+      if (seslog) {			/* Logging session? */
+--- 327,332 ----
+***************
+*** 334,336 ****
+--- 338,341 ----
+  	}
+      } else ttflui();			/* Otherwise just flush. */
+  }
++ #endif /* not MINIX */
+diff -cr cker-72.orig/ckutio.c cker-72/ckutio.c
+*** cker-72.orig/ckutio.c	Fri Feb 24 10:17:36 1989
+--- cker-72/ckutio.c	Mon Dec 10 00:33:47 1990
+***************
+*** 83,91 ****
+--- 83,105 ----
+   Oklahoma State University:  gregg@okstate.csnet
+  */
+  #ifdef  V7
++ #ifndef MINIX
+  char *ckxsys = " Version 7 UNIX (tm)";
++ #endif
+  #endif /* v7 */
+  
++ /*
++  Minix support added by Charles Hedrick,
++  Rutgers University:  hedrick@aramis.rutgers.edu
++  Minix also has V7 enabled.
++ */
++ 
++ #ifdef MINIX
++ char *ckxsys = " Minix";
++ #define TANDEM 0
++ #define MYREAD
++ #endif
++ 
+  /* BBN C70 support from Frank Wancho, WANCHO@SIMTEL20 */
+  #ifdef C70
+  char *ckxsys = " BBN C/70";
+***************
+*** 272,280 ****
+--- 286,296 ----
+  /* Whether to #include <sys/file.h>... */
+  #ifndef PROVX1
+  #ifndef aegis
++ #ifndef MINIX
+  #ifndef XENIX
+  #include <sys/file.h>                   /* File information */
+  #endif /* xenix */
++ #endif /* MINIX */
+  #endif /* aegis */
+  #endif /* provx1 */
+  
+***************
+*** 546,552 ****
+  #define ctermid(x) strcpy(x,"")
+  #endif
+  
+!     char *x; extern char* ttyname();
+      char cname[DEVNAMLEN+4];
+  
+      if (ttyfd > -1)                     /* if comms line already opened */
+--- 562,571 ----
+  #define ctermid(x) strcpy(x,"")
+  #endif
+  
+!     char *x; 
+! #ifndef MINIX
+!     extern char* ttyname();
+! #endif
+      char cname[DEVNAMLEN+4];
+  
+      if (ttyfd > -1)                     /* if comms line already opened */
+***************
+*** 604,609 ****
+--- 623,629 ----
+              debug(F110," Same as CTTNAM",ttname,0);
+              xlocal = 0;
+          } else if (isatty(0)) {         /* Else, if stdin not redirected */
++ #ifndef MINIX_FOO
+              x = ttyname(0);             /* then compare its device name */
+              strncpy(cname,x,DEVNAMLEN); /* (copy from internal static buf) */
+              debug(F110," ttyname(0)",x,0);
+***************
+*** 610,615 ****
+--- 630,638 ----
+              x = ttyname(ttyfd);         /* ...with real name of ttname. */
+              xlocal = (strncmp(x,cname,DEVNAMLEN) == 0) ? 0 : 1;
+              debug(F111," ttyname",x,xlocal);
++ #else
++ 	    xlocal = 1;   /* can't do this test in minix */
++ #endif /* MINIX */
+          } else {                        /* Else, if stdin redirected... */
+  #ifdef UXIII
+  /* Sys III/V provides nice ctermid() function to get name of controlling tty */
+***************
+*** 652,657 ****
+--- 675,681 ----
+  /* Some special stuff for v7... */
+  
+  #ifdef  V7
++ #ifndef MINIX
+          if (kmem[TTY] < 0) {    /*  If open, then skip this.  */
+                  qaddr[TTY] = initrawq(ttyfd);   /* Init the queue. */
+                  if ((kmem[TTY] = open("/dev/kmem", 0)) < 0) {
+***************
+*** 660,665 ****
+--- 684,690 ----
+                          exit(1);
+                  }
+          }
++ #endif /* not MINIX */
+  #endif /* v7 */
+                                  /* no failure returns after this point */
+  
+***************
+*** 1015,1020 ****
+--- 1040,1048 ----
+      if (flow == 0) ttraw.sg_flags &= ~TANDEM;
+      ttraw.sg_flags |= RAW;              /* Go into raw mode */
+      ttraw.sg_flags &= ~(ECHO|CRMOD);    /* Use CR for break character */
++ #ifdef MINIX
++     ttraw.sg_flags &= ~XTABS;           /* no tab expansion. */
++ #endif
+  #ifdef TOWER1
+      ttraw.sg_flags &= ~ANYP;            /* Must tell Tower no parity */
+  #endif /* tower1 */
+***************
+*** 1039,1048 ****
+          return(-1);
+      }
+  #endif /* fndelay */
+! #endif /* bsd4 */
+      ttflui();                           /* Flush any pending input */
+      return(0);
+  #endif /* bsd4 */
+  #else  /* myread */
+      ttflui();                           /* Flush any pending input */
+      return(0);
+--- 1067,1080 ----
+          return(-1);
+      }
+  #endif /* fndelay */
+! #endif /* fionbio */
+      ttflui();                           /* Flush any pending input */
+      return(0);
+  #endif /* bsd4 */
++ #ifdef MINIX
++     ttflui();				/* Flush any pending input */
++     return(0);
++ #endif
+  #else  /* myread */
+      ttflui();                           /* Flush any pending input */
+      return(0);
+***************
+*** 1111,1116 ****
+--- 1143,1151 ----
+      if (flow == 1) tttvt.sg_flags |= TANDEM; /* XON/XOFF if selected */
+      if (flow == 0) tttvt.sg_flags &= ~TANDEM;
+      tttvt.sg_flags |= RAW;              /* Raw mode */
++ #ifdef MINIX
++     tttvt.sg_flags &= ~XTABS;           /* no tab expansion. */
++ #endif
+  #ifdef TOWER1
+      tttvt.sg_flags &= ~(ECHO|ANYP);     /* No echo or system III ??? parity */
+  #else
+***************
+*** 1172,1184 ****
+--- 1207,1225 ----
+      if (speed < 0) return(-1);
+          spdok = 1;                      /* Assume arg ok */
+          switch (speed) {
++ #ifdef B0
+              case 0:    s = B0;    break;        /* Just the common ones. */
++ #endif
+              case 110:  s = B110;  break;        /* The others from ttydev.h */
++ #ifdef B150
+              case 150:  s = B150;  break;        /* could also be included if */
++ #endif
+              case 300:  s = B300;  break;        /* necessary... */
+              case 600:  s = B600;  break;
+              case 1200: s = B1200; break;
++ #ifdef B1800
+              case 1800: s = B1800; break;
++ #endif
+              case 2400: s = B2400; break;
+              case 4800: s = B4800; break;
+              case 9600: s = B9600; break;
+***************
+*** 1185,1192 ****
+--- 1226,1235 ----
+  #ifdef B19200
+              case 19200: s = B19200; break;
+  #else
++ #ifdef EXTA
+              case 19200: s = EXTA; break;
+  #endif
++ #endif
+  #ifdef B38400
+              case 38400: s = B38400; break;
+  #endif
+***************
+*** 1305,1312 ****
+--- 1348,1360 ----
+  /* For some reason the signal() test doesn't work under 2.9 BSD... */
+      backgrd = !y;
+  #else
++ #ifdef MINIX
++ /* Signal test definitely doesn't work on Minix */
++     backgrd = !y;
++ #else
+      backgrd = (x || !y);
+  #endif
++ #endif
+      debug(F101,"conint backgrd","",backgrd);
+  
+      signal(SIGHUP,f);                   /* Ensure lockfile cleared on hangup */
+***************
+*** 1450,1459 ****
+--- 1498,1512 ----
+   * long as this comment is retained unmodified and no commercial
+   * advantage is gained.
+   */
++ #ifndef MINIX
+  #include <a.out.h>
+  #include <sys/proc.h>
++ #endif
+  
+  char *initrawq(tty) int tty; {
++ #ifdef MINIX
++     return(0);
++ #else
+  #ifdef UTS24
+      return(0);
+  #else
+***************
+*** 1521,1526 ****
+--- 1574,1580 ----
+      return (qaddr);
+  #endif
+  #endif
++ #endif
+  }
+  
+  /*  More V7-support functions...  */
+***************
+*** 1542,1548 ****
+  
+  /*  G E N B R K  --  Simulate a modem break.  */
+  
+! #define BSPEED  B150
+  
+  genbrk(fn) int fn; {
+      struct sgttyb ttbuf;
+--- 1596,1606 ----
+  
+  /*  G E N B R K  --  Simulate a modem break.  */
+  
+! #ifdef MINIX
+! #define BSPEED  B110
+! #else
+! #define	BSPEED	B150
+! #endif
+  
+  genbrk(fn) int fn; {
+      struct sgttyb ttbuf;
+***************
+*** 1570,1578 ****
+--- 1628,1644 ----
+      return((x < 0) ? 0 : n);
+  #else
+  #ifdef  V7
++ #ifdef MINIX
++ #ifdef MINIX_JKP_KLUDGE
++     return(6);
++ #else
++     return(0);
++ #endif
++ #else
+      lseek(kmem[TTY], (long) qaddr[TTY], 0); /* 7th Edition Unix */
+      x = read(kmem[TTY], &n, sizeof(int));
+      return((x == sizeof(int))? n: 0);
++ #endif
+  #else
+  #ifdef UXIII
+      return(inbufc + (ungotn >= 0) );    /* Sys III, Sys V */
+***************
+*** 1971,1976 ****
+--- 2037,2047 ----
+      *s = asctime(tp);
+  #endif
+  #ifdef V7
++ #ifdef MINIX
++     int utime[2];			/* Venix way */
++     time(utime);
++     *s = ctime(utime);
++ #else
+      char *asctime();                    /* V7 way */
+      struct tm *localtime();
+      struct tm *tp;
+***************
+*** 1979,1984 ****
+--- 2050,2056 ----
+      tp = localtime(&clock);
+      *s = asctime(tp);
+  #endif
++ #endif
+  }
+  
+  /*  C O N G M  --  Get console terminal modes.  */
+***************
+*** 2053,2058 ****
+--- 2125,2131 ----
+      if (x > -1) setbuf(stdout,NULL);    /* Make console unbuffered. */
+  #endif
+  #ifdef  V7
++ #ifndef MINIX
+      if (kmem[CON] < 0) {
+          qaddr[CON] = initrawq(0);
+          if((kmem[CON] = open("/dev/kmem", 0)) < 0) {
+***************
+*** 2062,2067 ****
+--- 2135,2141 ----
+          }
+      }
+  #endif
++ #endif
+      return(x);
+  }
+  
+***************
+*** 2185,2193 ****
+--- 2259,2273 ----
+      return(conbufn);
+  #else
+  #ifdef V7
++ #ifdef MINIX
++ #ifndef FIONREAD_FOO
++     return(0);
++ #endif
++ #else
+      lseek(kmem[CON], (long) qaddr[CON], 0);
+      x = read(kmem[CON], &n, sizeof(int));
+      return((x == sizeof(int))? n: 0);
++ #endif
+  #else
+  #ifdef UXIII
+      if (conesc) {                       /* Escape typed */
+diff -cr cker-72.orig/ckuus2.c cker-72/ckuus2.c
+*** cker-72.orig/ckuus2.c	Fri Feb 24 10:17:51 1989
+--- cker-72/ckuus2.c	Mon Dec 10 00:20:35 1990
+***************
+*** 201,207 ****
+   
+  dohlp(xx) int xx; {
+      int x,y;
+!  
+      if (xx < 0) return(xx);
+      switch (xx) {
+   
+--- 201,207 ----
+   
+  dohlp(xx) int xx; {
+      int x,y;
+! 
+      if (xx < 0) return(xx);
+      switch (xx) {
+   
+***************
+*** 355,361 ****
+  /*  D O H S E T  --  Give help for SET command  */
+   
+  dohset(xx) int xx; {
+!     
+      if (xx == -3) return(hmsga(hmhset));
+      if (xx < 0) return(xx);
+      switch (xx) {
+--- 355,361 ----
+  /*  D O H S E T  --  Give help for SET command  */
+   
+  dohset(xx) int xx; {
+! 
+      if (xx == -3) return(hmsga(hmhset));
+      if (xx < 0) return(xx);
+      switch (xx) {
+***************
+*** 500,505 ****
+--- 500,506 ----
+  /*  D O H R M T  --  Give help about REMOTE command  */
+   
+  dohrmt(xx) int xx; {
++ 
+      int x;
+      if (xx == -3) return(hmsga(hmhrmt));
+      if (xx < 0) return(xx);
+***************
+*** 599,607 ****
+   
+      switch (x) {
+   
+  	case LOGD:
+  	    return(deblog = debopn(s));
+!  
+  	case LOGP:
+  	    zclose(ZPFILE);
+  	    y = zopeno(ZPFILE,s);
+--- 600,610 ----
+   
+      switch (x) {
+   
++ #ifdef DEBUG
+  	case LOGD:
+  	    return(deblog = debopn(s));
+! #endif
+! 
+  	case LOGP:
+  	    zclose(ZPFILE);
+  	    y = zopeno(ZPFILE,s);
+***************
+*** 614,619 ****
+--- 617,623 ----
+  	    if (y > 0) strcpy(sesfil,s); else *sesfil = '\0';
+  	    return(seslog = y);
+   
++ #ifdef TLOG
+  	case LOGT:
+  	    zclose(ZTFILE);
+  	    tralog = zopeno(ZTFILE,s);
+***************
+*** 626,632 ****
+      	    }
+  	    else *trafil = '\0';
+  	    return(tralog);
+!  
+  	default:
+  	    return(-2);
+      }
+--- 630,636 ----
+      	    }
+  	    else *trafil = '\0';
+  	    return(tralog);
+! #endif 
+  	default:
+  	    return(-2);
+      }
+***************
+*** 658,664 ****
+--- 662,670 ----
+  shopar() {
+   
+      int i;
++ #ifndef MINIX
+      extern struct keytab mdmtab[]; extern int nmdm;
++ #endif
+  
+      printf("\n%s,%s, ",versio,ckxsys); 
+      puts("Communications Parameters:");
+***************
+*** 665,670 ****
+--- 671,677 ----
+      printf(" Line: %s, speed: %d, mode: ",ttname,speed);
+      if (local) printf("local"); else printf("remote");
+   
++ #ifndef MINIX
+      for (i = 0; i < nmdm; i++) {
+  	if (mdmtab[i].val == mdmtyp) {
+  	    printf(", modem-dialer: %s",mdmtab[i].kwd);
+***************
+*** 671,676 ****
+--- 678,684 ----
+  	    break;
+  	}
+      }
++ #endif
+      printf("\n Bits: %d",(parity) ? 7 : 8);
+      printf(", parity: ");
+      switch (parity) {

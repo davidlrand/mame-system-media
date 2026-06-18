@@ -1,0 +1,1330 @@
+diff -cr ka9q.orig/bsd_io.c ka9q/bsd_io.c
+*** ka9q.orig/bsd_io.c	Mon May  8 17:34:04 1989
+--- ka9q/bsd_io.c	Sat Aug 18 19:46:13 1990
+***************
+*** 23,29 ****
+--- 23,33 ----
+  #include <sgtty.h>
+  #include <sys/file.h>
+  #include <sys/dir.h>
++ #ifdef MINIX
++ #include <fcntl.h>
++ #else
+  #include <sys/time.h>
++ #endif
+  #include "global.h"
+  #include "mbuf.h"
+  #include "internet.h"
+***************
+*** 31,36 ****
+--- 35,43 ----
+  #include "unix.h"
+  #include "cmdparse.h"
+  
++ #ifndef ASY_MAX
++ #define ASY_MAX 16
++ #endif
+  struct asy asy[ASY_MAX];
+  
+  struct interface *ifaces;
+***************
+*** 69,77 ****
+--- 76,90 ----
+  {
+  	struct sgttyb ttybuf;
+  	setbuf(stdout,NULLCHAR);
++ #if 0
+  	free(ttbuf);
++ #endif
+  	ioctl(0,TIOCGETP,&ttybuf);
+  	ttybuf.sg_flags &= ~RAW;
++ #if 0
++ 	ttybuf.sg_flags &= ~CBREAK;
++ 	ttybuf.sg_flags |= ECHO;
++ #endif
+  	ioctl(0,TIOCSETP,&ttybuf);
+  	while(ifaces != NULLIF){
+  		if(ifaces->stop != NULLFP)
+***************
+*** 78,83 ****
+--- 91,101 ----
+  			(*ifaces->stop)(ifaces->dev);
+  		ifaces = ifaces->next;
+  	}
++ #if 0
++ 	/* For some reason cbreak seems to be turned on */
++ 	savecon.sg_flags &= ~CBREAK;
++ 	savecon.sg_flags |= ECHO;
++ #endif
+  	ioctl(0,TIOCSETP,&savecon);
+  }
+  
+***************
+*** 139,144 ****
+--- 157,165 ----
+   /* 
+    * set up the parity and enter RAW mode 
+    */
++ #ifndef ANYP
++ #define ANYP (ODDP | EVENP)
++ #endif
+  	sgttyb.sg_flags = (RAW | ANYP | CRMOD);
+   /* 
+    * now set the modes and flags 
+***************
+*** 187,225 ****
+--- 208,262 ----
+  	}
+  	switch(speed)
+  	{
++ #ifdef B0
+  		case 0:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B0;
+  			break;
++ #endif
++ #ifdef B50
+  		case 50:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B50;
+  			break;
++ #endif
++ #ifdef B75
+  		case 75:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B75;
+  			break;
++ #endif
+  		case 110:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B110;
+  			break;
++ #ifdef B134
+  		case 134:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B134;
+  			break;
++ #endif
++ #ifdef B150
+  		case 150:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B150;
+  			break;
++ #endif
++ #ifdef B200
+  		case 200:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B200;
+  			break;
++ #endif
+  		case 300:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B300;
+  			break;
++ #ifdef B600
+  		case 600:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B600;
+  			break;
++ #endif
+  		case 1200:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B1200;
+  			break;
++ #ifdef B1800
+  		case 1800:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B1800;
+  			break;
++ #endif
+  		case 2400:
+  			sgttyb.sg_ispeed = sgttyb.sg_ospeed = B2400;
+  			break;
+***************
+*** 312,329 ****
+  #else
+  	tot = 0;
+  	amount = 0;
+  	if ( ioctl( IORser[dev], FIONREAD, &amount ) != -1)
+  	{
+  		if ( amount > 0)
+  		{
+! 			/*
+  			printf("ASY_RECV: amount = %d\n", amount);
+  			printf("ASY_RECV: cnt = %d\n", cnt);
+! 			*/
+  			tot = read(IORser[dev], buf, (int)cnt);
+! 			/*
+  			printf("READ %d\n", tot);
+! 			*/
+  		}
+  	}
+  	return (tot);
+--- 349,370 ----
+  #else
+  	tot = 0;
+  	amount = 0;
++ #ifdef FIONREAD
+  	if ( ioctl( IORser[dev], FIONREAD, &amount ) != -1)
++ #else
++ 	if (amount = 0)
++ #endif
+  	{
+  		if ( amount > 0)
+  		{
+! #ifdef MINIX
+  			printf("ASY_RECV: amount = %d\n", amount);
+  			printf("ASY_RECV: cnt = %d\n", cnt);
+! #endif
+  			tot = read(IORser[dev], buf, (int)cnt);
+! #ifdef MINIX
+  			printf("READ %d\n", tot);
+! #endif
+  		}
+  	}
+  	return (tot);
+***************
+*** 341,350 ****
+--- 382,398 ----
+  char *path;
+  int full;
+  {
++ #ifndef MAXNAMLEN
++ #define MAXNAMLEN 2000
++ #endif
+  	FILE *fp;
+  	char cmd[50];
+  	char name[MAXNAMLEN],*tmpnam(),*malloc();
++ #ifdef MINIX
++ 	sprintf (name, "/tmp/ka9q%d", getpid());
++ #else
+  	tmpnam(name);
++ #endif
+  
+  	if ( path[0] == '\0' )
+  	{
+***************
+*** 374,379 ****
+--- 422,450 ----
+  	(void)unlink(name);
+  	return (fp);
+  }
++ #ifdef MINIX
++ int OpenPty()
++ {
++ 	return 0;
++ }
++ FILE *
++ tmpfile()
++ {
++ 	FILE *tmp;
++ 	char *mktemp();
++ 	char *ptr = "SMTPXXXXXX";
++ 	char *name;
++ 	name = mktemp(ptr);
++ 	if ( ( tmp = fopen(name, "w") ) == NULL)
++ 	{
++ 		printf("tmpfile: counld not create temp file.\n");
++ 		return(NULL);
++ 	}
++ 	(void) unlink(name);
++ 	return ( tmp );
++ }
++ #endif /* MINIX */
++ 
+  asy_ioctl(interface, argc, argv)
+  struct interface *interface;
+  int	argc;
+diff -cr ka9q.orig/bsdunix.c ka9q/bsdunix.c
+*** ka9q.orig/bsdunix.c	Mon May  8 17:34:06 1989
+--- ka9q/bsdunix.c	Mon Aug 13 10:22:00 1990
+***************
+*** 57,68 ****
+  	gettimeofday(&time, &zone);
+  	return(time.tv_sec);
+  }
+  FILE *
+  tmpfile()
+  {
+  	FILE *tmp;
+  	char *mktemp();
+! 	char *ptr = "SMTPXXXXXX";
+  	char *name;
+  	name = mktemp(ptr);
+  	if ( ( tmp = fopen(name, "w") ) == NULL)
+--- 57,69 ----
+  	gettimeofday(&time, &zone);
+  	return(time.tv_sec);
+  }
++ #if0
+  FILE *
+  tmpfile()
+  {
+  	FILE *tmp;
+  	char *mktemp();
+! 	char ptr[] = "SMTPXXXXXX";
+  	char *name;
+  	name = mktemp(ptr);
+  	if ( ( tmp = fopen(name, "w") ) == NULL)
+***************
+*** 73,78 ****
+--- 74,86 ----
+  	(void) unlink(name);
+  	return ( tmp );
+  }
++ #endif
++ int
++ OpenPty()
++ {
++        return 0;
++ }
++ 
+  restore()
+  {}
+  
+***************
+*** 139,144 ****
+--- 147,163 ----
+  		tick();
+  		(void)iss();
+  	}
++ }
++ 
++ /* action routine for remote reset */
++ sysreset()
++ {
++ 	extern char *netexe;
++ 
++ 	execl(netexe,netexe,0);
++ 	execl("net","net",0);
++ 	printf("reset failed: exiting\n");
++ 	exit(1);
+  }
+  
+  getds()
+diff -cr ka9q.orig/daemon.c ka9q/daemon.c
+*** ka9q.orig/daemon.c	Mon May  8 17:34:12 1989
+--- ka9q/daemon.c	Mon Aug 13 04:32:34 1990
+***************
+*** 12,19 ****
+--- 12,21 ----
+  
+  	/* if started by init there's no need to detach */
+  
++ #ifndef MINIX
+  	if (getppid() == 1)
+  		goto out;
++ #endif
+  
+  	/* ensure process is not a process group leader */
+  
+***************
+*** 22,28 ****
+--- 24,32 ----
+  
+  	/* child */
+  
++ #ifndef MINIX
+  	(void)setpgrp();		/* lose ctrl term, chg proc grp */
++ #endif
+  
+  	(void)signal(SIGHUP, SIG_IGN);	/* immune from pgrp death */
+  
+***************
+*** 32,39 ****
+--- 36,50 ----
+  	/* close all file descriptors */
+  
+  out:
++ #ifndef _NFILE
++ #define _NFILE NFILES
++ #endif
+  	for (fd = 0; fd < _NFILE; fd++) {
++ #ifdef MINIX
++ 		(void)fclose(&_io_table[fd]);
++ #else
+  		(void)fclose(&_iob[fd]);
++ #endif
+  		(void)close(fd);
+  	}
+  
+diff -cr ka9q.orig/depend.out ka9q/depend.out
+*** ka9q.orig/depend.out	Mon May  8 17:34:14 1989
+--- ka9q/depend.out	Mon Aug 13 03:01:02 1990
+***************
+*** 1,249 ****
+- main.o:	/usr/include/stdio.h	./config.h	./global.h	./mbuf.h\
+- 	./netuser.h	./timer.h	./icmp.h	./iface.h	./ip.h	./tcp.h\
+- 	./ax25.h	./netrom.h	./ftp.h	./telnet.h	./remote.h\
+- 	./session.h	./asy.h	./slip.h	./nrs.h	./unix.h\
+- 	/usr/include/signal.h	/usr/include/sys/signal.h	./trace.h
+- 
+- arp.o:	./global.h	./mbuf.h	./timer.h	./iface.h	./enet.h\
+- 	./ax25.h	./arp.h
+- 
+- arpcmd.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./enet.h	./ax25.h	./arp.h	./cmdparse.h
+- 
+- arpdump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./arp.h	./ax25.h
+- 
+- ax25.o:	/usr/include/stdio.h	/usr/include/time.h\
+- 	/usr/include/sys/time.h	./config.h	./global.h	./mbuf.h\
+- 	./iface.h	./timer.h	./arp.h	./slip.h	./ax25.h	./lapb.h\
+- 	/usr/include/ctype.h	./heard.h
+- 
+- ax25cmd.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./ax25.h	./ax_mbx.h	./timer.h	./netuser.h	./ftp.h	./tcp.h\
+- 	./telnet.h	./iface.h	./lapb.h	./finger.h	./cmdparse.h\
+- 	./session.h	./heard.h
+- 
+- ax25dump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./ax25.h	./timer.h	./lapb.h	./trace.h
+- 
+- ax25subr.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./ax25.h	./lapb.h	./netuser.h	./ftp.h	./telnet.h\
+- 	./iface.h	./finger.h	/usr/include/ctype.h
+- 
+- ax25user.o:	./global.h	./mbuf.h	./timer.h	./iface.h\
+- 	./ax25.h	./lapb.h	/usr/include/ctype.h
+- 
+- ax_mbx.o:	/usr/include/stdio.h	./global.h	./mbuf.h	./ax25.h\
+- 	./timer.h	./lapb.h	./cmdparse.h	./iface.h\
+- 	/usr/include/fcntl.h	/usr/include/signal.h\
+- 	/usr/include/sys/signal.h	/usr/include/sys/types.h\
+- 	/usr/include/sys/ipc.h	/usr/include/sys/msg.h	./netrom.h\
+- 	./nr4.h	./ax_mbx.h
+- 
+- cmdparse.o:	/usr/include/stdio.h	/usr/include/ctype.h\
+- 	./global.h	./cmdparse.h
+- 
+- daemon.o:	/usr/include/signal.h	/usr/include/sys/signal.h\
+- 	/usr/include/stdio.h
+- 
+- files.o:	./global.h	./config.h
+- 
+- fingcli.o:	/usr/include/stdio.h	./config.h	./global.h\
+- 	./mbuf.h	./timer.h	./internet.h	./icmp.h	./netuser.h\
+- 	./tcp.h	./ftp.h	./telnet.h	./iface.h	./ax25.h	./lapb.h\
+- 	./finger.h	./session.h
+- 
+- fingserv.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./internet.h	./icmp.h	./netuser.h	./tcp.h\
+- 	./ftp.h	./telnet.h	./iface.h	./ax25.h	./lapb.h	./finger.h\
+- 	./session.h
+- 
+- ftp.o:	/usr/include/stdio.h	./global.h	./mbuf.h	./netuser.h\
+- 	./timer.h	./tcp.h	./ftp.h	./telnet.h	./iface.h	./ax25.h\
+- 	./lapb.h	./finger.h	./session.h	/usr/include/sys/types.h\
+- 	/usr/include/sys/stat.h	/usr/include/sys/inode.h\
+- 	/usr/include/sys/sitemap.h	/usr/include/sys/vnode.h\
+- 	/usr/include/time.h	/usr/include/sys/time.h	./nr4.h
+- 
+- ftpcli.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./netuser.h	./icmp.h	./timer.h	./tcp.h	./ftp.h	./session.h\
+- 	./telnet.h	./iface.h	./ax25.h	./lapb.h	./finger.h	./nr4.h
+- 
+- ftpserv.o:	/usr/include/stdio.h	/usr/include/ctype.h\
+- 	./global.h	./mbuf.h	./netuser.h	./timer.h	./tcp.h	./ftp.h\
+- 	./telnet.h	./unix.h	./iface.h	./ax25.h	./lapb.h	./finger.h\
+- 	./session.h
+- 
+- icmp.o:	./global.h	./mbuf.h	./internet.h	./timer.h\
+- 	./iface.h	./ip.h	./icmp.h
+- 
+- icmpcmd.o:	/usr/include/stdio.h	./global.h	./icmp.h\
+- 	./mbuf.h	./netuser.h	./internet.h	./timer.h	./ping.h
+- 
+- icmpdump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./internet.h	./icmp.h	./trace.h
+- 
+- icmpmsg.o:	./global.h
+- 
+- iface.o:	./global.h	./iface.h
+- 
+- ip.o:	./global.h	./mbuf.h	./timer.h	./internet.h	./iface.h\
+- 	./ip.h	./icmp.h
+- 
+- ipcmd.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./internet.h	./timer.h	./netuser.h	./iface.h	./ip.h\
+- 	./cmdparse.h
+- 
+- ipdump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./internet.h	./timer.h	./iface.h	./ip.h	./trace.h\
+- 	./netuser.h
+- 
+- iproute.o:	./global.h	./mbuf.h	./internet.h	./timer.h\
+- 	./netuser.h	./ip.h	./icmp.h	./iface.h	./trace.h
+- 
+- kiss.o:	./global.h	./mbuf.h	./iface.h	./kiss.h	./trace.h
+- 
+- lapb.o:	./global.h	./mbuf.h	./timer.h	./ax25.h	./lapb.h\
+- 	./iface.h
+- 
+- lapbtime.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./ax25.h	./timer.h	./netuser.h	./session.h	./telnet.h\
+- 	./iface.h	./finger.h	./lapb.h
+- 
+- lcsum.o:	./global.h
+- 
+- mbuf.o:	./global.h	./mbuf.h
+- 
+- misc.o:	./global.h
+- 
+- mulport.o:	./config.h
+- 
+- ndir.o:	/usr/include/sys/param.h	/usr/include/sys/types.h\
+- 	/usr/include/machine/param.h	./ndir.h
+- 
+- netuser.o:	/usr/include/ctype.h	/usr/include/stdio.h\
+- 	./global.h	./netuser.h	./unix.h
+- 
+- nrcmd.o:	/usr/include/stdio.h	./global.h	./config.h\
+- 	./mbuf.h	./ax25.h	./timer.h	./iface.h	./lapb.h	./netrom.h\
+- 	./nr4.h	./netuser.h	./tcp.h	./ftp.h	./telnet.h	./finger.h\
+- 	./ax_mbx.h	./cmdparse.h	./session.h
+- 
+- nrs.o:	/usr/include/stdio.h	./global.h	./mbuf.h	./iface.h\
+- 	./ax25.h	./nrs.h	./asy.h	./trace.h
+- 
+- nr3.o:	/usr/include/stdio.h	./global.h	./mbuf.h	./iface.h\
+- 	./timer.h	./arp.h	./slip.h	./ax25.h	./netrom.h	./nr4.h\
+- 	./lapb.h	/usr/include/ctype.h
+- 
+- nrsubr.o:	./global.h	./mbuf.h	./timer.h	./ax25.h	./netrom.h\
+- 	./lapb.h	/usr/include/ctype.h
+- 
+- nr4.o:	/usr/include/stdio.h	./global.h	./mbuf.h	./timer.h\
+- 	./ax25.h	./lapb.h	./netrom.h	./nr4.h	/usr/include/ctype.h
+- 
+- nr4subr.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./ax25.h	./netrom.h	./nr4.h	./lapb.h\
+- 	/usr/include/ctype.h
+- 
+- nr4user.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./ax25.h	./lapb.h	./netrom.h	./nr4.h\
+- 	/usr/include/ctype.h
+- 
+- nr4timer.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./ax25.h	./lapb.h	./netrom.h	./nr4.h\
+- 	/usr/include/ctype.h
+- 
+- pathname.o:	./global.h
+- 
+- session.o:	/usr/include/stdio.h	./global.h	./config.h\
+- 	./mbuf.h	./netuser.h	./timer.h	./tcp.h	./ax25.h	./lapb.h\
+- 	./iface.h	./ftp.h	./telnet.h	./finger.h	./netrom.h	./nr4.h\
+- 	./session.h
+- 
+- slfp.o:	./config.h
+- 
+- slip.o:	/usr/include/stdio.h	./config.h	./global.h	./mbuf.h\
+- 	./iface.h	./ax25.h	./slip.h	./asy.h	./trace.h\
+- 	/usr/include/string.h	./timer.h
+- 
+- smisc.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./netuser.h	./timer.h	./tcp.h	./remote.h
+- 
+- smtpcli.o:	/usr/include/stdio.h	/usr/include/fcntl.h\
+- 	/usr/include/time.h	/usr/include/sys/time.h\
+- 	/usr/include/sys/types.h	./global.h	./netuser.h	./mbuf.h\
+- 	./timer.h	./tcp.h	./smtp.h	./trace.h	./cmdparse.h
+- 
+- smtpserv.o:	/usr/include/stdio.h	/usr/include/time.h\
+- 	/usr/include/sys/time.h	/usr/include/sys/types.h\
+- 	/usr/include/ctype.h	./global.h	./mbuf.h	./netuser.h\
+- 	./timer.h	./tcp.h	./smtp.h
+- 
+- sys5_io.o:	/usr/include/stdio.h	/usr/include/sys/types.h\
+- 	/usr/include/termio.h	/usr/include/sys/termio.h\
+- 	/usr/include/sys/ioctl.h	/usr/include/signal.h\
+- 	/usr/include/sys/signal.h	/usr/include/sys/file.h\
+- 	/usr/include/sys/dir.h	/usr/include/time.h\
+- 	/usr/include/sys/time.h	/usr/include/fcntl.h	./global.h\
+- 	./asy.h	./mbuf.h	./internet.h	./iface.h	./unix.h\
+- 	./cmdparse.h
+- 
+- sys5unix.o:	/usr/include/stdio.h	/usr/include/signal.h\
+- 	/usr/include/sys/signal.h	/usr/include/termio.h\
+- 	/usr/include/sys/termio.h	/usr/include/sys/ioctl.h\
+- 	/usr/include/sys/types.h	/usr/include/sys/stat.h\
+- 	/usr/include/sys/times.h	/usr/include/time.h\
+- 	/usr/include/sys/time.h	./global.h	./cmdparse.h	./iface.h\
+- 	./unix.h	./ndir.h
+- 
+- tcpcmd.o:	/usr/include/stdio.h	./global.h	./timer.h\
+- 	./mbuf.h	./netuser.h	./internet.h	./tcp.h	./cmdparse.h
+- 
+- tcpdump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./netuser.h	./internet.h	./timer.h	./tcp.h	./trace.h
+- 
+- tcpin.o:	./global.h	./timer.h	./mbuf.h	./netuser.h\
+- 	./internet.h	./tcp.h	./icmp.h	./iface.h	./ip.h
+- 
+- tcpout.o:	./global.h	./timer.h	./mbuf.h	./netuser.h\
+- 	./internet.h	./tcp.h
+- 
+- tcpsubr.o:	./global.h	./timer.h	./mbuf.h	./netuser.h\
+- 	./internet.h	./tcp.h
+- 
+- tcptimer.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./netuser.h	./internet.h	./tcp.h
+- 
+- tcpuser.o:	./global.h	./timer.h	./mbuf.h	./netuser.h\
+- 	./internet.h	./tcp.h
+- 
+- telnet.o:	/usr/include/stdio.h	./config.h	./global.h\
+- 	./mbuf.h	./timer.h	./icmp.h	./netuser.h	./tcp.h	./telnet.h\
+- 	./session.h	./iface.h	./ax25.h	./lapb.h	./finger.h	./nr4.h
+- 
+- telunix.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./icmp.h	./netuser.h	./tcp.h	./telnet.h\
+- 	./session.h
+- 
+- timer.o:	/usr/include/stdio.h	./global.h	./timer.h
+- 
+- tnserv.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./timer.h	./icmp.h	./netuser.h	./tcp.h	./telnet.h\
+- 	./session.h	./iface.h	./ax25.h	./lapb.h	./finger.h	./nr4.h
+- 
+- trace.o:	/usr/include/stdio.h	/usr/include/ctype.h\
+- 	./global.h	./config.h	./mbuf.h	./iface.h	./trace.h\
+- 	./session.h
+- 
+- ttydriv.o:	/usr/include/stdio.h	/usr/include/ctype.h\
+- 	./config.h
+- 
+- udp.o:	./global.h	./mbuf.h	./netuser.h	./udp.h	./internet.h
+- 
+- udpcmd.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./netuser.h	./udp.h	./internet.h	./cmdparse.h
+- 
+- udpdump.o:	/usr/include/stdio.h	./global.h	./mbuf.h\
+- 	./netuser.h	./internet.h	./udp.h
+- 
+--- 0 ----
+diff -cr ka9q.orig/files.c ka9q/files.c
+*** ka9q.orig/files.c	Mon May  8 17:34:32 1989
+--- ka9q/files.c	Mon Aug 13 03:32:50 1990
+***************
+*** 43,49 ****
+  #endif
+  #endif
+  
+! #ifdef	MSDOS || __TURBOC__
+  char *startup = "/autoexec.net";	/* Initialization file */
+  char *userfile = "/ftpusers";		/* Authorized FTP users and passwords */
+  char *hosts = "/hosts.net";		/* Network host table */
+--- 43,49 ----
+  #endif
+  #endif
+  
+! #if defined(MSDOS) || defined(__TURBOC__)
+  char *startup = "/autoexec.net";	/* Initialization file */
+  char *userfile = "/ftpusers";		/* Authorized FTP users and passwords */
+  char *hosts = "/hosts.net";		/* Network host table */
+diff -cr ka9q.orig/ftp.c ka9q/ftp.c
+*** ka9q.orig/ftp.c	Mon May  8 17:34:36 1989
+--- ka9q/ftp.c	Mon Aug 13 03:15:08 1990
+***************
+*** 18,25 ****
+--- 18,27 ----
+  #ifdef	hp9000s500
+  #include <sys/param.h>
+  #endif
++ #ifndef MINIX
+  #include <sys/inode.h>
+  #endif
++ #endif
+  #include "nr4.h"
+  
+  #if	(ATARI_ST && MWC)
+***************
+*** 130,136 ****
+  	if(eof_flag){	/* EOF seen */
+  #ifdef	UNIX
+  #ifdef	SYS5
+! #ifndef	hp9000s500
+  /* If ftp->fp points to an open pipe (from dir()) it must be closed with */
+  /* pclose().  System V fstat() can tell us if this was a pipe or not. */
+  		if (fstat(fileno(ftp->fp), &ss_buf) < 0)
+--- 132,138 ----
+  	if(eof_flag){	/* EOF seen */
+  #ifdef	UNIX
+  #ifdef	SYS5
+! #if ! defined(hp9000s500) && ! defined(MINIX)
+  /* If ftp->fp points to an open pipe (from dir()) it must be closed with */
+  /* pclose().  System V fstat() can tell us if this was a pipe or not. */
+  		if (fstat(fileno(ftp->fp), &ss_buf) < 0)
+diff -cr ka9q.orig/icmp.c ka9q/icmp.c
+*** ka9q.orig/icmp.c	Mon May  8 17:34:50 1989
+--- ka9q/icmp.c	Mon Aug 13 17:54:45 1990
+***************
+*** 32,37 ****
+--- 32,38 ----
+  		free_p(bp);
+  		return;
+  	}
++ #if 0
+  	if(cksum(NULLHEADER,bp,length) != 0){
+  		/* Bad ICMP checksum; discard */
+  		icmp_errors.checksum++;
+***************
+*** 38,43 ****
+--- 39,45 ----
+  		free_p(bp);
+  		return;
+  	}
++ #endif
+  	ntohicmp(&icmp,&bp);
+  
+  	/* Process the message. Some messages are passed up to the protocol
+diff -cr ka9q.orig/iproute.c ka9q/iproute.c
+*** ka9q.orig/iproute.c	Mon May  8 17:35:08 1989
+--- ka9q/iproute.c	Mon Aug 13 11:12:29 1990
+***************
+*** 69,74 ****
+--- 69,75 ----
+  		free_p(bp);
+  		return -1;
+  	}
++ #if 0
+  	if(cksum(NULLHEADER,bp,ip_len) != 0){
+  		/* Bad IP header checksum; discard */
+  		ip_stats.checksum++;
+***************
+*** 75,80 ****
+--- 76,82 ----
+  		free_p(bp);
+  		return -1;
+  	}
++ #endif
+  	/* Extract IP header */
+  	ntohip(&ip,&bp);
+  
+***************
+*** 555,561 ****
+  register struct mbuf *m;
+  int16 len;
+  {
+! 	register unsigned int cnt, total;
+  	register int32 sum, csum;
+  	register char *up;
+  	int16 csum1;
+--- 557,563 ----
+  register struct mbuf *m;
+  int16 len;
+  {
+! 	register int16 cnt, total;
+  	register int32 sum, csum;
+  	register char *up;
+  	int16 csum1;
+***************
+*** 593,599 ****
+  			 * the work. At this point, up is guaranteed to be on
+  			 * a short boundary
+  			 */
+! 			csum1 = lcsum((unsigned short *)up, cnt >> 1);
+  			if(swap)
+  				csum1 = (csum1 << 8) | (csum1 >> 8);
+  			csum += csum1;
+--- 595,601 ----
+  			 * the work. At this point, up is guaranteed to be on
+  			 * a short boundary
+  			 */
+! 			csum1 = lcsum((unsigned short *)up, (int16)(cnt >> 1));
+  			if(swap)
+  				csum1 = (csum1 << 8) | (csum1 >> 8);
+  			csum += csum1;
+***************
+*** 610,616 ****
+  		total += m->cnt;
+  	}
+  	/* Do final end-around carry, complement and return */
+! 	return ~eac(sum) & 0xffff;
+  }
+  /* Machine-independent, alignment insensitive network-to-host long conversion */
+  static int32
+--- 612,618 ----
+  		total += m->cnt;
+  	}
+  	/* Do final end-around carry, complement and return */
+! 	return (int16)(~eac(sum) & 0xffff);
+  }
+  /* Machine-independent, alignment insensitive network-to-host long conversion */
+  static int32
+diff -cr ka9q.orig/main.c ka9q/main.c
+*** ka9q.orig/main.c	Mon May  8 17:46:22 1989
+--- ka9q/main.c	Mon Aug 13 18:08:43 1990
+***************
+*** 311,316 ****
+--- 311,320 ----
+  		dump(&loopback,IF_TRACE_IN,TRACE_IP,bp);		
+  #endif
+  		/* Extract IP header */
++ #ifdef MINIX_DEBUG
++ 		printf ("Got something in loopback !\n");
++ 		fflush (stdout);
++ #endif
+  		ntohip(&ip,&bp);
+  		ip_recv(&ip,bp,0);
+  	}
+***************
+*** 356,361 ****
+--- 360,368 ----
+  {
+  	static char inbuf[BUFSIZ];	/* keep it off the stack */
+  	int c;
++ #ifdef MINIX
++ 	int minix_loop;
++ #endif
+  	char *ttybuf,*fgets();
+  	int16 cnt;
+  	int ttydriv();
+***************
+*** 411,416 ****
+--- 418,424 ----
+  #ifdef	SYS5
+  	}
+  #endif
++ 	trfp = stdout;
+  	fflush(stdout);
+  	sessions = (struct session *)calloc(nsessions,sizeof(struct session));
+  	if(argc > 1){
+***************
+*** 498,503 ****
+--- 506,519 ----
+  				fflush(stdout);
+  			}
+  		}
++ #ifdef MINIX
++ #if 0
++ 		printf ("Doing real work!\n");
++ 		fflush (stdout);
++ #endif
++ 		for (minix_loop = 3000; minix_loop > 0; minix_loop--)
++ 			keep_things_going();
++ #endif
+  		keep_things_going();
+  	}
+  }
+diff -cr ka9q.orig/makefile.unx ka9q/makefile.unx
+*** ka9q.orig/makefile.unx	Mon May  8 17:35:32 1989
+--- ka9q/makefile.unx	Fri Aug 17 19:36:58 1990
+***************
+*** 49,56 ****
+  # Uncomment the next three lines for
+  # HP9000/500 - HP-UX 5.21 (not confident MSPTICK is correct!)
+  #
+! CFLAGS =    -DUNIX -DSYS5 -DSLOWCHECK -DMSPTICK=17 -DXOBBS -DSID2
+! LINTFLAGS = -DUNIX -DSYS5 -DSLOWCHECK -DMSPTICK=17 -DXOBBS -DSID2
+  LIBS =
+  ########################################################################
+  
+--- 49,57 ----
+  # Uncomment the next three lines for
+  # HP9000/500 - HP-UX 5.21 (not confident MSPTICK is correct!)
+  #
+! CC = gcc -O
+! CFLAGS =    -DUNIX -DSYS5 -DSLOWCHECK -DMSPTICK=17 -DSID2 -DMINIX -DAX25
+! LINTFLAGS = -DUNIX -DSYS5 -DSLOWCHECK -DMSPTICK=17 -DSID2
+  LIBS =
+  ########################################################################
+  
+***************
+*** 73,79 ****
+  	iproute.o kiss.o lapb.o lapbtime.o lcsum.o mbuf.o misc.o mulport.o \
+  	ndir.o netuser.o nrcmd.o nrs.o nr3.o nrsubr.o nr4.o nr4subr.o \
+  	nr4user.o nr4timer.o pathname.o session.o slfp.o slip.o smisc.o \
+! 	smtpcli.o smtpserv.o sys5_io.o sys5unix.o tcpcmd.o tcpdump.o \
+  	tcpin.o tcpout.o tcpsubr.o tcptimer.o tcpuser.o telnet.o \
+  	telunix.o timer.o tnserv.o trace.o ttydriv.o udp.o udpcmd.o \
+  	udpdump.o version.o wildmat.o
+--- 74,80 ----
+  	iproute.o kiss.o lapb.o lapbtime.o lcsum.o mbuf.o misc.o mulport.o \
+  	ndir.o netuser.o nrcmd.o nrs.o nr3.o nrsubr.o nr4.o nr4subr.o \
+  	nr4user.o nr4timer.o pathname.o session.o slfp.o slip.o smisc.o \
+! 	smtpcli.o smtpserv.o bsd_io.o sys5unix.o tcpcmd.o tcpdump.o \
+  	tcpin.o tcpout.o tcpsubr.o tcptimer.o tcpuser.o telnet.o \
+  	telunix.o timer.o tnserv.o trace.o ttydriv.o udp.o udpcmd.o \
+  	udpdump.o version.o wildmat.o
+***************
+*** 81,87 ****
+  net:	$(OBJS)
+  	$(CC) $(CFLAGS) -o net.debug $(OBJS) $(LIBS)
+  	cp net.debug net
+! 	strip net
+  
+  lint:	$(SRCS)
+  	lint $(LINTFLAGS) $(SRCS) > lint.out 2>&1
+--- 82,88 ----
+  net:	$(OBJS)
+  	$(CC) $(CFLAGS) -o net.debug $(OBJS) $(LIBS)
+  	cp net.debug net
+! #	strip net
+  
+  lint:	$(SRCS)
+  	lint $(LINTFLAGS) $(SRCS) > lint.out 2>&1
+***************
+*** 90,100 ****
+  	mkdep $(LINTFLAGS) $(SRCS) > depend.out
+  
+  clean:
+! 	rm -f *.o net net.debug 
+  tar:
+  	$(TAR) cvf svnet.tar make* mkdep depend.out hosts.net ftpusers \
+  		startup.net *.[hc] *.orig *.ori
+  	compress -f svnet.tar
+  
+! include depend.out
+  
+--- 91,249 ----
+  	mkdep $(LINTFLAGS) $(SRCS) > depend.out
+  
+  clean:
+! 	rm -f *.o *.s net net.debug 
+  tar:
+  	$(TAR) cvf svnet.tar make* mkdep depend.out hosts.net ftpusers \
+  		startup.net *.[hc] *.orig *.ori
+  	compress -f svnet.tar
+  
+! #include depend.out
+  
++ # DO NOT DELETE THIS LINE -- mkdep uses it.
++ # DO NOT PUT ANYTHING AFTER THIS LINE, IT WILL GO AWAY.
++ 
++ main.o: main.c /usr/include/stdio.h config.h global.h mbuf.h netuser.h timer.h
++ main.o: icmp.h iface.h ip.h tcp.h ax25.h netrom.h ftp.h telnet.h remote.h
++ main.o: session.h cmdparse.h asy.h slip.h nrs.h unix.h /usr/include/signal.h
++ main.o: trace.h
++ arp.o: arp.c global.h mbuf.h timer.h iface.h enet.h ax25.h arp.h
++ arpcmd.o: arpcmd.c /usr/include/stdio.h global.h mbuf.h timer.h enet.h ax25.h
++ arpcmd.o: arp.h cmdparse.h
++ arpdump.o: arpdump.c /usr/include/stdio.h global.h mbuf.h timer.h arp.h ax25.h
++ ax25.o: ax25.c /usr/include/stdio.h /usr/include/time.h config.h global.h
++ ax25.o: mbuf.h iface.h timer.h arp.h slip.h ax25.h lapb.h /usr/include/ctype.h
++ ax25.o: heard.h
++ ax25cmd.o: ax25cmd.c /usr/include/stdio.h global.h mbuf.h ax25.h ax_mbx.h
++ ax25cmd.o: timer.h netuser.h ftp.h tcp.h telnet.h iface.h lapb.h finger.h
++ ax25cmd.o: cmdparse.h session.h nr4.h heard.h
++ ax25dump.o: ax25dump.c /usr/include/stdio.h global.h mbuf.h ax25.h timer.h
++ ax25dump.o: lapb.h trace.h
++ ax25subr.o: ax25subr.c /usr/include/stdio.h global.h mbuf.h timer.h ax25.h
++ ax25subr.o: lapb.h netuser.h ftp.h telnet.h iface.h finger.h
++ ax25subr.o: /usr/include/ctype.h
++ ax25user.o: ax25user.c global.h mbuf.h timer.h iface.h ax25.h lapb.h
++ ax25user.o: /usr/include/ctype.h
++ ax_mbx.o: ax_mbx.c /usr/include/stdio.h global.h mbuf.h ax25.h timer.h lapb.h
++ ax_mbx.o: cmdparse.h iface.h /usr/include/fcntl.h /usr/include/signal.h
++ ax_mbx.o: /usr/include/sys/types.h netrom.h nr4.h ax_mbx.h
++ cmdparse.o: cmdparse.c /usr/include/stdio.h /usr/include/ctype.h global.h
++ cmdparse.o: cmdparse.h
++ daemon.o: daemon.c /usr/include/signal.h /usr/include/stdio.h
++ files.o: files.c global.h config.h
++ fingcli.o: fingcli.c /usr/include/stdio.h config.h global.h mbuf.h timer.h
++ fingcli.o: internet.h icmp.h netuser.h tcp.h ftp.h telnet.h iface.h ax25.h
++ fingcli.o: lapb.h finger.h session.h nr4.h
++ fingserv.o: fingserv.c /usr/include/stdio.h global.h mbuf.h timer.h internet.h
++ fingserv.o: icmp.h netuser.h tcp.h ftp.h telnet.h iface.h ax25.h lapb.h
++ fingserv.o: finger.h session.h nr4.h
++ ftp.o: ftp.c /usr/include/stdio.h global.h mbuf.h netuser.h timer.h tcp.h ftp.h
++ ftp.o: telnet.h iface.h ax25.h lapb.h finger.h session.h
++ ftp.o: /usr/include/sys/types.h /usr/include/sys/stat.h nr4.h
++ ftpcli.o: ftpcli.c /usr/include/stdio.h global.h mbuf.h netuser.h icmp.h
++ ftpcli.o: timer.h tcp.h ftp.h session.h cmdparse.h telnet.h iface.h ax25.h
++ ftpcli.o: lapb.h finger.h nr4.h
++ ftpserv.o: ftpserv.c /usr/include/stdio.h /usr/include/ctype.h global.h mbuf.h
++ ftpserv.o: netuser.h timer.h tcp.h ftp.h telnet.h unix.h iface.h ax25.h lapb.h
++ ftpserv.o: finger.h session.h nr4.h
++ icmp.o: icmp.c global.h mbuf.h internet.h timer.h iface.h ip.h icmp.h
++ icmpcmd.o: icmpcmd.c /usr/include/stdio.h global.h icmp.h mbuf.h netuser.h
++ icmpcmd.o: internet.h timer.h ping.h
++ icmpdump.o: icmpdump.c /usr/include/stdio.h global.h mbuf.h internet.h icmp.h
++ icmpdump.o: trace.h
++ icmpmsg.o: icmpmsg.c global.h
++ iface.o: iface.c global.h iface.h
++ ip.o: ip.c global.h mbuf.h timer.h internet.h iface.h ip.h icmp.h
++ ipcmd.o: ipcmd.c /usr/include/stdio.h global.h mbuf.h internet.h timer.h
++ ipcmd.o: netuser.h iface.h ip.h cmdparse.h
++ ipdump.o: ipdump.c /usr/include/stdio.h global.h mbuf.h internet.h timer.h
++ ipdump.o: iface.h ip.h trace.h netuser.h
++ iproute.o: iproute.c global.h mbuf.h internet.h timer.h netuser.h ip.h icmp.h
++ iproute.o: iface.h trace.h
++ kiss.o: kiss.c global.h mbuf.h iface.h kiss.h trace.h
++ lapb.o: lapb.c global.h mbuf.h timer.h ax25.h lapb.h iface.h
++ lapbtime.o: lapbtime.c /usr/include/stdio.h global.h mbuf.h ax25.h timer.h
++ lapbtime.o: netuser.h session.h ftp.h telnet.h iface.h finger.h lapb.h
++ lcsum.o: lcsum.c global.h
++ mbuf.o: mbuf.c global.h mbuf.h
++ misc.o: misc.c global.h
++ mulport.o: mulport.c config.h /usr/include/stdio.h global.h mbuf.h iface.h
++ mulport.o: ax25.h /usr/include/ctype.h
++ #ndir.o: ndir.c /usr/include/sys/param.h /usr/include/machine/machparam.h
++ #ndir.o: /usr/include/machine/../machine/endian.h /usr/include/signal.h
++ ndir.o: /usr/include/sys/types.h ndir.h
++ netuser.o: netuser.c /usr/include/ctype.h /usr/include/stdio.h global.h
++ netuser.o: netuser.h unix.h
++ nrcmd.o: nrcmd.c /usr/include/stdio.h global.h config.h mbuf.h ax25.h timer.h
++ nrcmd.o: iface.h lapb.h netrom.h nr4.h netuser.h tcp.h ftp.h telnet.h finger.h
++ nrcmd.o: ax_mbx.h cmdparse.h session.h /usr/include/ctype.h
++ nrs.o: nrs.c /usr/include/stdio.h global.h mbuf.h iface.h ax25.h nrs.h asy.h
++ nrs.o: trace.h
++ nr3.o: nr3.c /usr/include/stdio.h global.h mbuf.h iface.h timer.h arp.h slip.h
++ nr3.o: ax25.h netrom.h nr4.h lapb.h /usr/include/ctype.h
++ nrsubr.o: nrsubr.c global.h mbuf.h timer.h ax25.h netrom.h lapb.h
++ nrsubr.o: /usr/include/ctype.h
++ nr4.o: nr4.c /usr/include/stdio.h global.h mbuf.h timer.h ax25.h lapb.h
++ nr4.o: netrom.h nr4.h /usr/include/ctype.h
++ nr4subr.o: nr4subr.c /usr/include/stdio.h global.h mbuf.h timer.h ax25.h
++ nr4subr.o: netrom.h nr4.h lapb.h /usr/include/ctype.h
++ nr4user.o: nr4user.c /usr/include/stdio.h global.h mbuf.h timer.h ax25.h lapb.h
++ nr4user.o: netrom.h nr4.h /usr/include/ctype.h
++ nr4timer.o: nr4timer.c /usr/include/stdio.h global.h mbuf.h timer.h ax25.h
++ nr4timer.o: lapb.h netrom.h nr4.h /usr/include/ctype.h
++ pathname.o: pathname.c global.h
++ session.o: session.c /usr/include/stdio.h global.h config.h mbuf.h netuser.h
++ session.o: timer.h tcp.h ax25.h lapb.h iface.h ftp.h telnet.h finger.h netrom.h
++ session.o: nr4.h session.h cmdparse.h
++ slfp.o: slfp.c config.h
++ slip.o: slip.c /usr/include/stdio.h config.h global.h mbuf.h iface.h ax25.h
++ slip.o: slip.h asy.h trace.h /usr/include/string.h
++ slip.o: timer.h
++ smisc.o: smisc.c /usr/include/stdio.h global.h mbuf.h netuser.h timer.h tcp.h
++ smisc.o: remote.h
++ smtpcli.o: smtpcli.c /usr/include/stdio.h /usr/include/fcntl.h
++ smtpcli.o: /usr/include/time.h /usr/include/sys/types.h global.h netuser.h
++ smtpcli.o: mbuf.h timer.h tcp.h smtp.h trace.h cmdparse.h
++ smtpserv.o: smtpserv.c /usr/include/stdio.h /usr/include/time.h
++ smtpserv.o: /usr/include/sys/types.h /usr/include/ctype.h global.h mbuf.h
++ smtpserv.o: netuser.h timer.h tcp.h smtp.h
++ sys5_io.o: sys5_io.c /usr/include/stdio.h /usr/include/sys/types.h
++ sys5_io.o: /usr/include/signal.h /usr/include/sys/file.h
++ sys5_io.o: /usr/include/sys/fcntl.h /usr/include/sys/dir.h /usr/include/time.h
++ sys5_io.o: /usr/include/fcntl.h global.h asy.h mbuf.h internet.h iface.h unix.h
++ sys5_io.o: cmdparse.h
++ sys5unix.o: sys5unix.c /usr/include/stdio.h /usr/include/signal.h
++ sys5unix.o: /usr/include/sys/types.h /usr/include/sys/stat.h
++ sys5unix.o: /usr/include/sys/times.h /usr/include/time.h global.h cmdparse.h
++ sys5unix.o: iface.h unix.h ndir.h
++ tcpcmd.o: tcpcmd.c /usr/include/stdio.h global.h timer.h mbuf.h netuser.h
++ tcpcmd.o: internet.h tcp.h cmdparse.h
++ tcpdump.o: tcpdump.c /usr/include/stdio.h global.h mbuf.h netuser.h internet.h
++ tcpdump.o: timer.h tcp.h trace.h
++ tcpin.o: tcpin.c global.h timer.h mbuf.h netuser.h internet.h tcp.h icmp.h
++ tcpin.o: iface.h ip.h
++ tcpout.o: tcpout.c global.h timer.h mbuf.h netuser.h internet.h tcp.h
++ tcpsubr.o: tcpsubr.c global.h timer.h mbuf.h netuser.h internet.h tcp.h
++ tcptimer.o: tcptimer.c /usr/include/stdio.h global.h mbuf.h timer.h netuser.h
++ tcptimer.o: internet.h tcp.h
++ tcpuser.o: tcpuser.c global.h timer.h mbuf.h netuser.h internet.h tcp.h
++ telnet.o: telnet.c /usr/include/stdio.h config.h global.h mbuf.h timer.h icmp.h
++ telnet.o: netuser.h tcp.h telnet.h session.h ftp.h iface.h ax25.h lapb.h
++ telnet.o: finger.h nr4.h
++ telunix.o: telunix.c /usr/include/stdio.h global.h mbuf.h timer.h icmp.h
++ telunix.o: netuser.h tcp.h telnet.h session.h
++ timer.o: timer.c /usr/include/stdio.h global.h timer.h
++ tnserv.o: tnserv.c /usr/include/stdio.h global.h mbuf.h timer.h icmp.h
++ tnserv.o: netuser.h tcp.h telnet.h session.h ftp.h iface.h ax25.h lapb.h
++ tnserv.o: finger.h nr4.h
++ trace.o: trace.c /usr/include/stdio.h /usr/include/ctype.h global.h config.h
++ trace.o: mbuf.h iface.h trace.h session.h
++ ttydriv.o: ttydriv.c /usr/include/stdio.h /usr/include/ctype.h config.h
++ udp.o: udp.c global.h mbuf.h netuser.h udp.h internet.h
++ udpcmd.o: udpcmd.c /usr/include/stdio.h global.h mbuf.h netuser.h udp.h
++ udpcmd.o: internet.h cmdparse.h
++ udpdump.o: udpdump.c /usr/include/stdio.h global.h mbuf.h netuser.h internet.h
++ udpdump.o: udp.h
++ version.o: version.c
++ wildmat.o: wildmat.c
++ 
++ # IF YOU PUT ANYTHING HERE IT WILL GO AWAY
+diff -cr ka9q.orig/smtpcli.c ka9q/smtpcli.c
+*** ka9q.orig/smtpcli.c	Mon May  8 17:36:40 1989
+--- ka9q/smtpcli.c	Mon Aug 13 03:43:09 1990
+***************
+*** 681,687 ****
+--- 681,691 ----
+  	if(!access(lockname,0) || (fd = creat(lockname, 0666)) == -1)
+  		return -1;
+  #else
++ #ifdef O_EXCL
+  	if((fd = open(lockname, O_WRONLY|O_EXCL|O_CREAT,0600)) == -1)
++ #else
++ 	if((fd = open(lockname, O_WRONLY|O_CREAT,0600)) == -1)
++ #endif
+  		return -1;
+  #endif
+  	close(fd);
+diff -cr ka9q.orig/sys5unix.c ka9q/sys5unix.c
+*** ka9q.orig/sys5unix.c	Mon May  8 17:36:48 1989
+--- ka9q/sys5unix.c	Mon Aug 13 17:53:39 1990
+***************
+*** 20,26 ****
+--- 20,28 ----
+  
+  #include <stdio.h>
+  #include <signal.h>
++ #ifndef MINIX
+  #include <termio.h>
++ #endif
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <sys/times.h>
+***************
+*** 41,46 ****
+--- 43,55 ----
+  
+  unsigned nasy;
+  
++ #ifdef MINIX
++ 
++ static int alarmed;
++ int *foo = &alarmed; /* volatile */
++ 
++ #endif
++ 
+  fileinit()
+  {
+  	int el;
+***************
+*** 155,160 ****
+--- 164,204 ----
+  }
+  
+  
++ #ifdef MINIX
++ /* Minix doesn't have select or asyncronous I/O so we must set an alarm
++    for the read and if it comes off, we have nothing to read */
++ 
++ alarm_handler ()
++ {
++ 	signal (SIGALRM, SIG_IGN);
++ 	alarmed = 1;
++ 	return 0;
++ }
++ 
++ kbread()
++ {
++ 	char	c = -1;
++ 	int stat;
++ 
++ 	alarmed = 0;
++ 	signal (SIGALRM, alarm_handler);
++ 	alarm (1);  /* One second, hope this could be smaller */
++ 	stat = read(fileno(stdin),&c, 1);
++ 	if (stat < 0) {
++ #if 0
++ 	  perror ("kbread");
++ #endif
++ 	  c = -1;
++ 	}
++ #if 0
++ 	if (alarmed) {
++ 	  printf ("alarmed !\n");
++ 	  fflush (stdout);
++ 	}
++ #endif
++ 	return(c);
++ }
++ #else
+  kbread()
+  {
+  	unsigned char c;
+***************
+*** 164,169 ****
+--- 208,214 ----
+  
+  	return ((int) c);
+  }
++ #endif
+  
+  
+  clksec()
+***************
+*** 271,276 ****
+--- 316,345 ----
+  }
+  
+  
++ #ifdef MINIX_NON
++ #if 0
++ clksec()
++ {
++ 	struct tm time;
++ 
++ 	time (&tm);
++ 	return (tm.tm_sec);
++ }
++ #endif
++ /* checks the time then ticks and updates ISS */
++ static int clkval = 0;
++ void
++ check_time()
++ {
++ 	int32 iss();
++ 
++ 	if(clkval != clksec()){
++ 		clkval = clksec();
++ 		tick();
++ 		(void)iss();
++ 	}
++ }
++ #else
+  /* checks the time then ticks and updates ISS */
+  void
+  check_time()
+***************
+*** 283,289 ****
+--- 352,364 ----
+  	long ntime, offset;
+  
+  	/* read elapsed real time (typ. 60 Hz) */
++ #ifdef MINIX
++ 	(void) times(&tb);
++ 	ntime = tb.tms_utime;
++ 	fflush (stdout);
++ #else
+  	ntime = times(&tb);
++ #endif
+  
+  	/* resynchronize if the error is large (10 seconds or more) */
+  	offset = ntime - clkval;
+***************
+*** 293,303 ****
+--- 368,385 ----
+  	/* Handle possibility of several missed ticks */
+  	while (ntime != clkval) {
+  		++clkval;
++ #if 0
+  		icmpclk();
++ #endif
++ #if 0
++ 		printf (".");
++ 		fflush (stdout);
++ #endif
+  		tick();
+  		(void) iss();
+  	}
+  }
++ #endif
+  
+  
+  getds()
+***************
+*** 317,323 ****
+--- 399,407 ----
+  	int	i, stat;
+  	char	str[MAXCMD];
+  	char	*cp;
++ #ifndef MINIX
+  	struct termio tt_config;
++ #endif
+  
+  	char	*getenv();
+  
+***************
+*** 327,334 ****
+--- 411,420 ----
+  		strcat(str, " ");
+  	}
+  
++ #ifndef MINIX
+  	ioctl(0, TCGETA, &tt_config);
+  	ioctl(0, TCSETAW, &savecon);
++ #endif
+  
+  	if (argc > 1)
+  		stat = system(str);
+***************
+*** 337,343 ****
+--- 423,431 ----
+  	else
+  		stat = system("exec /bin/sh");
+  
++ #ifndef MINIX
+  	ioctl(0, TCSETAW, &tt_config);
++ #endif
+  
+  	return stat;
+  }
+***************
+*** 349,355 ****
+--- 437,445 ----
+  {
+  	int	i, stat;
+  	char	str[MAXCMD];
++ #ifndef MINIX
+  	struct termio tt_config;
++ #endif
+  
+  	strcpy(str, "ls -l ");
+  	for (i = 1; i < argc; i++) {
+***************
+*** 357,368 ****
+--- 447,462 ----
+  		strcat(str, " ");
+  	}
+  
++ #ifndef MINIX
+  	ioctl(0, TCGETA, &tt_config);
+  	ioctl(0, TCSETAW, &savecon);
++ #endif
+  
+  	stat = system(str);
+  
++ #ifndef MINIX
+  	ioctl(0, TCSETAW, &tt_config);
++ #endif
+  
+  	return stat;
+  }
+diff -cr ka9q.orig/tcpin.c ka9q/tcpin.c
+*** ka9q.orig/tcpin.c	Mon May  8 17:36:54 1989
+--- ka9q/tcpin.c	Fri Aug 17 20:01:26 1990
+***************
+*** 51,56 ****
+--- 51,57 ----
+  	ph.dest = dest;
+  	ph.protocol = protocol;
+  	ph.length = length;
++ #if 0
+  	if(cksum(&ph,bp,length) != 0){
+  		/* Checksum failed, ignore segment completely */
+  		tcp_stat.checksum++;
+***************
+*** 57,62 ****
+--- 58,64 ----
+  		free_p(bp);
+  		return;
+  	}
++ #endif
+  	/* Form local copy of TCP header in host byte order */
+  	if((hdrlen = ntohtcp(&seg,&bp)) < 0){
+  		/* TCP header is too small */
+diff -cr ka9q.orig/tcpsubr.c ka9q/tcpsubr.c
+*** ka9q.orig/tcpsubr.c	Mon May  8 17:36:58 1989
+--- ka9q/tcpsubr.c	Fri Nov 23 07:46:39 1990
+***************
+*** 243,250 ****
+--- 243,254 ----
+  	}
+  	csum = cksum(ph,bp,ph->length);
+  	cp = &bp->data[16];	/* Checksum field */	
++ #if 0
+  	*cp++ = csum >> 8;
+  	*cp = csum;
++ #else
++ 	put16(&bp->data[16],csum);
++ #endif
+  
+  	return bp;
+  }
+diff -cr ka9q.orig/trace.c ka9q/trace.c
+*** ka9q.orig/trace.c	Mon May  8 17:37:12 1989
+--- ka9q/trace.c	Mon Aug 13 13:41:42 1990
+***************
+*** 15,21 ****
+  static char if_tr_i[] = "%s recv: [%s]\n";
+  static char if_tr_o[] = "%s sent: [%s]\n";
+  
+! FILE *trfp = stdout;            /* file pointer used for tracing */
+  int trcount = 0;                /* used to close file for flushing */
+  char trname[40];                /* name if not stdout */
+  int notraceall;			/* 0 = trace all, 1 = only in cmd mode */
+--- 15,21 ----
+  static char if_tr_i[] = "%s recv: [%s]\n";
+  static char if_tr_o[] = "%s sent: [%s]\n";
+  
+! FILE *trfp;            /* file pointer used for tracing */
+  int trcount = 0;                /* used to close file for flushing */
+  char trname[40];                /* name if not stdout */
+  int notraceall;			/* 0 = trace all, 1 = only in cmd mode */

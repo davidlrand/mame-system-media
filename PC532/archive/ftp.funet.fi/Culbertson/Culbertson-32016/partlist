@@ -1,0 +1,89 @@
+cpu		ns32016
+bbg_cap1	capacitor	!1000 pf disc ceramic
+bbg_cap2	capacitor	!1mf tantalum +=pin2
+mmu		ns32082
+fpu		ns32081
+icu		ns32202
+tcu		ns32201
+rst_sw		switch		!spst normally open
+rst_cap		capacitor	!10uf
+rst_diode	diode		!anode = pin2
+rst_res		resistor	!10k
+tcu_osc		oscillator	!14 pin 16MHz or 20MHz
+ph1_cap		capacitor	!25pf
+ph2_cap		capacitor	!25pf
+eprom_e		27256
+eprom_o		27256
+sram_e		43256
+sram_o		43256
+mem_data_xcv_e	74f245
+mem_data_xcv_o	74f245
+io_data_xcv_e	74als245	!less load than 74f245
+io_data_xcv_o	74als245	!this part can be deleted with current I/O
+adr_latch_l	74als373	!if available use 74als573
+adr_latch_m	74als373	!if available use 74als573
+adr_buf_h	74als244	!if available use 74als541
+uart1		ns16450
+uart2		ns16450
+uart_xtal	crystal		!1.8433MHz
+uart_s_res	resister	!1.5k
+uart_p_res	resister	!1meg
+uart_cap1	capacitor	!30pf
+uart_cap2	capacitor	!60pf
+rs232_rcv	1489
+rs232_drv	1488
+io_decode1	74als133
+dma_decode	74als133
+io_decode2	74als138
+or_1		74als32
+invert_1	74als04
+3st_buf1	74ls126
+memcspal	memcspal	!PAL16L8
+nmipal		nmipal		!PAL16R8
+nmi_sw		switch		!momentary spdt 1=up 2=common 3=down
+sw_header	dip_header	!14 pin header for mounting discreet parts
+uart_header	dip_header	!16 pin header for mounting uart osc parts
+or_2		74ALS32
+scsi_ctl	NCR5380		!NCR SCSI controller
+sc_pullup1	resisters	!9x220 ohm resister SIP
+sc_pullup2	resisters	!9x220 ohm resister SIP
+sc_pulldown1	resisters	!9x330 ohm resister SIP
+sc_pulldown2	resisters	!9x330 ohm resister SIP
+sc_conn		connector	!50 pin for ribbon cable
+sc_diode	diode		!safety diode for SCSI termination supply
+dma_ctl		ns32203
+dramc		DP8419
+dramc_cap1	capacitor	!1uf ceramic
+dramc_cap2	capacitor	!tantilum
+dram_delay0	DDU-7-20	!20ns delay line
+dram_delay1	DDU-7-20	!20ns delay line use if needed
+rfshpal		pal16r8		!refresh counter
+dramcpal	pal16r6		!fast pal, dramc interface
+dram_mux	74as157
+dram_drv	74as244
+dram_term1	resister_pack	!8 resisters 50ohm
+dram_term2	resister_pack	!8 resisters 50ohm
+dram_term3	resister_pack	!8 resisters 50ohm
+dram0		TC51100P-10	!megabit dram
+dram1		TC51100P-10
+dram2		TC51100P-10
+dram3		TC51100P-10
+dram4		TC51100P-10
+dram5		TC51100P-10
+dram6		TC51100P-10
+dram7		TC51100P-10
+dram8		TC51100P-10
+dram9		TC51100P-10
+dram10		TC51100P-10
+dram11		TC51100P-10
+dram12		TC51100P-10
+dram13		TC51100P-10
+dram14		TC51100P-10
+dram15		TC51100P-10
+fdc		82072		!Intel
+fd_drv1		74ls38
+fd_drv2		7406
+fd_rcv		74ls14
+fd_osc		oscillator	!24MHz with 2.2K pullup for CMOS levels
+fd_conn		connector	!34 pin ribbon
+fd_pullup	resister_pack	!300-2.2K 15 resister common rail

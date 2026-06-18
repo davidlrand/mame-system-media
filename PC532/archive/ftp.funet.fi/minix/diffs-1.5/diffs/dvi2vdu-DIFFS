@@ -1,0 +1,127 @@
+diff -cr dvi2vdu.orig/dvi2vdu-1.1J/src/Makefile.BSD dvi2vdu/dvi2vdu-1.1J/src/Makefile.BSD
+*** dvi2vdu.orig/dvi2vdu-1.1J/src/Makefile.BSD	Wed Sep 12 21:39:50 1990
+--- dvi2vdu/dvi2vdu-1.1J/src/Makefile.BSD	Mon Mar 18 02:50:10 1991
+***************
+*** 8,17 ****
+  #
+  SHELL=/bin/sh
+  #
+! CC = cc
+! USERFLAGS=-O #-DVOIDPTR=int   # VOIDPTR is type for functions returning void
+! #CC = gcc
+! #USERFLAGS=-O -traditional -fstrength-reduce #-finline-functions 
+  # Other options to be set if necessary
+  #USERFLAGS=-DDEBUG -g
+  #
+--- 8,17 ----
+  #
+  SHELL=/bin/sh
+  #
+! #CC = cc
+! #USERFLAGS=-O #-DVOIDPTR=int   # VOIDPTR is type for functions returning void
+! CC = gcc
+! USERFLAGS=-O -traditional -fstrength-reduce #-finline-functions 
+  # Other options to be set if necessary
+  #USERFLAGS=-DDEBUG -g
+  #
+***************
+*** 20,27 ****
+  #PARALLEL=&
+  #
+  # System
+! SYSTEM=BSD
+! #SYSTEM=USG
+  #
+  # Define FILESYSTEM=BSD_FILESYSTEM if you have a non-Berkeley OS with
+  # long filenames.
+--- 20,27 ----
+  #PARALLEL=&
+  #
+  # System
+! #SYSTEM=BSD
+! SYSTEM=USG
+  #
+  # Define FILESYSTEM=BSD_FILESYSTEM if you have a non-Berkeley OS with
+  # long filenames.
+***************
+*** 43,49 ****
+  #
+  # Pathnames used
+  BINDIR=/usr/local/bin
+! PKFONTDIR=/usr/lib/tex/fonts
+  HELPFILE=/usr/local/lib/dvi2vdu/dvitovdu.hlp
+  #
+  # Name of final binary
+--- 43,49 ----
+  #
+  # Pathnames used
+  BINDIR=/usr/local/bin
+! PKFONTDIR=/usr/local/lib/tex/fonts
+  HELPFILE=/usr/local/lib/dvi2vdu/dvitovdu.hlp
+  #
+  # Name of final binary
+***************
+*** 94,101 ****
+  aed512vdu.o : aed512vdu.c def.h /usr/include/stdio.h
+  ansivdu.o : ansivdu.c def.h /usr/include/stdio.h
+  bsdio.o : bsdio.c def.h /usr/include/stdio.h /usr/include/sgtty.h \
+-   /usr/include/sys/ioctl.h \
+-   /usr/include/sys/ttychars.h /usr/include/sys/ttydev.h \
+    /usr/include/signal.h
+  dvireader.o : dvireader.c /usr/include/math.h /usr/include/string.h def.h \
+    /usr/include/stdio.h dvireader.h dvitovdu.h screenio.h
+--- 94,99 ----
+diff -cr dvi2vdu.orig/dvi2vdu-1.1J/src/bsdio.c dvi2vdu/dvi2vdu-1.1J/src/bsdio.c
+*** dvi2vdu.orig/dvi2vdu-1.1J/src/bsdio.c	Wed Sep 12 21:39:52 1990
+--- dvi2vdu/dvi2vdu-1.1J/src/bsdio.c	Mon Mar 18 02:51:02 1991
+***************
+*** 29,34 ****
+--- 29,36 ----
+   
+  static char *sccsid[] = "@(#)bsdio.c	1.1";
+   
++ #define TIOCSETN TIOCSETP
++ 
+  struct sgttyb initchars;	/* store initial terminal characteristics */
+   
+  /* Save the original tty characteristics and set up the signalling. */
+***************
+*** 98,104 ****
+--- 100,108 ----
+  char  ch;
+  int   filed;
+  {
++ #if 0
+    (void) ioctl (filed, TIOCSTI, &ch);
++ #endif
+  }
+   
+  /* Catch signals from tty.
+diff -cr dvi2vdu.orig/dvi2vdu-1.1J/src/def.h dvi2vdu/dvi2vdu-1.1J/src/def.h
+*** dvi2vdu.orig/dvi2vdu-1.1J/src/def.h	Wed Sep 12 21:39:53 1990
+--- dvi2vdu/dvi2vdu-1.1J/src/def.h	Mon Mar 18 02:45:21 1991
+***************
+*** 89,95 ****
+--- 89,97 ----
+   
+  extern int  DVIstatusl;
+   
++ #if 0
+  extern int  strlen ();
++ #endif
+   
+  extern unsigned	int mag,
+  		    paperht,
+diff -cr dvi2vdu.orig/dvi2vdu-1.1J/src/pkfont.c dvi2vdu/dvi2vdu-1.1J/src/pkfont.c
+*** dvi2vdu.orig/dvi2vdu-1.1J/src/pkfont.c	Wed Sep 12 21:40:15 1990
+--- dvi2vdu/dvi2vdu-1.1J/src/pkfont.c	Mon Mar 18 02:47:54 1991
+***************
+*** 26,31 ****
+--- 26,32 ----
+  #ifdef USG
+  #include <string.h>
+  #include <setjmp.h>
++ #include <sys/types.h>
+  #else
+  #include <strings.h>
+  #endif /* USG */

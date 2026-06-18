@@ -1,0 +1,116 @@
+diff -cr diff-1.14.orig/Makefile diff-1.14/Makefile
+*** diff-1.14.orig/Makefile	Mon Feb 19 03:11:31 1990
+--- diff-1.14/Makefile	Sat Dec  1 05:21:51 1990
+***************
+*** 22,28 ****
+  # but gcc makes it faster.
+  # Also, gcc supports -O and -g together.
+  CC=gcc -O
+! CFLAGS = -g
+  INSTALL = install
+  
+  # On system V, enable these three lines:
+--- 22,28 ----
+  # but gcc makes it faster.
+  # Also, gcc supports -O and -g together.
+  CC=gcc -O
+! CFLAGS = -DUSG -DMINIX
+  INSTALL = install
+  
+  # On system V, enable these three lines:
+***************
+*** 36,42 ****
+  # Add -DHAVE_DIRECT to CFLAGS if your system uses 'struct direct' instead of
+  # 'struct dirent' (this is the case at least with one add-on ndir library).
+  
+! bindir=/usr/local/bin
+  prefix=
+  
+  # All source files
+--- 36,42 ----
+  # Add -DHAVE_DIRECT to CFLAGS if your system uses 'struct direct' instead of
+  # 'struct dirent' (this is the case at least with one add-on ndir library).
+  
+! bindir=/usr/gnu/bin
+  prefix=
+  
+  # All source files
+diff -cr diff-1.14.orig/diff.h diff-1.14/diff.h
+*** diff-1.14.orig/diff.h	Fri Feb 23 15:55:15 1990
+--- diff-1.14/diff.h	Sat Dec  1 05:27:31 1990
+***************
+*** 47,53 ****
+--- 47,57 ----
+  #define bcmp(s1,s2,n)	memcmp((s1),(s2),(n))
+  #define bzero(s,n)	memset((s),0,(n))
+  
++ #ifdef MINIX
++ #define dup2(f,t)	(-1)
++ #else
+  #define dup2(f,t)	(close(t),fcntl((f),F_DUPFD,(t)))
++ #endif
+  
+  #define vfork	fork
+  #define index	strchr
+***************
+*** 292,298 ****
+  
+  /* Describe the two files currently being compared.  */
+  
+! struct file_data files[2];
+  
+  /* Queue up one-line messages to be printed at the end,
+     when -l is specified.  Each message is recorded with a `struct msg'.  */
+--- 296,302 ----
+  
+  /* Describe the two files currently being compared.  */
+  
+! extern struct file_data files[2];
+  
+  /* Queue up one-line messages to be printed at the end,
+     when -l is specified.  Each message is recorded with a `struct msg'.  */
+diff -cr diff-1.14.orig/diff3.c diff-1.14/diff3.c
+*** diff-1.14.orig/diff3.c	Fri Feb 23 15:57:34 1990
+--- diff-1.14/diff3.c	Sat Dec  1 05:23:19 1990
+***************
+*** 39,45 ****
+--- 39,49 ----
+  #define bcmp(s1,s2,n)	memcmp((s1),(s2),(n))
+  #define bzero(s,n)	memset((s),0,(n))
+  
++ #ifdef MINIX
++ #define dup2(f,t)	(-1)
++ #else
+  #define dup2(f,t)	(close(t),fcntl((f),F_DUPFD,(t)))
++ #endif
+  
+  #define vfork	fork
+  #define index	strchr
+diff -cr diff-1.14.orig/io.c diff-1.14/io.c
+*** diff-1.14.orig/io.c	Sun Dec 24 16:03:12 1989
+--- diff-1.14/io.c	Sat Dec  1 05:27:44 1990
+***************
+*** 25,30 ****
+--- 25,31 ----
+  
+  /* Given a hash value and a new character, return a new hash value. */
+  #define HASH(h, c) ((c) + ROL (h, 7))
++ struct file_data files[2];
+  
+  /* Current file under consideration. */
+  struct file_data *current;
+diff -cr diff-1.14.orig/util.c diff-1.14/util.c
+*** diff-1.14.orig/util.c	Fri Feb 23 15:56:13 1990
+--- diff-1.14/util.c	Sat Dec  1 05:24:05 1990
+***************
+*** 147,153 ****
+--- 147,155 ----
+  	{
+  	  close (pipes[1]);
+  	  close (fileno (stdin));
++ #ifndef MINIX
+  	  if (dup2 (pipes[0], fileno (stdin)) < 0)
++ #endif
+  	    pfatal_with_name ("dup2");
+  	  close (pipes[0]);
+  

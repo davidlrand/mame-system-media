@@ -1,0 +1,90 @@
+Relay-Version: version B 2.10.3 4.3bds beta 6/6/85; site bu-cs.BU.EDU
+Path: bu-cs!bloom-beacon!tut.cis.ohio-state.edu!ucbvax!hplabs!hpl-opus!hpccc!culberts
+From: culberts@hpccc.HP.COM (Bruce Culbertson)
+Newsgroups: comp.os.minix
+Subject: New National 32000 Minix Port
+Message-ID: <6910003@hpccc.HP.COM>
+Date: 21 Jul 89 21:32:14 GMT
+Date-Received: 22 Jul 89 05:26:29 GMT
+Organization: Hewlett-Packard Co.
+Lines: 79
+
+I have recently finished porting Minix to a computer I built based on a
+National 32000 Series chip set.  I am not the first person to port Minix
+to the 32000; a group at the Univerity of Warwick reported their port
+well over a year ago.  My port is independent of theirs (I think
+re-inventing the wheel is excusable if you have a good enough time doing
+it).  The Warwick group reported that their port was fairly
+straight-forward.  My port may be the first to make significant use of a
+paging memory management unit.
+
+Each process on my system runs in its own protected linear virtual
+address space.  The user address spaces are assembled from one kilobyte
+pages of physical memory which, in general, are not contiguous.  A user
+space can grow as large as 16 megabytes, assuming the computer has
+sufficient physical memory.  Because my computer will rarely be used by
+more than one user (me!), and because I expect its memory to be ample, I
+did not think virtual memory would be worth the added overhead.
+Nevertheless, it might be an interesting exercise to implement virtual
+memory in the future.
+
+Building, forking, and dismantling memory spaces are new services
+provided by the system task in the kernel.  Free lists are kept of dirty
+and clean pages.  Pages which are reclaimed when processes exit are
+placed on the dirty list.  The idle task, which is now a genuine task
+with priority below user processes, writes zero's into dirty pages and
+moves them to the clean list.  Code and initialized data are loaded into
+dirty pages; BSS and stack pages are allocated from the clean list.
+
+I used copy-on-write to implement fork.  This creates the illusion that
+a user space has been duplicated when, in fact, no user pages have been
+copied.  When a process forks, a new page table is created with pointers
+to the same pages that comprise the parent's address space.  At the same
+time, all pages in the two spaces are set read-only.  When a process or
+the operating system tries to write to a copy-on-write page, a page
+fault is generated.  The page fault handler, after verifying that a
+copy-on-write page is being written, copies the page and sets it
+writable so that the process will have a private copy to modify.  Each
+physical page has a reference count which records the number of virtual
+spaces currently containing the page.  When a process forks, its pages
+have their reference counts incremented.  When an address space is
+reclaimed following an exit or exec, its pages have their reference
+counts decremented.  The reference count of a page is also decremented
+when the page is copied due to a copy-on-write fault.  When a reference
+count drops to zero, the corresponding page is freed and placed on the
+dirty page list.  Pages containing code remain read-only; signals are
+generated when processes try to write them.  No pages contain both code
+and data.
+
+Stacks are always created at the high end of address spaces, leaving the
+maximum possible space for stack growth and growth due to break system
+calls.  When page faults occur near the lower extent of a stack, the
+system allocates pages to grow the stack and restarts the process.  No
+chmem command is needed.
+
+One change I made simplified the memory manager process and also helped
+eliminate the bound on environment and argument space.  It could be
+implemented in standard Minix, but would require all commands to be
+relinked.  When processes exec in my system, the environment space is
+copied directly into the new address space and is relocated by the C
+runtime startoff routine (crtso.o) in the new process.  If the exec
+library routine fills its fixed size buffer, it allocates space on the
+heap and starts over building the environment.  In standard Minix, the
+environment is copied into a fixed size buffer in the memory manager,
+where it is relocated before being copied to the new process.
+
+I designed my computer and posted the design to comp.sys.nsc.32k several
+months ago.  It uses a 10MHz 32016 CPU, and has a floating point unit in
+addition to the paging MMU.  Memory is expandable in increments of 2
+megabytes.  I use a SCSI hard disk and an IBM/PC compatible floppy disk.
+There are several UART's for attaching terminals.  I cannot resist
+making a brief plug for National.  Their 32000 series is cleaner,
+friendlier, and easier to use than its more popular competitors.  Best
+of all, a complete chip set with MMU, FPU and documentation, can be
+purchased for less than $100.
+
+I am using the GNU C compiler and an assembler and linker I wrote.  My
+assembler and linker are available through the archive which is
+occasionally advertised on comp.sys.nsc.32k.
+
+Bruce Culbertson (culberts@hplabs.hp.com)

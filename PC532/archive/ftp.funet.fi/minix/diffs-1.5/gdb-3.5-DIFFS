@@ -1,0 +1,2039 @@
+diff -crN gdb-3.5.orig/Makefile.dist dist-gdb/Makefile.dist
+*** gdb-3.5.orig/Makefile.dist	Wed Jan 31 02:42:57 1990
+--- dist-gdb/Makefile.dist	Sat Mar  2 03:14:37 1991
+***************
+*** 4,10 ****
+  /* Define this to xgdb if you want to compile xgdb as well as gdb.  */
+  XGDB=
+  /* Place to install binaries.  */
+! bindir=/usr/local/bin
+  /* Place to install X binaries.  */
+  xbindir=$(bindir)
+  
+--- 4,10 ----
+  /* Define this to xgdb if you want to compile xgdb as well as gdb.  */
+  XGDB=
+  /* Place to install binaries.  */
+! bindir=/usr/gnu/bin
+  /* Place to install X binaries.  */
+  xbindir=$(bindir)
+  
+***************
+*** 19,25 ****
+   will be incorrectly compiled.  The "fixincludes" script in the gcc
+   distribution will fix your include files up. */
+  /* CC=gcc -traditional */
+! CC=cc
+  
+  /* It is also possible that you will need to add -I/usr/include/sys to the
+   CFLAGS section if your system doesn't have fcntl.h in /usr/include (which 
+--- 19,25 ----
+   will be incorrectly compiled.  The "fixincludes" script in the gcc
+   distribution will fix your include files up. */
+  /* CC=gcc -traditional */
+! CC=gcc
+  
+  /* It is also possible that you will need to add -I/usr/include/sys to the
+   CFLAGS section if your system doesn't have fcntl.h in /usr/include (which 
+***************
+*** 46,52 ****
+  #endif
+  
+  /* CFLAGS for both GDB and readline.  */
+! GLOBAL_CFLAGS = -g M_CFLAGS
+  CFLAGS = -I. ${HAVE_VPRINTF_DEFINE} ${GLOBAL_CFLAGS}
+  /* None of the things in CFLAGS will do any harm, and on some systems
+     (e.g. SunOS4) it is important to use the M_CFLAGS.  */
+--- 46,52 ----
+  #endif
+  
+  /* CFLAGS for both GDB and readline.  */
+! GLOBAL_CFLAGS = -O M_CFLAGS
+  CFLAGS = -I. ${HAVE_VPRINTF_DEFINE} ${GLOBAL_CFLAGS}
+  /* None of the things in CFLAGS will do any harm, and on some systems
+     (e.g. SunOS4) it is important to use the M_CFLAGS.  */
+***************
+*** 305,311 ****
+  	mv expread.tab.o expread.o
+  
+  readline/libreadline.a : force_update
+! 	cd readline ; ${MAKE} "SYSV=${SYSV_DEFINE}" \
+  		"DEBUG_FLAGS=${GLOBAL_CFLAGS}" "CC=${CC}" libreadline.a
+  
+  force_update :
+--- 305,311 ----
+  	mv expread.tab.o expread.o
+  
+  readline/libreadline.a : force_update
+! 	cd readline ; ${MAKE} \
+  		"DEBUG_FLAGS=${GLOBAL_CFLAGS}" "CC=${CC}" libreadline.a
+  
+  force_update :
+diff -crN gdb-3.5.orig/README-jkp dist-gdb/README-jkp
+*** gdb-3.5.orig/README-jkp
+--- dist-gdb/README-jkp	Sat Mar  2 04:40:26 1991
+***************
+*** 0 ****
+--- 1,14 ----
++ Installation:
++ 
++ - link a.out.gnu.h to a.out.h
++ - link stab.gnu.h to stab.h
++ - compile regex.c and dbxread.c without -O, otherwise
++   the assembler (gas 1.38.1) crashes
++ 
++ Bugs needing fixing:
++ 
++ - note that this port of gcc always prints floating point
++   numbers as doubles - support for single floats should be added.
++ - calling functions in inferior works, but messes up the stack
++ - INVALID_FLOAT macro expands to 0, in other words you probably
++   get FP exception if you try to print an invalid FP number
+diff -crN gdb-3.5.orig/a.out.gnu.h dist-gdb/a.out.gnu.h
+*** gdb-3.5.orig/a.out.gnu.h	Wed Jan 17 03:17:57 1990
+--- dist-gdb/a.out.gnu.h	Sat Mar  2 03:14:38 1991
+***************
+*** 5,10 ****
+--- 5,11 ----
+  
+  #ifndef __STRUCT_EXEC_OVERRIDE__
+  
++ #define __MINIX__
+  struct exec
+  {
+    unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
+***************
+*** 11,20 ****
+--- 12,34 ----
+    unsigned a_text;		/* length of text, in bytes */
+    unsigned a_data;		/* length of data, in bytes */
+    unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
++ #ifdef __MINIX__
++   unsigned a_trsize;		/* length of text relocation table */
++   unsigned a_drsize;		/* length of data relocation table */
++ #endif
+    unsigned a_syms;		/* length of symbol table data in file, in bytes */
++ #ifdef __MINIX__
++   unsigned a_str;		/* length of string table */
++ #endif
+    unsigned a_entry;		/* start address */
++ #ifdef __MINIX__
++   unsigned a_tstart;		/* text load point (see ld -T option) */
++   unsigned a_dstart;		/* data load point (see ld -D option) */
++   unsigned dummy;
++ #else
+    unsigned a_trsize;		/* length of relocation info for text, in bytes */
+    unsigned a_drsize;		/* length of relocation info for data, in bytes */
++ #endif
+  };
+  
+  #endif /* __STRUCT_EXEC_OVERRIDE__ */
+***************
+*** 37,43 ****
+    M_68020 = 2,
+  #endif
+  #if defined (M_SPARC)
+!   M__SPARC = M_SPARC
+  #else
+    M_SPARC = 3,
+  #endif
+--- 51,57 ----
+    M_68020 = 2,
+  #endif
+  #if defined (M_SPARC)
+!   M__SPARC = M_SPARC,
+  #else
+    M_SPARC = 3,
+  #endif
+***************
+*** 68,76 ****
+--- 82,96 ----
+  /* Code indicating object file or impure executable.  */
+  #define OMAGIC 0407
+  /* Code indicating pure executable.  */
++ #ifdef __MINIX__
++ #define NMAGIC 0x9ec0L
++ /* Code indicating demand-paged executable.  */
++ #define ZMAGIC 0x9ec0L
++ #else
+  #define NMAGIC 0410
+  /* Code indicating demand-paged executable.  */
+  #define ZMAGIC 0413
++ #endif
+  
+  #if !defined (N_BADMAG)
+  #define N_BADMAG(x)					\
+***************
+*** 82,88 ****
+   (N_MAGIC(x) != OMAGIC && N_MAGIC(x) != NMAGIC		\
+    && N_MAGIC(x) != ZMAGIC)
+  
+! #define _N_HDROFF(x) (1024 - sizeof (struct exec))
+  
+  #if !defined (N_TXTOFF)
+  #define N_TXTOFF(x) \
+--- 102,108 ----
+   (N_MAGIC(x) != OMAGIC && N_MAGIC(x) != NMAGIC		\
+    && N_MAGIC(x) != ZMAGIC)
+  
+! #define _N_HDROFF(x) (SEGMENT_SIZE - sizeof (struct exec))
+  
+  #if !defined (N_TXTOFF)
+  #define N_TXTOFF(x) \
+***************
+*** 118,124 ****
+     Note that it is up to you to define SEGMENT_SIZE
+     on machines not listed here.  */
+  #if defined(vax) || defined(hp300) || defined(pyr)
+! #define SEGMENT_SIZE page_size
+  #endif
+  #ifdef	sony
+  #define	SEGMENT_SIZE	0x2000
+--- 138,147 ----
+     Note that it is up to you to define SEGMENT_SIZE
+     on machines not listed here.  */
+  #if defined(vax) || defined(hp300) || defined(pyr)
+! #define SEGMENT_SIZE PAGE_SIZE
+! #endif
+! #ifdef	hp300
+! #define	PAGE_SIZE	4096
+  #endif
+  #ifdef	sony
+  #define	SEGMENT_SIZE	0x2000
+***************
+*** 126,140 ****
+  #ifdef is68k
+  #define SEGMENT_SIZE 0x20000
+  #endif
+! #if defined(m68k) && defined(PORTAR)
+  #define PAGE_SIZE 0x400
+  #define SEGMENT_SIZE PAGE_SIZE
+  #endif
+  
+  #ifndef N_DATADDR
+  #define N_DATADDR(x) \
+!     (N_MAGIC(x)==OMAGIC? (N_TXTADDR(x)+(x).a_text) \
+!      : (SEGMENT_SIZE + ((N_TXTADDR(x)+(x).a_text-1) & ~(SEGMENT_SIZE-1))))
+  #endif
+  
+  /* Address of bss segment in memory after it is loaded.  */
+--- 149,167 ----
+  #ifdef is68k
+  #define SEGMENT_SIZE 0x20000
+  #endif
+! #if (defined(m68k) && defined(PORTAR)) || defined(__MINIX__)
+  #define PAGE_SIZE 0x400
+  #define SEGMENT_SIZE PAGE_SIZE
+  #endif
+  
++ #define _N_SEGMENT_ROUND(x) (((x) + SEGMENT_SIZE - 1) & ~(SEGMENT_SIZE - 1))
++ 
++ #define _N_TXTENDADDR(x) (N_TXTADDR(x)+(x).a_text)
++ 
+  #ifndef N_DATADDR
+  #define N_DATADDR(x) \
+!     (N_MAGIC(x)==OMAGIC? (_N_TXTENDADDR(x)) \
+!      : (_N_SEGMENT_ROUND (_N_TXTENDADDR(x))))
+  #endif
+  
+  /* Address of bss segment in memory after it is loaded.  */
+***************
+*** 171,176 ****
+--- 198,206 ----
+  #if !defined (N_BSS)
+  #define N_BSS 8
+  #endif
++ #if !defined (N_COMM)
++ #define N_COMM 18
++ #endif
+  #if !defined (N_FN)
+  #define N_FN 15
+  #endif
+***************
+*** 241,249 ****
+--- 271,285 ----
+            r_symbolnum is N_TEXT, N_DATA, N_BSS or N_ABS
+  	  (the N_EXT bit may be set also, but signifies nothing).  */
+    unsigned int r_extern:1;
++ #ifdef __MINIX__
++   unsigned r_bsr:1;
++   unsigned r_disp:2; /* 0 if immed, 1 if disp, 2 if twos comp */
++   unsigned r_pad:1;
++ #else
+    /* Four bits that aren't used, but when writing an object file
+       it is desirable to clear them.  */
+    unsigned int r_pad:4;
++ #endif
+  };
+  #endif /* no N_RELOCATION_INFO_DECLARED.  */
+  
+diff -crN gdb-3.5.orig/config.gdb dist-gdb/config.gdb
+*** gdb-3.5.orig/config.gdb	Tue Jan 30 20:35:46 1990
+--- dist-gdb/config.gdb	Sat Mar  2 03:14:39 1991
+***************
+*** 99,104 ****
+--- 99,119 ----
+  	machine=symmetry
+  	os=""
+  	;;
++ pc532)
++ case $os in
++ 	minix)
++ 		machine=pc532
++ 		os=""
++ 	;;
++ 	mach)
++ 		machine=pc532-mach
++ 		os=""
++ 		;;
++ 	*)
++ 		os=""
++ 		;;
++ 	esac
++ 	;;
+  esac
+  
+  paramfile=m-${machine}${os}.h
+***************
+*** 133,138 ****
+--- 148,159 ----
+  	pinsnfile=m68k-pinsn.c
+  	depfile=altos-dep.c
+  	opcodefile=m68k-opcode.h
++ 	;;
++ pc532)
++ 	makedefine="-DM_REGEX=regex.o -DM_CFLAGS=-DMINIX"
++ 	pinsnfile=ns32k-pinsn.c
++ 	depfile=pc532-dep.c
++ 	opcodefile=ns32k-opcode.h
+  	;;
+  pyramid)
+  	echo
+diff -crN gdb-3.5.orig/core.c dist-gdb/core.c
+*** gdb-3.5.orig/core.c	Wed Jan 10 23:55:17 1990
+--- dist-gdb/core.c	Sat Mar  2 03:14:40 1991
+***************
+*** 42,48 ****
+--- 42,52 ----
+  #endif
+  #include <signal.h>
+  #include <sys/param.h>
++ #ifndef MINIX
+  #include <sys/dir.h>
++ #else
++ #include <sys/types.h>
++ #endif
+  #include <sys/file.h>
+  #include <sys/stat.h>
+  
+***************
+*** 49,55 ****
+--- 53,61 ----
+  #ifdef UMAX_CORE
+  #include <sys/ptrace.h>
+  #else
++ #ifndef MINIX
+  #include <sys/user.h>
++ #endif
+  #endif
+  
+  #ifndef N_TXTADDR
+diff -crN gdb-3.5.orig/dbxread.c dist-gdb/dbxread.c
+*** gdb-3.5.orig/dbxread.c	Sat Jan 27 07:30:54 1990
+--- dist-gdb/dbxread.c	Sat Mar  2 03:14:45 1991
+***************
+*** 33,39 ****
+  
+  #ifdef READ_DBX_FORMAT
+  
+! #ifdef USG
+  #include <sys/types.h>
+  #include <fcntl.h>
+  #define L_SET 0
+--- 33,39 ----
+  
+  #ifdef READ_DBX_FORMAT
+  
+! #if defined(USG) || defined(MINIX)
+  #include <sys/types.h>
+  #include <fcntl.h>
+  #define L_SET 0
+diff -crN gdb-3.5.orig/getpagesize.h dist-gdb/getpagesize.h
+*** gdb-3.5.orig/getpagesize.h	Wed Jul  5 19:46:00 1989
+--- dist-gdb/getpagesize.h	Sat Mar  2 03:14:45 1991
+***************
+*** 4,9 ****
+--- 4,13 ----
+  #endif
+  #endif
+  
++ #ifdef MINIX
++ #define NBPC 1024
++ #endif
++ 
+  #ifndef HAVE_GETPAGESIZE
+  
+  #include <sys/param.h>
+diff -crN gdb-3.5.orig/inflow.c dist-gdb/inflow.c
+*** gdb-3.5.orig/inflow.c	Wed Jan 10 23:55:38 1990
+--- dist-gdb/inflow.c	Sat Mar  2 03:14:46 1991
+***************
+*** 23,29 ****
+  #include "frame.h"
+  #include "inferior.h"
+  
+! #ifdef USG
+  #include <sys/types.h>
+  #endif
+  
+--- 23,29 ----
+  #include "frame.h"
+  #include "inferior.h"
+  
+! #if defined(USG) || defined(MINIX)
+  #include <sys/types.h>
+  #endif
+  
+***************
+*** 32,40 ****
+--- 32,47 ----
+  #include <fcntl.h>
+  
+  #include <sys/param.h>
++ #ifndef MINIX
+  #include <sys/dir.h>
++ #endif
+  #include <signal.h>
+  
++ #ifdef MINIX
++ #include <fcntl.h>
++ #define TIOCSETN TIOCSETP
++ #endif
++ 
+  #ifdef HAVE_TERMIO
+  #include <termio.h>
+  #undef TIOCGETP
+***************
+*** 45,51 ****
+--- 52,60 ----
+  #define TIOCSETP TCSETAF
+  #define TERMINAL struct termio
+  #else
++ #ifndef MINIX
+  #include <sys/ioctl.h>
++ #endif
+  #include <fcntl.h>
+  #include <sgtty.h>
+  #define TERMINAL struct sgttyb
+***************
+*** 297,304 ****
+--- 306,315 ----
+  
+  #else /* not HAVE_TERMIO */
+  
++ #ifdef TIOCGPGRP
+    printf_filtered ("fcntl flags = 0x%x, sgttyb.sg_flags = 0x%x, owner pid = %d.\n",
+  	  tflags_inferior, sg_inferior.sg_flags, pgrp_inferior);
++ #endif
+  
+  #endif /* not HAVE_TERMIO */
+  
+diff -crN gdb-3.5.orig/infrun.c dist-gdb/infrun.c
+*** gdb-3.5.orig/infrun.c	Tue Jan 23 23:10:35 1990
+--- dist-gdb/infrun.c	Sat Mar  2 03:14:48 1991
+***************
+*** 130,135 ****
+--- 130,144 ----
+  #ifdef USG
+  #include <unistd.h>
+  #else
++ #ifdef MINIX
++ #if !defined(NSIG) && defined(_NSIG)
++ #define NSIG _NSIG
++ #undef SIGIO
++ #undef SIGCHLD
++ #undef
++ #endif
++ #include <sys/types.h>
++ #endif
+  #include <sys/file.h>
+  #endif
+  
+***************
+*** 141,152 ****
+--- 150,165 ----
+  
+  /* Required by <sys/user.h>.  */
+  #include <sys/types.h>
++ #ifndef MINIX
+  /* Required by <sys/user.h>, at least on system V.  */
+  #include <sys/dir.h>
++ #endif
+  /* Needed by IN_SIGTRAMP on some machines (e.g. vax).  */
+  #include <sys/param.h>
+  /* Needed by IN_SIGTRAMP on some machines (e.g. vax).  */
++ #ifndef MINIX
+  #include <sys/user.h>
++ #endif
+  
+  extern char *sys_siglist[];
+  extern int errno;
+***************
+*** 595,601 ****
+--- 608,618 ----
+        if (stop_signal == SIGTRAP
+  	  || (breakpoints_inserted &&
+  	      (stop_signal == SIGILL
++ #ifdef SIGEMT
+  	       || stop_signal == SIGEMT))
++ #else
++ 	       ))
++ #endif
+  	  || stop_after_attach)
+  	{
+  	  if (stop_signal == SIGTRAP && stop_after_trap)
+***************
+*** 690,696 ****
+--- 707,717 ----
+  	 the signal handling tables.  */
+        
+        if (random_signal
++ #ifdef SIGSEGV
+  	  && !(running_in_shell && stop_signal == SIGSEGV))
++ #else
++ 	  && !(running_in_shell))
++ #endif
+  	{
+  	  /* Signal not for debugging purposes.  */
+  	  int printed = 0;
+***************
+*** 970,978 ****
+--- 991,1007 ----
+  	  running_in_shell = 1;
+  	  resume (0, 0);
+  	}
++ #ifdef SIGSEGV
+        else if (running_in_shell && stop_signal == SIGSEGV)
++ #else
++       else if (running_in_shell)
++ #endif
+  	{
++ #ifdef SISGSEGV
+  	  resume (0, SIGSEGV);
++ #else
++ 	  ;
++ #endif
+  	}
+        else if (trap_expected && stop_signal != SIGTRAP)
+  	{
+***************
+*** 1079,1084 ****
+--- 1108,1114 ----
+  
+    if (running_in_shell)
+      {
++ #ifdef SIGSEGV
+        if (stop_signal == SIGSEGV)
+  	{
+  	  char *exec_file = (char *) get_exec_file (1);
+***************
+*** 1104,1109 ****
+--- 1134,1140 ----
+  If that works, you might want to put those \"delete env\" commands\n\
+  into a \".gdbinit\" file in this directory so they will happen every time.\n");
+  	}
++ #endif /* SIGSEGV */
+        /* Don't confuse user with his program's symbols on sh's data.  */
+        stop_print_frame = 0;
+      }
+diff -crN gdb-3.5.orig/m-pc532.h dist-gdb/m-pc532.h
+*** gdb-3.5.orig/m-pc532.h
+--- dist-gdb/m-pc532.h	Sat Mar  2 04:23:17 1991
+***************
+*** 0 ****
+--- 1,476 ----
++ /* Definitions to make GDB run on a pc532
++    (ns32532 running Minix 1.5.10 / 1.3 hybrid)
++    Copyright (C) 1987,1989 Free Software Foundation, Inc.
++ 
++ This file is part of GDB.
++ 
++ GDB is free software; you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation; either version 1, or (at your option)
++ any later version.
++ 
++ GDB is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++ 
++ You should have received a copy of the GNU General Public License
++ along with GDB; see the file COPYING.  If not, write to
++ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
++ 
++ /* Contributed by Jyrki Kuoppala <jkp@cs.hut.fi> 12 Feb 1991,
++    derived partly from m-umax.h */
++ 
++ /* Debugger information will be in DBX format.  */
++ 
++ #define READ_DBX_FORMAT
++ 
++ /* we do have vfprintf */
++ 
++ #define HAVE_VPRINTF
++ 
++ /* Define this for 1.3 Minix or if you don't have
++    jkp's patches for ptrace(2) for the 1.3 kernel.  In the original
++    Phil Nelson's hybrid 1.5.10 / 1.3 distribution mm and fs support
++    ptrace(2), but the kernel doesn't.  If you don't have ptrace,
++    you can still look at core files, list sources from gdb, disassemble
++    etc. */
++ 
++ /* #define NO_PTRACE*/
++ 
++ /* Define the bit, byte, and word ordering of the machine.  */
++ /* #define BITS_BIG_ENDIAN */
++ /* #define BYTES_BIG_ENDIAN */
++ /* #define WORDS_BIG_ENDIAN */
++ 
++ #ifndef R_OK
++ #define R_OK 4
++ #define W_OK 2
++ #define X_OK 1
++ #define F_OK 0
++ #endif
++ 
++ #ifndef MAXPATHLEN
++ #define MAXPATHLEN (1024)
++ #endif
++ 
++ /* we do have <sys/wait.h>, I'm not sure if it works - had some trouble
++    with emacs always reporting 64 as the exit status */
++ 
++ /*#define HAVE_WAIT_STRUCT*/
++ 
++ /* Define this if the C compiler puts an underscore at the front
++    of external names before giving them to the linker.  */
++ 
++ #define NAMES_HAVE_UNDERSCORE
++ 
++ /* Minix doesn't have vfork */
++ 
++ #define vfork fork
++ 
++ /* Doesn't have siginterupt.  */
++ 
++ #define NO_SIGINTERRUPT
++ 
++ /* Offset from address of function to start of its code.
++    Zero on most machines.  */
++ 
++ #define FUNCTION_START_OFFSET 0
++ 
++ /* Advance PC across any function entry prologue instructions
++    to reach some "real" code.  */
++ 
++ #define SKIP_PROLOGUE(pc)   				\
++ { register unsigned char op = read_memory_integer (pc, 1);	\
++   if (op == 0x82) { op = read_memory_integer (pc+2,1);  \
++   		    if ((op & 0x80) == 0) pc += 3;	\
++ 		    else if ((op & 0xc0) == 0x80) pc += 4;	\
++ 		    else pc += 6;			\
++ 		   }					\
++ }
++ 
++ /* Immediately after a function call, return the saved pc.
++    Can't always go through the frames for this because on some machines
++    the new frame is not set up until the new function executes
++    some instructions.  */
++ 
++ #define SAVED_PC_AFTER_CALL(frame) \
++ 	read_memory_integer (read_register (SP_REGNUM), 4)
++ 
++ /* This is the amount to subtract from u.u_ar0
++    to get the offset in the core file of the register values. */
++ 
++ #define KERNEL_U_ADDR 0
++ 
++ /* Address of end of stack space.  */
++ 
++ #define STACK_END_ADDR 0xffffffff /* TOP_VADDR from <minix/mmu.h> */
++  
++ /* Stack grows downward.  */
++ 
++ #define INNER_THAN <
++ 
++ /* Sequence of bytes for breakpoint instruction.  */
++ 
++ #define BREAKPOINT {0xf2}
++ 
++ /* Amount PC must be decremented by after a breakpoint.
++    This is often the number of bytes in BREAKPOINT
++    but not always.  */
++ 
++ #define DECR_PC_AFTER_BREAK 0
++ 
++ /* Nonzero if instruction at PC is a return instruction.  */
++ 
++ #define ABOUT_TO_RETURN(pc) (read_memory_integer (pc, 1) == 0x12)
++ 
++ /* Return 1 if P points to an invalid floating point value.  */
++ 
++ #define INVALID_FLOAT(p, len) 0   /* Just a first guess; not checked */
++ 
++ /* Largest integer type */
++ #define LONGEST long
++ 
++ /* Name of the builtin type for the LONGEST type above. */
++ #define BUILTIN_TYPE_LONGEST builtin_type_long
++ 
++ /* Say how long (ordinary) registers are.  */
++ 
++ #define REGISTER_TYPE long
++ 
++ /* Number of machine registers */
++ 
++ #define NUM_REGS		22
++ 
++ #define NUM_GENERAL_REGS	8
++ 
++ #define NUM_FLOAT_REGS		8
++ 
++ /* Initializer for an array of names of registers.
++    There should be NUM_REGS strings in this initializer.  */
++ 
++ #define REGISTER_NAMES {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",	\
++  			"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",	\
++ 			"sp", "fp", "pc", "sb", "ps",			\
++  			"fsr",						\
++  			}
++ 
++ /* Register numbers of various important registers.
++    Note that some of these values are "real" register numbers,
++    and correspond to the general registers of the machine,
++    and some are "phony" register numbers which are too large
++    to be actual register numbers as far as the user is concerned
++    but do serve to get the desired values when passed to read_register.  */
++ 
++ #define FP0_REGNUM 8		/* Floating point register 0 */
++ #define SP_REGNUM 16		/* Contains address of top of stack */
++ #define AP_REGNUM FP_REGNUM
++ #define FP_REGNUM 17		/* Contains address of executing stack frame */
++ #define PC_REGNUM 18		/* Contains program counter */
++ #define PS_REGNUM 20		/* Contains processor status */
++ #define FPS_REGNUM 21		/* Floating point status register */
++ /*#define LP0_REGNUM 21		/* Double register 0 (same as FP0)  XXX */
++ 
++ /* called from register_addr() -- blockend not used for now */
++ 
++ /* pc532 Minix seems to store regs r7 first, how weird */
++ 
++ #define REGISTER_U_ADDR(addr, blockend, regno) \
++ { 									\
++   switch (regno) {							\
++   case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:	\
++ 	addr = (7 - regno) * sizeof (long); break;			\
++   case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15:	\
++ 	addr = NUM_GENERAL_REGS * sizeof (long) +			\
++ 	  (regno - 8) * sizeof (double); break;				\
++   case 16: case 17: case 18: case 19: case 20: case 21: case 22: 	\
++ 	addr = NUM_GENERAL_REGS * sizeof (long) +			\
++ 	  NUM_FLOAT_REGS * sizeof (double) +				\
++ 	  (regno - 16) * sizeof (long); break;				\
++   default:								\
++   	printf ("bad argument to REGISTER_U_ADDR %d\n", regno);		\
++ 	abort ();							\
++   }									\
++ }
++ 
++ /* Total amount of space needed to store our copies of the machine's
++    register state, the array `registers'.  */
++ #define REGISTER_BYTES ((NUM_REGS - NUM_FLOAT_REGS) * sizeof (long) \
++ 			+ NUM_FLOAT_REGS * sizeof (double))
++ 
++ /* Index within `registers' of the first byte of the space for
++    register N.  */
++ 
++ /* the internal storage is r0-r7, f0-f8, etc. */
++ 
++ #define REGISTER_BYTE(N) (((N) < FP0_REGNUM) ? (N) * sizeof (long) : \
++ 			  (((N) < SP_REGNUM) ? (NUM_GENERAL_REGS * \
++ 						sizeof (long) +  \
++ 			       ((N) - FP0_REGNUM) * sizeof (double)) : \
++ 			   (NUM_FLOAT_REGS * \
++ 			   sizeof (double) + NUM_GENERAL_REGS * \
++ 			      sizeof (long) + ((N) - SP_REGNUM) * \
++ 			      sizeof (long))))
++ 
++ /* Number of bytes of storage in the actual machine representation
++    for register N.  On the 32000, all regs are 4 bytes
++    except for the doubled floating registers. */
++ 
++ #define REGISTER_RAW_SIZE(N) (((N) >= FP0_REGNUM && (N) < SP_REGNUM) ? 8 : 4)
++ 
++ /* Number of bytes of storage in the program's representation
++    for register N.  On the 32000, all regs are 4 bytes
++    except for the doubled floating registers. */
++ 
++ #define REGISTER_VIRTUAL_SIZE(N) (REGISTER_RAW_SIZE(N))
++ 
++ /* Largest value REGISTER_RAW_SIZE can have.  */
++ 
++ #define MAX_REGISTER_RAW_SIZE 8
++ 
++ /* Largest value REGISTER_VIRTUAL_SIZE can have.  */
++ 
++ #define MAX_REGISTER_VIRTUAL_SIZE 8
++ 
++ /* Nonzero if register N requires conversion
++    from raw format to virtual format.  */
++ 
++ #define REGISTER_CONVERTIBLE(N) 0
++ 
++ /* Convert data from raw format for register REGNUM
++    to virtual format for register REGNUM.  */
++ 
++ #define REGISTER_CONVERT_TO_VIRTUAL(REGNUM,FROM,TO)	\
++   bcopy ((FROM), (TO), REGISTER_VIRTUAL_SIZE(REGNUM));
++ 
++ /* Convert data from virtual format for register REGNUM
++    to raw format for register REGNUM.  */
++ 
++ #define REGISTER_CONVERT_TO_RAW(REGNUM,FROM,TO)	\
++   bcopy ((FROM), (TO), REGISTER_VIRTUAL_SIZE(REGNUM));
++ 
++ /* Return the GDB type object for the "standard" data type
++    of data in register N.  */
++ 
++ #define REGISTER_VIRTUAL_TYPE(N) \
++ 	(((N) < FP0_REGNUM || (N) >= FP0_REGNUM + NUM_FLOAT_REGS) ? \
++ 		builtin_type_int :			\
++ 				builtin_type_double)
++ 
++ /* Store the address of the place in which to copy the structure the
++    subroutine will return.  This is called from call_function.
++ 
++    Hmm, this should be fixed - although I think gcc uses
++    PCC_STRUCT_RETURN, it really shouldn't XXX */
++ 
++ #define STORE_STRUCT_RETURN(ADDR, SP)
++ 
++ /* Extract from an array REGBUF containing the (raw) register state
++    a function return value of type TYPE, and copy that, in virtual format,
++    into VALBUF.  */
++ 
++ #define EXTRACT_RETURN_VALUE(TYPE,REGBUF,VALBUF) \
++   bcopy (REGBUF+REGISTER_BYTE (TYPE_CODE (TYPE) == TYPE_CODE_FLT ? FP0_REGNUM : 0), VALBUF, TYPE_LENGTH (TYPE))
++ 
++ /* Write into appropriate registers a function return value
++    of type TYPE, given in virtual format.  */
++ 
++ #define STORE_RETURN_VALUE(TYPE,VALBUF) \
++   write_register_bytes (REGISTER_BYTE (TYPE_CODE (TYPE) == TYPE_CODE_FLT ? FP0_REGNUM : 0), VALBUF, TYPE_LENGTH (TYPE))
++ 
++ /* Extract from an array REGBUF containing the (raw) register state
++    the address in which a function should return its structure value,
++    as a CORE_ADDR (or an expression that can be used as one). */
++ 
++ #define EXTRACT_STRUCT_VALUE_ADDRESS(REGBUF) (*(int *)(REGBUF))
++ 
++ /* Describe the pointer in each stack frame to the previous stack frame
++    (its caller).  */
++ 
++ /* FRAME_CHAIN takes a frame's nominal address
++    and produces the frame's chain-pointer.
++ 
++    FRAME_CHAIN_COMBINE takes the chain pointer and the frame's nominal address
++    and produces the nominal address of the caller frame.
++ 
++    However, if FRAME_CHAIN_VALID returns zero,
++    it means the given frame is the outermost one and has no caller.
++    In that case, FRAME_CHAIN_COMBINE is not used.  */
++ 
++ /* In the case of the ns32000 series, the frame's nominal address is the FP
++    value, and at that address is saved previous FP value as a 4-byte word.  */
++ 
++ #define FRAME_CHAIN(thisframe)  \
++   (outside_startup_file ((thisframe)->pc) ? \
++    read_memory_integer ((thisframe)->frame, 4) :\
++    0)
++ 
++ #define FRAME_CHAIN_VALID(chain, thisframe) \
++   (chain != 0 && (outside_startup_file (FRAME_SAVED_PC (thisframe))))
++ 
++ #define FRAME_CHAIN_COMBINE(chain, thisframe) (chain)
++ 
++ /* Define other aspects of the stack frame.  */
++ 
++ #define FRAME_SAVED_PC(FRAME) (read_memory_integer ((FRAME)->frame + 4, 4))
++ 
++ /* Compute base of arguments. */
++ 
++ #define FRAME_ARGS_ADDRESS(fi)	\
++   ((ns32k_get_enter_addr ((fi)->pc) > 1) ? \
++ 	((fi)->frame) : (read_register (SP_REGNUM) - 4))
++ 
++ #define FRAME_LOCALS_ADDRESS(fi) ((fi)->frame)
++ 
++ /* Get the address of the enter opcode for this function, if it is active.
++    Returns positive address > 1 if pc is between enter/exit,
++    1 if pc before enter or after exit, 0 otherwise. */
++ 
++ /* Return number of args passed to a frame.
++    Can return -1, meaning no way to tell.
++    Encore's C compiler often reuses same area on stack for args,
++    so this will often not work properly.  If the arg names
++    are known, it's likely most of them will be printed. */
++ 
++ #define FRAME_NUM_ARGS(numargs, fi)			\
++ { CORE_ADDR	pc;					\
++   CORE_ADDR	enter_addr;				\
++   unsigned int	insn;					\
++   unsigned int	addr_mode;				\
++   int width;						\
++ 							\
++   numargs = -1;						\
++   enter_addr = ns32k_get_enter_addr ((fi)->pc);		\
++   if (enter_addr > 0)					\
++     {							\
++       pc = (enter_addr == 1) ?				\
++ 	SAVED_PC_AFTER_CALL (fi) :			\
++ 	FRAME_SAVED_PC (fi);				\
++       insn = read_memory_integer (pc,2);		\
++       addr_mode = (insn >> 11) & 0x1f;			\
++       insn = insn & 0x7ff;				\
++       if ((insn & 0x7fc) == 0x57c &&			\
++ 		addr_mode == 0x14) /* immediate */	\
++ 	{						\
++ 	  if (insn == 0x57c) /* adjspb */		\
++   		width = 1;				\
++ 	  else if (insn == 0x57d) /* adjspw */		\
++   		width = 2;				\
++ 	  else if (insn == 0x57f) /* adjspd */		\
++   		width = 4;				\
++ 	  numargs = read_memory_integer (pc+2,width);	\
++ 	  if (width > 1)				\
++ 	    flip_bytes (&numargs, width);		\
++ 	  numargs = - sign_extend (numargs, width*8) / 4;\
++ 	}						\
++     }							\
++ }
++ 
++ /* Return number of bytes at start of arglist that are not really args.  */
++ 
++ #define FRAME_ARGS_SKIP 8
++ 
++ /* Put here the code to store, into a struct frame_saved_regs,
++    the addresses of the saved registers of frame described by FRAME_INFO.
++    This includes special registers such as pc and fp saved in special
++    ways in the stack frame.  sp is even more special:
++    the address we return for it IS the sp for the next frame.  */
++ 
++ #define FRAME_FIND_SAVED_REGS(frame_info, frame_saved_regs)	\
++ { 								\
++   register int	regmask, regnum;				\
++   int		localcount;					\
++   register CORE_ADDR	enter_addr;				\
++   register CORE_ADDR	next_addr;				\
++ 								\
++   bzero (&(frame_saved_regs), sizeof (frame_saved_regs));	\
++   enter_addr = ns32k_get_enter_addr ((frame_info)->pc);		\
++   if (enter_addr > 1)						\
++     {								\
++       regmask = read_memory_integer (enter_addr+1, 1) & 0xff;	\
++       localcount = ns32k_localcount (enter_addr);		\
++       next_addr = (frame_info)->frame + localcount;		\
++       for (regnum = 0; regnum < 8; regnum++, regmask >>= 1)	\
++ 	(frame_saved_regs).regs[regnum] = (regmask & 1) ?	\
++ 					  (next_addr -= 4) : 0;	\
++       (frame_saved_regs).regs[SP_REGNUM] = (frame_info)->frame + 4;\
++       (frame_saved_regs).regs[PC_REGNUM] = (frame_info)->frame + 4;\
++       (frame_saved_regs).regs[FP_REGNUM] =			\
++ 		  (read_memory_integer ((frame_info)->frame, 4));\
++     }								\
++   else if (enter_addr == 1)					\
++     {								\
++       CORE_ADDR sp = read_register (SP_REGNUM);			\
++       (frame_saved_regs).regs[PC_REGNUM] = sp;			\
++       (frame_saved_regs).regs[SP_REGNUM] = sp + 4;		\
++     }								\
++ }
++ 
++ /* Compensate for lack of `vprintf' function.  */
++ #ifndef HAVE_VPRINTF
++ #define vprintf(format, ap) _doprnt (format, ap, stdout)
++ #endif /* not HAVE_VPRINTF */
++ 
++ /* Things needed for making the inferior call functions.  */
++ 
++ /* Push an empty stack frame, to record the current PC, etc.  */
++ 
++ #define PUSH_DUMMY_FRAME \
++ { register CORE_ADDR sp = read_register (SP_REGNUM);\
++   register int regnum;				    \
++   sp = push_word (sp, read_register (PC_REGNUM));   \
++   sp = push_word (sp, read_register (FP_REGNUM));   \
++   write_register (FP_REGNUM, sp);		    \
++   for (regnum = 0; regnum < 8; regnum++)  \
++     sp = push_word (sp, read_register (regnum));    \
++   write_register (SP_REGNUM, sp);  			\
++ }
++ 
++ /* Discard from the stack the innermost frame, restoring all registers.  */
++ 
++ #define POP_FRAME  \
++ { register FRAME frame = get_current_frame ();			 \
++   register CORE_ADDR fp;					 \
++   register int regnum;						 \
++   struct frame_saved_regs fsr;					 \
++   struct frame_info *fi;						 \
++   fi = get_frame_info (frame);					 \
++   fp = fi->frame;						 \
++   get_frame_saved_regs (fi, &fsr);				 \
++   for (regnum = 0; regnum < 8; regnum++)			 \
++     if (fsr.regs[regnum])					 \
++       write_register (regnum, read_memory_integer (fsr.regs[regnum], 4)); \
++   write_register (FP_REGNUM, read_memory_integer (fp, 4));	 \
++   write_register (PC_REGNUM, read_memory_integer (fp + 4, 4));   \
++   write_register (SP_REGNUM, fp + 8);				 \
++   flush_cached_frames ();					 \
++   set_current_frame (create_new_frame (read_register (FP_REGNUM),\
++ 				       read_pc ())); }
++ 
++ /* This sequence of words is the instructions
++      enter	0xff,0		82 ff 00
++      jsr	@0x00010203	7f ae c0 01 02 03
++      adjspd	0x69696969	7f a5 01 02 03 04
++      bpt			f2
++    Note this is 16 bytes.  */
++ 
++ #define CALL_DUMMY { 0x7f00ff82, 0x0201c0ae, 0x01a57f03, 0xf2040302 }
++ 
++ #define CALL_DUMMY_START_OFFSET	3
++ #define CALL_DUMMY_LENGTH	16
++ #define CALL_DUMMY_ADDR		5
++ #define CALL_DUMMY_NARGS	11
++ 
++ /* Insert the specified number of args and function address
++    into a call sequence of the above form stored at DUMMYNAME.  */
++ 
++ #define FIX_CALL_DUMMY(dummyname, pc, fun, nargs, type)   		\
++ {								\
++ 	int	flipped;					\
++ 	flipped = fun | 0xc0000000;				\
++ 	flip_bytes (&flipped, 4);				\
++ 	*((int *) (((char *) dummyname)+CALL_DUMMY_ADDR)) = flipped;	\
++ 	flipped = - nargs * 4;					\
++ 	flip_bytes (&flipped, 4);				\
++ 	*((int *) (((char *) dummyname)+CALL_DUMMY_NARGS)) = flipped;	\
++ }
+diff -crN gdb-3.5.orig/main.c dist-gdb/main.c
+*** gdb-3.5.orig/main.c	Fri Jan 26 20:12:59 1990
+--- dist-gdb/main.c	Sat Mar  2 03:14:51 1991
+***************
+*** 26,31 ****
+--- 26,34 ----
+  #include <sys/types.h>
+  #include <unistd.h>
+  #endif
++ #ifdef MINIX
++ #include <sys/types.h>
++ #endif
+  
+  #include <sys/file.h>
+  #include <setjmp.h>
+***************
+*** 32,37 ****
+--- 35,45 ----
+  #include <signal.h>
+  #include <sys/param.h>
+  #include <sys/stat.h>
++ 
++ #ifdef MINIX
++ #undef SIGTSTP
++ #undef SIGIO
++ #endif
+  
+  #ifdef SET_STACK_LIMIT_HUGE
+  #include <sys/time.h>
+diff -crN gdb-3.5.orig/malloc.c dist-gdb/malloc.c
+*** gdb-3.5.orig/malloc.c	Sat Sep 30 19:48:54 1989
+--- dist-gdb/malloc.c	Sat Mar  2 03:14:52 1991
+***************
+*** 148,153 ****
+--- 148,158 ----
+  
+  /* Determine which kind of system this is.  */
+  #include <signal.h>
++ #ifdef MINIX
++ #undef SIGTSTP
++ #undef SIGIO
++ #endif
++ 
+  #ifndef SIGTSTP
+  #ifndef VMS
+  #ifndef USG
+***************
+*** 171,177 ****
+--- 176,184 ----
+  
+  #ifndef BSD4_2
+  #ifndef USG
++ #ifndef MINIX
+  #include <sys/vlimit.h>		/* warn the user when near the end */
++ #endif
+  #endif /* not USG */
+  #else /* if BSD4_2 */
+  #include <sys/time.h>
+***************
+*** 775,781 ****
+   *	data.  On USG systems this is the data space only.
+   */
+  
+! #ifdef USG
+  
+  get_lim_data ()
+  {
+--- 782,791 ----
+   *	data.  On USG systems this is the data space only.
+   */
+  
+! #ifdef MINIX
+! #define ULIMIT_BREAK_VALUE 4000000
+! #endif
+! #if defined(USG) || defined(MINIX)
+  
+  get_lim_data ()
+  {
+diff -crN gdb-3.5.orig/munch dist-gdb/munch
+*** gdb-3.5.orig/munch	Wed Jul  5 19:46:28 1989
+--- dist-gdb/munch	Sat Mar  2 03:14:52 1991
+***************
+*** 10,16 ****
+      nm $* | egrep '^(.*[^a-zA-Z_]_|_)initialize_' | \
+  	sed -e 's/^.*\(_initialize_[a-zA-Z0-9_]*\)[^a-zA-Z0-9_].*$/   \1 ();/'
+  else
+!     nm -p $* | egrep 'T *__initialize_' | \
+  	sed -e 's/^.*T *_*\(.*\)/    _\1 ();/'
+  fi
+  
+--- 10,16 ----
+      nm $* | egrep '^(.*[^a-zA-Z_]_|_)initialize_' | \
+  	sed -e 's/^.*\(_initialize_[a-zA-Z0-9_]*\)[^a-zA-Z0-9_].*$/   \1 ();/'
+  else
+!     gnm -p $* | egrep 'T *__initialize_' | \
+  	sed -e 's/^.*T *_*\(.*\)/    _\1 ();/'
+  fi
+  
+diff -crN gdb-3.5.orig/pc532-dep.c dist-gdb/pc532-dep.c
+*** gdb-3.5.orig/pc532-dep.c
+--- dist-gdb/pc532-dep.c	Sat Mar  2 04:01:46 1991
+***************
+*** 0 ****
+--- 1,657 ----
++ /* Low level interface to ptrace, for GDB when running under
++    Minix 1.5.10 / 1.3 hybrid on a pc532.  Contributed by
++    Jyrki Kuoppala <jkp@cs.hut.fi> 25 Feb 1991
++    Copyright (C) 1986, 1987, 1989 Free Software Foundation, Inc.
++ 
++ This file is part of GDB.
++ 
++ GDB is free software; you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation; either version 1, or (at your option)
++ any later version.
++ 
++ GDB is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++ 
++ You should have received a copy of the GNU General Public License
++ along with GDB; see the file COPYING.  If not, write to
++ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
++ 
++ #include <stdio.h>
++ #include "defs.h"
++ #include "param.h"
++ #include "frame.h"
++ #include "inferior.h"
++ 
++ #include <sys/types.h>
++ #include <dirent.h>
++ #include <signal.h>
++ #include <fcntl.h>
++ 
++ /* Use GNU tools */
++ 
++ #include <a.out.gnu.h>
++ 
++ #include <sys/file.h>
++ #include <sys/stat.h>
++ 
++ #include <core.h>
++ 
++ extern int errno;
++ extern int attach_flag;
++ 
++ /* This function simply calls ptrace with the given arguments.  
++    It exists so that all calls to ptrace are isolated in this 
++    machine-dependent file. */
++ int
++ call_ptrace (request, pid, arg3, arg4)
++      int request, pid, arg3, arg4;
++ {
++ #ifndef NO_PTRACE
++   return ptrace (request, pid, arg3, arg4);
++ #endif
++ }
++ 
++ kill_inferior ()
++ {
++   if (remote_debugging)
++     return;
++   if (inferior_pid == 0)
++     return;
++ #ifndef NO_PTRACE
++   ptrace (8, inferior_pid, 0, 0);
++ #endif
++   wait (0);
++   inferior_died ();
++ }
++ 
++ /* This is used when GDB is exiting.  It gives less chance of error.*/
++ 
++ kill_inferior_fast ()
++ {
++   if (remote_debugging)
++     return;
++   if (inferior_pid == 0)
++     return;
++ #ifndef NO_PTRACE
++   ptrace (8, inferior_pid, 0, 0);
++ #endif
++   wait (0);
++ }
++ 
++ /* Resume execution of the inferior process.
++    If STEP is nonzero, single-step it.
++    If SIGNAL is nonzero, give it that signal.  */
++ 
++ void
++ resume (step, signal)
++      int step;
++      int signal;
++ {
++   errno = 0;
++   if (remote_debugging)
++     remote_resume (step, signal);
++   else
++     {
++ #ifndef NO_PTRACE
++       ptrace (step ? 9 : 7, inferior_pid, 1, signal);
++ #endif
++       if (errno)
++ 	perror_with_name ("ptrace");
++     }
++ }
++ 
++ #ifdef ATTACH_DETACH
++ 
++ /* Start debugging the process whose number is PID.  */
++ 
++ attach (pid)
++      int pid;
++ {
++   errno = 0;
++ #ifndef NO_PTRACE
++   ptrace (PTRACE_ATTACH, pid, 0, 0);
++ #endif
++   if (errno)
++     perror_with_name ("ptrace");
++   attach_flag = 1;
++   return pid;
++ }
++ 
++ /* Stop debugging the process whose number is PID
++    and continue it with signal number SIGNAL.
++    SIGNAL = 0 means just continue it.  */
++ 
++ void
++ detach (signal)
++      int signal;
++ {
++   errno = 0;
++ #ifndef NO_PTRACE
++   ptrace (PTRACE_DETACH, inferior_pid, 1, signal);
++ #endif
++   if (errno)
++     perror_with_name ("ptrace");
++   attach_flag = 0;
++ }
++ #endif /* ATTACH_DETACH */
++ 
++ void
++ fetch_inferior_registers ()
++ {
++   register int regno;
++   register unsigned int regaddr;
++   char buf[MAX_REGISTER_RAW_SIZE];
++   register int i;
++ 
++   unsigned int offset = 0;
++ 
++   for (regno = 0; regno < NUM_REGS; regno++)
++     {
++       regaddr = register_addr (regno, offset);
++       for (i = 0; i < REGISTER_RAW_SIZE (regno); i += sizeof (int))
++  	{
++ #ifndef NO_PTRACE
++  	  *(int *) &buf[i] = ptrace (3, inferior_pid, regaddr, 0);
++ #endif
++  	  regaddr += sizeof (int);
++  	}
++       supply_register (regno, buf);
++     }
++ }
++ 
++ /* Store our register values back into the inferior.
++    If REGNO is -1, do this for all registers.
++    Otherwise, REGNO specifies which register (so we can save time).  */
++ 
++ store_inferior_registers (regno)
++      int regno;
++ {
++   register unsigned int regaddr;
++   char buf[80];
++ 
++   unsigned int offset = 0;
++ 
++   if (regno >= 0)
++     {
++       regaddr = register_addr (regno, offset);
++       errno = 0;
++ #ifndef NO_PTRACE
++       ptrace (6, inferior_pid, regaddr, read_register (regno));
++ #endif
++       if (errno != 0)
++ 	{
++ 	  sprintf (buf, "writing register number %d", regno);
++ 	  perror_with_name (buf);
++ 	}
++     }
++   else for (regno = 0; regno < NUM_REGS; regno++)
++     {
++       regaddr = register_addr (regno, offset);
++       errno = 0;
++ #ifndef NO_PTRACE
++       ptrace (6, inferior_pid, regaddr, read_register (regno));
++ #endif
++       if (errno != 0)
++ 	{
++ 	  sprintf (buf, "writing register number %d", regno);
++ 	  perror_with_name (buf);
++ 	}
++     }
++ }
++ 
++ /* NOTE! I tried using PTRACE_READDATA, etc., to read and write memory
++    in the NEW_SUN_PTRACE case.
++    It ought to be straightforward.  But it appears that writing did
++    not write the data that I specified.  I cannot understand where
++    it got the data that it actually did write.  */
++ 
++ /* Copy LEN bytes from inferior's memory starting at MEMADDR
++    to debugger memory starting at MYADDR. 
++    On failure (cannot read from inferior, usually because address is out
++    of bounds) returns the value of errno. */
++ 
++ int
++ read_inferior_memory (memaddr, myaddr, len)
++      CORE_ADDR memaddr;
++      char *myaddr;
++      int len;
++ {
++   register int i;
++   /* Round starting address down to longword boundary.  */
++   register CORE_ADDR addr = memaddr & - sizeof (int);
++   /* Round ending address up; get number of longwords that makes.  */
++   register int count
++     = (((memaddr + len) - addr) + sizeof (int) - 1) / sizeof (int);
++   /* Allocate buffer of that many longwords.  */
++   register int *buffer = (int *) alloca (count * sizeof (int));
++   extern int errno;
++ 
++   /* Read all the longwords */
++   for (i = 0; i < count; i++, addr += sizeof (int))
++     {
++       errno = 0;
++       if (remote_debugging)
++ 	buffer[i] = remote_fetch_word (addr);
++       else
++ #ifndef NO_PTRACE
++ 	buffer[i] = ptrace (1, inferior_pid, addr, 0);
++ #else
++       ;
++ #endif
++       if (errno)
++ 	return errno;
++     }
++ 
++   /* Copy appropriate bytes out of the buffer.  */
++   bcopy ((char *) buffer + (memaddr & (sizeof (int) - 1)), myaddr, len);
++   return 0;
++ }
++ 
++ /* Copy LEN bytes of data from debugger memory at MYADDR
++    to inferior's memory at MEMADDR.
++    On failure (cannot write the inferior)
++    returns the value of errno.  */
++ 
++ int
++ write_inferior_memory (memaddr, myaddr, len)
++      CORE_ADDR memaddr;
++      char *myaddr;
++      int len;
++ {
++   register int i;
++   /* Round starting address down to longword boundary.  */
++   register CORE_ADDR addr = memaddr & - sizeof (int);
++   /* Round ending address up; get number of longwords that makes.  */
++   register int count
++     = (((memaddr + len) - addr) + sizeof (int) - 1) / sizeof (int);
++   /* Allocate buffer of that many longwords.  */
++   register int *buffer = (int *) alloca (count * sizeof (int));
++   extern int errno;
++ 
++   /* Fill start and end extra bytes of buffer with existing memory data.  */
++ 
++   if (remote_debugging)
++     buffer[0] = remote_fetch_word (addr);
++   else
++ #ifndef NO_PTRACE
++     buffer[0] = ptrace (1, inferior_pid, addr, 0);
++ #else
++   ;
++ #endif
++ 
++   if (count > 1)
++     {
++       if (remote_debugging)
++ 	buffer[count - 1]
++ 	  = remote_fetch_word (addr + (count - 1) * sizeof (int));
++       else
++ #ifndef NO_PTRACE
++ 	buffer[count - 1]
++ 	  = ptrace (1, inferior_pid,
++ 		    addr + (count - 1) * sizeof (int), 0);
++ #else
++       ;
++ #endif
++     }
++ 
++   /* Copy data to be written over corresponding part of buffer */
++ 
++   bcopy (myaddr, (char *) buffer + (memaddr & (sizeof (int) - 1)), len);
++ 
++   /* Write the entire buffer.  */
++ 
++   for (i = 0; i < count; i++, addr += sizeof (int))
++     {
++       errno = 0;
++       if (remote_debugging)
++ 	remote_store_word (addr, buffer[i]);
++       else
++ #ifndef NO_PTRACE
++ 	ptrace (4, inferior_pid, addr, buffer[i]);
++ #else
++       ;
++ #endif
++       if (errno)
++ 	return errno;
++     }
++ 
++   return 0;
++ }
++ 
++ /* Work with core dump and executable files, for GDB. 
++    This code would be in core.c if it weren't machine-dependent. */
++ 
++ /* Recognize COFF format systems because a.out.h defines AOUTHDR.  */
++ #ifdef AOUTHDR
++ #define COFF_FORMAT
++ #endif
++ 
++ #ifndef N_TXTADDR
++ #define N_TXTADDR(hdr) 0
++ #endif /* no N_TXTADDR */
++ 
++ #ifndef N_DATADDR
++ #define N_DATADDR(hdr) hdr.a_text
++ #endif /* no N_DATADDR */
++ 
++ /* Make COFF and non-COFF names for things a little more compatible
++    to reduce conditionals later.  */
++ 
++ #ifdef COFF_FORMAT
++ #define a_magic magic
++ #endif
++ 
++ #ifndef COFF_FORMAT
++ #ifndef AOUTHDR
++ #define AOUTHDR struct exec
++ #endif
++ #endif
++ 
++ extern char *sys_siglist[];
++ 
++ 
++ /* Hook for `exec_file_command' command to call.  */
++ 
++ extern void (*exec_file_display_hook) ();
++    
++ /* File names of core file and executable file.  */
++ 
++ extern char *corefile;
++ extern char *execfile;
++ 
++ /* Descriptors on which core file and executable file are open.
++    Note that the execchan is closed when an inferior is created
++    and reopened if the inferior dies or is killed.  */
++ 
++ extern int corechan;
++ extern int execchan;
++ 
++ /* Last modification time of executable file.
++    Also used in source.c to compare against mtime of a source file.  */
++ 
++ extern int exec_mtime;
++ 
++ /* Virtual addresses of bounds of the two areas of memory in the core file.  */
++ 
++ extern CORE_ADDR data_start;
++ extern CORE_ADDR data_end;
++ extern CORE_ADDR stack_start;
++ extern CORE_ADDR stack_end;
++ 
++ /* Virtual addresses of bounds of two areas of memory in the exec file.
++    Note that the data area in the exec file is used only when there is no core file.  */
++ 
++ extern CORE_ADDR text_start;
++ extern CORE_ADDR text_end;
++ 
++ extern CORE_ADDR exec_data_start;
++ extern CORE_ADDR exec_data_end;
++ 
++ /* Address in executable file of start of text area data.  */
++ 
++ extern int text_offset;
++ 
++ /* Address in executable file of start of data area data.  */
++ 
++ extern int exec_data_offset;
++ 
++ /* Address in core file of start of data area data.  */
++ 
++ extern int data_offset;
++ 
++ /* Address in core file of start of stack area data.  */
++ 
++ extern int stack_offset;
++ 
++ #ifdef COFF_FORMAT
++ /* various coff data structures */
++ 
++ extern FILHDR file_hdr;
++ extern SCNHDR text_hdr;
++ extern SCNHDR data_hdr;
++ 
++ #endif /* not COFF_FORMAT */
++ 
++ /* a.out header saved in core file.  */
++   
++ extern AOUTHDR core_aouthdr;
++ 
++ /* a.out header of exec file.  */
++ 
++ extern AOUTHDR exec_aouthdr;
++ 
++ extern void validate_files ();
++ 
++ core_file_command (filename, from_tty)
++      char *filename;
++      int from_tty;
++ {
++   int val;
++   extern char registers[];
++ 
++   /* Discard all vestiges of any previous core file
++      and mark data and stack spaces as empty.  */
++ 
++   if (corefile)
++     free (corefile);
++   corefile = 0;
++ 
++   if (corechan >= 0)
++     close (corechan);
++   corechan = -1;
++ 
++   data_start = 0;
++   data_end = 0;
++   stack_start = STACK_END_ADDR;
++   stack_end = STACK_END_ADDR;
++ 
++   /* Now, if a new core file was specified, open it and digest it.  */
++ 
++   if (filename)
++     {
++       filename = tilde_expand (filename);
++       make_cleanup (free, filename);
++       
++       if (have_inferior_p ())
++ 	error ("To look at a core file, you must kill the inferior with \"kill\".");
++       corechan = open (filename, O_RDONLY, 0);
++       if (corechan < 0)
++ 	perror_with_name (filename);
++ #ifdef MINIX
++       /* Minix core dump file.  */
++       {
++ 	struct core core;
++ 	int reg_offset;
++ 	val = myread (corechan, &core, sizeof core);
++ 	if (val < 0)
++ 	  perror_with_name (filename);
++ 	data_start = exec_data_start;
++ 
++ 	data_end = data_start + core.c_datalen;
++ 	stack_start = stack_end - core.c_stacklen + 1;
++ 	/* is supposed to be C_DATAPOS(core),
++ 	   but for some reason the last segment of the
++ 	   text is dumped also */
++ 	data_offset = C_DATAPOS(core) + SEGMENT_SIZE;
++ 	stack_offset = C_STACKPOS(core);
++ 	reg_offset = 0;
++ 
++ 	bzero ((char *) &core_aouthdr, sizeof core_aouthdr);
++ #if 0
++ 	bcopy (&u.pt_aouthdr, &core_aouthdr, sizeof (AOUTHDR));
++ 	printf ("Core file is from \"%s\".\n", u.pt_comm);
++ 	if (u.pt_signal > 0)
++ 	  printf ("Program terminated with signal %d, %s.\n",
++ 			u.pt_signal,
++ 			u.pt_signal < NSIG
++ 			? sys_siglist[u.pt_signal]
++ 			: "(undocumented)");
++ 
++ #endif
++ #else /* not MINIX */
++       /* 4.2-style (and perhaps also sysV-style) core dump file.  */
++       {
++ 	struct ptrace_user u;
++ 	int reg_offset;
++ 
++ 	val = myread (corechan, &u, sizeof u);
++ 	if (val < 0)
++ 	  perror_with_name (filename);
++ 	data_start = exec_data_start;
++ 
++ 	data_end = data_start + u.pt_dsize;
++ 	stack_start = stack_end - u.pt_ssize;
++ 	data_offset = sizeof u;
++ 	stack_offset = data_offset + u.pt_dsize;
++ 	reg_offset = 0;
++ 
++ 	bcopy (&u.pt_aouthdr, &core_aouthdr, sizeof (AOUTHDR));
++ 	printf ("Core file is from \"%s\".\n", u.pt_comm);
++ 	if (u.pt_signal > 0)
++ 	  printf ("Program terminated with signal %d, %s.\n",
++ 			u.pt_signal,
++ 			u.pt_signal < NSIG
++ 			? sys_siglist[u.pt_signal]
++ 			: "(undocumented)");
++ #endif /* MINIX */
++ 
++ 	/* Read the register values out of the core file and store
++ 	   them where `read_register' will find them.  */
++ 
++ 	{
++ 	  register int regno;
++ 
++ 	  for (regno = 0; regno < NUM_REGS; regno++)
++ 	    {
++ 	      char buf[MAX_REGISTER_RAW_SIZE];
++ 
++ 	      val = lseek (corechan, register_addr (regno, reg_offset), 0);
++ 	      if (val < 0)
++ 		perror_with_name (filename);
++ 
++  	      val = myread (corechan, buf, sizeof buf);
++ 	      if (val < 0)
++ 		perror_with_name (filename);
++ 	      supply_register (regno, buf);
++ 	    }
++ 	}
++       }
++       if (filename[0] == '/')
++ 	corefile = savestring (filename, strlen (filename));
++       else
++ 	{
++ 	  corefile = concat (current_directory, "/", filename);
++ 	}
++ 
++       set_current_frame ( create_new_frame (read_register (FP_REGNUM),
++ 					    read_pc ()));
++       select_frame (get_current_frame (), 0);
++       validate_files ();
++     }
++   else if (from_tty)
++     printf ("No core file now.\n");
++ }
++ 
++ exec_file_command (filename, from_tty)
++      char *filename;
++      int from_tty;
++ {
++   int val;
++ 
++   /* Eliminate all traces of old exec file.
++      Mark text segment as empty.  */
++ 
++   if (execfile)
++     free (execfile);
++   execfile = 0;
++   data_start = 0;
++   data_end -= exec_data_start;
++   text_start = 0;
++   text_end = 0;
++   exec_data_start = 0;
++   exec_data_end = 0;
++   if (execchan >= 0)
++     close (execchan);
++   execchan = -1;
++ 
++   /* Now open and digest the file the user requested, if any.  */
++ 
++   if (filename)
++     {
++       filename = tilde_expand (filename);
++       make_cleanup (free, filename);
++       
++       execchan = openp (getenv ("PATH"), 1, filename, O_RDONLY, 0,
++ 			&execfile);
++       if (execchan < 0)
++ 	perror_with_name (filename);
++ 
++ #ifdef COFF_FORMAT
++       {
++ 	int aout_hdrsize;
++ 	int num_sections;
++ 
++ 	if (read_file_hdr (execchan, &file_hdr) < 0)
++ 	  error ("\"%s\": not in executable format.", execfile);
++ 
++ 	aout_hdrsize = file_hdr.f_opthdr;
++ 	num_sections = file_hdr.f_nscns;
++ 
++ 	if (read_aout_hdr (execchan, &exec_aouthdr, aout_hdrsize) < 0)
++ 	  error ("\"%s\": can't read optional aouthdr", execfile);
++ 
++ 	if (read_section_hdr (execchan, _TEXT, &text_hdr, num_sections,
++ 			      aout_hdrsize) < 0)
++ 	  error ("\"%s\": can't read text section header", execfile);
++ 
++ 	if (read_section_hdr (execchan, _DATA, &data_hdr, num_sections,
++ 			      aout_hdrsize) < 0)
++ 	  error ("\"%s\": can't read data section header", execfile);
++ 
++ 	text_start = exec_aouthdr.text_start;
++ 	text_end = text_start + exec_aouthdr.tsize;
++ 	text_offset = text_hdr.s_scnptr;
++ 	exec_data_start = exec_aouthdr.data_start;
++ 	exec_data_end = exec_data_start + exec_aouthdr.dsize;
++ 	exec_data_offset = data_hdr.s_scnptr;
++ 	data_start = exec_data_start;
++ 	data_end += exec_data_start;
++ 	exec_mtime = file_hdr.f_timdat;
++       }
++ #else /* not COFF_FORMAT */
++       {
++ 	struct stat st_exec;
++ 
++ 	val = myread (execchan, &exec_aouthdr, sizeof (AOUTHDR));
++ 
++ 	if (val < 0)
++ 	  perror_with_name (filename);
++ 
++         text_start = N_TXTADDR (exec_aouthdr);
++         exec_data_start = N_DATADDR (exec_aouthdr);
++ 
++ 	text_offset = N_TXTOFF (exec_aouthdr);
++ 	exec_data_offset = N_TXTOFF (exec_aouthdr) + exec_aouthdr.a_text;
++ 
++ 	text_end = text_start + exec_aouthdr.a_text;
++         exec_data_end = exec_data_start + exec_aouthdr.a_data;
++ 	data_start = exec_data_start;
++ 	data_end += exec_data_start;
++ 
++ 	fstat (execchan, &st_exec);
++ 	exec_mtime = st_exec.st_mtime;
++       }
++ #endif /* not COFF_FORMAT */
++ 
++       validate_files ();
++     }
++   else if (from_tty)
++     printf ("No exec file now.\n");
++ 
++   /* Tell display code (if any) about the changed file name.  */
++   if (exec_file_display_hook)
++     (*exec_file_display_hook) (filename);
++ }
+diff -crN gdb-3.5.orig/readline/Makefile dist-gdb/readline/Makefile
+*** gdb-3.5.orig/readline/Makefile	Thu Feb  8 06:05:33 1990
+--- dist-gdb/readline/Makefile	Sat Mar  2 03:14:54 1991
+***************
+*** 19,25 ****
+  TYPES = -DVOID_SIGHANDLER
+  
+  # Define SYSV as -DSYSV if you are using a System V operating system.
+! #SYSV = -DSYSV
+  
+  # HP-UX compilation requires the BSD library.
+  #LOCAL_LIBS = -lBSD
+--- 19,25 ----
+  TYPES = -DVOID_SIGHANDLER
+  
+  # Define SYSV as -DSYSV if you are using a System V operating system.
+! SYSV = -DSYSV -DMINIX
+  
+  # HP-UX compilation requires the BSD library.
+  #LOCAL_LIBS = -lBSD
+***************
+*** 38,45 ****
+  # A good alternative is gcc -traditional.
+  #CC = gcc -traditional
+  CC = cc
+! RANLIB = /usr/bin/ranlib
+! AR = ar
+  RM = rm
+  CP = cp
+  
+--- 38,45 ----
+  # A good alternative is gcc -traditional.
+  #CC = gcc -traditional
+  CC = cc
+! RANLIB = /usr/gnu/bin/granlib
+! AR = gar
+  RM = rm
+  CP = cp
+  
+diff -crN gdb-3.5.orig/readline/readline.c dist-gdb/readline/readline.c
+*** gdb-3.5.orig/readline/readline.c	Sun Nov 26 21:31:36 1989
+--- dist-gdb/readline/readline.c	Sat Mar  2 03:14:56 1991
+***************
+*** 36,41 ****
+--- 36,45 ----
+  #include <sys/file.h>
+  #include <signal.h>
+  
++ #ifdef MINIX
++ #undef SIGTSTP
++ #endif
++ 
+  #ifdef __GNUC__
+  #define alloca __builtin_alloca
+  #else
+***************
+*** 44,51 ****
+  #endif
+  #endif
+  
+  #define NEW_TTY_DRIVER
+! #if defined (SYSV) || defined (hpux)
+  #undef NEW_TTY_DRIVER
+  #include <termio.h>
+  #else
+--- 48,59 ----
+  #endif
+  #endif
+  
++ #ifdef MINIX
++ #define TIOCSETN TIOCSETP
++ #endif
++ 
+  #define NEW_TTY_DRIVER
+! #if !defined(MINIX) && (defined (SYSV) || defined (hpux))
+  #undef NEW_TTY_DRIVER
+  #include <termio.h>
+  #else
+***************
+*** 1982,1988 ****
+--- 1990,1998 ----
+  static struct tchars original_tchars;
+  
+  /* Local special characters.  This has the interrupt characters in it. */
++ #ifdef TIOCGLTC
+  static struct ltchars original_ltchars;
++ #endif
+  
+  /* We use this to get and set the tty_flags. */
+  static struct sgttyb the_ttybuff;
+***************
+*** 5445,5451 ****
+--- 5455,5465 ----
+  #ifdef SYSV
+  
+  extern int errno;
++ #ifdef MINIX
++ #include <errno.h>
++ #else
+  #include <sys/errno.h>
++ #endif
+  
+  int
+  rl_getc (stream)
+diff -crN gdb-3.5.orig/remote.c dist-gdb/remote.c
+*** gdb-3.5.orig/remote.c	Wed Jan 10 23:56:13 1990
+--- dist-gdb/remote.c	Sat Mar  2 03:14:57 1991
+***************
+*** 67,72 ****
+--- 67,76 ----
+  */
+  
+  #include <stdio.h>
++ #ifdef MINIX
++ #include <sys/types.h>
++ #include <fcntl.h>
++ #endif
+  #include "defs.h"
+  #include "param.h"
+  #include "frame.h"
+***************
+*** 80,86 ****
+--- 84,92 ----
+  #endif
+  
+  #include <signal.h>
++ #ifndef MINIX
+  #include <sys/ioctl.h>
++ #endif
+  #include <sys/file.h>
+  
+  #ifdef HAVE_TERMIO
+diff -crN gdb-3.5.orig/source.c dist-gdb/source.c
+*** gdb-3.5.orig/source.c	Wed Jan 10 23:56:20 1990
+--- dist-gdb/source.c	Sat Mar  2 03:14:58 1991
+***************
+*** 26,31 ****
+--- 26,35 ----
+  #include <sys/types.h>
+  #include <fcntl.h>
+  #endif
++ #ifdef MINIX
++ #include <sys/types.h>
++ #include <fcntl.h>
++ #endif
+  
+  #include <sys/param.h>
+  #include <sys/stat.h>
+diff -crN gdb-3.5.orig/standalone.c dist-gdb/standalone.c
+*** gdb-3.5.orig/standalone.c	Wed Jul  5 19:46:51 1989
+--- dist-gdb/standalone.c	Sat Mar  2 03:14:59 1991
+***************
+*** 24,29 ****
+--- 24,34 ----
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  
++ #ifdef MINIX
++ #undef SIGTSTP
++ #undef SIGIO
++ #endif
++ 
+  #if defined (SIGTSTP) && defined (SIGIO)
+  #include <sys/time.h>
+  #include <sys/resource.h>
+diff -crN gdb-3.5.orig/utils.c dist-gdb/utils.c
+*** gdb-3.5.orig/utils.c	Sun Nov  5 17:49:18 1989
+--- dist-gdb/utils.c	Sat Mar  2 03:15:00 1991
+***************
+*** 19,25 ****
+--- 19,36 ----
+  
+  #include <stdio.h>
+  #include <signal.h>
++ #ifndef MINIX
+  #include <sys/ioctl.h>
++ #else
++ #if !defined(NSIG) && defined(_NSIG)
++ #define NSIG _NSIG
++ #endif
++ #undef SIGIO
++ #undef SIGTSTP
++ #undef SIGSTOP
++ #undef SIGCHLD
++ #include <sys/types.h>
++ #endif
+  #include <sys/param.h>
+  #include <pwd.h>
+  #include "defs.h"
+***************
+*** 223,229 ****
+--- 234,242 ----
+  #ifdef HAVE_TERMIO
+    ioctl (fileno (stdout), TCFLSH, 1);
+  #else /* not HAVE_TERMIO */
++ #ifndef MINIX
+    ioctl (fileno (stdout), TIOCFLUSH, 0);
++ #endif
+  #endif /* not HAVE_TERMIO */
+  #ifdef TIOCGPGRP
+    error ("Quit");
+***************
+*** 825,831 ****
+  }
+  #endif /* USG */
+  
+! #ifdef USG
+  /* There is too much variation in Sys V signal numbers and names, so
+     we must initialize them at runtime.  */
+  static char undoc[] = "(undocumented)";
+--- 838,844 ----
+  }
+  #endif /* USG */
+  
+! #if defined(USG) || defined(MINIX)
+  /* There is too much variation in Sys V signal numbers and names, so
+     we must initialize them at runtime.  */
+  static char undoc[] = "(undocumented)";
+***************
+*** 886,892 ****
+        }
+    }
+  
+! #ifdef USG
+    /* Initialize signal names.  */
+  	for (i = 0; i < NSIG; i++)
+  		sys_siglist[i] = undoc;
+--- 899,905 ----
+        }
+    }
+  
+! #if defined(USG) || defined(MINIX)
+    /* Initialize signal names.  */
+  	for (i = 0; i < NSIG; i++)
+  		sys_siglist[i] = undoc;
+***************
+*** 998,1000 ****
+--- 1011,1020 ----
+  #endif
+  #endif /* USG */
+  }
++ #ifdef MINIX
++ getwd (buf)
++ char *buf;
++ {
++   getcwd (buf, MAXPATHLEN);
++ }
++ #endif

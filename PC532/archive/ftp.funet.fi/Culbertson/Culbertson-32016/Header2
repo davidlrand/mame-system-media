@@ -1,0 +1,10 @@
+There has been much discussion about simple 32k systems.  I actually
+built one and here it is.  I originally ran TDS on it.  I am now well
+along porting Minix to it.  I wrote an assembler, linker, and library
+archiver which run on generic C machines (UNIX, PC-DOS, etc.).  I
+could post them if there is interest.  I also made small modifications
+to GCC to make it compatible with my assembler.
+
+Bruce Culbertson
+culberts@hplabs.hp.com
+

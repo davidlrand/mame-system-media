@@ -1,0 +1,89 @@
+diff -cr flex-2.3.6.ori/Makefile flex-2.3.6/Makefile
+*** flex-2.3.6.ori/Makefile	Thu Jun 28 04:44:07 1990
+--- flex-2.3.6/Makefile	Tue Dec  4 15:55:18 1990
+***************
+*** 40,50 ****
+  # Raw, unformatted troff source will be installed if INSTALLMAN=man, nroff
+  # preformatted versions will be installed if INSTALLMAN=cat.
+  DESTDIR =
+! BINDIR = /usr/local
+! LIBDIR = /usr/local/lib
+! AUXDIR = /usr/local/lib
+! MANDIR = /usr/man/manl
+! MANEXT = l
+  INSTALLMAN = man
+  
+  # MAKE = make
+--- 40,50 ----
+  # Raw, unformatted troff source will be installed if INSTALLMAN=man, nroff
+  # preformatted versions will be installed if INSTALLMAN=cat.
+  DESTDIR =
+! BINDIR = /usr/gnu/bin
+! LIBDIR = /usr/gnu/lib
+! AUXDIR = /usr/gnu/lib
+! MANDIR = /usr/gnu/man/man1
+! MANEXT = 1
+  INSTALLMAN = man
+  
+  # MAKE = make
+***************
+*** 52,65 ****
+  
+  SKELETON_FILE = $(DESTDIR)$(AUXDIR)/flex.skel
+  SKELFLAGS = -DDEFAULT_SKELETON_FILE=\"$(SKELETON_FILE)\"
+! CFLAGS = -O
+! LDFLAGS = -s
+  
+  COMPRESSION =
+  FLEX_FLAGS = -ist8 -Sflex.skel
+  # which "flex" to use to generate scan.c from scan.l
+  FLEX = ./flex
+! # CC = cc
+  
+  AR = ar
+  RANLIB = ranlib
+--- 52,65 ----
+  
+  SKELETON_FILE = $(DESTDIR)$(AUXDIR)/flex.skel
+  SKELFLAGS = -DDEFAULT_SKELETON_FILE=\"$(SKELETON_FILE)\"
+! CFLAGS = -O -DUSG -DMINIX_13
+! LDFLAGS =
+  
+  COMPRESSION =
+  FLEX_FLAGS = -ist8 -Sflex.skel
+  # which "flex" to use to generate scan.c from scan.l
+  FLEX = ./flex
+! CC = gcc
+  
+  AR = ar
+  RANLIB = ranlib
+***************
+*** 135,141 ****
+  	nroff -man flex.1 >flex.man
+  
+  $(FLEXLIB) : $(FLEX_LIB_OBJS)
+! 	$(AR) cru $(FLEXLIB) $(FLEX_LIB_OBJS)
+  
+  lint : $(FLEX_C_SOURCES)
+  	lint $(FLEX_C_SOURCES) > flex.lint
+--- 135,141 ----
+  	nroff -man flex.1 >flex.man
+  
+  $(FLEXLIB) : $(FLEX_LIB_OBJS)
+! 	$(AR) -a $(FLEXLIB) $(FLEX_LIB_OBJS)
+  
+  lint : $(FLEX_C_SOURCES)
+  	lint $(FLEX_C_SOURCES) > flex.lint
+diff -cr flex-2.3.6.ori/flexdef.h flex-2.3.6/flexdef.h
+*** flex-2.3.6.ori/flexdef.h	Tue Sep  4 01:34:09 1990
+--- flex-2.3.6/flexdef.h	Tue Dec  4 15:10:34 1990
+***************
+*** 867,871 ****
+--- 867,873 ----
+  /* The Unix kernel calls used here */
+  
+  extern int read PROTO((int, char*, int));
++ #ifndef MINIX_13
+  extern int unlink PROTO((char*));
++ #endif
+  extern int write PROTO((int, char*, int));

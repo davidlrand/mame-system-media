@@ -1,0 +1,131 @@
+/************************************************************************/
+/* Wait state generator pal for slow I/O devices.			*/
+/*									*/
+/*  4 wait states for EPROM bus cycles. (200ns or faster)		*/
+/*  2 wait states for SCSI psuedo dma					*/
+/*  7 wait states for SCSI register select				*/
+/*  7 wait states for DUART, Ethernet & misc i/o bus cycles.		*/
+/*   1 wait states of 'front porch' on IORD and IOWR and then 6		*/
+/*   T-states for the IORD and IOWR bus cycles. A 74AS646 device	*/
+/*   latches data from the peripheral device during a read cycle, thus	*/
+/*   enabling the IORD signal to be deasserted 1-T state prior to the	*/
+/*   last T2 T-state. This guarantees sufficient chip select and	*/
+/*   address hold time after an IORD.					*/
+/************************************************************************/
+
+#define DESIGNER George Scolaro (C)	1988,89,90
+#define REVISION 01	1/14/89
+#define PARTNUM xx	PAL16R8
+
+wait(	in
+		bclk,		/* 32gx32 system clock */
+		!bmt,		/* begin memory transaction */
+		!eprom,		/* eprom select */
+		!etherw,	/* wait for ethernet */
+		!scsid,		/* scsi select */
+		!ddin,		/* data direction */
+		!per,		/* slow peripheral */
+		drqs,		/* scsi dma request */
+		scsii,		/* scsi interrupt */
+		!oe;
+	out
+		!dack;		/* scsi dma acknowledge */
+	reg
+		!nrdy,		/* not ready to 32gx32 */
+		!ena,		/* bus enable signal */
+		!d0..2,		/* internal counter terms */
+		!iord,		/* I/O read strobe */
+		!iowr;		/* I/O write strobe */
+)
+{
+
+group	state[nrdy, ena, d0, d1, d2];
+
+state[].ck	= bclk;
+state[].oe	= oe;
+[iord, iowr, dack, ena].ck = bclk;
+[iord, iowr, dack, ena].oe = oe;
+
+#define	idle	0b00000
+#define waitw	0b10000
+#define	wait1	0b10001
+#define	wait2	0b11001
+#define	wait3	0b11011
+#define	wait4	0b11100
+#define	wait5	0b11101
+#define	wait6	0b11110
+#define	wait7	0b11111
+#define	wait8	0b01001
+
+#define iocycle ( state[] == wait1 | state[] == wait2 | state[] == wait3 \
+		| state[] == wait4 | state[] == wait5 | state[] == wait6)
+
+iord.d	= ddin & iocycle;
+
+iowr.d	= !ddin & iocycle;
+
+dack.d	= ddin & scsid & iocycle
+	| !ddin & scsid & iocycle;
+
+switch (state[]) {
+
+case idle:
+	if (bmt & per)			/* polled peripheral or EPROM */
+		state[] = wait1;	/*  or ethernet access polled/dma */
+	else if (bmt & scsid)		/* scsi dma access */
+		state[] = waitw;
+	else
+		state[] = idle;
+	break;
+
+case waitw:
+	if (scsid & !drqs & !scsii)	/* wait for scsi data to be ready */
+		state[] = waitw;
+	else
+		state[] = wait6;	/* 2 more wait states when ready */
+	break;
+
+case wait1:
+	if (etherw)
+		state[] = waitw;	/* wait for ethernet data ready */
+	else
+		state[] = wait2;
+	break;
+
+case wait2:
+	state[] = wait3;
+	break;
+
+case wait3:
+	if (eprom)
+		state[] = wait7;
+	else
+		state[] = wait4;
+	break;
+
+case wait4:
+	state[] = wait5;
+	break;
+
+case wait5:
+	state[] = wait6;
+	break;
+
+case wait6:
+	state[] = wait7;
+	break;
+
+case wait7:
+	state[] = wait8;
+	break;
+
+case wait8:
+	state[] = idle;
+	break;
+}
+
+putpart("p16r8", "wait",
+	bclk, bmt, eprom, etherw, scsid, ddin, per, drqs, scsii, GND,
+	oe, dack, nrdy, ena, d0, d1, d2, iord, iowr, VCC);
+}
+

@@ -1,0 +1,25 @@
+diff -cr kermit.orig/Makefile kermit/Makefile
+*** kermit.orig/Makefile	Fri Jul 29 12:04:44 1988
+--- kermit/Makefile	Fri Nov 30 01:11:48 1990
+***************
+*** 2,10 ****
+  
+  BIN=/usr/bin
+  
+! OBJ=uxkercnu.s uxkermit.s uxkerunx.s
+  
+! CFLAGS=-O -DMINIX=1 -DV7=1
+  
+  kermit: $(OBJ)
+  	$(CC) -o $@ $(OBJ)
+--- 2,11 ----
+  
+  BIN=/usr/bin
+  
+! OBJ=uxkercnu.o uxkermit.o uxkerunx.o
+  
+! CC= gcc
+! CFLAGS=-O -DMINIX=1 -DV7=1
+  
+  kermit: $(OBJ)
+  	$(CC) -o $@ $(OBJ)

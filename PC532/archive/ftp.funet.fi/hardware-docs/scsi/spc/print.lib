@@ -1,0 +1,132 @@
+/************************************************************************
+*									*
+*	print_cmd(): This enters a data out phase and transfers a block *
+*		     of data to memory using block mode DMA.The size of *
+*		     this block has already been determined in 		*
+*		     process_cmd() and is known to be within the 	*
+*		     allowed limits.					*
+*									*
+************************************************************************/
+
+print_cmd()
+{
+	print_on=TRUE;				/* Flag to show print routine that data is available	*/
+	if (!previous)				/* The Que must be set up on the first running of the program  */
+	{
+		top=&buffer[BUFFSZ-1];
+		bottom=&buffer[0];
+		front=rear=bottom;
+		previous=TRUE;
+	}
+	data2=data_len;
+	if (rear > ((top-data_len)+1))		/* Incremented to include location rear	*/
+	{
+		data1=(top-rear)+1;		/* Incremented to include location rear	*/
+		data2=data_len-data1;
+		dma_data(data1);
+		rear=bottom;
+	}
+	dma_data(data2);
+	rear=rear+data2;
+	if (rear > top)	rear=bottom;		/* This is incase the DMA fills the que to the top	*/
+}
+
+
+/************************************************************************
+*									*
+*	dma_data(data):	This carries out the print commands DMA receive *
+*			,transferring 'data' bytes of data to the	*
+*			address pointed to by 'rear'.			*
+*									*
+************************************************************************/
+
+dma_data(data)
+int data;
+{
+	write(DMAMCL,DONT_CARE);
+	write(DMAMOD, (BLOCK_MODE | WRITE_TRANSFER));
+	write(DMAMSK,CHANNEL0);
+	dmawrit(DMAADD,rear);
+	dmawrit(DMACNT,--data);		/* DMA controller count is one less than the number of bytes transferred	*/
+	write(EASITCR,DATA_OUT);
+	write(EASIMR2,BLK_MODE_DMA);
+	dma(EASISDT);
+}
+
+
+/************************************************************************
+*									*
+*	outbuf(): This routine outputs the entire contents of the queue *
+*		   to the printer, via port B of the PIO. When the 	*
+*		   buffer is empty print_on is set FALSE,to signify 	*
+*		   printing is finished.				*
+*									*
+************************************************************************/
+
+outbuf()
+{
+	in_print=TRUE;	
+	eni();				/* Enable interrupt to allow selection	*/
+	while (front != rear)
+	{
+		printit();
+		if (front > top)
+			front=bottom;
+		if (byt_empty() > BUFFLIM)
+			next=TRUE;
+		else
+			next=FALSE;
+		if (recon && (byt_empty() > recon_data))
+			reconnect();
+	}
+	print_on=in_print=FALSE;
+	sense[0]=NO_SENSE;
+}
+
+
+/************************************************************************
+*									*
+*	printit():	This prints out the character at the front of	*
+*			the que, returning a zero if successful, a one  *
+*			if an error occurs.On error the que is flushed. *
+*									*
+************************************************************************/
+
+
+printit()
+{
+	while (read(PIOB) & PRINTER_ERROR)
+	{
+		if (!(read(PIOB) & PRINTER_PE))
+			sense[0]=MEDIUM_ERROR;
+		else
+			sense[0]=UNIT_ATTENTION;
+		if (recon)
+			reconnect();
+	}
+	while ((!(read(PIOB) & PRINTER_BUSY)) && (!(read(PIOB) & PRINTER_ERROR)));	/* In case of error occurring while */
+	if (!(read(PIOB) & PRINTER_ERROR))						/* waiting for busy.		    */
+	{
+		if (front != rear)		/* Checked in case printer was in an error condition and queue was flushed  */
+		{
+			write (PIOA,*front++);
+			write (PIOC, (PRINTER_STROBE | LED_ON));
+			write (PIOC,LED_ON);
+		}
+	}
+}
+
+
+/************************************************************************
+*									*
+*	byt_empty():	This returns the number of bytes still to be	*
+*			filled in the que.				*
+*									*
+************************************************************************/
+
+byt_empty()
+{
+	if (front < rear) return ((top-rear) + (front-bottom));
+	if (front > rear) return (front-rear);
+	if (front ==rear) return BUFFSZ;
+}

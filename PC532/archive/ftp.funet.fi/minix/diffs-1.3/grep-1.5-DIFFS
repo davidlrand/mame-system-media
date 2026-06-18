@@ -1,0 +1,98 @@
+diff -cr grep-1.5.orig/Makefile grep-1.5/Makefile
+*** grep-1.5.orig/Makefile	Wed Nov 15 20:14:51 1989
+--- grep-1.5/Makefile	Sat Dec  1 04:47:00 1990
+***************
+*** 3,9 ****
+  #
+  
+  # Add -DUSG for System V.
+! CFLAGS = -O
+  
+  #
+  # You may add getopt.o if your C library lacks getopt(); note that
+--- 3,10 ----
+  #
+  
+  # Add -DUSG for System V.
+! CC = gcc
+! CFLAGS = -O -DUSG
+  
+  #
+  # You may add getopt.o if your C library lacks getopt(); note that
+***************
+*** 11,22 ****
+  #
+  # Add alloca.o if your machine does not support alloca().
+  #
+! OBJS = dfa.o regex.o
+  GOBJ = grep.o
+  EOBJ = egrep.o
+  
+  # Space provided for machine dependent libraries.
+! LIBS =
+  
+  all: regress
+  
+--- 12,23 ----
+  #
+  # Add alloca.o if your machine does not support alloca().
+  #
+! OBJS = dfa.o regex.o getopt.o
+  GOBJ = grep.o
+  EOBJ = egrep.o
+  
+  # Space provided for machine dependent libraries.
+! LIBS = 
+  
+  all: regress
+  
+***************
+*** 24,30 ****
+  	cd tests; sh regress.sh
+  
+  egrep: $(OBJS) $(EOBJ)
+! 	$(CC) $(CFLAGS) -o egrep $(OBJS) $(EOBJ) $(LIBS)
+  
+  egrep.o: grep.c
+  	rm -f egrep.c; cp grep.c egrep.c
+--- 25,31 ----
+  	cd tests; sh regress.sh
+  
+  egrep: $(OBJS) $(EOBJ)
+! 	$(CC) $(CFLAGS) -o egrep $(EOBJ) $(OBJS) $(LIBS)
+  
+  egrep.o: grep.c
+  	rm -f egrep.c; cp grep.c egrep.c
+***************
+*** 32,38 ****
+  	rm -f egrep.c
+  
+  grep: $(OBJS) $(GOBJ)
+! 	$(CC) $(CFLAGS) -o grep $(OBJS) $(GOBJ) $(LIBS)
+  
+  clean:
+  	rm -f grep egrep *.o core tests/core tests/tmp.script \
+--- 33,39 ----
+  	rm -f egrep.c
+  
+  grep: $(OBJS) $(GOBJ)
+! 	$(CC) $(CFLAGS) -o grep $(GOBJ) $(OBJS) $(LIBS)
+  
+  clean:
+  	rm -f grep egrep *.o core tests/core tests/tmp.script \
+diff -cr grep-1.5.orig/getopt.c grep-1.5/getopt.c
+*** grep-1.5.orig/getopt.c	Tue Feb 28 23:44:55 1989
+--- grep-1.5/getopt.c	Sat Dec  1 04:41:29 1990
+***************
+*** 112,117 ****
+--- 112,121 ----
+  
+  #ifdef sparc
+  #include <alloca.h>
++ #else
++ #ifdef __GNUC__
++ #define alloca __builtin_alloca
++ #endif
+  #endif
+  #ifdef USG
+  #define bcopy(s, d, l) memcpy((d), (s), (l))

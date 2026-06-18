@@ -1,0 +1,229 @@
+diff -cr fileut-1.4.or/Makefile fileutils-1.4/Makefile
+*** fileut-1.4.or/Makefile	Sun Sep  9 20:50:58 1990
+--- fileutils-1.4/Makefile	Sat Dec  1 02:22:32 1990
+***************
+*** 52,59 ****
+  #LIBS = $(LIBOBJS)
+  
+  # SunOS 4.[01]
+! DEFS = -DDIRENT -DMKTIME_MISSING -DMKFIFO_MISSING
+! LIBS = $(LIBOBJS)
+  
+  # Ultrix 4.0
+  #DEFS = -DDIRENT
+--- 52,59 ----
+  #LIBS = $(LIBOBJS)
+  
+  # SunOS 4.[01]
+! #DEFS = -DDIRENT -DMKTIME_MISSING -DMKFIFO_MISSING
+! #LIBS = $(LIBOBJS)
+  
+  # Ultrix 4.0
+  #DEFS = -DDIRENT
+***************
+*** 92,111 ****
+  # Minix with gcc
+  #DEFS = -DUSG -DSTDC_HEADERS -D_POSIX_SOURCE -DFCHMOD_MISSING -DDIRENT \
+  #	-DFTRUNCATE_MISSING -DSTBLOCKS_MISSING -DDEV_BSIZE=1024 -D_MINIX
+! #LIBS = $(LIBOBJS)
+  
+! CFLAGS = -I. -g $(DEFS)
+! LDFLAGS = -g
+  
+  # Object files that are linked with every program except dd.
+  LIBOBJS = getopt.o getopt1.o
+  
+  # Where to install the executables.
+! BINDIR = /usr/local/gnubin
+  # Where to put mvdir on systems lacking the rename system call.
+! LIBDIR = /usr/local/lib
+  # Where to put the Unix-style manual pages.
+! MANDIR = /usr/local/man/man1
+  
+  # Executable files in this directory.
+  PROGS = cat chmod cmp cp cut dd du ginstall head ln dir vdir ls \
+--- 92,116 ----
+  # Minix with gcc
+  #DEFS = -DUSG -DSTDC_HEADERS -D_POSIX_SOURCE -DFCHMOD_MISSING -DDIRENT \
+  #	-DFTRUNCATE_MISSING -DSTBLOCKS_MISSING -DDEV_BSIZE=1024 -D_MINIX
+! DEFS = -DUSG -DFCHMOD_MISSING -DDIRENT -DMKDIR_MISSING -D_POSIX_SOURCE \
+! 	-DFTRUNCATE_MISSING -DSTBLOCKS_MISSING -DDEV_BSIZE=1024 -D_MINIX \
+! 	-DMKTIME_MISSING -DMVDIR=\"$(LIBDIR)/mvdir\" -DMKFIFO_MISSING \
+! 	-DMINIX_13 -DRENAME_MISSING
+! LIBS = $(LIBOBJS)
+! LIBPROGS = mvdir
+  
+! CFLAGS = -I. $(DEFS)
+! LDFLAGS =
+  
+  # Object files that are linked with every program except dd.
+  LIBOBJS = getopt.o getopt1.o
+  
+  # Where to install the executables.
+! BINDIR = /usr/gnu/bin
+  # Where to put mvdir on systems lacking the rename system call.
+! LIBDIR = /usr/gnu/lib
+  # Where to put the Unix-style manual pages.
+! MANDIR = /usr/gnu/man/man1
+  
+  # Executable files in this directory.
+  PROGS = cat chmod cmp cp cut dd du ginstall head ln dir vdir ls \
+diff -cr fileut-1.4.or/cp.c fileutils-1.4/cp.c
+*** fileut-1.4.or/cp.c	Mon Sep  3 01:14:52 1990
+--- fileutils-1.4/cp.c	Sat Dec  1 01:45:27 1990
+***************
+*** 738,744 ****
+--- 738,748 ----
+    /* Create the new regular file with small permissions initially,
+       to not create a security hole.  */
+  
++ #ifdef O_TRUNC
+    target_desc = open (dst_path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
++ #else
++   target_desc = open (dst_path, O_WRONLY | O_CREAT, 0600);
++ #endif
+    if (target_desc < 0)
+      {
+        error (0, errno, "cannot create regular file `%s'", dst_path);
+diff -cr fileut-1.4.or/cp.h fileutils-1.4/cp.h
+*** fileut-1.4.or/cp.h	Sun Sep  9 19:50:46 1990
+--- fileutils-1.4/cp.h	Sat Dec  1 01:46:06 1990
+***************
+*** 48,53 ****
+--- 48,56 ----
+  extern int exit_status;
+  extern struct htab *htab;
+  
++ #ifdef MINIX_13
++ extern int stat ();
++ #endif
+  extern char *xmalloc ();
+  extern char *xrealloc ();
+  extern void forget_copied ();
+diff -cr fileut-1.4.or/du.c fileutils-1.4/du.c
+*** fileut-1.4.or/du.c	Mon Sep  3 06:16:54 1990
+--- fileutils-1.4/du.c	Sat Dec  1 01:46:47 1990
+***************
+*** 47,52 ****
+--- 47,56 ----
+  extern int errno;
+  #endif
+  
++ #ifdef MINIX_13
++ #define PATH_MAX 600
++ #endif
++ 
+  /* Initial number of entries in each hash table entry's table of inodes.  */
+  #define INITIAL_HASH_MODULE 100
+  
+diff -cr fileut-1.4.or/getdate.y fileutils-1.4/getdate.y
+*** fileut-1.4.or/getdate.y	Mon Sep 10 02:27:18 1990
+--- fileutils-1.4/getdate.y	Sat Dec  1 01:53:19 1990
+***************
+*** 610,616 ****
+--- 610,620 ----
+  ftime(timeb)
+  struct timeb *timeb;
+  {
++ #ifdef MINIX_13
++ 	long timezone = 2 * 60 * 60; /* jkp in Finland */
++ #else
+  	extern long timezone;
++ #endif
+  #if 0			/* Not all non-BSD libraries have `daylight'. */
+  	extern int daylight;
+  #endif
+diff -cr fileut-1.4.or/install.c fileutils-1.4/install.c
+*** fileut-1.4.or/install.c	Tue Aug 28 22:54:34 1990
+--- fileutils-1.4/install.c	Sat Dec  1 01:50:35 1990
+***************
+*** 78,84 ****
+  extern int errno;
+  #endif
+  
+! #ifdef _POSIX_SOURCE
+  #include <sys/wait.h>
+  #else
+  struct passwd *getpwnam ();
+--- 78,84 ----
+  extern int errno;
+  #endif
+  
+! #if defined(_POSIX_SOURCE) && !defined(MINIX_13)
+  #include <sys/wait.h>
+  #else
+  struct passwd *getpwnam ();
+***************
+*** 372,378 ****
+--- 372,382 ----
+      }
+  
+    /* Make sure to open the file in a mode that allows writing. */
++ #ifdef O_TRUNC
+    tofd = open (to, O_WRONLY | O_CREAT | O_TRUNC, 0600);
++ #else
++   tofd = open (to, O_WRONLY | O_CREAT, 0600);
++ #endif
+    if (tofd == -1)
+      {
+        error (0, errno, "%s", to);
+diff -cr fileut-1.4.or/ln.c fileutils-1.4/ln.c
+*** fileut-1.4.or/ln.c	Tue Aug 14 04:42:22 1990
+--- fileutils-1.4/ln.c	Sat Dec  1 01:47:23 1990
+***************
+*** 28,33 ****
+--- 28,36 ----
+  #include <stdlib.h>
+  #else
+  char *getenv ();
++ #ifdef MINIX_13
++ int link();
++ #endif
+  
+  extern int errno;
+  #endif
+diff -cr fileut-1.4.or/mv.c fileutils-1.4/mv.c
+*** fileut-1.4.or/mv.c	Mon Sep  3 05:45:46 1990
+--- fileutils-1.4/mv.c	Sat Dec  1 01:47:47 1990
+***************
+*** 330,336 ****
+--- 330,340 ----
+        error (0, errno, "%s", from);
+        return 1;
+      }
++ #ifdef O_TRUNC
+    ofd = open (to, O_WRONLY | O_CREAT | O_TRUNC, 0777);
++ #else
++   ofd = open (to, O_WRONLY | O_CREAT, 0777);
++ #endif
+    if (ofd < 0)
+      {
+        error (0, errno, "%s", to);
+diff -cr fileut-1.4.or/mvdir.c fileutils-1.4/mvdir.c
+*** fileut-1.4.or/mvdir.c	Tue Sep  4 15:00:09 1990
+--- fileutils-1.4/mvdir.c	Sat Dec  1 02:23:57 1990
+***************
+*** 33,38 ****
+--- 33,42 ----
+  #include <signal.h>
+  #include "system.h"
+  
++ #ifdef MINIX_13
++ #define PATH_MAX 1024
++ #endif
++ 
+  #ifdef STDC_HEADERS
+  #include <stdlib.h>
+  #include <errno.h>
+***************
+*** 139,145 ****
+--- 143,151 ----
+      if (i != SIGKILL)
+        signal (i, SIG_IGN);
+    setuid (0);			/* Make real uid 0 so it is harder to kill. */
++ #ifndef MINIX_13
+    nice (HIPRI - nice (0));	/* Raise priority. */
++ #endif
+  
+    if (link (from, to))
+      error (1, errno, "cannot link `%s' to `%s'", from, to);

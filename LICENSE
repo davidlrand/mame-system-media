@@ -72,6 +72,23 @@ involved were all discontinued decades ago. These items include:
           The Opus 100PM User Manual (1987), copyright Opus Systems. Preserved
           by Al Kossow / bitsavers.org; also available there.
 
+    - PC532/roms/911105_9600.u44 and PC532/roms/900328_9600.u44
+          The PC532 ROM monitors -- the "NS32000 ROM Debugger" by Bruce
+          Culbertson (1990) and the autoboot monitor by Phil Nelson (1991).
+          Community firmware for the Scolaro/Rand PC532, preserved for emulation.
+          (NetBSD itself is BSD-licensed and is NOT redistributed here -- the
+          README links to the NetBSD archive.)
+
+    - PC532/docs/PC532_schematics.pdf and PC532/docs/PC532_PALs.pdf
+          The PC532 schematics and PAL equations by George Scolaro (originally
+          drawn 1988-90), publicly released by the authors (Scolaro and
+          Dave Rand) to the pc532 community in 1991 and freely redistributable.
+
+    - PC532/hardware/ (Eagle, KiCad and Gerber sources, the ET532 variant, and
+          the mini386 project) -- CAD/fabrication files for the Scolaro/Rand
+          PC532 and related boards (incl. 2017-era reproductions), released by
+          the authors for the community.
+
 They are included in good faith for historical preservation, research, and use
 with the MAME emulator, on the basis that the original product is decades out of
 production and otherwise unavailable. No copyright claim is made over them, and

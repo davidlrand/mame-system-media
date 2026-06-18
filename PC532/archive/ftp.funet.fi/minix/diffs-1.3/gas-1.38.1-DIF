@@ -1,0 +1,348 @@
+diff -cr gas-1.38.orig/Makefile gas-1.38/Makefile
+*** gas-1.38.orig/Makefile	Thu Oct 18 20:26:42 1990
+--- gas-1.38/Makefile	Sun Feb  3 20:30:19 1991
+***************
+*** 20,31 ****
+  # This makefile may be used to make the VAX, 68020, 80386, 
+  # SPARC, ns32k, or i860 assembler(s).
+  
+! BINDIR = /usr/local/bin
+! #CC=gcc
+  
+  # If you are on a BSD system, un-comment the next two lines, and comment out
+  # the lines for SystemV and HPUX below
+! G0 = -g  -I. #-O -Wall
+  LDFLAGS = $(CFLAGS)
+  #
+  # To compile gas on a System Five machine, comment out the two lines above
+--- 20,31 ----
+  # This makefile may be used to make the VAX, 68020, 80386, 
+  # SPARC, ns32k, or i860 assembler(s).
+  
+! BINDIR = /usr/gnu/bin
+! CC=gcc
+  
+  # If you are on a BSD system, un-comment the next two lines, and comment out
+  # the lines for SystemV and HPUX below
+! G0 = -O -DUSG -DMINIX -I. #-O -Wall
+  LDFLAGS = $(CFLAGS)
+  #
+  # To compile gas on a System Five machine, comment out the two lines above
+***************
+*** 108,119 ****
+  # (This option is automatically enabled when building the sparc assembler.
+  #
+  
+! O1 =  -DNO_VARARGS
+  O2 = # -DNON_BROKEN_WORDS
+  O3 = # -Dm68851
+  O4 = # -DEXEC_VERSION=1
+  O5 = # -DSIGTY=void
+! O6 = # -DNS32532
+  O6 = # -DNS32381
+  O7 = # -DDOT_LABEL_PREFIX
+  O8 = # -DSEQUENT_COMPATABILITY
+--- 108,119 ----
+  # (This option is automatically enabled when building the sparc assembler.
+  #
+  
+! O1 = # -DNO_VARARGS
+  O2 = # -DNON_BROKEN_WORDS
+  O3 = # -Dm68851
+  O4 = # -DEXEC_VERSION=1
+  O5 = # -DSIGTY=void
+! O6 = -DNS32532 -DNS32381
+  O6 = # -DNS32381
+  O7 = # -DDOT_LABEL_PREFIX
+  O8 = # -DSEQUENT_COMPATABILITY
+***************
+*** 131,137 ****
+  #
+  # To make the 68020 assembler compile as the default, un-comment the next
+  # line, and comment out all the other lines that start with DEFAULT_GAS
+! DEFAULT_GAS=a68
+  #
+  # To make the VAX assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+--- 131,137 ----
+  #
+  # To make the 68020 assembler compile as the default, un-comment the next
+  # line, and comment out all the other lines that start with DEFAULT_GAS
+! #DEFAULT_GAS=a68
+  #
+  # To make the VAX assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+***************
+*** 143,149 ****
+  #
+  # To make the ns32k assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+! #DEFAULT_GAS=a32k
+  #
+  # To make the sparc assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+--- 143,149 ----
+  #
+  # To make the ns32k assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+! DEFAULT_GAS=a32k
+  #
+  # To make the sparc assembler compile as the default, un-comment the next
+  # line and commment out all the other lines that start with DEFAULT_GAS
+diff -cr gas-1.38.orig/a.out.gnu.h gas-1.38/a.out.gnu.h
+*** gas-1.38.orig/a.out.gnu.h	Mon Jul 16 21:00:50 1990
+--- gas-1.38/a.out.gnu.h	Sun Feb  3 20:31:32 1991
+***************
+*** 5,10 ****
+--- 5,33 ----
+  
+  #ifndef __STRUCT_EXEC_OVERRIDE__
+  
++ #ifdef MINIX
++ 
++ /* header structure
++  */
++ struct exec {
++   unsigned long     a_info;
++   long     a_text;       /* length of text segment */
++   long     a_data;       /* length of data segment */
++   long     a_bss;        /* length of uninitialized data segment */
++ 
++   long     a_trsize;     /* length of text relocation table */
++   long     a_drsize;     /* length of data relocation table */
++   long     a_sym;        /* length of symbol table */
++ #define a_syms a_sym
++   long     a_str;        /* length of string table */
++ 
++   long     a_entry;      /* program entry point */
++   long     a_tstart;     /* text load point (see ld -T option) */
++   long     a_dstart;     /* data load point (see ld -D option) */
++   long     dummy;
++ };
++ 
++ #else
+  struct exec
+  {
+    unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
+***************
+*** 17,22 ****
+--- 40,46 ----
+    unsigned a_drsize;		/* length of relocation info for data, in bytes */
+  };
+  
++ #endif /* MINIX */
+  #endif /* __STRUCT_EXEC_OVERRIDE__ */
+  
+  /* these go in the N_MACHTYPE field */
+***************
+*** 249,256 ****
+       it is desirable to clear them.  */
+  #ifdef NS32K
+    unsigned r_bsr:1;
+!   unsigned r_disp:1;
+!   unsigned r_pad:2;
+  #else
+    unsigned int r_pad:4;
+  #endif
+--- 273,280 ----
+       it is desirable to clear them.  */
+  #ifdef NS32K
+    unsigned r_bsr:1;
+!   unsigned r_disp:2;
+!   unsigned r_pad:1;
+  #else
+    unsigned int r_pad:4;
+  #endif
+diff -cr gas-1.38.orig/as.h gas-1.38/as.h
+*** gas-1.38.orig/as.h	Thu Oct 11 16:26:18 1990
+--- gas-1.38/as.h	Sun Feb  3 20:32:15 1991
+***************
+*** 266,273 ****
+--- 266,278 ----
+  				/* Frag_now->fr_fix is bogus. Use: */
+  /* Virtual frag_now->fr_fix==obstack_next_free(&frags)-frag_now->fr_literal.*/
+  
++ #if 0
+  COMMON fragS zero_address_frag;	/* For foreign-segment symbol fixups. */
+  COMMON fragS  bss_address_frag;	/* For local common (N_BSS segment) fixups. */
++ #else
++ extern fragS zero_address_frag;	/* For foreign-segment symbol fixups. */
++ extern fragS  bss_address_frag;	/* For local common (N_BSS segment) fixups. */
++ #endif
+  
+  void		frag_new();
+  char *		frag_more();
+diff -cr gas-1.38.orig/input-file.c gas-1.38/input-file.c
+*** gas-1.38.orig/input-file.c	Fri Jan  4 18:12:57 1991
+--- gas-1.38/input-file.c	Sun Feb  3 20:33:08 1991
+***************
+*** 196,202 ****
+--- 196,204 ----
+  		return;
+  	}
+  #ifndef VMS
++ #ifndef MINIX
+  	setbuffer(f_in,in_buf,BUFFER_SIZE);
++ #endif
+  #endif /* VMS */
+  	c=getc(f_in);
+  	if(c=='#') {	/* Begins with comment, may not want to preprocess */
+diff -cr gas-1.38.orig/messages.c gas-1.38/messages.c
+*** gas-1.38.orig/messages.c	Fri Jan  4 18:12:57 1991
+--- gas-1.38/messages.c	Sun Feb  3 20:35:33 1991
+***************
+*** 107,112 ****
+--- 107,113 ----
+      }
+  }
+  #else
++ #ifndef MINIX
+  void
+  as_warn(Format,va_alist)
+  char *Format;
+***************
+*** 124,133 ****
+      }
+  }
+  #endif
+! #ifdef DONTDEF
+  void
+  as_warn(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+! char *format;
+  {
+  	if(!flagseen['W']) {
+  		as_where();
+--- 125,135 ----
+      }
+  }
+  #endif
+! #endif
+! #if defined(DONTDEF) || defined(MINIX)
+  void
+  as_warn(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+! char *Format;
+  {
+  	if(!flagseen['W']) {
+  		as_where();
+***************
+*** 158,163 ****
+--- 160,166 ----
+    /* as_where(); */
+  }
+  #else
++ #ifndef MINIX
+  void
+  as_bad(Format,va_alist)
+  char *Format;
+***************
+*** 173,182 ****
+    (void) putc('\n', stderr);
+  }
+  #endif
+! #ifdef DONTDEF
+  void
+  as_bad(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+! char *format;
+  {
+  	as_where();
+  	bad_error=1;
+--- 176,186 ----
+    (void) putc('\n', stderr);
+  }
+  #endif
+! #endif
+! #if defined(DONTDEF) || defined(MINIX)
+  void
+  as_bad(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+! char *Format;
+  {
+  	as_where();
+  	bad_error=1;
+***************
+*** 206,211 ****
+--- 210,216 ----
+    exit(42);			/* What is a good exit status? */
+  }
+  #else
++ #ifndef MINIX
+  void
+  as_fatal(Format,va_alist)
+  char *Format;
+***************
+*** 222,228 ****
+    exit(42);
+  }
+  #endif
+! #ifdef DONTDEF
+  void
+  as_fatal(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+  char *Format;
+--- 227,234 ----
+    exit(42);
+  }
+  #endif
+! #endif
+! #if defined(DONTDEF) || defined(MINIX)
+  void
+  as_fatal(Format,aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an)
+  char *Format;
+diff -cr gas-1.38.orig/ns32k.c gas-1.38/ns32k.c
+*** gas-1.38.orig/ns32k.c	Fri Oct 26 19:14:08 1990
+--- gas-1.38/ns32k.c	Sun Feb  3 20:35:58 1991
+***************
+*** 136,142 ****
+  };
+  struct int_ins_form iif;
+  expressionS exprP;
+! char *input_line_pointer;
+  /* description of the PARTs in IIF 
+   *object[n]:
+   * 0	total length in bytes of entries in iif
+--- 136,142 ----
+  };
+  struct int_ins_form iif;
+  expressionS exprP;
+! extern char *input_line_pointer;
+  /* description of the PARTs in IIF 
+   *object[n]:
+   * 0	total length in bytes of entries in iif
+diff -cr gas-1.38.orig/xmalloc.c gas-1.38/xmalloc.c
+*** gas-1.38.orig/xmalloc.c	Wed Mar  1 22:48:34 1989
+--- gas-1.38/xmalloc.c	Sun Feb  3 20:36:43 1991
+***************
+*** 39,45 ****
+  	malloc()
+  
+  */
+! #ifdef USG
+  #include <malloc.h>
+  #endif
+  
+--- 39,45 ----
+  	malloc()
+  
+  */
+! #if defined(USG) && !defined(MINIX)
+  #include <malloc.h>
+  #endif
+  
+diff -cr gas-1.38.orig/xrealloc.c gas-1.38/xrealloc.c
+*** gas-1.38.orig/xrealloc.c	Wed Mar  1 22:48:33 1989
+--- gas-1.38/xrealloc.c	Sun Feb  3 20:36:56 1991
+***************
+*** 41,47 ****
+  	realloc ()
+  */
+  
+! #ifdef USG
+  #include <malloc.h>
+  #endif
+  
+--- 41,47 ----
+  	realloc ()
+  */
+  
+! #if defined(USG) && !defined(MINIX)
+  #include <malloc.h>
+  #endif
+  

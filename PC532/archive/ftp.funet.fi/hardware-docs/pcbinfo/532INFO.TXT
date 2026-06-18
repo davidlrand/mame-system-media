@@ -1,0 +1,18 @@
+
+
+				PC532 Motherboard.
+				-----------------
+
+
+Approximately 2550 holes.
+
+On Drill hole drawing the following Letter designations refer to:
+
+	Letter		Hole Size
+-------------------------------------------------------------------
+	A		0.038 inch Finished size (component holes)
+	B		0.060 inch Finished size (ibm power connector)
+	C		0.160 inch FInished size (mounting holes)
+	D		0.028 inch Drill size (via holes)
+    	F		0.060 inch Finished size
+	G		0.090 inch Finished size

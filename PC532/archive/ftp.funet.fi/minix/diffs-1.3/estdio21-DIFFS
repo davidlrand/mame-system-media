@@ -1,0 +1,824 @@
+diff -crN estdio21.orig/INSTALL/pc532.sit estdio21/INSTALL/pc532.sit
+*** estdio21.orig/INSTALL/pc532.sit	Thu Jan  1 00:00:00 1970
+--- estdio21/INSTALL/pc532.sit	Sun Dec  9 16:05:08 1990
+***************
+*** 0 ****
+--- 1,548 ----
++ *** stdio.g	Thu Jul 26 22:15:17 1990
++ --- stdio.h	Sun Dec  9 16:02:33 1990
++ ***************
++ *** 1,6 ****
++ --- 1,11 ----
++   #ifndef _STDIO_H
++   #define _STDIO_H
++   
++ + /* jkp 30 Nov 1990 */
++ + #ifndef NFILES
++ + #define NFILES 20
++ + #endif
++ + 
++   /*			s t d i o
++    *
++    *		Author: C. E. Chew
++ ***************
++ *** 31,36 ****
++ --- 36,50 ----
++   /*efine _STDIO_NULL*/
++   /*efine NULL*/
++   /*-*/
++ + /*@*/
++ + #ifndef NULL
++ + # define NULL	((void *)0)
++ + #endif
++ + #define _STDIO_UCHAR_		0
++ + #define _STDIO_VA_LIST_		char *
++ + #define _STDIO_SIZE_T_		unsigned long
++ + #define _STDIO_USIZE_T_		unsigned int
++ + /*=*/
++   
++   /* Definitions based on ANSI compiler */
++   #ifdef		__STDC__
++ ***************
++ *** 225,231 ****
++ --- 239,247 ----
++   void	setbuf		_STDIO_P_((FILE *, char *));
++   int	setvbuf		_STDIO_P_((FILE *, char *, int, __stdiosize_t));
++   
++ + #if 0
++   int	rename		_STDIO_P_((const char *, const char *));
++ + #endif
++   int	remove		_STDIO_P_((const char *));
++   
++   void	perror		_STDIO_P_((const char *));
++ *** site.h	Sun Dec 9 16:05:03 1990
++ --- site.h	Sun Dec 9 16:05:03 1990
++ ***************
++ *** 0 ****
++ --- 1,35 ----
++ + /*efine NDEBUG*/
++ + /*efine HIDDEN*/
++ + #define NOFLOAT
++ + #define ERRLIST
++ + #define STDARG
++ + #define LIMITS
++ + #define FLOAT
++ + #define HUGE_VAL HUGE
++ + #define UNSIGNEDCHAR
++ + #include <memory.h>
++ + #define MEMORY
++ + /*efine MYMEMCPY*/
++ + /*efine MYMEMCHR*/
++ + /*efine MYMEMSET*/
++ + #define STRING
++ + int tolower(int);
++ + #define TOLOWER(c) tolower(c)
++ + #define OPEN3
++ + #define RENAME
++ + /*efine UNISTD*/
++ + #define STDIN_FILENO 0
++ + #define STDOUT_FILENO 1
++ + #define STDERR_FILENO 2
++ + /*efine MODE_T mode_t*/
++ + /*efine UID_T uid_t*/
++ + /*efine VOIDSIGNAL*/
++ + #define SYSTYPES
++ + typedef int pid_t;			/* best guess */
++ + typedef int uid_t;			/* best guess */
++ + typedef int mode_t;		/* best guess */
++ + #define _SIZE_T
++ + /*efine DENORMAL*/
++ + /*efine TRUNCATE*/
++ + /*efine LMR*/
++ + /*efine POWERS*/
++ *** Makefile	Sun Dec 9 16:05:04 1990
++ --- Makefile	Sun Dec 9 16:05:04 1990
++ ***************
++ *** 0 ****
++ --- 1,323 ----
++ + #nix _UNIX
++ + CPP	=/lib/cpp -P -I/usr/include -D_MINIX -D_POSIX_SOURCE
++ + FPCC	=
++ + CC	=gcc -O -c
++ + FPLD	=
++ + LD	=gcc -O -o
++ + 
++ + RANLIB	=ranlib
++ + LORDER	=echo
++ + TSORT	=cat
++ + 
++ + 
++ + 
++ + 
++ + Installdir	=INSTALL/
++ + Testdir		=TEST/
++ + Fptestdir	=FPTEST/
++ + Define		=-D_MINIX -D_POSIX_SOURCE
++ + Include		=-I.
++ + Libraries	=stdio.a
++ + MathLibraries	=
++ + FPLib		=stdiofp.a
++ + StdioLib	=stdio.a
++ + 
++ + All		=README *.x *.c *.g *.h \
++ + 		 makefile.cpp makefile.nix makefile.min \
++ + 		 $(Testdir)*.c $(Testdir)*.sh \
++ + 		 $(Fptestdir)*.c \
++ + 		 $(Installdir)*.c $(Installdir)*.sh \
++ + 		 $(Installdir)*.txt $(Installdir)*.sit \
++ + 		 $(Installdir)*.ans
++ + 
++ + Everyone	=nix min dos
++ + 
++ + CFLAGS= $(Define) $(Include)
++ + 
++ + FPOBJ= \
++ + _f_cvt.o	    _f_fprintf.o	_f_fscanf.o \
++ + _f_guard.o	    _f_pow10.o		_f_printf.o \
++ + _f_scanf.o	    _f_sprintf.o	_f_sscanf.o \
++ + _f_tvc.o	    _f_vfprintf.o	_f_vprintf.o \
++ + _f_vsprintf.o
++ + 
++ + LIBOBJ= \
++ + _allocbuf.o	    _bfs.o		_bread.o \
++ + _bwrite.o	    _err.o		_errlist.o \
++ + _fgetlx.o	    _file.o		_fopen.o \
++ + _freebuf.o	    _in.o		_ioread.o \
++ + _iowrite.o	    _ipow10.o		_open3.o \
++ + _os.o		    _out.o		_rename.o \
++ + _rlbf.o		    _stdio.o		_update.o \
++ + _utoa.o		    _vfprintf.o		_vfscanf.o \
++ + _vscanf.o	    _vsscanf.o		_xassert.o \
++ + _z_cvt.o	    _z_tvc.o		_zatexit.o \
++ + _zerr.o		    _zout.o		_zrlbf.o \
++ + _zwrapup.o	    atexit.o		clearerr.o \
++ + ctermid.o	    cuserid.o		exit.o \
++ + fclose.o	    fdopen.o		feof.o \
++ + ferror.o	    fflush.o		fgetc.o \
++ + fgetpos.o	    fgets.o		fileno.o \
++ + fopen.o		    fprintf.o		fputc.o \
++ + fputs.o		    fread.o		freopen.o \
++ + fscanf.o	    fseek.o		fsetpos.o \
++ + ftell.o		    fwrite.o		getc.o \
++ + getchar.o	    gets.o		getw.o \
++ + perror.o	    printf.o		putc.o \
++ + putchar.o	    puts.o		putw.o \
++ + remove.o	    rewind.o		scanf.o \
++ + setbuf.o	    setvbuf.o		sprintf.o \
++ + sscanf.o	    tmpfile.o		tmpnam.o \
++ + ungetc.o	    vfprintf.o		vprintf.o \
++ + vsprintf.o
++ + 
++ + .SUFFIXES:	.o .c
++ + .c.o:
++ + 	$(CC) $(CFLAGS) $<
++ + 
++ + test:
++ + 	-cd $(Testdir) ; \
++ + 	for f in *.c ; do \
++ + 	  n=`basename $$f .c` ; \
++ + 	  $(CC) $(CFLAGS) -I.. $$n.c ; \
++ + 	  $(LD) $$n $$n.o ../stdio.a ; \
++ + 	done
++ + 
++ + fptest:
++ + 	-cd $(Fptestdir) ; \
++ + 	for f in *.c ; do \
++ + 	  n=`basename $$f .c` ; \
++ + 	  $(FPCC) $(CFLAGS) -I.. $$n.c ; \
++ + 	  $(FPLD) $$n $$n.o ../stdiofp.a ../stdio.a $(MathLibraries) ; \
++ + 	done
++ + 
++ + update:
++ + 	-if test -z "$(LIBC)" ; then \
++ + 	  echo Usage: make update LIBC=library ; \
++ + 	else \
++ + 	  ar t $(LIBC) | sed -e 's/ //g' | sort > libc.files ; \
++ + 	  ar rv $(LIBC) `ls *.o | comm -12 - libc.files` ; \
++ + 	  rm -f libc.files ; \
++ + 	  $(RANLIB) $(LIBC); \
++ + 	fi
++ + 
++ + # Library dependencies
++ + 
++ + $(FPOBJ) $(LIBOBJ):	stdiolib.h stdio.h
++ + 
++ + Hide:	site.h
++ + 	rm -f Hidden
++ + 	-if grep -s "define HIDDEN" site.h ; then \
++ + 	$(CPP) stub.x >Hidden ; \
++ + 	for f in `grep '^.define [a-z]' hidden.h | \
++ + 		  sed 's/^.define \([a-z]*\).*/\1/'` ; do \
++ + 	echo $${f} ; \
++ + 	sed -e "s/XYZ/$${f}/g" < Hidden > _u_$${f}.s ; \
++ + 	as -o _u_$${f}.o _u_$${f}.s ; \
++ + 	done ; \
++ + 	fi
++ + 	echo -n >Hide
++ + 
++ + # Put together a library
++ + 
++ + FPobjects:	$(FPOBJ)
++ + 
++ + FPorder:	$(FPOBJ) Hide
++ + 	echo -n >FPorder
++ + 	-if test -f Hidden ; then \
++ + 	ls _u_*print*.o _u_*scan*.o >> FPorder ; \
++ + 	fi
++ + 	ls $(FPOBJ) > FPorder.tmp
++ + 	$(LORDER) `cat FPorder.tmp` | $(TSORT) >> FPorder; \
++ + 	rm -f FPorder.tmp FPsort.tmp
++ + 
++ + FParchive:	FPorder
++ + 	rm -f $(FPLib)
++ + 	ar -a $(FPLib) `cat FPorder`
++ + 	$(RANLIB) stdiofp.a
++ + 
++ + Liborder:	$(LIBOBJ) Hide
++ + 	echo -n >Liborder
++ + 	-if test -f Hidden ; then \
++ + 	ls _u_*.o >> Liborder ; \
++ + 	fi
++ + 	ls $(LIBOBJ) > Liborder.tmp
++ + 	$(LORDER) `cat Liborder.tmp` | $(TSORT) >> Liborder; \
++ + 	rm -f Liborder.tmp
++ + 
++ + stdio $(StdioLib):	Liborder
++ + 	rm -f $(StdioLib)
++ + 	ar -a $(StdioLib) `cat Liborder`
++ + 	$(RANLIB) stdio.a
++ + 
++ + stdiofp $(FPLib):
++ + 	$(MAKE) FPobjects "CC=$(FPCC)" "LD=$(FPLD)"
++ + 	$(MAKE) FParchive
++ + 
++ + # Pretty list of objects
++ + 
++ + fpfiles:
++ + 	ls _f_*.c | sed -e 's/\.c/.O/g' | \
++ + 	pr -3 -l1 -t -w60 > FPfiles
++ + 	sed -e 's/O *$$/O \\/' -e '$$s/ \\$$//' < FPfiles > FPfiles.new
++ + 	mv FPfiles.new FPfiles
++ + 
++ + libfiles:
++ + 	ls [_a-wz]*.c | sed -e '/^_f_/d' -e 's/\.c/.O/g' | \
++ +  	pr -3 -l1 -t -w60 > Libfiles
++ + 	sed -e 's/O *$$/O \\/' -e '$$s/ \\$$//' < Libfiles > Libfiles.new
++ + 	mv Libfiles.new Libfiles
++ + 
++ + # Clean
++ + 
++ + clean:
++ + 	rm -f $(LIBOBJ)
++ + 	rm -f $(FPOBJ)
++ + 	rm -f _u_*
++ + 	rm -f $(StdioLib) $(FPLib)
++ + 	rm -f $(Testdir)*.o $(Fptestdir)*.o $(Installdir)*.o
++ + 	for d in $(Testdir) $(Fptestdir) $(Installdir) ; do \
++ + 	  cd $$d ; \
++ + 	  rm -f core *.out ; \
++ + 	  for f in *.c ; do \
++ + 	    e=`basename $$f .c` ; \
++ + 	    rm -f $$e ; \
++ + 	  done ; \
++ + 	  cd .. ; \
++ + 	done
++ + 	rm -f *~ core *.out *order Hid* test.dat
++ + 	rm -f *files *.tmp
++ + 	rm -f estdio.u* estdio.[01]?
++ + 
++ + # Site
++ + 
++ + site:
++ + 	-cdiff stdio.g stdio.h > $(Installdir)pc532.sit
++ + 	-if test ! -f site.h ; then \
++ + 	  echo site.h not installed ; \
++ + 	else \
++ + 	  LINES=`wc -l < site.h | sed 's/ //g'` ; \
++ + 	  DATE=`date` ; \
++ + 	  echo "*** site.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- site.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "***************" >> $(Installdir)pc532.sit ; \
++ + 	  echo "*** 0 ****" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- 1,$${LINES} ----" >> $(Installdir)pc532.sit ; \
++ + 	  sed -e 's/^/+ /' < site.h >> $(Installdir)pc532.sit ; \
++ + 	fi
++ + 	-if test ! -f Makefile ; then \
++ + 	  echo Makefile not installed ; \
++ + 	else \
++ + 	  LINES=`wc -l < Makefile | sed 's/ //g'` ; \
++ + 	  DATE=`date` ; \
++ + 	  echo "*** Makefile	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- Makefile	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "***************" >> $(Installdir)pc532.sit ; \
++ + 	  echo "*** 0 ****" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- 1,$${LINES} ----" >> $(Installdir)pc532.sit ; \
++ + 	  sed -e 's/^/+ /' < Makefile >> $(Installdir)pc532.sit ; \
++ + 	fi
++ + 	-if test -s errlist.h ; then \
++ + 	  LINES=`wc -l < errlist.h | sed 's/ //g'` ; \
++ + 	  DATE=`date` ; \
++ + 	  echo "*** errlist.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- errlist.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "***************" >> $(Installdir)pc532.sit ; \
++ + 	  echo "*** 0 ****" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- 1,$${LINES} ----" >> $(Installdir)pc532.sit ; \
++ + 	  sed -e 's/^/+ /' < errlist.h >> $(Installdir)pc532.sit ; \
++ + 	fi
++ + 	-if test -s powers.h ; then \
++ + 	  LINES=`wc -l < powers.h | sed 's/ //g'` ; \
++ + 	  DATE=`date` ; \
++ + 	  echo "*** powers.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- powers.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "***************" >> $(Installdir)pc532.sit ; \
++ + 	  echo "*** 0 ****" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- 1,$${LINES} ----" >> $(Installdir)pc532.sit ; \
++ + 	  sed -e 's/^/+ /' < powers.h >> $(Installdir)pc532.sit ; \
++ + 	fi
++ + 	-if test -s lmr.h ; then \
++ + 	  LINES=`wc -l < lmr.h | sed 's/ //g'` ; \
++ + 	  DATE=`date` ; \
++ + 	  echo "*** lmr.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- lmr.h	$${DATE}" >> $(Installdir)pc532.sit ; \
++ + 	  echo "***************" >> $(Installdir)pc532.sit ; \
++ + 	  echo "*** 0 ****" >> $(Installdir)pc532.sit ; \
++ + 	  echo "--- 1,$${LINES} ----" >> $(Installdir)pc532.sit ; \
++ + 	  sed -e 's/^/+ /' < lmr.h >> $(Installdir)pc532.sit ; \
++ + 	fi
++ + 
++ + # Distribution
++ + 
++ + distribution:
++ + 	ls $(All) | \
++ + 	sed -e '/^stdio\.h/d' \
++ + 	    -e '/^site\.h/d' \
++ + 	    -e '/^errlist\.h/d' \
++ + 	    -e '/^powers\.h/d' \
++ + 	    -e '/^lmr\.h/d' \
++ + 	    -e '/^_u_/d' > files
++ + 
++ + # Arc
++ + 
++ + arc:	distribution
++ + 	rm -f estdio.arc
++ + 	arc a estdio.arc @files
++ + 
++ + # Tar
++ + 
++ + tar estdio.taz:	distribution
++ + 	rm -f estdio.taz
++ + 	tar cvf - `cat files` | compress -b13 > estdio.taz
++ + 
++ + # Distribution by tar parts
++ + 
++ + uu:	distribution
++ + 	rm -f estdio.u*
++ + 	tar cvf - `cat files` | \
++ + 	compress -b13         | \
++ + 	uuencode estdio.taz     | \
++ + 	split -300 - estdio.u
++ + 	for f in estdio.u* ; do \
++ + 	  echo '------ Cut Here ------' > uu.tmp ; \
++ + 	  cat $$f >> uu.tmp ; \
++ + 	  echo '------ Cut Here ------' >> uu.tmp ; \
++ + 	  mv uu.tmp $$f ; \
++ + 	done
++ + 
++ + # Shell archive
++ + 
++ + shar:	distribution
++ + 	rm -f estdio.[0-9][0-9]*
++ + 	sed -e '/^site\.h/d' \
++ + 	    -e '/^stdio\.h/d' \
++ + 	    -e 's%.*\.x%&	Assembler stub%' \
++ + 	    -e 's%^TEST/.*%&	Exercise file%' \
++ + 	    -e 's%^FPTEST/.*%&	Exercise file%' \
++ + 	    -e 's%^INSTALL/.*\.c%&	Installation file%' \
++ + 	    -e 's%^INSTALL/.*\.sh%&	Installation script%' \
++ + 	    -e 's%^INSTALL/.*\.txt%&	Documentation%' \
++ + 	    -e 's%^INSTALL/.*\.sit%&	Differences for preconfigured sites%' \
++ + 	    -e 's%^INSTALL/.*\.ans%&	Answer file for generating sites%' \
++ + 	    -e 's%^makefile.cpp$$%&	Cppmake file%' \
++ + 	    -e 's%^makefile.[a-z]*$$%&	Makefile%' \
++ + 	    -e 's%^[0-9a-z_]*\.g$$%&	Header file source%' \
++ + 	    -e 's%^[0-9a-z_]*\.h$$%&	Header file%' \
++ + 	    -e 's%^_z.*\.c$$%&	Stdio fake source code%' \
++ + 	    -e 's%^[0-9a-z_]*\.c$$%&	Stdio source code%' < files > MANIFEST
++ + 	shar -a -n estdio -C -b13 -c -o estdio -l 40 MANIFEST `cat files`
++ + 
++ + # Dust and dirt
++ + 
++ + lint:
++ + 	lint -n $(Include) $(Define) `echo $(LIBOBJ) | sed 's/\.o/.c/g'`
++ + 
++ + # Makefiles
++ + 
++ + makefiles:
++ + 	-for w in $(Everyone) ; do \
++ + 	n=`grep "^.$$w " <makefile.cpp | sed 's/^.[^ ]* //'` ; \
++ + 	echo $$n ; \
++ + 	cppmake -D$$n -o makefile.$$w ; \
++ + 	done
++ *** errlist.h	Sun Dec 9 16:05:06 1990
++ --- errlist.h	Sun Dec 9 16:05:06 1990
++ ***************
++ *** 0 ****
++ --- 1,35 ----
++ + /* EUNKNOWN          0 */ "Unknown error",
++ + /* ENONYMOUS         1 */ "Not owner",
++ + /* ENONYMOUS         2 */ "No such file or directory",
++ + /* ENONYMOUS         3 */ "No such process",
++ + /* ENONYMOUS         4 */ "Interrupted system call",
++ + /* ENONYMOUS         5 */ "I/O error",
++ + /* ENONYMOUS         6 */ "No such device or address",
++ + /* ENONYMOUS         7 */ "Arg list too long",
++ + /* ENONYMOUS         8 */ "Exec format error",
++ + /* ENONYMOUS         9 */ "Bad file number",
++ + /* ENONYMOUS        10 */ "No children",
++ + /* ENONYMOUS        11 */ "No more processes",
++ + /* ENONYMOUS        12 */ "Not enough core",
++ + /* ENONYMOUS        13 */ "Permission denied",
++ + /* ENONYMOUS        14 */ "Bad address",
++ + /* ENONYMOUS        15 */ "Block device required",
++ + /* ENONYMOUS        16 */ "Mount device busy",
++ + /* ENONYMOUS        17 */ "File exists",
++ + /* ENONYMOUS        18 */ "Cross-device link",
++ + /* ENONYMOUS        19 */ "No such device",
++ + /* ENONYMOUS        20 */ "Not a directory",
++ + /* ENONYMOUS        21 */ "Is a directory",
++ + /* ENONYMOUS        22 */ "Invalid argument",
++ + /* ENONYMOUS        23 */ "File table overflow",
++ + /* ENONYMOUS        24 */ "Too many open files",
++ + /* ENONYMOUS        25 */ "Not a typewriter",
++ + /* ENONYMOUS        26 */ "Text file busy",
++ + /* ENONYMOUS        27 */ "File too large",
++ + /* ENONYMOUS        28 */ "No space left on device",
++ + /* ENONYMOUS        29 */ "Illegal seek",
++ + /* ENONYMOUS        30 */ "Read-only file system",
++ + /* ENONYMOUS        31 */ "Too many links",
++ + /* ENONYMOUS        32 */ "Broken pipe",
++ + /* ENONYMOUS        33 */ "Math argument",
++ + /* ENONYMOUS        34 */ "Result too large"
++ *** powers.h	Sun Dec 9 16:05:07 1990
++ --- powers.h	Sun Dec 9 16:05:07 1990
++ ***************
++ *** 0 ****
++ --- 1,80 ----
++ + #define NEGEXPONENT	-
++ + #define POSEXPONENT	0
++ + #ifdef SMALL
++ + #undef SMALL
++ + /* 53 bit table generated by ypow10 */
++ + 
++ +   -1744830464, 1020396463, 1449953230,  993762648, /* 1e-15 */
++ + /* 0x98000000, 0x3cd203af, 0x566c87ce, 0x3b3b9d58, */
++ +   -2147483648, 1023837339, 1812441538,  996836526, /* 1e-14 */
++ + /* 0x80000000, 0x3d06849b, 0x6c07a9c2, 0x3b6a84ae, */
++ +    1744830464, 1027352002, 1889092397,  995253664, /* 1e-13 */
++ + /* 0x68000000, 0x3d3c25c2, 0x7099432d, 0x3b525da0, */
++ +   -2147483648, 1030854553,  295170687, 1001578145, /* 1e-12 */
++ + /* 0x80000000, 0x3d719799, 0x1197f27f, 0x3bb2dea1, */
++ +    -536870912, 1034288511, 1442705183, 1005033033, /* 1e-11 */
++ + /* 0xe0000000, 0x3da5fd7f, 0x55fdef1f, 0x3be79649, */
++ +    -671088640, 1037794527,-1417843993, 1008565211, /* 1e-10 */
++ + /* 0xd8000000, 0x3ddb7cdf, 0xab7d6ae7, 0x3c1d7bdb, */
++ +    -402653184, 1041313291, 1500714625, 1008954186, /* 1e-09 */
++ + /* 0xe8000000, 0x3e112e0b, 0x59731681, 0x3c236b4a, */
++ +    -536870912, 1044740494, -822280766, 1016169569, /* 1e-08 */
++ + /* 0xe0000000, 0x3e45798e, 0xcefcfdc2, 0x3c918461, */
++ +   -1744830464, 1048238066, 1119632691, 1019602298, /* 1e-07 */
++ + /* 0x98000000, 0x3e7ad7f2, 0x42bc3d33, 0x3cc5e57a, */
++ +   -1610612736, 1051772663,-1495885570, 1021754801, /* 1e-06 */
++ + /* 0xa0000000, 0x3eb0c6f7, 0xa6d698fe, 0x3ce6bdb1, */
++ +   -2013265920, 1055193269,  277626686, 1025273118, /* 1e-05 */
++ + /* 0x88000000, 0x3ee4f8b5, 0x108c3f3e, 0x3d1c6d1e, */
++ +    -402653184, 1058682594, 1697371075, 1030283801, /* 1e-04 */
++ + /* 0xe8000000, 0x3f1a36e2, 0x652bd3c3, 0x3d68e219, */
++ +    -805306368, 1062232653, -549755814, 1034390863, /* 1e-03 */
++ + /* 0xd0000000, 0x3f50624d, 0xdf3b645a, 0x3da78d4f, */
++ +    1073741824, 1065646817, -343597384, 1039054929, /* 1e-02 */
++ + /* 0x40000000, 0x3f847ae1, 0xeb851eb8, 0x3deeb851, */
++ +   -1744830464, 1069128089,-1717986918, 1039767961, /* 1e-01 */
++ + /* 0x98000000, 0x3fb99999, 0x9999999a, 0x3df99999, */
++ + /* 53 bit table generated by ypow10 */
++ + 
++ +             0, 1072693248, /* 1e000 */
++ + /* 0x       0, 0x3ff00000, */
++ +             0, 1076101120, /* 1e001 */
++ + /* 0x       0, 0x40240000, */
++ +             0, 1079574528, /* 1e002 */
++ + /* 0x       0, 0x40590000, */
++ +             0, 1083129856, /* 1e003 */
++ + /* 0x       0, 0x408f4000, */
++ +             0, 1086556160, /* 1e004 */
++ + /* 0x       0, 0x40c38800, */
++ +             0, 1090021888, /* 1e005 */
++ + /* 0x       0, 0x40f86a00, */
++ +             0, 1093567616, /* 1e006 */
++ + /* 0x       0, 0x412e8480, */
++ +             0, 1097011920, /* 1e007 */
++ + /* 0x       0, 0x416312d0, */
++ +             0, 1100470148, /* 1e008 */
++ + /* 0x       0, 0x4197d784, */
++ +             0, 1104006501, /* 1e009 */
++ + /* 0x       0, 0x41cdcd65, */
++ +     536870912, 1107468383, /* 1e010 */
++ + /* 0x20000000, 0x4202a05f, */
++ +    -402653184, 1110919286, /* 1e011 */
++ + /* 0xe8000000, 0x42374876, */
++ +   -1577058304, 1114446484, /* 1e012 */
++ + /* 0xa2000000, 0x426d1a94, */
++ +    -448790528, 1117925532, /* 1e013 */
++ + /* 0xe5400000, 0x42a2309c, */
++ +     512753664, 1121369284, /* 1e014 */
++ + /* 0x1e900000, 0x42d6bcc4, */
++ +     640942080, 1124887541, /* 1e015 */
++ + /* 0x26340000, 0x430c6bf5, */
++ + #endif
++ + #ifdef LARGE
++ + #undef LARGE
++ + /* 53 bit table generated by ypow10 */
++ + 
++ +             0, 1072693248, /* 1e000 */
++ + /* 0x       0, 0x3ff00000, */
++ +     937459712, 1128383353, /* 1e016 */
++ + /* 0x37e08000, 0x4341c379, */
++ + #endif
++ *** lmr.h	Sun Dec 9 16:05:08 1990
++ --- lmr.h	Sun Dec 9 16:05:08 1990
++ ***************
++ *** 0 ****
++ --- 1,4 ----
++ + /* 53 figit table generated by ylmr */
++ + 
++ +            -1, 2145386495,
++ + /* 0xffffffff, 0x7fdfffff,  LDBL_MAX / FLT_RADIX */
+diff -crN estdio21.orig/Liborder estdio21/Liborder
+*** estdio21.orig/Liborder	Thu Jan  1 00:00:00 1970
+--- estdio21/Liborder	Sun Dec  9 15:58:47 1990
+***************
+*** 0 ****
+--- 1,1 ----
++ _allocbuf.o _bfs.o _bread.o _bwrite.o _err.o _errlist.o _fgetlx.o _file.o _fopen.o _freebuf.o _in.o _ioread.o _iowrite.o _ipow10.o _open3.o _os.o _out.o _rename.o _rlbf.o _stdio.o _update.o _utoa.o _vfprintf.o _vfscanf.o _vscanf.o _vsscanf.o _xassert.o _z_cvt.o _z_tvc.o _zatexit.o _zerr.o _zout.o _zrlbf.o _zwrapup.o atexit.o clearerr.o ctermid.o cuserid.o exit.o fclose.o fdopen.o feof.o ferror.o fflush.o fgetc.o fgetpos.o fgets.o fileno.o fopen.o fprintf.o fputc.o fputs.o fread.o freopen.o fscanf.o fseek.o fsetpos.o ftell.o fwrite.o getc.o getchar.o gets.o getw.o perror.o printf.o putc.o putchar.o puts.o putw.o remove.o rewind.o scanf.o setbuf.o setvbuf.o sprintf.o sscanf.o tmpfile.o tmpnam.o ungetc.o vfprintf.o vprintf.o vsprintf.o
+diff -crN estdio21.orig/Makefile estdio21/Makefile
+*** estdio21.orig/Makefile	Sun Dec  9 15:49:15 1990
+--- estdio21/Makefile	Sun Dec  9 15:57:48 1990
+***************
+*** 133,139 ****
+  
+  FParchive:	FPorder
+  	rm -f $(FPLib)
+! 	ar cr $(FPLib) `cat FPorder`
+  	$(RANLIB) stdiofp.a
+  
+  Liborder:	$(LIBOBJ) Hide
+--- 133,139 ----
+  
+  FParchive:	FPorder
+  	rm -f $(FPLib)
+! 	ar -a $(FPLib) `cat FPorder`
+  	$(RANLIB) stdiofp.a
+  
+  Liborder:	$(LIBOBJ) Hide
+***************
+*** 147,153 ****
+  
+  stdio $(StdioLib):	Liborder
+  	rm -f $(StdioLib)
+! 	ar cr $(StdioLib) `cat Liborder`
+  	$(RANLIB) stdio.a
+  
+  stdiofp $(FPLib):
+--- 147,153 ----
+  
+  stdio $(StdioLib):	Liborder
+  	rm -f $(StdioLib)
+! 	ar -a $(StdioLib) `cat Liborder`
+  	$(RANLIB) stdio.a
+  
+  stdiofp $(FPLib):
+diff -crN estdio21.orig/errlist.h estdio21/errlist.h
+*** estdio21.orig/errlist.h	Thu Jan  1 00:00:00 1970
+--- estdio21/errlist.h	Sun Dec  9 15:49:42 1990
+***************
+*** 0 ****
+--- 1,35 ----
++ /* EUNKNOWN          0 */ "Unknown error",
++ /* ENONYMOUS         1 */ "Not owner",
++ /* ENONYMOUS         2 */ "No such file or directory",
++ /* ENONYMOUS         3 */ "No such process",
++ /* ENONYMOUS         4 */ "Interrupted system call",
++ /* ENONYMOUS         5 */ "I/O error",
++ /* ENONYMOUS         6 */ "No such device or address",
++ /* ENONYMOUS         7 */ "Arg list too long",
++ /* ENONYMOUS         8 */ "Exec format error",
++ /* ENONYMOUS         9 */ "Bad file number",
++ /* ENONYMOUS        10 */ "No children",
++ /* ENONYMOUS        11 */ "No more processes",
++ /* ENONYMOUS        12 */ "Not enough core",
++ /* ENONYMOUS        13 */ "Permission denied",
++ /* ENONYMOUS        14 */ "Bad address",
++ /* ENONYMOUS        15 */ "Block device required",
++ /* ENONYMOUS        16 */ "Mount device busy",
++ /* ENONYMOUS        17 */ "File exists",
++ /* ENONYMOUS        18 */ "Cross-device link",
++ /* ENONYMOUS        19 */ "No such device",
++ /* ENONYMOUS        20 */ "Not a directory",
++ /* ENONYMOUS        21 */ "Is a directory",
++ /* ENONYMOUS        22 */ "Invalid argument",
++ /* ENONYMOUS        23 */ "File table overflow",
++ /* ENONYMOUS        24 */ "Too many open files",
++ /* ENONYMOUS        25 */ "Not a typewriter",
++ /* ENONYMOUS        26 */ "Text file busy",
++ /* ENONYMOUS        27 */ "File too large",
++ /* ENONYMOUS        28 */ "No space left on device",
++ /* ENONYMOUS        29 */ "Illegal seek",
++ /* ENONYMOUS        30 */ "Read-only file system",
++ /* ENONYMOUS        31 */ "Too many links",
++ /* ENONYMOUS        32 */ "Broken pipe",
++ /* ENONYMOUS        33 */ "Math argument",
++ /* ENONYMOUS        34 */ "Result too large"
+diff -crN estdio21.orig/lmr.h estdio21/lmr.h
+*** estdio21.orig/lmr.h	Thu Jan  1 00:00:00 1970
+--- estdio21/lmr.h	Sun Dec  9 06:08:13 1990
+***************
+*** 0 ****
+--- 1,4 ----
++ /* 53 figit table generated by ylmr */
++ 
++            -1, 2145386495,
++ /* 0xffffffff, 0x7fdfffff,  LDBL_MAX / FLT_RADIX */
+diff -crN estdio21.orig/powers.h estdio21/powers.h
+*** estdio21.orig/powers.h	Thu Jan  1 00:00:00 1970
+--- estdio21/powers.h	Sun Dec  9 06:08:24 1990
+***************
+*** 0 ****
+--- 1,80 ----
++ #define NEGEXPONENT	-
++ #define POSEXPONENT	0
++ #ifdef SMALL
++ #undef SMALL
++ /* 53 bit table generated by ypow10 */
++ 
++   -1744830464, 1020396463, 1449953230,  993762648, /* 1e-15 */
++ /* 0x98000000, 0x3cd203af, 0x566c87ce, 0x3b3b9d58, */
++   -2147483648, 1023837339, 1812441538,  996836526, /* 1e-14 */
++ /* 0x80000000, 0x3d06849b, 0x6c07a9c2, 0x3b6a84ae, */
++    1744830464, 1027352002, 1889092397,  995253664, /* 1e-13 */
++ /* 0x68000000, 0x3d3c25c2, 0x7099432d, 0x3b525da0, */
++   -2147483648, 1030854553,  295170687, 1001578145, /* 1e-12 */
++ /* 0x80000000, 0x3d719799, 0x1197f27f, 0x3bb2dea1, */
++    -536870912, 1034288511, 1442705183, 1005033033, /* 1e-11 */
++ /* 0xe0000000, 0x3da5fd7f, 0x55fdef1f, 0x3be79649, */
++    -671088640, 1037794527,-1417843993, 1008565211, /* 1e-10 */
++ /* 0xd8000000, 0x3ddb7cdf, 0xab7d6ae7, 0x3c1d7bdb, */
++    -402653184, 1041313291, 1500714625, 1008954186, /* 1e-09 */
++ /* 0xe8000000, 0x3e112e0b, 0x59731681, 0x3c236b4a, */
++    -536870912, 1044740494, -822280766, 1016169569, /* 1e-08 */
++ /* 0xe0000000, 0x3e45798e, 0xcefcfdc2, 0x3c918461, */
++   -1744830464, 1048238066, 1119632691, 1019602298, /* 1e-07 */
++ /* 0x98000000, 0x3e7ad7f2, 0x42bc3d33, 0x3cc5e57a, */
++   -1610612736, 1051772663,-1495885570, 1021754801, /* 1e-06 */
++ /* 0xa0000000, 0x3eb0c6f7, 0xa6d698fe, 0x3ce6bdb1, */
++   -2013265920, 1055193269,  277626686, 1025273118, /* 1e-05 */
++ /* 0x88000000, 0x3ee4f8b5, 0x108c3f3e, 0x3d1c6d1e, */
++    -402653184, 1058682594, 1697371075, 1030283801, /* 1e-04 */
++ /* 0xe8000000, 0x3f1a36e2, 0x652bd3c3, 0x3d68e219, */
++    -805306368, 1062232653, -549755814, 1034390863, /* 1e-03 */
++ /* 0xd0000000, 0x3f50624d, 0xdf3b645a, 0x3da78d4f, */
++    1073741824, 1065646817, -343597384, 1039054929, /* 1e-02 */
++ /* 0x40000000, 0x3f847ae1, 0xeb851eb8, 0x3deeb851, */
++   -1744830464, 1069128089,-1717986918, 1039767961, /* 1e-01 */
++ /* 0x98000000, 0x3fb99999, 0x9999999a, 0x3df99999, */
++ /* 53 bit table generated by ypow10 */
++ 
++             0, 1072693248, /* 1e000 */
++ /* 0x       0, 0x3ff00000, */
++             0, 1076101120, /* 1e001 */
++ /* 0x       0, 0x40240000, */
++             0, 1079574528, /* 1e002 */
++ /* 0x       0, 0x40590000, */
++             0, 1083129856, /* 1e003 */
++ /* 0x       0, 0x408f4000, */
++             0, 1086556160, /* 1e004 */
++ /* 0x       0, 0x40c38800, */
++             0, 1090021888, /* 1e005 */
++ /* 0x       0, 0x40f86a00, */
++             0, 1093567616, /* 1e006 */
++ /* 0x       0, 0x412e8480, */
++             0, 1097011920, /* 1e007 */
++ /* 0x       0, 0x416312d0, */
++             0, 1100470148, /* 1e008 */
++ /* 0x       0, 0x4197d784, */
++             0, 1104006501, /* 1e009 */
++ /* 0x       0, 0x41cdcd65, */
++     536870912, 1107468383, /* 1e010 */
++ /* 0x20000000, 0x4202a05f, */
++    -402653184, 1110919286, /* 1e011 */
++ /* 0xe8000000, 0x42374876, */
++   -1577058304, 1114446484, /* 1e012 */
++ /* 0xa2000000, 0x426d1a94, */
++    -448790528, 1117925532, /* 1e013 */
++ /* 0xe5400000, 0x42a2309c, */
++     512753664, 1121369284, /* 1e014 */
++ /* 0x1e900000, 0x42d6bcc4, */
++     640942080, 1124887541, /* 1e015 */
++ /* 0x26340000, 0x430c6bf5, */
++ #endif
++ #ifdef LARGE
++ #undef LARGE
++ /* 53 bit table generated by ypow10 */
++ 
++             0, 1072693248, /* 1e000 */
++ /* 0x       0, 0x3ff00000, */
++     937459712, 1128383353, /* 1e016 */
++ /* 0x37e08000, 0x4341c379, */
++ #endif
+diff -crN estdio21.orig/site.h estdio21/site.h
+*** estdio21.orig/site.h	Thu Jan  1 00:00:00 1970
+--- estdio21/site.h	Sun Dec  9 15:49:58 1990
+***************
+*** 0 ****
+--- 1,35 ----
++ /*efine NDEBUG*/
++ /*efine HIDDEN*/
++ #define NOFLOAT
++ #define ERRLIST
++ #define STDARG
++ #define LIMITS
++ #define FLOAT
++ #define HUGE_VAL HUGE
++ #define UNSIGNEDCHAR
++ #include <memory.h>
++ #define MEMORY
++ /*efine MYMEMCPY*/
++ /*efine MYMEMCHR*/
++ /*efine MYMEMSET*/
++ #define STRING
++ int tolower(int);
++ #define TOLOWER(c) tolower(c)
++ #define OPEN3
++ #define RENAME
++ /*efine UNISTD*/
++ #define STDIN_FILENO 0
++ #define STDOUT_FILENO 1
++ #define STDERR_FILENO 2
++ /*efine MODE_T mode_t*/
++ /*efine UID_T uid_t*/
++ /*efine VOIDSIGNAL*/
++ #define SYSTYPES
++ typedef int pid_t;			/* best guess */
++ typedef int uid_t;			/* best guess */
++ typedef int mode_t;		/* best guess */
++ #define _SIZE_T
++ /*efine DENORMAL*/
++ /*efine TRUNCATE*/
++ /*efine LMR*/
++ /*efine POWERS*/
+diff -crN estdio21.orig/stdio.h estdio21/stdio.h
+*** estdio21.orig/stdio.h	Sun Dec  9 15:49:33 1990
+--- estdio21/stdio.h	Sun Dec  9 16:02:33 1990
+***************
+*** 1,6 ****
+--- 1,11 ----
+  #ifndef _STDIO_H
+  #define _STDIO_H
+  
++ /* jkp 30 Nov 1990 */
++ #ifndef NFILES
++ #define NFILES 20
++ #endif
++ 
+  /*			s t d i o
+   *
+   *		Author: C. E. Chew
+***************
+*** 36,43 ****
+  # define NULL	((void *)0)
+  #endif
+  #define _STDIO_UCHAR_		0
+! #define _STDIO_VA_LIST_		typedef char *va_list;
+! #define _STDIO_SIZE_T_		typedef unsigned long size_t;
+  #define _STDIO_USIZE_T_		unsigned int
+  /*=*/
+  
+--- 41,48 ----
+  # define NULL	((void *)0)
+  #endif
+  #define _STDIO_UCHAR_		0
+! #define _STDIO_VA_LIST_		char *
+! #define _STDIO_SIZE_T_		unsigned long
+  #define _STDIO_USIZE_T_		unsigned int
+  /*=*/
+  
+***************
+*** 234,240 ****
+--- 239,247 ----
+  void	setbuf		_STDIO_P_((FILE *, char *));
+  int	setvbuf		_STDIO_P_((FILE *, char *, int, __stdiosize_t));
+  
++ #if 0
+  int	rename		_STDIO_P_((const char *, const char *));
++ #endif
+  int	remove		_STDIO_P_((const char *));
+  
+  void	perror		_STDIO_P_((const char *));

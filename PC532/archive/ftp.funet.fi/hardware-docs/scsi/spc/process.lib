@@ -1,0 +1,141 @@
+/**********************************************************
+*							  *
+*	process_cmd(): This routine fetches the first     *
+*		       command byte and executes the 	  *
+*		       instruction.			  *
+*							  *
+**********************************************************/
+
+process_cmd()
+{
+	int i;
+	switch(com[0])
+	{
+		case TEST_UNIT_READY: ck_printer();
+				      break;
+
+		case REQUEST_SENSE: send_sense();
+				    break;
+
+		case PRINT:	if (sense[0])				/* Printer possibly in error state	*/
+				{
+					stat=CHECK_CONDITION;		/* Initiator must check sense before continuing	*/
+					break;
+				}
+				data_len = (com[4] + (com[3] * 256));			/* Read the amount of data to be sent	*/
+				if (!reserved || com[2] || !data_len || (data_len > BUFFLIM))
+										/* Check the amount of data is not greater  	*/
+				{						/* than the buffer limit, or equal to zero   	*/
+					sense[0]=ILLEGAL_REQUEST;
+					stat=CHECK_CONDITION;
+				}
+				else
+					print_cmd();		/* DMA into buffer data_len of data	*/
+			    	break;
+
+		case RESERVE_UNIT: if (!initid)
+				   {
+					sense[0]=ILLEGAL_REQUEST;
+					stat=CHECK_CONDITION;
+				   }
+				   else
+				   {
+				   	if (reserved && (reserved != initid))
+						stat=RESERVATION_CONFLICT;
+				   	else
+						reserved=initid;
+				   }
+				   break;
+
+		case RELEASE_UNIT:  if (!reserved)
+				    {
+					sense[0]=ILLEGAL_REQUEST;
+					stat=CHECK_CONDITION;
+				    }
+				    else
+				    {
+					if (reserved && (reserved != initid))
+						stat=RESERVATION_CONFLICT;
+				   	else
+						reserved=FALSE;
+				    }
+				    break;
+
+		case FLUSH_BUFFER:  write(PIOC, (LED_ON | PRINTER_INIT));	/* Re-initialise printer to empty any buffer	*/
+				    write(PIOC,LED_ON);
+				    print_on = in_print = FALSE;	/* Stop print	*/
+				    front = rear = bottom;		/* Empty SPC buffer	*/
+				    break;
+
+		case FORMAT:
+		case SLEW_PRINT:
+		case INQUIRY:
+		case RECOVER_BUFFERED_DATA:
+		case MODE_SELECT:
+		case COPY:
+		case MODE_SENSE:
+		case STOP_PRINT:
+		case RECEIVE_DIAGNOSTIC_RESULTS:
+		case SEND_DIAGNOSTICS:
+		default: sense[0]=ILLEGAL_REQUEST;
+			 stat=CHECK_CONDITION;
+	}
+}
+
+/**********************************************************
+*							  *
+*	ck_printer(): This is called in response to a     *
+*		      'test unit ready' command.It checks *
+*		      the printer and updates the status  *
+*		      buffer and the sense data.	  *
+*							  *
+**********************************************************/
+
+ck_printer()
+{
+	if(read(PIOB) & PRINTER_ERROR)
+	{
+		if(!(read(PIOB) & PRINTER_PE))
+		{
+			sense[0]=MEDIUM_ERROR;
+			stat=CHECK_CONDITION;
+		}
+		else
+		{
+			sense[0]=UNIT_ATTENTION;
+			stat=CHECK_CONDITION;
+		}
+	}
+	else
+	{
+		sense[0]=NO_SENSE;
+		stat=GOOD;
+	}
+}
+
+/**********************************************************
+*							  *
+*	send_sense(): In response to a 'request sense'    *
+*		      command this routine sends the data *
+*		      contained in the status buffer,     *
+*		      using a DMA transfer.		  *
+*							  *
+**********************************************************/
+
+send_sense()
+{
+	if(com[4] > MAX_SENSE)				/* This byte indicates that the initiator requests extended 	*/
+	{						/* sense which this software does not support.			*/
+		sense[0]=ILLEGAL_REQUEST;
+		stat=CHECK_CONDITION;
+	}
+	else
+	{
+		write(DMAMCL,DONT_CARE);
+		write(DMAMOD,(SINGLE_MODE | READ_TRANSFER));
+		write(DMAMSK,CHANNEL0);
+		dmawrit(DMAADD,&sense[0]);
+		dmawrit(DMACNT,(SENSE_BYTES-1));
+		single_dma_in(DATA_IN);
+	}
+}

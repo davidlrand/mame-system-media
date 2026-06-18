@@ -1,0 +1,20 @@
+From owner-pc532%daver@mips.com Wed Mar 28 18:44:09 1990
+Reply-To: pc532@daver.bungi.com
+Date: Wed, 28 Mar 90 11:04:57 pst
+From: Bruce Culbertson <culberts@hplwbc.hpl.hp.com>
+To: pc532@hplwbc.hpl.hp.com
+Subject: Some Monitor Sources
+
+Hi pc532'ers,
+
+Here are a few source files from the monitor.  Resume532.s has the
+"boot" code following the symbol "start".  Dblib.s has code to
+initialize the UART's and to send and receive characters.
+
+In my last message I mentioned that it took twenty seconds to
+initialize 32 megabytes of DRAM.  I solved the mystery.  I screwed
+up the code to initialize the config register and, consequently,
+had the i-cache turned off.  The next EPROM image I post will have
+this fixed.
+
+Bruce Culbertson

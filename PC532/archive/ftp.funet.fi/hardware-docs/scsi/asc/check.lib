@@ -1,0 +1,26 @@
+
+check()
+{
+	switch (jcb_1.status_byte)
+	{
+		case GOOD:	try_again = FALSE;
+				printf("Print has been stopped");
+				break;
+
+		case ARBITRATION_TIMEOUT:	break;
+
+		case BUSY:	break;
+
+		case RESERVATION_CONFLICT:	try_again = FALSE;
+						printf("Other user has reserved printer");
+						break;
+
+		case FAULT:	try_again = FALSE;
+				printf("Cannot find host adaptor");
+				break;
+
+		default:	try_again = FALSE;
+				printf("SPC error");
+				break;
+	}
+}

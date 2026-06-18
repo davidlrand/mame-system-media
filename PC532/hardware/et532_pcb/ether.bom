@@ -1,0 +1,170 @@
+
+
+
+-------------------------------------------------------------------------------------------------------------
+BILL OF MATERIALS    32GX32 ETHERNET/SERIAL BOARD (ET532)          V 1A Mon Sep 28 19:36:18 1992    PAGE   1
+-------------------------------------------------------------------------------------------------------------
+
+
+     ITEM   QUAN.    PART NUMBER           DESCRIPTION                                        REF. DES.        
+
+       1       2                  220/330 OHM 14 PIN DIP TERMINATOR                           RES6,RES7       
+
+       2       2                  2698 - 8 CHANNEL UART                                       U33,U36         
+
+       3       1                  27C1023 - UV ERASABLE PROM 128K X 8                         U25             
+
+       4       1                  2VP5U9 - ISOLATION SWITCHING 9V POWER SUPPLY                U46             
+
+       5       1                  32532 - 32000 SERIES HIGH PERF.  32 BIT BUS CPU             U13             
+
+       6       1                  4040 - CMOS 12-STAGE BINARY COUNTER                         U9              
+
+       7       1                  50 WAY TRANSITION CONNECTOR                                 CONN2           
+
+       8       8                  514256 - 256K X 4 CMOS DYNAMIC RAM, FAST PAGE MODE          U1,U2,U3,U4,U5  
+                                                                                              U6,U7,U8
+
+       9       2                  60 WAY TRANSITION CONNECTOR                                 CONN5,CONN6     
+
+      10       1                  6264 - 8KX8 FAST STATIC RAM                                 U42             
+
+      11       1                  74ALS14 - ALS TTL HEX INVERTER WITH SCHMITT TRIGGER         U32             
+
+      12       1                  74ALS245 - ALS TTL OCTAL BUS TRANSCEIVER                    U37             
+
+      13       1                  74ALS373 - ALS TTL OCTAL TRANSPARENT LATCH WITH TS OUT      U41             
+
+      14       4                  74ALS374 - ALS TTL OCTAL FLIP-FLOP                          U34,U35,U38,U40 
+
+      15       1                  74ALS6311 - STATIC COLUMN/PAGE MODE ACCESS DETECTOR         U19             
+
+      16       1                  74AS00 - AS TTL QUAD TWO INPUT NAND                         U23             
+
+      17       1                  74AS02 - AS TTL QUAD 2 INPUT NOR GATE                       U21             
+
+      18       2                  74AS174 - AS TTL HEX D FLIP-FLOP                            U14,U29         
+
+      19       3                  74AS258 - AS TTL QUAD 2 TO 1 MUX, INVERTED TS OUTPUT        U11,U16,U17     
+
+      20       1                  74AS32 - AS TTL QUAD 2 INPUT OR GATE                        U31             
+
+      21       1                  74AS646 - AS TTL OCTAL REGISTERED/TRANS WITH TS OUT         U20             
+
+      22       2                  74AS74 - AS TTL DUAL D FLIP-FLOP                            U18,U22         
+
+      23       1                  74F138 - FAST TTL 3/8 DECODER                               U30             
+
+      24       1                  BNC - BNC COAXIAL CONNECTOR                                 ECONN1          
+
+
+
+
+-------------------------------------------------------------------------------------------------------------
+BILL OF MATERIALS    32GX32 ETHERNET/SERIAL BOARD (ET532)          V 1A Mon Sep 28 19:36:18 1992    PAGE   2
+-------------------------------------------------------------------------------------------------------------
+
+
+     ITEM   QUAN.    PART NUMBER           DESCRIPTION                                        REF. DES.        
+
+      25       4                  CAPACITOR,0.01,                                             CE1,CE3,CE4,CE5 
+
+      26      43                  CAPACITOR,0.1,                                              C10,C11,C12,C13 
+                                                                                              C14,C15,C16,C17
+                                                                                              C18,C19,C20,C21
+                                                                                              C22,C23,C24,C25
+                                                                                              C26,C27,C28,C29
+                                                                                              C30,C31,C32,C33
+                                                                                              C34,C35,C36,C37
+                                                                                              C38,C39,C40,C41
+                                                                                              C42,C43,C44,C45
+                                                                                              C46,C47,C48,C49
+                                                                                              C50,C51,C52
+
+      27       1                  CAPACITOR,0.47,                                             CE2             
+
+      28       2                  CAPACITOR,24PF,                                             C4,C5           
+
+      29       1                  CAPACITOR,33UF                                              C3              
+
+      30       5                  CAPACITOR,47UF                                              C6,C7,C8,C9,CE6 
+
+      31       2                  CAPACITOR,50PF,                                             C1,C2           
+
+      32       1                  CRYSTAL, 3.6864                                             XTAL1           
+
+      33       1                  DB15 - 15 WAY D CONNECTOR                                   ECONN2          
+
+      34       1                  DIODE, IN4148                                               D1              
+
+      35       1                  DIODE, IN5817                                               D2              
+
+      36       1                  DP8390 - ETHERNET NETWORK INTERFACE CONTROLLER              U44             
+
+      37       1                  DP8391A - ETHERNET SERIAL NETWORK INTERFACE                 U43             
+
+      38       1                  DP8392 - ETHERNET TRANSCEIVER INTERFACE                     U45             
+
+      39       1                  DP8490 - ENHANCED ASYNCHRONOUS SCSI INTERFACE (EASI)        U39             
+
+      40       1                  GAL20V8A - GENERIC ARRAY LOGIC, -15NS - SPEED,              U26             
+
+      41       1                  HDR34 - 34 WAY PCB HEADER                                   CONN0           
+
+      42       3                  JUMP1 - SINGLE JUMPER HEADER                                J3,J4,JE3       
+
+      43       1                  JUMP3 - 3 PIN JUMPER                                        J2              
+
+      44       2                  JUMP6 - 6 LOCATION JUMPER BLOCK                             JE1,JE2         
+
+
+
+
+-------------------------------------------------------------------------------------------------------------
+BILL OF MATERIALS    32GX32 ETHERNET/SERIAL BOARD (ET532)          V 1A Mon Sep 28 19:36:18 1992    PAGE   3
+-------------------------------------------------------------------------------------------------------------
+
+
+     ITEM   QUAN.    PART NUMBER           DESCRIPTION                                        REF. DES.        
+
+      45       1                  NMC9346 - MICROWIRE 1024 BIT EEPROM                         U27             
+
+      46       1                  PAL16L8 - PROGRAM ARRAY LOGIC, B - SPEED,                   U24             
+
+      47       2                  PAL16R8 - PROGRAM ARRAY LOGIC, B - SPEED,                   U15,U28         
+
+      48       1                  PAL20L8 - PROGRAM ARRAY LOGIC, B - SPEED,                   U10             
+
+      49       1                  PE-64103 - ISOLATION PULSE TRANSFORMER                      TX1             
+
+      50       1                  POWER4 - 4 WAY FLOPPY DISK COMPATIBLE POWER SOCKET          CONN4           
+
+      51       3                  RESISTOR,10K,                                               R1,R2,R4        
+
+      52       1                  RESISTOR,1A,                                                F1              
+
+      53       3                  RESISTOR,1K,                                                R5,R8,RE12      
+
+      54       4                  RESISTOR,1K5,                                               RE4,RE5,RE6,RE7 
+
+      55       1                  RESISTOR,1M,                                                RE3             
+
+      56       2                  RESISTOR,220,                                               R11,R12         
+
+      57       2                  RESISTOR,270,                                               RE14,RE15       
+
+      58       4                  RESISTOR,33,                                                RES2,RES3,RES4  
+                                                                                              RES5
+
+      59       2                  RESISTOR,330,                                               R9,R13          
+
+      60       4                  RESISTOR,39,                                                RE8,RE9,RE10    
+                                                                                              RE11
+
+      61       5                  RESISTOR,4K7,                                               R6,R10,RE1,RE2  
+                                                                                              RE13
+
+      62       1                  SCSI62 - THE 62 PIN IBM PC/AT BUS CONNECTOR                 CONN1           
+
+      63       1                  XTALM - CRYSTAL OSCILLATOR MODULE                           U12             
+

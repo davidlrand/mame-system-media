@@ -1,0 +1,52 @@
+diff -cr bison-1.12.ori/Makefile bison-1.12/Makefile
+*** bison-1.12.ori/Makefile	Thu Jun 28 04:59:09 1990
+--- bison-1.12/Makefile	Sat Dec  1 05:53:40 1990
+***************
+*** 20,26 ****
+  INSTALL = install -c
+  
+  # It is unwise ever to compile a program without symbols.
+! CFLAGS = -g
+  
+  # For sysV, you must uncomment the following lines
+  #CFLAGS = -g -DUSG
+--- 20,27 ----
+  INSTALL = install -c
+  
+  # It is unwise ever to compile a program without symbols.
+! CC = gcc
+! CFLAGS = -O -DUSG
+  
+  # For sysV, you must uncomment the following lines
+  #CFLAGS = -g -DUSG
+***************
+*** 30,43 ****
+  
+  DESTDIR=
+  # where the installed binary goes
+! BINDIR = $(DESTDIR)/usr/local/bin
+  
+  # where the parsers go
+! PARSERDIR = $(DESTDIR)/usr/local/lib
+  
+  # where manual pages go and what their extensions should be
+! MANDIR = $(DESTDIR)/usr/man/manl
+! MANEXT = l
+  
+  # names of parser files
+  PFILE = bison.simple
+--- 31,44 ----
+  
+  DESTDIR=
+  # where the installed binary goes
+! BINDIR = $(DESTDIR)/usr/gnu/bin
+  
+  # where the parsers go
+! PARSERDIR = $(DESTDIR)/usr/gnu/lib
+  
+  # where manual pages go and what their extensions should be
+! MANDIR = $(DESTDIR)/usr/gnu/man/man1
+! MANEXT = 1
+  
+  # names of parser files
+  PFILE = bison.simple

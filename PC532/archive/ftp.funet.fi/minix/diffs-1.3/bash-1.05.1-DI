@@ -1,0 +1,718 @@
+diff -cr bash-1.05.1.or/Makefile bash-1.05.1/Makefile
+*** bash-1.05.1.or/Makefile	Sun Dec  9 06:02:42 1990
+--- bash-1.05.1/Makefile	Sun Dec  9 05:44:04 1990
+***************
+*** 10,15 ****
+--- 10,16 ----
+  #
+  # If you haven't read README, now might be a good time.
+  
++ CC = gcc
+  DESTDIR = /usr/gnu/bin
+  MAKE = make
+  #CPP_DEFINES = -DHAVE_GCC -DHAVE_FIXED_INCLUDES -DHAVE_BISON
+diff -cr bash-1.05.1.or/alloc-files/getpagesize.h bash-1.05.1/alloc-files/getpagesize.h
+*** bash-1.05.1.or/alloc-files/getpagesize.h	Mon Nov  7 15:49:05 1988
+--- bash-1.05.1/alloc-files/getpagesize.h	Sun Dec  9 05:42:20 1990
+***************
+*** 6,16 ****
+--- 6,23 ----
+  
+  #ifndef HAVE_GETPAGESIZE
+  
++ #ifdef MINIX_13
++ #include <mmu.h>
++ #else
+  #include <sys/param.h>
++ #endif
+  
+  #ifdef EXEC_PAGESIZE
+  #define getpagesize() EXEC_PAGESIZE
+  #else
++ #ifdef PAGESZ
++ #define getpagesize() PAGESZ
++ #else
+  #ifdef NBPG
+  #define getpagesize() NBPG * CLSIZE
+  #ifndef CLSIZE
+***************
+*** 19,24 ****
+--- 26,32 ----
+  #else /* no NBPG */
+  #define getpagesize() NBPC
+  #endif /* no NBPG */
++ #endif /* no PAGESZ */
+  #endif /* no EXEC_PAGESIZE */
+  
+  #endif /* not HAVE_GETPAGESIZE */
+diff -cr bash-1.05.1.or/alloc-files/malloc.c bash-1.05.1/alloc-files/malloc.c
+*** bash-1.05.1.or/alloc-files/malloc.c	Wed Feb 28 12:50:37 1990
+--- bash-1.05.1/alloc-files/malloc.c	Sun Dec  9 05:42:22 1990
+***************
+*** 730,739 ****
+--- 730,743 ----
+  
+  get_lim_data ()
+  {
++ #ifndef NO_ULIMIT
+    extern long ulimit ();
+      
+    lim_data = ulimit (3, 0);
+    lim_data -= (long) data_space_start;
++ #else
++   return 8000000L;  /* We've got plenty of memory, thank you */
++ #endif
+  }
+  
+  #else /* not SYSV */
+diff -cr bash-1.05.1.or/builtins.c bash-1.05.1/builtins.c
+*** bash-1.05.1.or/builtins.c	Sun Dec  9 06:02:46 1990
+--- bash-1.05.1/builtins.c	Sun Dec  9 05:42:29 1990
+***************
+*** 19,25 ****
+--- 19,27 ----
+  Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
+  
+  #include <stdio.h>
++ #ifndef MINIX_13
+  #include <sys/param.h>
++ #endif
+  
+  #include <sys/types.h>
+  #include <sys/stat.h>
+diff -cr bash-1.05.1.or/config.h bash-1.05.1/config.h
+*** bash-1.05.1.or/config.h	Sun Feb 25 14:19:30 1990
+--- bash-1.05.1/config.h	Sun Dec  9 05:42:29 1990
+***************
+*** 79,82 ****
+--- 79,86 ----
+     error messages about `break' and `continue' out of context. */
+  #define BREAK_COMPLAINS
+  
++ #ifndef NOFILE
++ #define NOFILE NFILES
++ #endif
++ 
+  #endif  /* _CONFIG_ */
+diff -cr bash-1.05.1.or/cpp-Makefile bash-1.05.1/cpp-Makefile
+*** bash-1.05.1.or/cpp-Makefile	Sun Dec  9 06:02:47 1990
+--- bash-1.05.1/cpp-Makefile	Sun Dec  9 05:42:30 1990
+***************
+*** 111,117 ****
+  #endif /* SYSDEP_CFLAGS */
+  
+  SYSTEM_FLAGS = $(LINEBUF) $(VPRINTF) -D$(MACHINE) -D$(OS) $(SYSDEP)
+! DEBUG_FLAGS = $(PROFILE_FLAGS) -g
+  LDFLAGS	= $(DEBUG_FLAGS)
+  CFLAGS	= $(DEBUG_FLAGS) $(SYSTEM_FLAGS)
+  CPPFLAGS= -I$(LIBSRC)
+--- 111,117 ----
+  #endif /* SYSDEP_CFLAGS */
+  
+  SYSTEM_FLAGS = $(LINEBUF) $(VPRINTF) -D$(MACHINE) -D$(OS) $(SYSDEP)
+! DEBUG_FLAGS = $(PROFILE_FLAGS) -O
+  LDFLAGS	= $(DEBUG_FLAGS)
+  CFLAGS	= $(DEBUG_FLAGS) $(SYSTEM_FLAGS)
+  CPPFLAGS= -I$(LIBSRC)
+***************
+*** 264,270 ****
+  
+  $(PROGRAM):	.build $(OBJECTS) $(LIBDEP) bash-Makefile
+  	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJECTS) \
+! 		$(LIBRARIES) $(LOCAL_LIBS) $(TERMLIB)
+  	$(RM) -f .make
+  
+  .build:		.make newversion.aux
+--- 264,270 ----
+  
+  $(PROGRAM):	.build $(OBJECTS) $(LIBDEP) bash-Makefile
+  	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJECTS) \
+! 		$(LIBRARIES) $(LOCAL_LIBS)
+  	$(RM) -f .make
+  
+  .build:		.make newversion.aux
+***************
+*** 410,416 ****
+  		@cp $(PROGRAM).tar.Z $(PROGRAM)-`cat .distribution`.tar.Z
+  
+  newversion.aux:	newversion.c
+! 		$(CC) -g -o newversion.aux newversion.c -lm
+  
+  newversion:	newversion.aux
+  		rm -f .build
+--- 410,416 ----
+  		@cp $(PROGRAM).tar.Z $(PROGRAM)-`cat .distribution`.tar.Z
+  
+  newversion.aux:	newversion.c
+! 		$(CC) -o newversion.aux newversion.c -lm
+  
+  newversion:	newversion.aux
+  		rm -f .build
+diff -cr bash-1.05.1.or/execute_cmd.c bash-1.05.1/execute_cmd.c
+*** bash-1.05.1.or/execute_cmd.c	Sun Dec  9 06:02:48 1990
+--- bash-1.05.1/execute_cmd.c	Sun Dec  9 05:42:32 1990
+***************
+*** 31,37 ****
+--- 31,39 ----
+  #define SIGABRT SIGIOT
+  #endif
+  
++ #ifndef MINIX_13
+  #include <sys/param.h>
++ #endif
+  #include <errno.h>
+  
+  #include "shell.h"
+***************
+*** 1225,1231 ****
+--- 1227,1237 ----
+  	      /* Make the filename for the temp file. */
+  	      sprintf (filename, "/tmp/t%d-sh", pid);
+  	
++ #ifdef O_TRUNC
+  	      fd = open (filename, O_TRUNC | O_WRONLY | O_CREAT, 0666);
++ #else
++ 	      fd = open (filename, O_CREAT | O_WRONLY, 0666);
++ #endif
+  	      if (fd < 0)
+  		{
+  		  if (!redirectee->quoted)
+diff -cr bash-1.05.1.or/general.c bash-1.05.1/general.c
+*** bash-1.05.1.or/general.c	Sun Dec  9 06:02:49 1990
+--- bash-1.05.1/general.c	Sun Dec  9 05:45:43 1990
+***************
+*** 457,463 ****
+--- 457,465 ----
+  #endif /* NO_DUP */
+  
+  #ifdef SYSV
++ #ifndef MINIX_13
+  #include <sys/utsname.h>
++ #endif
+  bcopy(s,d,n) char *d,*s; { while(n--) *d++ = *s++; }
+  char *getwd(s) char *s; { getcwd(s,MAXPATHLEN); return s; }
+  char *index(s,c) char *s; { char *strchr(); return strchr(s,c); }
+***************
+*** 468,473 ****
+--- 470,476 ----
+       int namelen;
+  {
+    int i;
++ #ifndef MINIX_13
+    struct utsname uts;
+  
+    --namelen;
+***************
+*** 476,481 ****
+--- 479,487 ----
+    i = strlen (uts.nodename) + 1;
+    strncpy (name, uts.nodename, i < namelen ? i : namelen);
+    name[namelen] = '\0';
++ #else
++   strncpy (name, "pc532", strlen ("pc532"));
++ #endif
+    return (0);
+  }
+  
+diff -cr bash-1.05.1.or/hash.c bash-1.05.1/hash.c
+*** bash-1.05.1.or/hash.c	Wed Jul 26 13:04:03 1989
+--- bash-1.05.1/hash.c	Sun Dec  9 05:42:33 1990
+***************
+*** 24,30 ****
+  #include "shell.h"
+  #include "hash.h"
+  
+! HASH_TABLE *hashed_filenames;
+  
+  #define FILENAME_HASH_BUCKETS 107
+  
+--- 24,30 ----
+  #include "shell.h"
+  #include "hash.h"
+  
+! extern HASH_TABLE *hashed_filenames;
+  
+  #define FILENAME_HASH_BUCKETS 107
+  
+diff -cr bash-1.05.1.or/machines.h bash-1.05.1/machines.h
+*** bash-1.05.1.or/machines.h	Sun Dec  9 06:02:53 1990
+--- bash-1.05.1/machines.h	Sun Dec  9 05:42:35 1990
+***************
+*** 158,163 ****
+--- 158,180 ----
+  #endif /* MIPSEB */
+  
+  /* ************************ */
++ /*			    */
++ /*  PC532 running minix	1.3 */
++ /*			    */
++ /* ************************ */
++ #if defined (ns32000)
++ #define M_MACHINE "pc532"
++ #define M_OS SYSV
++ #define HAVE_GCC
++ #define HAVE_ALLOCA
++ /* #define HAVE_BISON*/
++ #define USE_GNU_MALLOC
++ #define HAVE_FIXED_INCLUDES
++ #define REQUIRED_LIBRARIES
++ #define SYSDEP_CFLAGS -DNO_ULIMIT -DNO_GETPPID -DNO_WAIT_H -DLITTLE_ENDIAN -DNEW_TTY_DRIVER -DMINIX_13
++ #endif
++   
++ /* ************************ */
+  /*                          */
+  /*          Pyramid         */
+  /*                          */
+diff -cr bash-1.05.1.or/mailcheck.c bash-1.05.1/mailcheck.c
+*** bash-1.05.1.or/mailcheck.c	Sat Jan 20 17:57:46 1990
+--- bash-1.05.1/mailcheck.c	Sun Dec  9 05:42:36 1990
+***************
+*** 21,27 ****
+--- 21,29 ----
+  #include <stdio.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
++ #ifndef MINIX_13
+  #include <sys/param.h>
++ #endif
+  #include "shell.h"
+  
+  #ifndef MAXPATHLEN
+diff -cr bash-1.05.1.or/make_cmd.c bash-1.05.1/make_cmd.c
+*** bash-1.05.1.or/make_cmd.c	Sun Dec  9 06:02:55 1990
+--- bash-1.05.1/make_cmd.c	Sun Dec  9 05:42:37 1990
+***************
+*** 262,268 ****
+--- 262,272 ----
+    switch (instruction) {
+  
+    case r_output_direction:	/* >foo */
++ #ifdef O_TRUNC
+      temp->flags = O_TRUNC | O_WRONLY | O_CREAT;
++ #else
++     temp->flags = O_WRONLY | O_CREAT;
++ #endif
+      break;
+  
+    case r_input_direction:	/* <foo */
+***************
+*** 271,277 ****
+--- 275,285 ----
+      break;
+  
+    case r_appending_to:		/* >>foo */
++ #ifdef O_APPEND
+      temp->flags = O_APPEND | O_WRONLY | O_CREAT;
++ #else
++     temp->flags = O_WRONLY | O_CREAT;
++ #endif
+      break;
+  
+      /* Because we are Bourne compatible, we read the input for this
+***************
+*** 368,374 ****
+--- 376,386 ----
+      break;
+      
+    case r_err_and_out:		/* command &>filename */
++ #ifdef O_TRUNC
+      temp->flags = O_TRUNC | O_WRONLY | O_CREAT;
++ #else
++     temp->flags = O_WRONLY | O_CREAT;
++ #endif
+      break;
+  
+    default:
+diff -cr bash-1.05.1.or/nojobs.c bash-1.05.1/nojobs.c
+*** bash-1.05.1.or/nojobs.c	Sun Dec  9 06:02:56 1990
+--- bash-1.05.1/nojobs.c	Sun Dec  9 05:42:38 1990
+***************
+*** 21,29 ****
+--- 21,35 ----
+  
+  #include <stdio.h>
+  #include <sys/types.h>
++ #ifndef MINIX_13
+  #include <sys/ttold.h>
++ #endif
+  #include <fcntl.h>
++ #ifndef MINIX_13
+  #include <termio.h>
++ #else
++ #include <sgtty.h>
++ #endif
+  #include <signal.h>
+  #include <setjmp.h>
+  #include <errno.h>
+***************
+*** 251,256 ****
+--- 257,263 ----
+    return (result);
+  }
+  
++ #ifndef MINIX_13
+  static struct termio shell_tty_info;
+  
+  /* Fill the contents of shell_tty_info with the current tty info. */
+***************
+*** 274,279 ****
+--- 281,339 ----
+        close (tty);
+      }
+  }
++ #else /* MINIX_13
++ /* When we end a job abnormally, or if we stop a job, we set the tty to the
++    state kept in here.  When a job ends normally, we set the state in here
++    to the state of the tty. */
++ 
++ #ifdef NEW_TTY_DRIVER
++ static struct sgttyb shell_tty_info;
++ static struct tchars shell_tchars;
++ #if 0
++ static struct ltchars shell_ltchars;
++ #endif
++ #else
++ static struct termio shell_tty_info;
++ #endif
++ 
++ /* Fill the contents of shell_tty_info with the current tty info. */
++ get_tty_state ()
++ {
++   int tty = open ("/dev/tty", O_RDONLY);
++   if (tty != -1)
++     {
++ #ifdef NEW_TTY_DRIVER
++       ioctl (tty, TIOCGETP, &shell_tty_info);
++       ioctl (tty, TIOCGETC, &shell_tchars);
++ #if 0
++       ioctl (tty, TIOCGLTC, &shell_ltchars);
++ #endif
++ #else
++       ioctl (tty, TCGETA, &shell_tty_info);
++ #endif /* NEW_TTY_DRIVER */
++       close (tty);
++     }
++ }
++ 
++ /* Make the current tty use the state in shell_tty_info. */
++ set_tty_state ()
++ {
++   int tty = open ("/dev/tty", O_RDONLY);
++   if (tty != -1)
++     {
++ #ifdef NEW_TTY_DRIVER
++       ioctl (tty, TIOCSETP, &shell_tty_info);
++       ioctl (tty, TIOCSETC, &shell_tchars);
++ #if 0
++       ioctl (tty, TIOCSLTC, &shell_ltchars);
++ #endif
++ #else
++       ioctl (tty, TCSETAW, &shell_tty_info);
++ #endif /* NEW_TTY_DRIVER */
++       close (tty);
++     }
++ }
++ #endif
+  
+  /* Give the terminal to PGRP.  */
+  give_terminal_to (pgrp)
+diff -cr bash-1.05.1.or/readline/Makefile bash-1.05.1/readline/Makefile
+*** bash-1.05.1.or/readline/Makefile	Sat Feb 17 16:00:43 1990
+--- bash-1.05.1/readline/Makefile	Sun Dec  9 05:42:39 1990
+***************
+*** 19,25 ****
+  TYPES = -DVOID_SIGHANDLER
+  
+  # Define SYSV as -DSYSV if you are using a System V operating system.
+! #SYSV = -DSYSV
+  
+  # HP-UX compilation requires the BSD library.
+  #LOCAL_LIBS = -lBSD
+--- 19,25 ----
+  TYPES = -DVOID_SIGHANDLER
+  
+  # Define SYSV as -DSYSV if you are using a System V operating system.
+! SYSV = -DSYSV
+  
+  # HP-UX compilation requires the BSD library.
+  #LOCAL_LIBS = -lBSD
+***************
+*** 31,43 ****
+  # the vi line editing mode and features.
+  READLINE_DEFINES = -DVI_MODE
+  
+! DEBUG_FLAGS = -g
+  LDFLAGS = $(DEBUG_FLAGS) 
+  CFLAGS = $(DEBUG_FLAGS) $(TYPE) $(SYSV) -I.
+  
+  # A good alternative is gcc -traditional.
+  #CC = gcc -traditional
+! CC = cc
+  RANLIB = /usr/bin/ranlib
+  AR = ar
+  RM = rm
+--- 31,43 ----
+  # the vi line editing mode and features.
+  READLINE_DEFINES = -DVI_MODE
+  
+! DEBUG_FLAGS =
+  LDFLAGS = $(DEBUG_FLAGS) 
+  CFLAGS = $(DEBUG_FLAGS) $(TYPE) $(SYSV) -I.
+  
+  # A good alternative is gcc -traditional.
+  #CC = gcc -traditional
+! CC = gcc -O
+  RANLIB = /usr/bin/ranlib
+  AR = ar
+  RM = rm
+***************
+*** 64,70 ****
+  
+  libreadline.a:	readline.o history.o funmap.o keymaps.o
+  		$(RM) -f libreadline.a
+! 		$(AR) clq libreadline.a readline.o history.o funmap.o keymaps.o
+  		-if [ -f $(RANLIB) ]; then $(RANLIB) libreadline.a; fi
+  
+  readline.o:	readline.h chardefs.h  keymaps.h history.h readline.c vi_mode.c
+--- 64,70 ----
+  
+  libreadline.a:	readline.o history.o funmap.o keymaps.o
+  		$(RM) -f libreadline.a
+! 		$(AR) -a libreadline.a readline.o history.o funmap.o keymaps.o
+  		-if [ -f $(RANLIB) ]; then $(RANLIB) libreadline.a; fi
+  
+  readline.o:	readline.h chardefs.h  keymaps.h history.h readline.c vi_mode.c
+diff -cr bash-1.05.1.or/readline/readline.c bash-1.05.1/readline/readline.c
+*** bash-1.05.1.or/readline/readline.c	Sun Feb 25 16:33:07 1990
+--- bash-1.05.1/readline/readline.c	Sun Dec  9 05:47:59 1990
+***************
+*** 45,51 ****
+  #endif
+  
+  #define NEW_TTY_DRIVER
+! #if defined (SYSV) || defined (hpux)
+  #undef NEW_TTY_DRIVER
+  #include <termio.h>
+  #else
+--- 45,51 ----
+  #endif
+  
+  #define NEW_TTY_DRIVER
+! #if !defined(MINIX_13) && (defined (SYSV) || defined (hpux))
+  #undef NEW_TTY_DRIVER
+  #include <termio.h>
+  #else
+***************
+*** 631,639 ****
+--- 631,643 ----
+  
+    if (result == -1)
+      {
++ #ifdef O_NDELAY
+        fcntl (tty, F_SETFL, O_NDELAY);
++ #endif
+        chars_avail = read (tty, &input, 1);
++ #ifdef O_NDELAY
+        fcntl (tty, F_SETFL, 0);
++ #endif
+        if (chars_avail == -1 && errno == EAGAIN)
+  	return;
+      }
+***************
+*** 2030,2036 ****
+--- 2034,2042 ----
+  static struct tchars original_tchars;
+  
+  /* Local special characters.  This has the interrupt characters in it. */
++ #ifdef TIOCGLTC
+  static struct ltchars original_ltchars;
++ #endif
+  
+  /* We use this to get and set the tty_flags. */
+  static struct sgttyb the_ttybuff;
+***************
+*** 2116,2122 ****
+--- 2122,2132 ----
+  
+    the_ttybuff.sg_flags &= ~ECHO;
+    the_ttybuff.sg_flags |= CBREAK;
++ #ifndef TIOCSETN
++   ioctl (tty, TIOCSETP, &the_ttybuff);
++ #else
+    ioctl (tty, TIOCSETN, &the_ttybuff);
++ #endif
+  }
+  
+  /* Restore the terminal to its original state. */
+***************
+*** 2126,2132 ****
+--- 2136,2146 ----
+    int tty = fileno (rl_instream);
+  
+    the_ttybuff.sg_flags = original_tty_flags;
++ #ifndef TIOCSETN
++   ioctl (tty, TIOCSETP, &the_ttybuff);
++ #else
+    ioctl (tty, TIOCSETN, &the_ttybuff);
++ #endif
+    readline_echoing_p = 1;
+  
+  #if defined (TIOCLGET) && defined (LPASS8)
+***************
+*** 5489,5498 ****
+--- 5503,5514 ----
+  /* Since system V reads input differently than we do, I have to
+     make a special version of getc for that. */
+  
++ #ifndef MINIX_13
+  #ifdef SYSV
+  
+  extern int errno;
+  #include <sys/errno.h>
++ #endif /* MINIX_13 */
+  
+  int
+  rl_getc (stream)
+diff -cr bash-1.05.1.or/shell.c bash-1.05.1/shell.c
+*** bash-1.05.1.or/shell.c	Sun Dec  9 06:03:00 1990
+--- bash-1.05.1/shell.c	Sun Dec  9 05:42:44 1990
+***************
+*** 796,802 ****
+     We catch them, but just so that we can write the history file,
+     and so forth. */
+  int terminating_signals[] = {
+!   SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGIOT,
+  #ifdef SIGDANGER
+    SIGDANGER,
+  #endif
+--- 796,805 ----
+     We catch them, but just so that we can write the history file,
+     and so forth. */
+  int terminating_signals[] = {
+!   SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP,
+! #ifdef SIGIOT
+!   SIGIOT,
+! #endif
+  #ifdef SIGDANGER
+    SIGDANGER,
+  #endif
+***************
+*** 803,809 ****
+  #ifdef SIGEMT
+    SIGEMT,
+  #endif
+!   SIGFPE, SIGKILL, SIGBUS, SIGSEGV, SIGSYS, SIGPIPE, SIGALRM, SIGTERM,
+  #ifdef SIGXCPU
+    SIGXCPU,
+  #endif
+--- 806,819 ----
+  #ifdef SIGEMT
+    SIGEMT,
+  #endif
+!   SIGFPE, SIGKILL, SIGBUS,
+! #ifdef SIGSEGV
+!   SIGSEGV,
+! #endif
+! #ifdef SIGSYS
+!   SIGSYS,
+! #endif
+!   SIGPIPE, SIGALRM, SIGTERM,
+  #ifdef SIGXCPU
+    SIGXCPU,
+  #endif
+diff -cr bash-1.05.1.or/ulimit.c bash-1.05.1/ulimit.c
+*** bash-1.05.1.or/ulimit.c	Thu Dec 21 09:39:07 1989
+--- bash-1.05.1/ulimit.c	Sun Dec  9 05:42:45 1990
+***************
+*** 22,28 ****
+--- 22,30 ----
+  #include "shell.h"
+  
+  #include <sys/types.h>
++ #ifndef MINIX_13
+  #include <sys/errno.h>
++ #endif
+  extern int errno;
+  
+  #ifndef SYSV
+***************
+*** 251,256 ****
+--- 253,259 ----
+      case u_FILE_SIZE:
+        if (!setting)
+  	{
++ #ifndef NO_ULIMIT
+  #ifdef SYSV
+  	  return (ulimit (1, 0l));
+  #else
+***************
+*** 258,266 ****
+--- 261,271 ----
+  	    return ((long) -1);
+  	  return (limit.rlim_cur);
+  #endif
++ #endif
+  	}
+        else
+  	{
++ #ifndef NO_ULIMIT
+  #ifdef SYSV
+  	  return (ulimit (2, newlim));
+  #else
+***************
+*** 267,272 ****
+--- 272,278 ----
+  	  limit.rlim_cur = newlim;
+  	  return (setrlimit (RLIMIT_FSIZE, &limit));
+  #endif
++ #endif
+  	}
+  
+  #ifndef SYSV
+***************
+*** 277,283 ****
+--- 283,291 ----
+  
+        /* You can't get or set the pipe size with getrlimit. */
+      case u_PIPE_SIZE:
++ #ifdef EINVAL
+        errno = EINVAL;
++ #endif
+        return ((long) -1);
+  
+      case u_CORE_FILE_SIZE:
+***************
+*** 347,353 ****
+--- 355,363 ----
+  #endif
+  
+      default:
++ #ifdef EINVAL
+        errno = EINVAL;
++ #endif
+        return ((long) -1);
+      }
+  }
+diff -cr bash-1.05.1.or/variables.c bash-1.05.1/variables.c
+*** bash-1.05.1.or/variables.c	Sun Dec  9 06:03:03 1990
+--- bash-1.05.1/variables.c	Sun Dec  9 05:42:47 1990
+***************
+*** 240,245 ****
+--- 240,246 ----
+      sv_histsize ("HISTSIZE");
+    }
+  
++ #ifndef MINIX_13
+    /* Gee, might as well get parent pid. */
+    {
+      char aval[10];
+***************
+*** 247,252 ****
+--- 248,254 ----
+      sprintf (aval, "%d", getppid ());
+      bind_variable ("PPID", aval);
+    }
++ #endif
+  
+    non_unsettable ("PATH");
+    non_unsettable ("PS1");

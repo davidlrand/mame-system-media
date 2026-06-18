@@ -1,0 +1,132 @@
+diff -cr mg2a-orig/dired.c mg2a/dired.c
+*** mg2a-orig/dired.c	Wed Jul 20 13:39:03 1988
+--- mg2a/dired.c	Sat Dec  1 02:48:36 1990
+***************
+*** 146,155 ****
+--- 146,159 ----
+  		    }
+  		    break;
+  		case TRUE:
++ #if 0
+  		    if(unlinkdir(fname) < 0) {
++ #endif
+  			ewprintf("Could not delete directory '%s'", fname);
+  			return FALSE;
++ #if 0
+  		    }
++ #endif
+  		    break;
+  	    }
+  	    lfree(lp);
+diff -cr mg2a-orig/sys/minix532/Makefile mg2a/sys/minix532/Makefile
+*** mg2a-orig/sys/minix532/Makefile	Tue Sep 18 22:07:11 1990
+--- mg2a/sys/minix532/Makefile	Sat Dec  1 02:57:04 1990
+***************
+*** 17,22 ****
+--- 17,23 ----
+  #	REGEX		-- create regular expression functions
+  #
+  #CDEFS	=  -DDO_METAKEY
++ CC = gcc -O
+  CDEFS	=  -DDO_METAKEY -DPREFIXREGION -DSTARTUP -DBACKUP
+  CFLAGS	= $(CDEFS)
+  
+***************
+*** 43,49 ****
+  INCS =	def.h
+  
+  mg:	$(OINCS) $(INCS) $(OSRCS) $(OBJ)
+! 	cc $(CFLAGS) -o mg $(OBJ) $(LIBS)
+  
+  # strip mg once you're satisfied it'll run -- makes it much smaller
+  strip:
+--- 44,50 ----
+  INCS =	def.h
+  
+  mg:	$(OINCS) $(INCS) $(OSRCS) $(OBJ)
+! 	$(CC) $(CFLAGS) -o mg $(OBJ) $(LIBS)
+  
+  # strip mg once you're satisfied it'll run -- makes it much smaller
+  strip:
+diff -cr mg2a-orig/sys/minix532/fileio.c mg2a/sys/minix532/fileio.c
+*** mg2a-orig/sys/minix532/fileio.c	Fri Sep  7 12:22:13 1990
+--- mg2a/sys/minix532/fileio.c	Sat Dec  1 02:57:05 1990
+***************
+*** 300,306 ****
+--- 300,308 ----
+  #endif
+  
+  #ifndef NO_DIRED
++ #if 0
+  #include <sys/wait.h>
++ #endif
+  #include "kbd.h"
+  
+  copy(frname, toname)
+***************
+*** 308,316 ****
+  {
+      int pid;
+      char *eargv[3];
+!     union wait status;
+  
+!     if(pid = vfork()) {
+  	if(pid == -1)	return	-1;
+  	eargv[0] = frname;
+  	eargv[1] = toname;
+--- 310,319 ----
+  {
+      int pid;
+      char *eargv[3];
+!     long a[8];
+! /*    union wait status;*/
+  
+!     if(pid = fork()) {
+  	if(pid == -1)	return	-1;
+  	eargv[0] = frname;
+  	eargv[1] = toname;
+***************
+*** 318,325 ****
+  	execve("cp", eargv, (char **)NULL);
+  	_exit(1);	/* shouldn't happen */
+      }
+!     while(wait(&status) != pid) {}
+      return status.w_status == 0;
+  }
+  
+  BUFFER *dired_(dirname)
+--- 321,332 ----
+  	execve("cp", eargv, (char **)NULL);
+  	_exit(1);	/* shouldn't happen */
+      }
+!     while(wait(a) != pid) {}
+! #if 0
+      return status.w_status == 0;
++ #else
++     return 1;
++ #endif
+  }
+  
+  BUFFER *dired_(dirname)
+diff -cr mg2a-orig/sys/minix532/sysdef.h mg2a/sys/minix532/sysdef.h
+*** mg2a-orig/sys/minix532/sysdef.h	Wed Sep 19 19:39:03 1990
+--- mg2a/sys/minix532/sysdef.h	Sat Dec  1 02:49:56 1990
+***************
+*** 28,35 ****
+  #define	gettermtype()	getenv("TERM")	/* determine terminal type	*/
+  
+  /* Extra things for minix532 */
+! #define F_OK READMODE
+  #define NO_DPROMPT
+! #define NO_DIRED
+  #define getwd(wd) getcwd(wd,NFILEN)
+  char *getcwd();
+--- 28,35 ----
+  #define	gettermtype()	getenv("TERM")	/* determine terminal type	*/
+  
+  /* Extra things for minix532 */
+! #define F_OK 1
+  #define NO_DPROMPT
+! /*#define NO_DIRED*/
+  #define getwd(wd) getcwd(wd,NFILEN)
+  char *getcwd();

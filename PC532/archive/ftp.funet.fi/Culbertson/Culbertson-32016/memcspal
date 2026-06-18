@@ -1,0 +1,29 @@
+PAL16L8 PAL DESIGN SPECIFICATION
+BRUCE CULBERTSON   4 OCT 1987
+MEMORY CHIP SELECT PAL FOR NS32000 COMPUTER
+
+A15	A16	A17	A18	A19	A20	A21	A22	A23	GND
+SWAP	/PROM	PROMA15	/SRAM	/DRAM	NC	NC	NC	NC	VCC
+
+             ; PROM CHIP SELECT: 0-7FFF AND 18000-1FFFF
+PROM       = /A23 * /A22 * /A21 * /A20 * /A19 * /A18 * /A17 * /A16 * /A15 +
+             /A23 * /A22 * /A21 * /A20 * /A19 * /A18 * /A17 * A16 * A15
+
+             ; PROM MOST SIGNIFICANT ADDRESS BIT: A15 XOR SWAP
+/PROMA15   = SWAP * A15 +
+             /SWAP * /A15
+
+             ; SRAM CHIP SELECT: 8000-17FFF
+SRAM       = /A23 * /A22 * /A21 * /A20 * /A19 * /A18 * /A17 * /A16 * A15 +
+             /A23 * /A22 * /A21 * /A20 * /A19 * /A18 * /A17 * A16 * /A15
+
+	     ; DRAM CHIP SELECT
+	     ; MEGABYTE 0 MINUS EPROM AND SRAM AREA
+	     ; MEGABYTE 1-7
+DRAM       = /A23 * /A22 * /A21 * /A20 * A19 +
+             /A23 * /A22 * /A21 * /A20 * A18 +
+             /A23 * /A22 * /A21 * /A20 * A17 +
+             /A23 * /A22 * /A21 * A20 +
+             /A23 * A21 +
+             /A23 * A22
+

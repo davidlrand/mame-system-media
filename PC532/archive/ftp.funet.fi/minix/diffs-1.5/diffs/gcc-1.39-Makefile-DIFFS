@@ -1,0 +1,96 @@
+*** Makefile~	Thu Jan 10 18:05:37 1991
+--- Makefile	Sat Mar  9 20:38:06 1991
+***************
+*** 21,32 ****
+  # Variables that exist for you to override.
+  # See below for how to change them for certain systems.
+  
+! CFLAGS = -g $(XCFLAGS)
+! CC = cc
+  BISON = bison
+  BISONFLAGS = -v
+  # This should be the version of ar to use with output from GCC.
+! AR = ar
+  SHELL = /bin/sh
+  # on sysV, define this as cp.
+  INSTALL = install -c
+--- 21,32 ----
+  # Variables that exist for you to override.
+  # See below for how to change them for certain systems.
+  
+! CFLAGS = -O $(XCFLAGS)
+! CC = gcc
+  BISON = bison
+  BISONFLAGS = -v
+  # This should be the version of ar to use with output from GCC.
+! AR = gar
+  SHELL = /bin/sh
+  # on sysV, define this as cp.
+  INSTALL = install -c
+***************
+*** 34,44 ****
+  # is earlier in the path, it will be used.
+  # That is likely to be true on systems that have the GNU ar
+  # installed earlier in the path.
+! RANLIB = ranlib
+  
+  # Compiler to use for compiling gnulib.
+  # OLDCC should not be the GNU C compiler.
+! OLDCC = cc
+  
+  # CFLAGS for use with OLDCC, for compiling gnulib.
+  # NOTE: -O does not work on some Unix systems!
+--- 34,44 ----
+  # is earlier in the path, it will be used.
+  # That is likely to be true on systems that have the GNU ar
+  # installed earlier in the path.
+! RANLIB = granlib
+  
+  # Compiler to use for compiling gnulib.
+  # OLDCC should not be the GNU C compiler.
+! OLDCC = gcc
+  
+  # CFLAGS for use with OLDCC, for compiling gnulib.
+  # NOTE: -O does not work on some Unix systems!
+***************
+*** 46,52 ****
+  CCLIBFLAGS=-O
+  
+  # This should be the version of ar to use with output from $(OLDCC).
+! OLDAR = ar
+  
+  # CFLAGS for use with OLDCC, for compiling hard-params.
+  HARD_PARAMS_FLAGS=
+--- 46,52 ----
+  CCLIBFLAGS=-O
+  
+  # This should be the version of ar to use with output from $(OLDCC).
+! OLDAR = gar
+  
+  # CFLAGS for use with OLDCC, for compiling hard-params.
+  HARD_PARAMS_FLAGS=
+***************
+*** 54,64 ****
+  # Directory where sources are, from where we are.
+  srcdir = .
+  # Directory in which to put the executable for the command `gcc'
+! bindir = $(prefix)/usr/local/bin
+  # Directory in which to put the subprograms used by the compiler.
+! libdir = $(prefix)/usr/local/lib
+  # Directory in which to put man pages.
+! mandir = $(prefix)/usr/local/man/man1
+  # Number to put in man-page filename.
+  manext = 1
+  
+--- 54,64 ----
+  # Directory where sources are, from where we are.
+  srcdir = .
+  # Directory in which to put the executable for the command `gcc'
+! bindir = $(prefix)/usr/gnu/bin
+  # Directory in which to put the subprograms used by the compiler.
+! libdir = $(prefix)/usr/gnu/lib/gcc-1.39
+  # Directory in which to put man pages.
+! mandir = $(prefix)/usr/gnu/man/man1
+  # Number to put in man-page filename.
+  manext = 1
+  

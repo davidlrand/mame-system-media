@@ -1,0 +1,989 @@
+Path: tut!enea!mcvax!uunet!lll-winken!lll-tis!helios.ee.lbl.gov!nosc!ucsd!rutgers!aramis.rutgers.edu!athos.rutgers.edu!hedrick
+From: hedrick@athos.rutgers.edu (Charles Hedrick)
+Newsgroups: comp.os.minix
+Subject: changes to make C Kermit run under Minix
+Message-ID: <Aug.25.20.17.06.1988.20293@athos.rutgers.edu>
+Date: 26 Aug 88 00:17:07 GMT
+Organization: Rutgers Univ., New Brunswick, N.J.
+Lines: 978
+To: info-kermit@cu20b.columbia.edu
+
+Kermit is a free file transfer/terminal emulator.  It is implemented
+for a very wide variety of machines.  I am not set up to give out
+copies of kermit itself (though I'd be willing to do so either for the
+archive sites or for ast himself if he wants to add it to Minix).  The
+files are available from cunixc.cc.columbia.edu via anonymous ftp.
+Look at the file kermit/read.me for more information.  You can also
+send U.S. mail to Kermit Distribution, Columbia University Center for
+Computing Activities, 612 W. 115th St, NY, NY 10025.  There are almost
+certainly Usenet archive sites, but they aren't listed in the most
+recent newsletter, so I don't know where they are.  For more inform,
+watch for the regular kermit newsletters on comp.protocols.kermit.
+
+Here are diffs to make C Kermit (for Unix) run under Minix.  It is for
+version 4E(070) of Kermit.  The patches will probably work with
+slightly older versions, but probably not with newer ones (if there
+are any).  The problem is that Kermit is just too big for Minix.  So I
+had to chop out code.  In general newer versions will have more code,
+so more cuts will be needed.  However as far as I know, 4E(070) is the
+newest version of C Kermit.
+
+The primary problem fixed by the patches is that the unmodified
+program is too big.  It causes asld to blow up when loading it.  Thus
+I had to remove a number of features, including all help messages.
+However kermit uses a simulation of the TOPS-20 COMND jsys.  This
+provides very good builtin help even without the messages I removed.
+I also had to remove the dial and login script facilities, and disable
+generation of debugging and transaction logs.  I experimented a lot
+with these removals.  It's unlikely that you will be able to put back
+more than a couple of lines of code without making asld (or the C
+compiler) blow up.  There was an additional compiler problem: The C
+optimizer (which as far as I can see, there is no way to bypass) seems
+to blow up on any module with lots of strings.  It turns out I had to
+remove these strings anyway to save space.
+
+Note that I had to load the program using an undocumented "-i" option
+to asld.  This makes it use separate I and D space.  This option
+probably exists only on Minix 1.3.  If your version of asld doesn't
+have it, you won't be able to build kermit.  Be careful with this.
+Without -i, asld generated a file with a negative size for bss.  When I
+ran the program, minix crashed.  So I suggest doing a "size" command on
+the resulting core image, to make sure it looks reasonable.  (As long
+as all the sizes are positive, you're probably OK.)
+
+It's very unlikely that this program will be any use to you if you use
+it with an unmodified version of Minix.  Kermit is only useful if
+you've got working RS232 ports.  Minix has such lousy interrupt latency
+that you really can't use the RS232 ports.  My tty fixes improve this.
+Others have done other work that does also.
+
+Note that Minix is treated basically as a variant of version 7 Unix.
+However it's missing a few facilities present in version 7.  I either
+have to emulate them, or cause kermit to proceed without.
+
+I've included a new makefile.  I don't see any way to conditionalize
+the standard Unix makefile.  The most serious problem is that the
+loader wants to load .s files instead of .o files.  This makes it
+nearly impossible to have portable make files that work on Unix and
+Minix.  Also, I have been unable to get "wart" to work, because its
+source uses more strings than the Minix C compiler can handle.
+Presumably most people won't be modifying the Kermit protocol, so they
+won't need to use wart.  Don't be surprised if the makefile ends by
+claiming it failed.  I'm not sure what is going on.  It looks to me
+like CC is returning a value indicating that it failed when in fact it
+succeeded.  If you didn't get any error messages during compiling and
+loading, it will probably work.
+
+I have tested kermit over a 2400 baud modem to a Unix system.  I used
+an AT clone. I've used it for terminal emulation, and transferred
+files both ways, both with default buffer sizes and with 1K buffers.
+I have not been able to test server mode, since that would require a
+second PC, which I don't have.  I'd guess that it will work, since in
+general problems showed up at compile time.  In general if something
+compiled it worked.  I recommend using 1K buffers.  I typically get
+around 90% line efficiency that way.  This is good enough that I don't
+feel motivated to use {x,y,z}modem.  (The {x,y,z}modems are faster,
+but generally kermit is easier to use, and public domain
+implementations are available for a very wide variety of machines.)
+
+*** ckcmai.c.ORIG	Thu Jan  1 00:23:51 1970
+--- ckcmai.c	Wed Aug 24 02:32:49 1988
+***************
+*** 102,107 ****
+--- 102,112 ----
+  GET filespec, SEND filespec, FINISH, BYE, REMOTE HELP\n\
+  \n\0";
+  #else
++ #ifdef MINIX
++ char *hlptxt = "C-Kermit Server REMOTE Commands:\n\
++ BYE CWD DELETE DIRECTORY FINISH GET HELP HOST SEND SPACE TYPE WHO\n\
++ \n\0";
++ #else /* MINIX */
+  char *hlptxt = "C-Kermit Server REMOTE Commands:\n\
+  \n\
+  GET files  REMOTE CWD [dir]    REMOTE DIRECTORY [files]\n\
+***************
+*** 111,122 ****
+--- 116,135 ----
+  \n\0";
+  #endif
+  #endif
++ #endif
++ 
++ #ifdef MINIX
++ char *srvtxt = "\r\n\
++ C-Kermit server starting.\n\
++ \r\n\0";
++ #else
+  char *srvtxt = "\r\n\
+  C-Kermit server starting.  Return to your local machine by typing\r\n\
+  its escape sequence for closing the connection, and issue further\r\n\
+  commands from there.  To shut down the C-Kermit server, issue the\r\n\
+  FINISH or BYE command and then reconnect.\n\
+  \r\n\0";
++ #endif
+  
+  /* Declarations for Send-Init Parameters */
+  
+*** ckudia.c.ORIG	Thu Jan  1 00:24:52 1970
+--- ckudia.c	Wed Aug 24 02:37:49 1988
+***************
+*** 129,134 ****
+--- 129,135 ----
+  extern int flow, local, mdmtyp, quiet, speed, parity, seslog;
+  extern char ttname[], sesfil[];
+  
++ #ifndef MINIX
+  #define	MDMINF	struct mdminf
+  
+  MDMINF		/* structure for modem-specific information */
+***************
+*** 497,502 ****
+--- 498,504 ----
+      longjmp( sjbuf, F_int );
+      }
+  
++ 
+  static
+  ttolSlow(s,millisec) char *s; int millisec; {  /* output s-l-o-w-l-y */
+      for (; *s; s++) {
+***************
+*** 528,534 ****
+      	if ( s[i] == r[0] ) if ( !strncmp(s+i,r,lr) ) return( 1 );
+      return( 0 );	    
+  }
+! 
+  
+  /* R E S E T -- Reset alarms, etc. on exit. */
+  
+--- 530,536 ----
+      	if ( s[i] == r[0] ) if ( !strncmp(s+i,r,lr) ) return( 1 );
+      return( 0 );	    
+  }
+! #endif /* not MINIX */
+  
+  /* R E S E T -- Reset alarms, etc. on exit. */
+  
+***************
+*** 536,543 ****
+  reset ()
+      {
+      alarm(0);
+!     signal(SIGALRM,savAlrm);		/* restore alarm handler */
+!     signal(SIGINT,savInt);		/* restore interrupt handler */
+      }
+  
+  
+--- 538,547 ----
+  reset ()
+      {
+      alarm(0);
+! #ifndef MINIX
+!     signal(SIGALRM,savAlrm);		/* restore alarm handler */
+!     signal(SIGINT,savInt);		/* restore interrupt handler */
+! #endif
+      }
+  
+  
+***************
+*** 546,551 ****
+--- 550,556 ----
+  
+  ckdial(telnbr) char *telnbr; {
+  
++ #ifndef MINIX
+      char c;
+      char *i, *j;
+      int waitct, status;
+***************
+*** 901,905 ****
+      reset ();				/* reset alarms, etc. */
+      if ( ! quiet )
+  	printf ( "Call completed.\07\r\n" );
+!     return ( 0 );			/* return, and presumably connect */
+! }
+--- 906,911 ----
+      reset ();				/* reset alarms, etc. */
+      if ( ! quiet )
+  	printf ( "Call completed.\07\r\n" );
+! #endif /* not MINIX */
+!     return ( 0 );			/* return, and presumably connect */
+! }
+*** ckufio.c.ORIG	Thu Jan  1 00:24:56 1970
+--- ckufio.c	Wed Aug 24 02:43:02 1988
+***************
+*** 162,167 ****
+--- 162,168 ----
+  #ifndef PROVX1
+  #ifndef aegis
+  #ifndef CIE
++ #ifndef MINIX
+  #ifndef XENIX
+  /* Watch out, some versions of Xenix might need to do this include, */
+  /* but reportedly SCO Xenix 2.2 on an 80x86 system does not. */
+***************
+*** 170,175 ****
+--- 171,177 ----
+  #endif
+  #endif
+  #endif
++ #endif
+  
+  #ifdef FT18
+  #undef PROVX1
+*** ckuscr.c.ORIG	Thu Jan  1 00:24:58 1970
+--- ckuscr.c	Wed Aug 24 02:48:33 1988
+***************
+*** 33,38 ****
+--- 33,39 ----
+  #include <setjmp.h>
+  #include "ckcker.h"
+  
++ #ifndef MINIX
+  extern int local, speed, flow, seslog, mdmtyp, quiet, duplex;
+  extern char ttname[];
+  extern CHAR dopar();
+***************
+*** 222,232 ****
+      }
+  }
+  
+! 
+  /*  L O G I N  --  Login to remote system */
+  
+  login(cmdstr) char *cmdstr; {
+  
+  	SIGTYP (*saveAlm)();	/* save incoming alarm function */
+  	char *e;
+  
+--- 223,234 ----
+      }
+  }
+  
+! #endif /* not MINIX */
+  /*  L O G I N  --  Login to remote system */
+  
+  login(cmdstr) char *cmdstr; {
+  
++ #ifndef MINIX
+  	SIGTYP (*saveAlm)();	/* save incoming alarm function */
+  	char *e;
+  
+***************
+*** 299,316 ****
+      signal(SIGALRM,saveAlm);
+      if (!quiet) printf("Script successful.\r\n");
+      tlog(F100,"Script successful.","",0l);
+!     return(0);
+! 
+  failRet:
+      signal(SIGALRM,saveAlm);
+      printf("Sorry, script failed\r\n");
+      tlog(F100,"Script failed","",0l);
+      return(-2);
+  }
+  
+  
+  /*  C H S T R  --  Make printable string from a character */
+  
+  static char *
+  chstr(c) char c; {
+      static char sc[4];
+--- 301,321 ----
+      signal(SIGALRM,saveAlm);
+      if (!quiet) printf("Script successful.\r\n");
+      tlog(F100,"Script successful.","",0l);
+! #endif /* not MINIX */
+!     return(0);
+! #ifndef MINIX
+  failRet:
+      signal(SIGALRM,saveAlm);
+      printf("Sorry, script failed\r\n");
+      tlog(F100,"Script failed","",0l);
+      return(-2);
++ #endif /* not MINIX */
+  }
+  
+  
+  /*  C H S T R  --  Make printable string from a character */
+  
++ #ifndef MINIX
+  static char *
+  chstr(c) char c; {
+      static char sc[4];
+***************
+*** 322,328 ****
+  }
+  
+  /*  F L U S H I  --  Flush, but log, input buffer  */
+- 
+  flushi() {
+      int n;
+      if (seslog) {			/* Logging session? */
+--- 327,332 ----
+***************
+*** 334,336 ****
+--- 338,341 ----
+  	}
+      } else ttflui();			/* Otherwise just flush. */
+  }
++ #endif /* not MINIX */
+*** ckutio.c.ORIG	Thu Jan  1 00:25:05 1970
+--- ckutio.c	Wed Aug 24 04:21:50 1988
+***************
+*** 73,81 ****
+   Version 7 UNIX support contributed by Gregg Wonderly,
+   Oklahoma State University:  gregg@okstate.csnet
+  */
+! #ifdef	V7
+! char *ckxsys = " Version 7 UNIX (tm)";
+! #endif /* v7 */
+  
+  /* BBN C70 support from Frank Wancho, WANCHO@SIMTEL20 */
+  #ifdef C70
+--- 73,96 ----
+   Version 7 UNIX support contributed by Gregg Wonderly,
+   Oklahoma State University:  gregg@okstate.csnet
+  */
+! 
+! #ifdef	V7
+! #ifndef MINIX
+! char *ckxsys = " Version 7 UNIX (tm)";
+! #endif
+! #endif /* v7 */
+! 
+! /*
+!  Minix support added by Charles Hedrick,
+!  Rutgers University:  hedrick@aramis.rutgers.edu
+!  Minix also has V7 enabled.
+! */
+! 
+! #ifdef MINIX
+! char *ckxsys = " Minix";
+! #define TANDEM 0
+! #define MYREAD
+! #endif
+  
+  /* BBN C70 support from Frank Wancho, WANCHO@SIMTEL20 */
+  #ifdef C70
+***************
+*** 233,241 ****
+--- 248,258 ----
+  /* Whether to #include <sys/file.h>... */
+  #ifndef PROVX1
+  #ifndef aegis
++ #ifndef MINIX
+  #ifndef XENIX
+  #include <sys/file.h>	  		/* File information */
+  #endif /* xenix */
++ #endif /* MINIX */
+  #endif /* aegis */
+  #endif /* provx1 */
+  
+***************
+*** 500,506 ****
+  #define ctermid(x) strcpy(x,"")
+  #endif
+  
+!     char *x; extern char* ttyname();
+      char cname[DEVNAMLEN+4];
+  
+      if (ttyfd > -1) return(0);		/* If already open, ignore this call */
+--- 517,526 ----
+  #define ctermid(x) strcpy(x,"")
+  #endif
+  
+!     char *x; 
+! #ifndef MINIX
+!     extern char* ttyname();
+! #endif
+      char cname[DEVNAMLEN+4];
+  
+      if (ttyfd > -1) return(0);		/* If already open, ignore this call */
+***************
+*** 543,554 ****
+--- 563,578 ----
+  	    debug(F110," Same as CTTNAM",ttname,0);
+  	    xlocal = 0;
+  	} else if (isatty(0)) {		/* Else, if stdin not redirected */
++ #ifndef MINIX
+  	    x = ttyname(0);		/* then compare its device name */
+  	    strncpy(cname,x,DEVNAMLEN);	/* (copy from internal static buf) */
+  	    debug(F110," ttyname(0)",x,0);
+  	    x = ttyname(ttyfd); 	/* ...with real name of ttname. */
+  	    xlocal = (strncmp(x,cname,DEVNAMLEN) == 0) ? 0 : 1;
+  	    debug(F111," ttyname",x,xlocal);
++ #else
++ 	    xlocal = 1;   /* can't do this test in minix */
++ #endif /* MINIX */
+  	} else {			/* Else, if stdin redirected... */
+  #ifdef UXIII
+  /* Sys III/V provides nice ctermid() function to get name of controlling tty */
+***************
+*** 585,590 ****
+--- 609,615 ----
+  /* Some special stuff for v7... */
+  
+  #ifdef	V7
++ #ifndef MINIX
+  	if (kmem[TTY] < 0) {	/*  If open, then skip this.  */
+  		qaddr[TTY] = initrawq(ttyfd);	/* Init the queue. */
+  		if ((kmem[TTY] = open("/dev/kmem", 0)) < 0) {
+***************
+*** 593,598 ****
+--- 618,624 ----
+  			exit(1);
+  		}
+  	}
++ #endif /* not MINIX */
+  #endif /* v7 */
+  
+  /* Request exclusive access on systems that allow it. */
+***************
+*** 656,662 ****
+      	if (ttunlck())			/* Release uucp-style lock */
+  	    fprintf(stderr,"Warning, problem releasing lock\n");
+      }
+!     ttold.c_cflag &= ~HUPCL;
+      ttres();				/* Reset modes. */
+  /* Relinquish exclusive access if we might have had it... */
+  #ifndef XENIX
+--- 682,690 ----
+      	if (ttunlck())			/* Release uucp-style lock */
+  	    fprintf(stderr,"Warning, problem releasing lock\n");
+      }
+! #ifndef MINIX
+!     ttold.c_cflag &= ~HUPCL;
+! #endif
+      ttres();				/* Reset modes. */
+  /* Relinquish exclusive access if we might have had it... */
+  #ifndef XENIX
+***************
+*** 930,939 ****
+  	return(-1);
+      }
+  #endif /* fndelay */
+! #endif /* bsd4 */
+      ttflui();				/* Flush any pending input */
+      return(0);
+  #endif /* bsd4 */
+  #else  /* myread */
+      ttflui();				/* Flush any pending input */
+      return(0);
+--- 958,971 ----
+  	return(-1);
+      }
+  #endif /* fndelay */
+! #endif /* fionbio */
+      ttflui();				/* Flush any pending input */
+      return(0);
+  #endif /* bsd4 */
++ #ifdef MINIX
++     ttflui();				/* Flush any pending input */
++     return(0);
++ #endif
+  #else  /* myread */
+      ttflui();				/* Flush any pending input */
+      return(0);
+***************
+*** 1063,1075 ****
+      if (speed < 0) return(-1);
+  	spdok = 1;			/* Assume arg ok */
+  	switch (speed) {
+! 	    case 0:    s = B0;    break;	/* Just the common ones. */
+! 	    case 110:  s = B110;  break;	/* The others from ttydev.h */
+! 	    case 150:  s = B150;  break;	/* could also be included if */
+! 	    case 300:  s = B300;  break;	/* necessary... */
+! 	    case 600:  s = B600;  break;
+! 	    case 1200: s = B1200; break;
+! 	    case 1800: s = B1800; break;
+  	    case 2400: s = B2400; break;
+  	    case 4800: s = B4800; break;
+  	    case 9600: s = B9600; break;
+--- 1095,1115 ----
+      if (speed < 0) return(-1);
+  	spdok = 1;			/* Assume arg ok */
+  	switch (speed) {
+! #ifndef MINIX
+! 	    case 0:    s = B0;    break;	/* Just the common ones. */
+! #endif
+! 	    case 110:  s = B110;  break;	/* The others from ttydev.h */
+! #ifndef MINIX
+! 	    case 150:  s = B150;  break;	/* could also be included if */
+! #endif
+! 	    case 300:  s = B300;  break;	/* necessary... */
+! #ifndef MINIX
+! 	    case 600:  s = B600;  break;
+! #endif
+! 	    case 1200: s = B1200; break;
+! #ifndef MINIX
+! 	    case 1800: s = B1800; break;
+! #endif
+  	    case 2400: s = B2400; break;
+  	    case 4800: s = B4800; break;
+  	    case 9600: s = B9600; break;
+***************
+*** 1194,1200 ****
+  /* For some reason the signal() test doesn't work under 2.9 BSD... */
+      backgrd = !y;
+  #else
+!     backgrd = (x || !y);
+  #endif
+      debug(F101,"conint backgrd","",backgrd);
+  
+--- 1234,1245 ----
+  /* For some reason the signal() test doesn't work under 2.9 BSD... */
+      backgrd = !y;
+  #else
+! #ifdef MINIX
+! /* Signal test definitely doesn't work on Minix */
+!     backgrd = !y;
+! #else
+!     backgrd = (x || !y);
+! #endif
+  #endif
+      debug(F101,"conint backgrd","",backgrd);
+  
+***************
+*** 1339,1348 ****
+   * long as this comment is retained unmodified and no commercial
+   * advantage is gained.
+   */
+! #include <a.out.h>
+! #include <sys/proc.h>
+! 
+! char *initrawq(tty) int tty; {
+  #ifdef UTS24
+      return(0);
+  #else
+--- 1384,1398 ----
+   * long as this comment is retained unmodified and no commercial
+   * advantage is gained.
+   */
+! #ifndef MINIX
+! #include <a.out.h>
+! #include <sys/proc.h>
+! #endif
+! 
+! char *initrawq(tty) int tty; {
+! #ifdef MINIX
+!     return(0);
+! #else
+  #ifdef UTS24
+      return(0);
+  #else
+***************
+*** 1410,1415 ****
+--- 1460,1466 ----
+      return (qaddr);
+  #endif
+  #endif
++ #endif
+  }
+  
+  /*  More V7-support functions...  */
+***************
+*** 1431,1437 ****
+  
+  /*  G E N B R K  --  Simulate a modem break.  */
+  
+! #define	BSPEED	B150
+  
+  genbrk(fn) int fn; {
+      struct sgttyb ttbuf;
+--- 1482,1492 ----
+  
+  /*  G E N B R K  --  Simulate a modem break.  */
+  
+! #ifdef MINIX
+! #define BSPEED  B110
+! #else
+! #define	BSPEED	B150
+! #endif
+  
+  genbrk(fn) int fn; {
+      struct sgttyb ttbuf;
+***************
+*** 1459,1467 ****
+--- 1514,1526 ----
+      return((x < 0) ? 0 : n);
+  #else
+  #ifdef	V7
++ #ifdef MINIX
++     return(0);
++ #else
+      lseek(kmem[TTY], (long) qaddr[TTY], 0); /* 7th Edition Unix */
+      x = read(kmem[TTY], &n, sizeof(int));
+      return((x == sizeof(int))? n: 0);
++ #endif
+  #else
+  #ifdef UXIII
+      return(inbufc + (ungotn >= 0) );	/* Sys III, Sys V */
+***************
+*** 1844,1850 ****
+      tp = localtime(&clock);
+      *s = asctime(tp);
+  #endif
+! #ifdef V7
+      char *asctime();			/* V7 way */
+      struct tm *localtime();
+      struct tm *tp;
+--- 1903,1915 ----
+      tp = localtime(&clock);
+      *s = asctime(tp);
+  #endif
+! 
+! #ifdef V7
+! #ifdef MINIX
+!     int utime[2];			/* Venix way */
+!     time(utime);
+!     *s = ctime(utime);
+! #else
+      char *asctime();			/* V7 way */
+      struct tm *localtime();
+      struct tm *tp;
+***************
+*** 1853,1858 ****
+--- 1918,1924 ----
+      tp = localtime(&clock);
+      *s = asctime(tp);
+  #endif
++ #endif
+  }
+  
+  /*  C O N G M  --  Get console terminal modes.  */
+***************
+*** 1927,1932 ****
+--- 1993,1999 ----
+      if (x > -1) setbuf(stdout,NULL);	/* Make console unbuffered. */
+  #endif
+  #ifdef	V7
++ #ifndef MINIX
+      if (kmem[CON] < 0) {
+  	qaddr[CON] = initrawq(0);
+  	if((kmem[CON] = open("/dev/kmem", 0)) < 0) {
+***************
+*** 1936,1941 ****
+--- 2003,2009 ----
+  	}
+      }
+  #endif
++ #endif
+      return(x);
+  }
+  
+***************
+*** 2057,2065 ****
+--- 2125,2137 ----
+      return(conbufn);
+  #else
+  #ifdef V7
++ #ifdef MINIX
++     return(0);
++ #else
+      lseek(kmem[CON], (long) qaddr[CON], 0);
+      x = read(kmem[CON], &n, sizeof(int));
+      return((x == sizeof(int))? n: 0);
++ #endif
+  #else
+  #ifdef UXIII
+      if (conesc) {			/* Escape typed */
+*** ckuus2.c.ORIG	Thu Jan  1 00:25:08 1970
+--- ckuus2.c	Wed Aug 24 02:21:07 1988
+***************
+*** 33,38 ****
+--- 33,39 ----
+  extern struct keytab prmtab[];
+  extern struct keytab remcmd[];
+   
++ #ifndef MINIX
+  static
+  char *hlp1[] = {
+  "\n",
+***************
+*** 67,76 ****
+--- 68,81 ----
+  usage() {
+      conola(hlp1);
+  }
++ #else /* MINIX */
++ usage () {}
++ #endif /* MINIX */
+  
+   
+  /*  Help string definitions  */
+   
++ #ifndef MINIX
+  static char *tophlp[] = { "\n\
+  Type ? for a list of commands, type 'help x' for any command x.\n\
+  While typing commands, use the following special characters:\n\n\
+***************
+*** 195,206 ****
+--- 200,216 ----
+  "see a list of available remote commands.  Type 'help remote x' to get\n",
+  "further information about a particular remote command 'x'.\n",
+  "" } ;
++ #endif /* MINIX */
+  
+   
+  /*  D O H L P  --  Give a help message  */
+   
+  dohlp(xx) int xx; {
+      int x,y;
++ 
++ #ifdef MINIX
++     return(0);
++ #else
+   
+      if (xx < 0) return(xx);
+      switch (xx) {
+***************
+*** 328,333 ****
+--- 338,344 ----
+      break;
+      }
+      return(0);
++ #endif /* MINIX */
+  }
+  
+   
+***************
+*** 352,357 ****
+--- 363,372 ----
+  /*  D O H S E T  --  Give help for SET command  */
+   
+  dohset(xx) int xx; {
++ 
++ #ifdef MINIX
++     return(0);
++ #else
+      
+      if (xx == -3) return(hmsga(hmhset));
+      if (xx < 0) return(xx);
+***************
+*** 491,502 ****
+--- 506,523 ----
+      printf("%s","Not available yet - %s\n",cmdbuf);
+      return(0);
+      }
++ #endif /* MINIX */
+  }
+  
+   
+  /*  D O H R M T  --  Give help about REMOTE command  */
+   
+  dohrmt(xx) int xx; {
++ 
++ #ifdef MINIX
++     return(0);
++ #else
++ 
+      int x;
+      if (xx == -3) return(hmsga(hmhrmt));
+      if (xx < 0) return(xx);
+***************
+*** 541,546 ****
+--- 562,568 ----
+      printf("%s","not working yet - %s\n",cmdbuf);
+      return(-2);
+      }
++ #endif /* MINIX */
+  }
+  
+  /*** The following functions moved here from ckuusr.c because that module ***/
+***************
+*** 596,604 ****
+   
+      switch (x) {
+   
+! 	case LOGD:
+! 	    return(deblog = debopn(s));
+!  
+  	case LOGP:
+  	    zclose(ZPFILE);
+  	    y = zopeno(ZPFILE,s);
+--- 618,628 ----
+   
+      switch (x) {
+   
+! #ifdef DEBUG
+! 	case LOGD:
+! 	    return(deblog = debopn(s));
+! #endif
+! 
+  	case LOGP:
+  	    zclose(ZPFILE);
+  	    y = zopeno(ZPFILE,s);
+***************
+*** 611,616 ****
+--- 635,641 ----
+  	    if (y > 0) strcpy(sesfil,s); else *sesfil = '\0';
+  	    return(seslog = y);
+   
++ #ifdef TLOG
+  	case LOGT:
+  	    zclose(ZTFILE);
+  	    tralog = zopeno(ZTFILE,s);
+***************
+*** 623,629 ****
+      	    }
+  	    else *trafil = '\0';
+  	    return(tralog);
+!  
+  	default:
+  	    return(-2);
+      }
+--- 648,654 ----
+      	    }
+  	    else *trafil = '\0';
+  	    return(tralog);
+! #endif 
+  	default:
+  	    return(-2);
+      }
+***************
+*** 655,673 ****
+  shopar() {
+   
+      int i;
+!     extern struct keytab mdmtab[]; extern int nmdm;
+  
+      printf("\n%s,%s, ",versio,ckxsys); 
+      puts("Communications Parameters:");
+      printf(" Line: %s, speed: %d, mode: ",ttname,speed);
+      if (local) printf("local"); else printf("remote");
+   
+      for (i = 0; i < nmdm; i++) {
+  	if (mdmtab[i].val == mdmtyp) {
+  	    printf(", modem-dialer: %s",mdmtab[i].kwd);
+  	    break;
+  	}
+      }
+      printf("\n Bits: %d",(parity) ? 7 : 8);
+      printf(", parity: ");
+      switch (parity) {
+--- 680,702 ----
+  shopar() {
+   
+      int i;
+! #ifndef MINIX
+!     extern struct keytab mdmtab[]; extern int nmdm;
+! #endif
+  
+      printf("\n%s,%s, ",versio,ckxsys); 
+      puts("Communications Parameters:");
+      printf(" Line: %s, speed: %d, mode: ",ttname,speed);
+      if (local) printf("local"); else printf("remote");
+   
++ #ifndef MINIX
+      for (i = 0; i < nmdm; i++) {
+  	if (mdmtab[i].val == mdmtyp) {
+  	    printf(", modem-dialer: %s",mdmtab[i].kwd);
+  	    break;
+  	}
+      }
++ #endif
+      printf("\n Bits: %d",(parity) ? 7 : 8);
+      printf(", parity: ");
+      switch (parity) {
+*** ckuus3.c.ORIG	Thu Jan  1 00:24:49 1970
+--- ckuus3.c	Wed Aug 24 03:34:27 1988
+***************
+*** 289,296 ****
+      return(0);
+   
+  case XYMODM:
+!     if ((x=cmkey(mdmtab,nmdm,"type of modem, direct means none","direct")) < 0)
+! 	return(x);
+      if ((z = cmcfm()) < 0) return(z);
+      mdmtyp = x;
+      return(0);
+--- 289,298 ----
+      return(0);
+   
+  case XYMODM:
+! #ifndef MINIX
+!     if ((x=cmkey(mdmtab,nmdm,"type of modem, direct means none","direct")) < 0)
+! 	return(x);
+! #endif
+      if ((z = cmcfm()) < 0) return(z);
+      mdmtyp = x;
+      return(0);
+*******************************************************
+new makefile
+*******************************************************
+# CKUMNX.MAK, Version 2.11, 29 January 1988
+#
+# -- Makefile to build C-Kermit for Minix.  This is a separate file
+# because Minix uses .s instead of .o for its object files. This
+# means that not one line of the file is the same as the standard
+# Unix makefile, so it seems silly to clutter the common file.
+
+###########################################################################
+#
+#  Compile and Link variables:
+#
+LNKFLAGS= -i
+CC= cc
+CC2= cc
+CFLAGS=-DV7 -DMINIX -i
+#
+###########################################################################
+#
+# Dependencies Section:
+#
+
+wermit: ckcmai.s ckucmd.s ckuusr.s ckuus2.s ckuus3.s ckcpro.s ckcfns.s \
+		 ckcfn2.s ckucon.s ckutio.s ckufio.s ckudia.s ckuscr.s
+	$(CC2) $(LNKFLAGS) -o wermit ckcmai.s ckutio.s \
+		 ckufio.s ckcfns.s \
+		 ckcfn2.s ckcpro.s ckucmd.s ckuus2.s ckuus3.s ckuusr.s \
+		 ckucon.s ckudia.s ckuscr.s
+
+ckcmai.s: ckcmai.c ckcker.h ckcdeb.h ckcsym.h
+
+ckuusr.s: ckuusr.c ckucmd.h ckcker.h ckuusr.h ckcdeb.h
+
+ckuus2.s: ckuus2.c ckucmd.h ckcker.h ckuusr.h ckcdeb.h
+
+ckuus3.s: ckuus3.c ckucmd.h ckcker.h ckuusr.h ckcdeb.h
+
+ckucmd.s: ckucmd.c ckucmd.h ckcdeb.h
+
+ckcpro.s: ckcpro.c ckcker.h ckcdeb.h
+
+# I'm using the distributed copy of ckcpro.c.  Unfortunately
+# wart won't compile.  If you need to change ckcpro.w, you'll have
+# to find a way to reduce the number of strings in ckwart.c
+#
+# ckcpro.c: ckcpro.w wart
+#	./wart ckcpro.w ckcpro.c
+
+ckcfns.s: ckcfns.c ckcker.h ckcdeb.h ckcsym.h
+
+ckcfn2.s: ckcfn2.c ckcker.h ckcdeb.h ckcsym.h
+
+ckufio.s: ckufio.c ckcker.h ckcdeb.h
+
+ckutio.s: ckutio.c ckcdeb.h
+
+ckucon.s: ckucon.c ckcker.h ckcdeb.h
+
+wart: ckwart.s
+	$(CC) $(LNKFLAGS) -o wart ckwart.s
+
+ckwart.s: ckwart.c
+
+ckudia.s: ckudia.c ckcker.h ckcdeb.h ckucmd.h
+
+ckuscr.s: ckuscr.c ckcker.h ckcdeb.h
+
+#Clean up intermediate and object files
+clean:
+	-rm -f ckcmai.s ckucmd.s ckuusr.s ckuus2.s ckuus3.s ckcpro.s \
+	ckcfns.s ckcfn2.s ckucon.s ckutio.s ckufio.s ckudia.s ckuscr.s \
+	ckwart.s
+
+#Run Lint on this mess for the BSD version.
+lint:
+	-lint -x -DBSD4 -DDEBUG -DTLOG ck[cu]*.[hc] > ck.lint.bsd4

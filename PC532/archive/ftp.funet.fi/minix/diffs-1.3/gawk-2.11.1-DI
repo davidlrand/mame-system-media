@@ -1,0 +1,322 @@
+diff -cr gawk-2.11.orig/Makefile gawk-2.11/Makefile
+*** gawk-2.11.orig/Makefile	Mon Nov 13 21:51:42 1989
+--- gawk-2.11/Makefile	Sat Dec  1 04:18:42 1990
+***************
+*** 58,64 ****
+  #	-DSIGTYPE=int		- signal routines return int (default void)
+  
+  # Sun running SunOS 4.x
+! MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
+  
+  # SGI Personal Iris (Sys V derived)
+  # MISSING = -DSPRINTF_INT -DBLKSIZE_MISSING -DSTRERROR_MISSING -DRANDOM_MISSING
+--- 58,64 ----
+  #	-DSIGTYPE=int		- signal routines return int (default void)
+  
+  # Sun running SunOS 4.x
+! #MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
+  
+  # SGI Personal Iris (Sys V derived)
+  # MISSING = -DSPRINTF_INT -DBLKSIZE_MISSING -DSTRERROR_MISSING -DRANDOM_MISSING
+***************
+*** 78,88 ****
+  # MISSING = -DBCOPY_MISSING -DSPRINTF_INT -DRANDOM_MISSING -DSTRERROR_MISSING \
+  #	-DSTRCASE_MISSING -DDUP2_MISSING # -DBLKSIZE_MISSING ??????
+  
+  # Comment out the next line if you don't have gcc.
+  # Also choose just one of -g and -O.
+  CC=		 gcc
+  
+! OPTIMIZE=	-O -g
+  PROFILE=	#-pg
+  DEBUG=		#-DDEBUG #-DMEMDEBUG #-DFUNC_TRACE #-DMPROF
+  DEBUGGER=	#-g -Bstatic
+--- 78,92 ----
+  # MISSING = -DBCOPY_MISSING -DSPRINTF_INT -DRANDOM_MISSING -DSTRERROR_MISSING \
+  #	-DSTRCASE_MISSING -DDUP2_MISSING # -DBLKSIZE_MISSING ??????
+  
++ # Minix 1.3 on pc532
++ MISSING = -DBCOPY_MISSING -DRANDOM_MISSING -DSTRERROR_MISSING \
++ 	-DSTRCASE_MISSING -DDUP2_MISSING -DBLKSIZE_MISSING \
++ 	-DDUP2_MISSING -DESTDIO -DMINIX -DGCVT_MISSING -DGETOPT_MISSING
+  # Comment out the next line if you don't have gcc.
+  # Also choose just one of -g and -O.
+  CC=		 gcc
+  
+! OPTIMIZE=	-O
+  PROFILE=	#-pg
+  DEBUG=		#-DDEBUG #-DMEMDEBUG #-DFUNC_TRACE #-DMPROF
+  DEBUGGER=	#-g -Bstatic
+***************
+*** 90,96 ****
+  
+  # Parser to use on grammar -- if you don't have bison use the first one
+  #PARSER = yacc
+! PARSER = bison
+  
+  # ALLOCA
+  #	Set equal to alloca.o if your system is S5 and you don't have
+--- 94,100 ----
+  
+  # Parser to use on grammar -- if you don't have bison use the first one
+  #PARSER = yacc
+! PARSER = bison -y
+  
+  # ALLOCA
+  #	Set equal to alloca.o if your system is S5 and you don't have
+diff -cr gawk-2.11.orig/awk.h gawk-2.11/awk.h
+*** gawk-2.11.orig/awk.h	Mon Nov 13 21:51:46 1989
+--- gawk-2.11/awk.h	Sat Dec  1 04:03:22 1990
+***************
+*** 42,58 ****
+--- 42,66 ----
+  extern char *alloca();
+  #endif
+  #else
++ #ifdef __GNUC__
++ #define alloca __builtin_alloca
++ #else
+  extern char *alloca();
+  #endif
++ #endif
+  #ifdef SPRINTF_INT
+  extern int sprintf();
+  #else	/* not USG */
+  /* nasty nasty berkelixm */
++ #ifndef MINIX
+  #define setjmp	_setjmp
+  #define longjmp	_longjmp
++ #endif
+  
++ #ifndef ESTDIO
+  extern char *sprintf();
+  #endif
++ #endif
+  /*
+   * if you don't have vprintf, but you are BSD, the version defined in
+   * vprintf.c should do the trick.  Otherwise, use this and cross your fingers.
+***************
+*** 78,99 ****
+--- 86,115 ----
+  extern	char *memset(char *, int, int);
+  
+  /* extern int fprintf(FILE *, char *, ...); */
++ #ifndef ESTDIO
+  extern int fprintf();
+  extern int vfprintf();
++ #endif
+  #ifndef MSDOS
++ #ifndef ESTDIO
+  extern int fwrite(char *, int, int, FILE *);
+  #endif
++ #endif
+  extern int fflush(FILE *);
+  extern int fclose(FILE *);
+  extern int pclose(FILE *);
+  #ifndef MSDOS
++ #ifndef ESTDIO
+  extern int fputs(char *, FILE *);
+  #endif
++ #endif
+  extern void abort();
+  extern int isatty(int);
+  extern void exit(int);
+  extern int system(char *);
++ #ifndef ESTDIO
+  extern int sscanf(/* char *, char *, ... */);
++ #endif
+  
+  extern double atof(char *);
+  extern int fstat(int, struct stat *);
+***************
+*** 104,110 ****
+--- 120,128 ----
+  extern int pipe(int *);
+  extern int dup2(int, int);
+  #ifndef MSDOS
++ #ifndef ESTDIO
+  extern int unlink(char *);
++ #endif
+  #endif
+  extern int fork();
+  extern int execl(/* char *, char *, ... */);
+diff -cr gawk-2.11.orig/awk.y gawk-2.11/awk.y
+*** gawk-2.11.orig/awk.y	Mon Nov 13 21:51:48 1989
+--- gawk-2.11/awk.y	Sat Dec  1 03:47:29 1990
+***************
+*** 29,34 ****
+--- 29,38 ----
+  #endif
+  
+  #include "awk.h"
++ #ifdef MINIX
++ #undef NULL
++ #define NULL 0
++ #endif
+  
+  /*
+   * This line is necessary since the Bison parser skeleton uses bcopy.
+diff -cr gawk-2.11.orig/io.c gawk-2.11/io.c
+*** gawk-2.11.orig/io.c	Mon Nov 13 21:52:07 1989
+--- gawk-2.11/io.c	Sat Dec  1 03:43:32 1990
+***************
+*** 487,497 ****
+--- 487,505 ----
+  		break;
+  
+  	case 'w':
++ #ifdef O_TRUNC
+  		flag = O_WRONLY|O_CREAT|O_TRUNC;
++ #else
++ 		flag = O_WRONLY|O_CREAT;
++ #endif
+  		break;
+  
+  	case 'a':
++ #ifdef O_APPEND
+  		flag = O_WRONLY|O_APPEND|O_CREAT;
++ #else
++ 		flag = O_WRONLY|O_CREAT;
++ #endif
+  		break;
+  	default:
+  		cant_happen();
+diff -cr gawk-2.11.orig/main.c gawk-2.11/main.c
+*** gawk-2.11.orig/main.c	Mon Nov 13 21:52:08 1989
+--- gawk-2.11/main.c	Sat Dec  1 03:41:09 1990
+***************
+*** 125,131 ****
+--- 125,133 ----
+  #endif
+  
+  	(void) signal(SIGFPE, catchsig);
++ #ifdef SIGSEGV
+  	(void) signal(SIGSEGV, catchsig);
++ #endif
+  
+  	if (strncmp(version_string, "@(#)", 4) == 0)
+  		version_string += 4;
+***************
+*** 543,552 ****
+--- 545,556 ----
+  #endif
+  	if (sig == SIGFPE) {
+  		fatal("floating point exception");
++ #ifdef SIGSEGV
+  	} else if (sig == SIGSEGV) {
+  		msg("fatal error: segmentation fault");
+  		/* fatal won't abort() if not compiled for debugging */
+  		abort();
++ #endif
+  	} else
+  		cant_happen();
+  	/* NOTREACHED */
+diff -cr gawk-2.11.orig/missing.d/dup2.c gawk-2.11/missing.d/dup2.c
+*** gawk-2.11.orig/missing.d/dup2.c	Mon Sep 25 16:58:41 1989
+--- gawk-2.11/missing.d/dup2.c	Sat Dec  1 04:07:35 1990
+***************
+*** 8,12 ****
+--- 8,16 ----
+  {
+  	(void) close(new);
+  
++ #ifdef MINIX
++ 	return dup (old);
++ #else
+  	return fcntl(old, F_DUPFD, new);
++ #endif
+  }
+diff -cr gawk-2.11.orig/missing.d/strcase.c gawk-2.11/missing.d/strcase.c
+*** gawk-2.11.orig/missing.d/strcase.c	Mon Sep 25 16:58:41 1989
+--- gawk-2.11/missing.d/strcase.c	Sat Dec  1 03:58:44 1990
+***************
+*** 19,29 ****
+  static char sccsid[] = "@(#)strcasecmp.c	5.6 (Berkeley) 6/27/88";
+  #endif /* LIBC_SCCS and not lint */
+  
+  #ifndef USG
+  #include <sys/types.h>
+  #else
+! #define u_char unsigned char
+  #endif
+  
+  /*
+   * This array is designed for mapping upper and lower case letter
+--- 19,35 ----
+  static char sccsid[] = "@(#)strcasecmp.c	5.6 (Berkeley) 6/27/88";
+  #endif /* LIBC_SCCS and not lint */
+  
++ #ifndef MINIX
+  #ifndef USG
+  #include <sys/types.h>
+  #else
+! typedef u_char unsigned char;
+  #endif
++ #endif
++ 
++ #ifdef MINIX_fo
++ typedef u_char unsigned char;
++ #endif
+  
+  /*
+   * This array is designed for mapping upper and lower case letter
+***************
+*** 30,36 ****
+--- 36,46 ----
+   * together for a case independent comparison.  The mappings are
+   * based upon ascii character sequences.
+   */
++ #ifdef MINIX
++ static unsigned char charmap[] = {
++ #else
+  static u_char charmap[] = {
++ #endif
+  	'\000', '\001', '\002', '\003', '\004', '\005', '\006', '\007',
+  	'\010', '\011', '\012', '\013', '\014', '\015', '\016', '\017',
+  	'\020', '\021', '\022', '\023', '\024', '\025', '\026', '\027',
+***************
+*** 68,76 ****
+  strcasecmp(s1, s2)
+  	char *s1, *s2;
+  {
+  	register u_char	*cm = charmap,
+! 			*us1 = (u_char *)s1,
+! 			*us2 = (u_char *)s2;
+  
+  	while (cm[*us1] == cm[*us2++])
+  		if (*us1++ == '\0')
+--- 78,90 ----
+  strcasecmp(s1, s2)
+  	char *s1, *s2;
+  {
++ #ifdef MINIX
++ 	register unsigned char	*cm = charmap,
++ #else
+  	register u_char	*cm = charmap,
+! #endif
+! 			*us1 = (unsigned char *)s1,
+! 			*us2 = (unsigned char *)s2;
+  
+  	while (cm[*us1] == cm[*us2++])
+  		if (*us1++ == '\0')
+***************
+*** 82,90 ****
+  	char *s1, *s2;
+  	register int n;
+  {
+! 	register u_char	*cm = charmap,
+! 			*us1 = (u_char *)s1,
+! 			*us2 = (u_char *)s2;
+  
+  	while (--n >= 0 && cm[*us1] == cm[*us2++])
+  		if (*us1++ == '\0')
+--- 96,104 ----
+  	char *s1, *s2;
+  	register int n;
+  {
+! 	register unsigned char	*cm = charmap,
+! 			*us1 = (unsigned char *)s1,
+! 			*us2 = (unsigned char *)s2;
+  
+  	while (--n >= 0 && cm[*us1] == cm[*us2++])
+  		if (*us1++ == '\0')

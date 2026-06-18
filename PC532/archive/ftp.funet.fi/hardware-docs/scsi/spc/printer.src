@@ -1,0 +1,638 @@
+        ;*************************************************
+	;*   FILE NAME : PRINTER.SRC                     *
+	;*   VERSION   : 1.1                             *
+	;*   DATE      : 23-03-88                        *
+	;*   APPLICATON: E.A.S.I. DEMO BOARD             *
+	;*   WRITTEN BY: ANDREW DAVIDSON		 *
+	;*		 A.P.D DESIGN			 *
+	;*		 N.S.U.K. GREENOCK		 *
+	;*************************************************
+	;
+	;
+	;
+	;******************************************************************
+	;*	PRINTER.SRC is the diagnostic test program for a SCSI	  *
+	;*	printer controller, which can use either National's	  *
+	;*	DP8490 Enhanced Asynchronous SCSI Interface (E.A.S.I.)    *
+	;*	or the conventional SCSI interface device DP5380.Since 	  *
+	;*	this diagnostic program can detect which device is being  *
+	;*	used either device can be inserted, however only the	  *
+	;*	DP8490 can be given full diagnostic testing as it is the  *
+	;*	only device with a loopback facility.			  *
+	;*	This program carries out the following functions:	  *
+	;*		ROM & RAM check					  *
+	;*		Stack initialisation				  *
+	;*		Set up of interrupt jump table			  *
+	;*		PIO initialisation				  *
+	;*		Reading in of SCSI ID from switches on PIO port	  *
+	;*		DMA test and initialisation for EASI loopback test*
+	;*		If DP5380, test then initialisation to wait for   *
+	;*		selection interrupt.				  *
+	;*		If DP8490, full loopback test, incorporating	  *
+	;*		asserting every SCSI signal and DMA transfer.The  *
+	;*		EASI is then initiialised to wait for a selection *
+	;*		interrupt.					  *
+	;*	This program should be joined with a program written in	  *
+	;*	'C' with public functions 'main', 'intA' and 'restrt'.	  *
+	;******************************************************************
+	;
+	;
+	;******************************************************************
+	;*	This code is assembled using the PARAGON ASMZ80 Cross	  *
+	;*	Assembler and Linking Loader for the Z80/NSC800 	  *
+	;*	Microprocessors (Version 4).The following table shows the *
+	;*	arithmetic operators used, in this software, to determine *
+	;*	immediate values from the constants shown in PRNSYM.SRC   *
+	;*	and EASISYM.SRC.					  *
+	;*								  *
+	;*	;		Comment field.Anything following this is  *
+	;*			considered a comment.			  *
+	;*								  * 
+	;*	+(expression)	The plus sign followed by parenthesis     *
+	;*			indicates to the assembler that an 	  *
+	;*			immediate value must be calculated from   *
+	;*			the expression within the parenthesis.	  *
+	;*								  *
+	;*	+		addition				  *
+	;*	-		subtraction				  *
+	;*	/		division				  *
+	;*	*		multiplication				  *
+	;*	\		logical NOT				  *
+	;*	&		logical AND				  *
+	;*	^		logical OR				  *
+	;*	MOD		modulus					  *
+	;*								  *
+	;******************************************************************
+	;
+	;
+	VERSN:	EQU 11h				;This costant allows the generation of a software
+	;					;version label, which will be stored at address 0002
+		extrn main_			;These are all external routines required by this software,
+		extrn intA			;which must be exist when the program is linked and loaded. 
+		extrn restrt
+	;
+		PUBLIC Start			;These are variables which are generated in this software,
+		PUBLIC DP8490			;but required to be available by external software.
+		PUBLIC SCSIID
+		PUBLIC RESETA
+	;
+		INCLUDE PRNSYM.SRC		;These two file contain the values of all constants used
+		INCLUDE EASISYM.SRC		;in PRINTER.SRC
+	;
+	;
+	;************************************************
+	;*	Start diagnostics by checking ROM.	*
+	;************************************************
+	;
+		cseg				;A code segment is to follow
+		org 	ROMSTT			;Start program at base of EPROM
+	Loc0:	jr	Start			;Jump to start of ROM check
+	Version:db	VERSN			;Version 1.0
+	Start:	di
+		ld	hl,Version		;Read same location in ROM 
+		ld	a,(hl)			;twice and compare values
+		cp	(hl)
+		jr	z,Go_on			;Jump to RAM test
+		halt
+	;
+	;
+	;**********************************************************************
+	;*	Space in RAM has to be set aside for a jump table, a flag,    *
+	;*	storing of the SCSIID and a test address for loopback testing *
+	;*	of the DP8490.						      *
+	;**********************************************************************
+	;
+		dseg				;A data segment is to follow
+		org	1			;Starts one byte up from base of data segment
+	RESETA:	DEFS	2			;Set aside memory space for
+	;					;vectored interrupt response
+	;
+	DP8490:	DEFS	1			;Flag set to 1 when 8490 used (see EASI test)
+	SCSIID:	DEFS	1			;ID is read from switches (see PIO initialization)
+	;					;and stored at this address.
+	TSTBYT:	DEFS	1			;8490 test byte address	 (see DMA test)
+	;
+	;
+	;**********************************************************************
+	;*	An interrupt causes a call to a predetermined location in     *
+	;*	memory, so an interrupt handling routine must reside at this  *
+	;*	address.On interrupt this routine saves the registers then    *
+	;*	calls a jump table residing at the bottom of RAM.This gives   *
+	;*	the run-time program the ability to control how it responds   *
+	;*	to an interrupt depending on what it is currently doing.On    *
+	;*	return from the called function the registers are restored    *
+	;*	and the program returns to the interrupted function.	      *
+	;**********************************************************************
+	;
+	;
+	;**********************************************************************
+	;*	When the EASI interrupts there is an initial test to see if it*
+	;*	is a SCSI reset, as the response to this is always the same   *
+	;*	 i.e. reset the whole system.If it is not a reset, the normal *
+	;*	service routine is followed.				      *
+	;**********************************************************************
+	;
+		cseg
+		org	03ch
+		push	af			;Save all registers
+		push	bc
+		push	de
+		push	hl
+		in	a,(EASIBSR)
+		and	\ck_atn			;Mask off ATN
+		xor	+(interrupt^phase_int)
+		jr	nz,no_rst		;Interrupt flags active so no reset
+		in	a,(EASICSB)
+		and	ck_sel
+		jr	nz,no_rst		;Selection interrupt so no reset
+		in	a,(EASIICR)
+		and	aip
+		jr	nz,no_rst		;Arbitration interrupt so no reset
+		call	restrt			;Valid reset condition
+	no_rst:	call	+(RESETA-1)		;No reset so call jump table
+		pop	hl			;Restore all registers
+		pop	de
+		pop	bc
+		pop	af
+		ret
+	;
+	;
+	;**********************************************************
+	;*			RAM TEST			  *
+	;*	  Read value in memory location, complement it	  *
+	;*	  , write it back then compare with original	  *
+	;*	  value.Clear memory and repeat for every	  *
+	;*	  location in RAM.				  *
+	;**********************************************************
+	;
+	Go_on:	ld	de,RAMLEN		;Number of locations to test
+		ld	hl,RAMSTT		;Pointer to current address
+	Begin:	ld	a,(hl)			
+		cpl				
+		ld	(hl),a			
+		cp	(hl)
+		ld	(hl),00			;Initialise RAM to zero
+		jr	z,Count			
+		halt
+	Count:	inc	hl
+		dec	de
+		ld	a,d
+		or	e
+		jr	nz,Begin
+	;
+	;					;RAM OK
+	;
+	;*******************************************************************
+	;*	Initialise the Stack at the top  of RAM.		   *
+	;*******************************************************************
+	;
+		ld	sp,ROMSTT
+		ld	hl,STKDATA
+		push	hl
+	;
+	;
+	;********************************************************
+	;*	  On interrupt the program will go to the	*
+	;*	  system designated address, which contains	*
+	;*	  a jump to a location in RAM.This routine	*
+	;*	  stores a jump command at that location,	*
+	;*	  leaving the jump address to be programmed	*
+	;*	  later.					*
+	;********************************************************
+	;
+		ld	a,jump
+		ld	hl,+(RESETA-1)
+		ld	(hl),a
+	;
+	;
+	;********************************************************
+	;*		    PIO Initialization			*
+	;*	  Initialise PIO for mode zero, with ports	*
+	;*	  A and C outputs, port B input.The SCSI 	*
+	;*	  ID is read in from  DIL switches on port B.	*
+	;********************************************************
+	;
+	;
+	;	PORT A: OUTPUT TO PRINTER DATA BUS
+	;
+	;	PORT B: INPUT FROM PRINTER CONTROL SIGNALS AND SWITCHES
+	;!-----------------------------------------------------------------------------!
+	;!   PB0  !   PB1  !   PB2  !   PB3  !   PB4  !    PB5   !   PB6    !  PB7     !
+	;!--------!--------!--------!--------!--------!----------!----------!----------!
+	;!   ACK~ !  BUSY  !   PE   ! ERROR~ !        ! ID BIT 0 ! ID BIT 1 ! ID BIT 2 !
+	;!-----------------------------------------------------------------------------!
+	;
+	;
+	;	PORT C: OUTPUT TO PRINTER CONTROL SIGNALS AND TO DRIVE LED
+	;!-----------------------------------------!
+	;!   PC0    !   PC1   !   PC2    !   PC3   !
+	;!----------!---------!----------!---------!
+	;!  STROBE~ !         !   INIT~  ! LED ON  !
+	;!-----------------------------------------!
+	;
+	;
+		xor	a			;Load accumulator with zero
+		out	(PIOMDR),a		;PIO Mode 0
+		out	(PIODDRB),a		;Port B all inputs
+		cpl
+		out	(PIODDRA),a		;Port A all outputs
+		out	(PIODDRC),a		;Port C all outputs
+		;
+		ld	a,+(led_on^printer_init)	;Switch on LED and initialize printer
+		out	(PIOC),a
+		xor	a
+		out	(PIOA),a		;Fill output buffer with 0
+		ld	a,led_on
+		out	(PIOC),a		;End printer initialisation
+		;
+		in	a,(PIOB)		;Read D.I.L. switches 
+		or	1fh			;Mask off all but SCSI ID
+		cpl
+		rlca				;Rotate ID from top three 
+		rlca				;bits to bottom three.
+		rlca
+		ld	b,a			;binary number to bit pattern.
+		inc	b
+		ld	a,80h			;The ID is used as a counter, 
+	Shift:	rlca				;loaded in b, to move the ID
+		djnz	Shift			;bit to the correct position.
+		ld	(SCSIID),a		;To allow for ID=0 the counter
+	;					;is initially incremented and
+	;					;the ID set at 7.
+	;
+	;
+	;****************************************************************
+	;*	  		    DMA TEST				*
+	;*	  To test the DMA a value (TSTBYT) is written to the	*
+	;*	  address register and read back. (This value is the    *
+	;*	  address the DMA transfer is made to, in the EASI 	*
+	;*	  loopback test) The DMA is initialised for a one byte  *
+	;*	  block mode transfer.					*
+	;*	  Although the other channels are not used A.M.D.	*
+	;*	  suggest the mode registers are initialised to a valid *
+	;*	  condition.						*
+	;****************************************************************
+	;
+	Dmatest:xor	a			
+		out	(DMAMCL),a		;Clear all registers in device
+	;
+		ld	a,+(block_mode^write_transfer)
+		out	(DMAMOD),a
+		inc	a
+		out	(DMAMOD),a		;Fill all mode registers with
+		inc	a			;valid data. A.M.D. suggest
+		out	(DMAMOD),a		;that if this is not done
+		inc	a			;errors may occur.
+		out	(DMAMOD),a
+	;
+		ld	a,channel0		;Mask off all channels except 0
+		out	(DMAMSK),a		;by masking off any incoming DRQ
+	;
+		xor	a
+		out	(DMACNT),a		;Load count with 0 to
+		out	(DMACNT),a		;transfer 1 byte.
+	;
+		ld	hl,TSTBYT		;Load test byte address
+		ld	a,l			;into DMA
+		out	(DMAADD),a
+		ld	a,h
+		out	(DMAADD),a
+	;
+		in	a,(DMARCA)		;Read back current address
+		ld	e,a			;and check it equals
+		in	a,(DMARCA)		;the value written to it.
+		ld	d,a
+		sbc	hl,de			;hl still contains TSTBYT address
+		jr	z,Easitst		;If correct go to EASITEST
+		ld	l,0			;else signal DMA error
+		call	ERROR
+	;
+	;
+	;********************************************************
+	;*	  		EASI TEST			*
+	;*	  Test MR2,then initialise EASI by clearing 	*
+	;*	  all registers.For 5380 test is then 		*
+	;*	  complete, for 8490 loopback test follows.	*
+	;********************************************************
+	;	  
+	Easitst:xor	a
+		out	(EASIICR),a		;Clear register and ensure in mode N
+		in	a,(EASIRPI)		;Reset interrupts
+		ld	a,+(en_blk^target^en_pchk^en_pint^en_eop)
+		out	(EASIMR2),a
+		in	a,(EASIMR2)
+		xor	+(en_blk^target^en_pchk^en_pint^en_eop)
+		jr	z,Easicon		;If correct continue
+		ld	l,1			;else EASI error
+		call	ERROR
+	;
+	Easicon:xor	a
+		out	(EASIMR2),a		;Reset MR2
+		ld	a,mode_e
+		out	(EASIICR),a		;Sets MODE E if 8490 else disables outputs
+		ld	a,loop
+		out	(EASIEMR),a		;Test device type by writing
+		in	a,(EASIEMR)		;to EMR, reading back
+		xor	loop			;and comparing.
+		jr	z,Easicn1
+	;
+	;****************************************
+	;*	DP5380 Initialization		*
+	;****************************************
+	;
+	Easicn0:ld	hl,DP8490
+		ld	(hl),false		;Set flag for DP5380
+		xor	a
+		out	(EASIICR),a		;Reenable output drivers
+		ld	a,+(target^en_pchk^en_pint)
+		out	(EASIMR2),a		;Allow parity check on selection
+		ld	hl,main_		;Set up interrupt jump table
+		ld	(RESETA),hl
+		in	a,(EASIRPI)		;Reset SCSI interrupts
+		ld	a,(SCSIID)
+		out	(EASISER),a
+		call	intA			;Enable interrupt on A.
+	;					;End of 5380 diagnostics.
+	Now:	jr	Now			;Wait for selection interrupt to jump to
+	;					;'main' of 'C' program.
+	;
+	;
+	;**********************************************************************
+	;*			Loopback Testing			      *
+	;*	Test EASI in loopback mode by asserting all initiator signals *
+	;*	and testing, asserting all target signals and testing, 	      *
+	;*	checking parity and doing a DMA transfer to TSTBYT.	      *
+	;**********************************************************************
+	;
+	;
+	Easicn1:ld	hl,DP8490
+		ld	(hl),true		;Set flag for DP8490
+	;
+		;**************************************************************
+		;*	Initially check all initiator signals can be asserted *
+		;**************************************************************
+	;
+		xor	a
+		out	(EASIMR2),a		;Initiator mode
+		ld	a,+(mode_e^as_ack^as_atn)
+		out	(EASIICR),a
+		in	a,(EASIBSR)
+		xor	+(phase_int^ck_atn^ck_ack)
+		jr	z,cont0
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Go into target mode and check all target signals can  *
+		;*	be asserted.The ODR contains test1 (054h) so when the *
+		;*	bus is asserted CSB bit 0 (DBP) should contain 0.     *
+		;**************************************************************
+	;
+	cont0:	ld	a,target
+		out	(EASIMR2),a
+		ld	a,test1			;Write word to test ODR and parity
+		out	(EASIODR),a
+		ld	a,+(req^as_msg^as_cd^as_io)
+		out	(EASITCR),a
+		ld	a,+(mode_e^as_bsy^as_sel^as_dbus)
+		out	(EASIICR),a
+		in	a,(EASICSB)
+		xor	+(ck_bsy^ck_req^ck_msg^ck_cd^ck_io^ck_sel)	;Checks ck_dbp =0
+		jr	z,cont1
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Check that CSD equals test1.			      *
+		;**************************************************************
+	;
+	cont1:	in	a,(EASICSD)
+		xor	test1
+		jr	z,cont2
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Set EMR bit 5 to enable even parity, and check the CSB*
+		;*	parity bit, which should equal one.		      *
+		;**************************************************************
+	;
+	cont2:	ld	a,+(spol^loop)
+		out	(EASIEMR),a
+		in	a,(EASICSB)
+		and	ck_dbp
+		jr	nz,cont3
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Write test2 (0aah) to the ODR, with dbus still 	      *
+		;*	asserted, and check the CSD.			      *
+		;**************************************************************
+	;
+	cont3:	ld	a,test2
+		out	(EASIODR),a
+		in	a,(EASICSD)
+		xor	test2
+		jr	z,cont4
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Check parity bit equal to zero (even parity)	      *
+		;**************************************************************
+	;
+	cont4:	in	a,(EASICSB)
+		and	ck_dbp
+		jr	z,cont5
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Change to odd parity (as SCSI spec) and check the     *
+		;*	parity bit is set.				      *
+		;**************************************************************
+	;
+	cont5:	ld	a,loop
+		out	(EASIEMR),a
+		in	a,(EASICSB)
+		and	ck_dbp			;Ensure parity bit set
+		jr	nz,cont6
+		ld	l,2
+		call	ERROR			;SCSI loopback ERROR
+	;
+		;**************************************************************
+		;*	Do a DMA target receive transfer, transferring test2  *
+		;*	to a location in memory TSTBYT. The DMA is set up     *
+		;*	for this during DMA diagnostics.		      *
+		;**************************************************************
+	;
+	cont6:	ld	a,data_out		;Set the phase for data out
+		out	(EASITCR),a
+		ld	a,+(mode_e^as_bsy^as_dbus)
+		out	(EASIICR),a
+		ld	a,blk_mode_dma
+		out	(EASIMR2),a
+		ld	hl,DIAGA		;Set interrupt response
+		ld	(RESETA),hl		;for Diagnostic mode
+		ld	a,+(loop^rpi)
+		out	(EASIEMR),a		;Reset SCSI interrupt
+		ld	a,loop
+		out	(EASIEMR),a		;Take off interrupt reset
+		call	intA			;Enable interrupt on A
+		out	(EASISDT),a		;Commence DMA transfer
+	Tstreq:	in	a,(EASICSB)
+		and	ck_req			;Wait for REQ active
+		jr	z,Tstreq
+		ld	a,+(mode_e^as_ack^as_bsy^as_dbus)
+		out	(EASIICR),a		;Assert ACK to handshake SCSI bus transfer
+		ld	a,+(mode_e^as_bsy^as_dbus)
+		out	(EASIICR),a		;Deassert ACK causing true end of DMA and interrupt
+	;
+	Here:	jr	Here			;Wait for end of DMA interrupt
+	;					;to jump to DIAGA to test DMA transfer or
+	;					;wait for selection interrupt if DIAGA
+	;					;has been executed.
+	;
+	;
+	;*****************************************************
+	;*		    SUBROUTINES			     *
+	;*****************************************************
+	;
+	;
+	;********************************************************
+	;*	  DIAGA :This responds to an EASI interrupt	*
+	;*		 in Loopback Mode.			*
+	;* 							*
+	;*	  TSTBYT contains word memory address		*
+	;*							*
+	;********************************************************
+	;
+	;
+		;********************************************
+		;*	Check for true end of dma in TCR.   *
+		;********************************************
+	;
+	DIAGA:	di
+		in	a,(EASITCR)
+		bit	7,a
+		jr	nz,Easich0
+		ld	l,3			;No end of DMA
+		call	ERROR			;Loopback DMA ERROR
+	;
+		;********************************************
+		;*	Check for true end of dma in ISR.   *
+		;********************************************
+	;
+	Easich0:ld	a,+(loop^isr)
+		out	(EASIEMR),a
+		in	a,(EASIISR)
+		xor	eedma
+		jr	z,Easich1
+		ld	l,3			;ISR EDMA bit not set or interrupt other than edma
+		call	ERROR			;Loopback DMA ERROR
+	;
+		;**************************************************
+		;*	Check for conventional end of dma in BSR. *
+		;**************************************************
+	;
+	Easich1:in	a,(EASIBSR)
+		xor	+(edma^interrupt^phase_int)
+		jr	z,Easich2
+		ld	l,3			;BSR EDMA bit not set or interrupt other than edma
+		call	ERROR			;Loopback DMA ERROR
+	;
+		;*********************************************************
+		;*	Test the word transferred to ensure it is test2. *
+		;*********************************************************
+	;
+	Easich2:ld	hl,TSTBYT
+		ld	a,(hl)
+		xor	test2
+		jr	z,Easicor
+		ld	l,3			;Word transfer error
+		call	ERROR			;Loopback DMA ERROR
+	;
+	Easicor:ld	a,+(target^en_pchk^en_pint)	;Set up parity checking for selection
+		out	(EASIMR2),a
+		ld	a,mode_e
+		out	(EASIICR),a
+		ld	a,+(loop^rpi)
+		out	(EASIEMR),a
+		ld	a,imr			;Set up for reading IMR
+		out	(EASIEMR),a
+		ld	a,+(eedma^mpe^dphs^aphs^ebsy^earb)
+		out	(EASIIMR),a		;Only allow interrupt on SEL or sper
+		ld	hl,main_		;Set Enhanced Mode interrupt
+		ld	(RESETA),hl		;response
+		ld	a,(SCSIID)
+		out	(EASISER),a
+		call	intA			;Mask off interrupts B & C
+		ret				;Returns to jr here statement
+						;and waits for selection interrupt
+	;
+	;
+	;
+	;********************************************************
+	;*	  ERROR :This flashes a LED error message	*
+	;*							*
+	;*	  INPUTS :l is loaded with error number		*
+	;*		  which is flashed in 4 bit binary	*
+	;*		  code.The LED goes off for 1/2 sec.	*
+	;*		  for a 0, and 1 sec. for a 1.The	*
+	;*		  M.S.B. is flashed first.The code	*
+	;*		  is continually repeated after		*
+	;*		  2 sec. intervals.			*
+	;*							*
+	;*	  This routine is continuously run once  	*
+	;*	  entered, so no register storage required.	*
+	;*							*
+	;********************************************************
+	;
+		PUBLIC ERROR
+	ERROR:	ld	a,led_on
+		ld	e,l
+		rlc	e			;Shift lower nibble to
+		rlc	e			;upper nibble to allow
+		rlc	e			;bit test
+		rlc	e
+	Redo:	ld	d,e			;Save error number to continually display 
+		ld	b,4			;Number of bits to be displayed
+	Notend:	rlc	d			;If bit is zero
+		jr	nc,Shrt			;Short flash (1/2 sec.)
+		out	(PIOCC),a
+		ld	l,2			;else long flash (1 sec.)
+		call	DELAY
+	Shrt:	out	(PIOCC),a
+		ld	l,2
+		call	DELAY
+		out	(PIOCS),a
+		ld	l,2			;LED on for 1/2 sec. between flashes
+		call	DELAY
+		djnz	Notend
+		ld	l,8			;LED on for 2 sec. before
+		call	DELAY			;repeating message
+		jr	Redo
+	;
+	;
+	;********************************************************
+	;*	  DELAY :This creates a delay of 1/4 sec.	*
+	;*							*
+	;*	  Inputs :l sets the number of 1/4 sec. delays	*
+	;*	  All registers used are stored on stack	*
+	;*							*
+	;********************************************************
+	;
+		PUBLIC DELAY
+	DELAY:	push	bc
+		push	af
+	Outloop:ld	bc,DELVAL		;Counting down from this
+	Inloop:	dec	bc			;value causes 1/4 sec. delay
+		ld	a,b
+		or	c
+		jr	nz,Inloop
+		dec	l
+		jr	nz,Outloop
+		pop	af
+		pop	bc
+		ret

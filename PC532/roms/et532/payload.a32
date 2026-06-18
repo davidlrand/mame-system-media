@@ -1,0 +1,11 @@
+;
+; Test payload for console/SCSI autoboot: print 'Z' then spin.
+; Position-independent; loaded + entered at the block's load/start address.
+;
+con:	equ	h'10000000
+	movd	con,r7
+pw:	movb	1(r7),r1
+	tbitb	2,r1
+	bfc	pw
+	movb	h'5a,3(r7)	; 'Z'
+ph:	br	ph

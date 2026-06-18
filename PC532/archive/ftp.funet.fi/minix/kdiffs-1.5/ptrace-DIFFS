@@ -1,0 +1,329 @@
+*** orig-1.5.10/kernel-1.3/Makefile	Sun Feb 10 13:40:30 1991
+--- kernel/kernel-1.3/Makefile	Mon Feb 25 07:40:39 1991
+***************
+*** 1,8 ****
+  CC=cc
+  CFLAGS=-c -O
+  LD=ld
+  AS=as
+! DCL=-DNS32K -DDEBUG #-nostdinc # -DOMTI
+  INCL=#-I/usr/include
+  
+  OBJ=	mpx32k.o	klib32k.o	main.o		proc.o \
+--- 1,8 ----
+  CC=cc
+  CFLAGS=-c -O
+  LD=ld
+  AS=as
+! DCL=-DNS32K -DDEBUG -DDO_PTRACE #-nostdinc # -DOMTI
+  INCL=#-I/usr/include
+  
+  OBJ=	mpx32k.o	klib32k.o	main.o		proc.o \
+*** orig-1.5.10/kernel-1.3/alloc_32k.c	Fri Feb 15 13:32:43 1991
+--- kernel/kernel-1.3/alloc_32k.c	Tue Feb 26 08:03:32 1991
+***************
+*** 480,486 ****
+      pagenum > TOP_PGNUM - procp->p_map.slen - MAX_STACK_GROWTH_PGS)
+    {
+      return alloc_stack (procp, vaddr) == OK? OK: ENOMEM;
+!   } else return E_BAD_ADDR;
+  }
+  
+  /*===========================================================================*
+--- 480,499 ----
+      pagenum > TOP_PGNUM - procp->p_map.slen - MAX_STACK_GROWTH_PGS)
+    {
+      return alloc_stack (procp, vaddr) == OK? OK: ENOMEM;
+! #ifdef DO_PTRACE
+!   } else if (				/* check if we're tracing */
+!     (procp->p_flags & P_STOP) &&	/* P_STOP is set when the process
+! 					   is stopped for tracing (ptrace(2)).
+! 					   I don't suppose a debugger wants
+! 					   to write to process's text
+! 					   when it's running - but who
+! 					   knows. Well, it gets an error
+! 					   if it tries it. */
+!     pagenum <= procp->p_map.tlen)
+!     return alloc_copy_on_write (procp, vaddr) == OK? OK: ENOMEM;
+! #else
+! #endif
+!     else return E_BAD_ADDR;
+  }
+  
+  /*===========================================================================*
+*** orig-1.5.10/kernel-1.3/const.h	Fri Feb 15 13:32:43 1991
+--- kernel/kernel-1.3/const.h	Tue Feb 26 06:36:06 1991
+***************
+*** 42,47 ****
+--- 42,54 ----
+  #define RET_REG		7	/* system call return codes go in this reg */
+  #define INIT_NAME "/etc/init"	/* path for INIT */
+  #define INIT_PID  1
++ #ifdef DO_PTRACE
++ #define TRACEBIT       0x20000	/* OR this with psw in proc[] for tracing */
++ 				/* Hmm, someone will have to check
++ 				   this - I'm not really sure about these. */
++ #define SETBITS(rp, new)	/* permits only certain bits to be set */ \
++ 	((rp)->p_mod_psr = (rp)->p_mod_psr & ~0x00fb0000 | (new) & 0x00fb0000)
++ #endif
+  /* Device numbers of root (RAM) and boot (fd0) devices. */
+  #  define NQ		3
+  #  define NR_REGS	8
+*** orig-1.5.10/kernel-1.3/init.c	Fri Feb 15 13:32:45 1991
+--- kernel/kernel-1.3/init.c	Tue Feb 26 06:13:10 1991
+***************
+*** 55,61 ****
+  	{VEC_TTY1,	isr_tty1},
+  	{VEC_TTY2,	isr_tty2},
+  	{VEC_TTY3,	isr_tty3},
+! #ifndef DEBUG
+  	/* Normally, you want the OS to catch these and send a signal to
+  	 * the proc which executed them.  For debugging with the ROM
+  	 * debugger, we need these to get us back into the debugger.
+--- 55,61 ----
+  	{VEC_TTY1,	isr_tty1},
+  	{VEC_TTY2,	isr_tty2},
+  	{VEC_TTY3,	isr_tty3},
+! #if defined(DO_PTRACE) || !defined(DEBUG)
+  	/* Normally, you want the OS to catch these and send a signal to
+  	 * the proc which executed them.  For debugging with the ROM
+  	 * debugger, we need these to get us back into the debugger.
+*** orig-1.5.10/kernel-1.3/proc.h	Fri Feb 15 13:32:48 1991
+--- kernel/kernel-1.3/proc.h	Tue Feb 26 07:52:43 1991
+***************
+*** 40,45 ****
+--- 40,48 ----
+  #define RECEIVING        010	/* set when process blocked trying to recv */
+  #define PENDING          020	/* set when process has signals pending */
+  #define TRAP_PENDING	 040	/* new NS32k */
++ #ifdef DO_PTRACE
++ #define P_STOP		0100	/* set when process is stopped for tracing */
++ #endif
+  
+  #define isokusern(n)      ((unsigned) ((n) - LOW_USER) < NR_PROCS - LOW_USER)
+  #define proc_addr(n) &proc[NR_TASKS + n]
+*** orig-1.5.10/kernel-1.3/system.c	Fri Feb 15 13:32:52 1991
+--- kernel/kernel-1.3/system.c	Tue Feb 26 07:56:36 1991
+***************
+*** 21,26 ****
+--- 21,28 ----
+   *   SYS_BREAK	 from MM, request to increase heap
+   *   SYS_TRAP	 from HARDWARE, reports the occurrence of a trap.
+   *
++  *   SYS_TRACE	 request a trace operation
++  *
+   * Message type m1 is used for all except SYS_SIG SYS_NEWMAP and SYS_COPY,
+   * both of which need special parameter types.
+   *
+***************
+*** 28,34 ****
+   * ------------------------------------------------------
+   * | SYS_FORK   | parent  |  child  |   pid   |         |
+   * |------------+---------+---------+---------+---------|
+!  * | SYS_EXEC   | proc nr | entry   |         |         |
+   * |------------+---------+---------+---------+---------|
+   * | SYS_XIT    | parent  | exitee  |         |         |
+   * |------------+---------+---------+---------+---------|
+--- 30,36 ----
+   * ------------------------------------------------------
+   * | SYS_FORK   | parent  |  child  |   pid   |         |
+   * |------------+---------+---------+---------+---------|
+!  * | SYS_EXEC   | proc nr | entry   |  traced |         |
+   * |------------+---------+---------+---------+---------|
+   * | SYS_XIT    | parent  | exitee  |         |         |
+   * |------------+---------+---------+---------+---------|
+***************
+*** 40,45 ****
+--- 42,53 ----
+   * ------------------------------------------------------
+   *
+   *
++  *    m_type       m2_i1     m2_i2     m2_l1     m2_l2     
++  * ------------------------------------------------------
++  * | SYS_TRACE  | proc_nr | request |  addr   |  data   |
++  * ------------------------------------------------------
++  *
++  *
+   *    m_type       m6_i1     m6_i2     m6_i3     m6_f1     
+   * ------------------------------------------------------
+   * | SYS_SIG    | proc_nr  |  sig    |         | handler |
+***************
+*** 81,86 ****
+--- 89,98 ----
+  PRIVATE message m;
+  PRIVATE char sig_stuff[SIG_PUSH_BYTES];	/* used to send signals to processes */
+  
++ #ifdef DO_PTRACE
++ FORWARD int do_trace();
++ #endif
++ 
+  /*===========================================================================*
+   *				sys_task				     *
+   *===========================================================================*/
+***************
+*** 109,114 ****
+--- 121,129 ----
+  	    /*case SYS_COPY:	r = do_copy(&m);	break;*/
+  	    case SYS_BREAK:	r = do_break(&m);	break;
+  	    case SYS_TRAP:	r = do_trap(&m);	continue;
++ #ifdef DO_PTRACE
++ 	    case SYS_TRACE:	r = do_trace(&m);	break;
++ #endif
+  	    default:		/*r = E_BAD_FCN;*/
+  				panic ("sys task got bad func: ", m.m_type);
+  				break;
+***************
+*** 165,170 ****
+--- 180,188 ----
+    
+    old_flags = rpc->p_flags;	/* save the previous value of the flags */
+    rpc->p_flags &= ~NO_MAP;
++ #ifdef DO_PTRACE
++   rpc->p_flags &= ~P_STOP;	/* child does not inherit trace status */
++ #endif
+    if (old_flags != 0 && rpc->p_flags == 0) ready(rpc);
+  
+    return(OK);
+***************
+*** 184,189 ****
+--- 202,210 ----
+  
+    k = m_ptr->PROC1;
+    if (k < -NR_TASKS || k >= NR_PROCS) return(E_BAD_PROC);
++ #ifdef DO_PTRACE
++   if (m_ptr->TRACE) cause_sig(m_ptr->PROC1, SIGTRAP);
++ #endif
+    rp = proc_addr(k);		/* ptr to entry of user getting new map */
+    rp->p_pc = m_ptr->ENTRY;
+    rp->p_flags &= ~RECEIVING;	/* MM does not reply to EXEC call */
+***************
+*** 470,475 ****
+--- 491,618 ----
+    return(OK);
+  }
+  #endif
++ 
++ #ifdef DO_PTRACE
++ /*===========================================================================*
++  *				do_trace				     * 
++  *===========================================================================*/
++ 
++ #define PROCNR	(m->m2_i1)
++ #define REQUEST (m->m2_i2)
++ #define ADDR	((vir_bytes)m->m2_l1)
++ #define DATA	(m->m2_l2)
++ #define VLSIZE	((vir_bytes)sizeof(long))
++ 
++ PRIVATE int do_trace(m)
++ register message *m;
++ {
++   register struct proc *rp;
++   phys_bytes umap(), src, dst;
++   int i;
++ 
++   rp = proc_addr(PROCNR);
++   if (rp->p_flags & P_SLOT_FREE) return EIO;
++   switch (REQUEST) {
++ 	case -1: /* stop process */
++ 		unready(rp);
++ 		rp->p_flags |= P_STOP;
++ #if (MACHINE == PC532)
++ 		rp->p_mod_psr &= ~TRACEBIT; /* clear trace bit */
++ #else
++ 		rp->p_pcpsw.psw &= ~TRACEBIT; /* clear trace bit */
++ #endif
++ 		return OK;
++ 	case 1: /* return value from instruction space */
++ 	case 2: /* return value from data space */
++ #if (MACHINE == PC532)
++ 		/* should we do more error checking ? */
++ 		if (v_copy (rp, ADDR, 0L, &DATA, VLSIZE) != VLSIZE)
++ 		  return EIO;
++ #else
++ 		return EIO;
++ #endif
++ 		break;
++ 	case 3: /* return value from process table */
++ 		if ((ADDR & (sizeof(long) - 1)) != 0 ||
++ 		    ADDR > sizeof(struct proc) - sizeof(long))
++ 		  return(EIO);
++ 		DATA = *(long *)((char *)rp + (int)ADDR);
++ 		break;
++ 	case 4: /* set value from instruction space */
++ 		/* Hmm, I wonder how modifying text on the pc532
++ 		   minix works - might not */
++ 	case 5: /* set value from data space */
++ #if (MACHINE == PC532)
++ 		/* should we do more error checking ? */
++ 		if (v_copy (0L, &DATA, rp, ADDR, VLSIZE) != VLSIZE)
++ 		  return EIO;
++ 		else
++ 		  DATA = 0;
++ 		return OK;
++ #else
++ 		return EIO;
++ #endif
++ 		break;
++ 	case 6: /* set value in process table */
++ #if (MACHINE == PC532)
++ 		if ((ADDR & (sizeof (long) - 1)) != 0 ||
++ 		    ADDR > ((char *)&rp->p_flags - (char *)&rp->p_reg[0]))
++ 		  return(EIO);
++ 		if (ADDR == ((char *)&rp->p_mod_psr - (char *)&rp->p_reg[0])) {
++ 		  /* only selected bits are changeable */
++ 		  SETBITS(rp, DATA);
++ 		}
++ 		else {
++ 		  *(long *)((char *)&rp->p_reg[0] + ADDR) = DATA;
++ 		}
++ 		DATA = 0;
++ 		break;
++ #else
++ #if (CHIP == INTEL)
++ 	/* Altering segment registers might crash the kernel when it
++ 	 * tries to load them prior to restarting a process, so do
++ 	 * not allow it.
++ 	 */
++ 	if (i == (int) &((struct proc *) 0)->p_reg.cs ||
++ 	    i == (int) &((struct proc *) 0)->p_reg.ds ||
++ 	    i == (int) &((struct proc *) 0)->p_reg.es ||
++ #if INTEL_32BITS
++ 	    i == (int) &((struct proc *) 0)->p_reg.gs ||
++ 	    i == (int) &((struct proc *) 0)->p_reg.fs ||
++ #endif
++ 	    i == (int) &((struct proc *) 0)->p_reg.ss)
++ 		return(EIO);
++ #endif
++ 	if (i == (int) &((struct proc *) 0)->p_reg.psw)
++ 		/* only selected bits are changeable */
++ 		SETBITS(rp, DATA);
++ 	else
++ 		*(reg_t *) ((char *) &rp->p_reg + i) = (reg_t) DATA;
++ 	DATA = 0;
++ 	break;
++ 		return EIO;
++ #endif
++ 		break;
++ 	case 7: /* resume execution */
++ 		rp->p_flags &= ~P_STOP;
++ 		if (rp->p_flags == 0) ready(rp);
++ 		DATA = 0;
++ 		break;
++ 	case 9: /* set trace bit */
++ #if (MACHINE == PC532)
++ 		rp->p_mod_psr |= TRACEBIT;
++ #else
++ 		rp->p_pcpsw.psw |= TRACEBIT;
++ #endif
++ 		rp->p_flags &= ~P_STOP;
++ 		if (rp->p_flags == 0) ready(rp);
++ 		DATA = 0;
++ 		break;
++ 	default: return EIO;
++   }
++   return OK;
++ }
++ #endif /* DO_PTRACE */
+  
+  /*===========================================================================*
+   *				cause_sig				     * 

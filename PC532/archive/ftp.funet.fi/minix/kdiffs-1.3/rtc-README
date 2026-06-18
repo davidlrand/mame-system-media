@@ -1,0 +1,45 @@
+Newsgroups: santra.pc32532
+From: kls@halas.uucp (Karl Swartz)
+Subject: /dev/rtc (and /dev/rom)
+Message-ID: <199009140215.AA00063@halas.UUCP>
+Precedence: bulk
+Reply-To: pc532@bungi.com
+Organization: Helsinki University of Technology, Finland
+X-Path: ditka!halas!kls
+Date: 14 Sep 90 02:15:22 PST (Fri)
+X-From: daver!owner-pc532@relay.eu.net Fri Sep 14 17:42:12 1990
+Lines: 33
+
+I just installed Johan's /dev/rtc code and it works just fine.
+A couple of missing pieces did crop up along the way though:
+
+    /usr/src/minix/Makefile
+
+	Add -DRTC to CFLAGS to enable RTC code.
+
+    /usr/src/minix/h/com.h
+
+	Minor device numbers for the new devices need to be
+	added after the define for NULL_DEV:
+
+	    #define NULL_DEV	3
+	    #define RTC_DEV	4
+	    #define ROM_DEV	5
+
+I also discovered in the process of seeing if the code worked
+that the -x option to od does not work properly.  Rather than
+displaying each word in hex, it displays the lower word of each
+*double* word in hex.  Sounds like the pointer is declared to
+be an (int *) when it should be a (short *).  And when you use
+od -o, don't forget that the RTC values are BCD.  That got me
+confused for a minute or two.
+
+Anyway, I plan on modifying the date command to read and write
+/dev/rtc if it's found, and to do what makes sense at boot time.
+(BTW, it appears that the system is on PST -- Pacific Standard
+Time -- and not PDT.  Probably doesn't understand other zones
+but I haven't looked at this one yet.)
+
+Thanks for writing /dev/rtc and /dev/rom, Johan!
+
+ -- Karl

@@ -1,0 +1,43 @@
+Ran INSTALL/yinstall.sh with reasonable answer & no floating point,
+this diff is after that //jkp 4 December 1990
+
+diff -cr estdio.orig/Makefile estdio/Makefile
+*** estdio.orig/Makefile	Tue Dec  4 16:00:03 1990
+--- estdio/Makefile	Tue Dec  4 15:57:53 1990
+***************
+*** 145,151 ****
+  
+  stdio $(StdioLib):	Liborder
+  	rm -f $(StdioLib)
+! 	ar cr $(StdioLib) `cat Liborder`
+  	$(RANLIB) stdio.a
+  
+  stdiofp $(FPLib):
+--- 145,151 ----
+  
+  stdio $(StdioLib):	Liborder
+  	rm -f $(StdioLib)
+! 	ar -a $(StdioLib) `cat Liborder`
+  	$(RANLIB) stdio.a
+  
+  stdiofp $(FPLib):
+diff -cr estdio.orig/stdio.h estdio/stdio.h
+*** estdio.orig/stdio.h	Tue Dec  4 16:00:22 1990
+--- estdio/stdio.h	Tue Dec  4 15:37:35 1990
+***************
+*** 36,42 ****
+  # define NULL	((void *)0)
+  #endif
+  #define _STDIO_UCHAR_		0
+! #define _STDIO_VA_LIST_		typedef char *va_list;
+  #define _STDIO_SIZE_T_		typedef unsigned long size_t;
+  #define _STDIO_USIZE_T_		unsigned int
+  /*=*/
+--- 36,42 ----
+  # define NULL	((void *)0)
+  #endif
+  #define _STDIO_UCHAR_		0
+! /*#define _STDIO_VA_LIST_		typedef char *va_list;*/
+  #define _STDIO_SIZE_T_		typedef unsigned long size_t;
+  #define _STDIO_USIZE_T_		unsigned int
+  /*=*/

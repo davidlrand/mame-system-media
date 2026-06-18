@@ -1,0 +1,22 @@
+
+		National Semiconductors Printer Controller
+
+		     Use of the ASC-88 Host Adaptor
+
+This directory contains the source and executable code required to use an 
+ASC-88 host adaptor card, installed in a PC, to drive a SCSI Printer Controller
+(SPC). This code is outlined in the document "SCSI Printer Controller Users
+Guide".
+
+There are two executable files in this directory, PRINTOUT.EXE and STOPRINT.EXE
+printout will pass the data in a defined file to the SPC to be printed. It is 
+used in the form:
+			printout filename
+
+stoprint will flush the SPC buffer and re-initialize the printer. It is used in
+the form:
+			stoprint
+
+For optimum performance the user should ensure that disconnection is enabled
+for the ASC-88 board. This is done by running the ASC-88 program ASC_MODE
+and typing 'Y' next to 'DISCONNECTION'.

@@ -1,0 +1,18 @@
+/****************************************************************
+*	This routine is called after a status is returned 	*
+*	which is not supported by SPC. This function displays	*
+*	information on the transfer that failed, including 	*
+*	the status. This status can be checked in the ASC-88	*
+*	manual to find the source of error.			*
+****************************************************************/
+
+putout()
+{
+	short i;
+	printf("\ntarget_id %x",jcb_1.target_id);
+	printf("\ncdb %x %x %x %x %x %x %x %x %x %x %x %x",jcb_1.cdb_0,jcb_1.cdb_1,jcb_1.cdb_2,jcb_1.cdb_3,jcb_1.cdb_4,jcb_1.cdb_5
+,jcb_1.cdb_6,jcb_1.cdb_7,jcb_1.cdb_8,jcb_1.cdb_9,jcb_1.cdb_a,jcb_1.cdb_b);
+	printf("\nstatus %x",jcb_1.status_byte);
+	for (i=0;i<=3;i++)
+		printf("\nsense%x %x",i,sense[i]); 
+}

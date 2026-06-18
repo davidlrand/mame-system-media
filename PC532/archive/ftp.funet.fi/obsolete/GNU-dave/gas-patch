@@ -1,0 +1,85 @@
+From owner-pc532%daver@mips.com Sun Mar 25 02:50:00 1990
+Reply-To: pc532@daver.bungi.com
+To: ian%sibyl.eleceng.ua.oz@augean.ua.oz.au
+Cc: pc532@daver.bungi.com
+Subject: Re: gcc 1.37.1 and the ns32k (update) 
+Date: Sun, 25 Mar 90 02:14:14 EST
+From: David Taylor <taylor@Think.COM>
+
+I think I may have forgotten to post these small changes from Jay
+Fenlason (the current maintainer of GAS).  The changes are fairly small.
+
+The line numbers are *before* applying Ian's changes.  The changes are
+fairly minor -- one was to as.c the other to ns32k.c.
+
+The intent of changes is to prevent infinite loops printing "Interrupted
+by signal 10" (as.c) and to avoid generating the bus error in the first
+place (ns32k.c).  [The message was being generated on a sun4 -- sun4's
+have some strict alignment requirements.]
+
+The as.c change is:
+
+RCS file: RCS/as.c,v
+retrieving revision 1.1
+diff -c -r1.1 as.c
+*** /tmp/,RCSt1006128	Sun Mar 25 01:59:22 1990
+--- as.c	Tue Mar 20 22:05:02 1990
+***************
+*** 283,289 ****
+--- 283,293 ----
+  got_sig(sig)
+  int sig;
+  {
++ 	static here_before = 0;
++ 
+  	as_bad("Interrupted by signal %d",sig);
++ 	if(here_before++)
++ 		exit(1);
+  }
+  
+  /* end: as.c */
+
+and the ns32k.c change is:
+
+RCS file: RCS/ns32k.c,v
+retrieving revision 1.2
+diff -c -r1.2 ns32k.c
+*** /tmp/,RCSt1006152	Sun Mar 25 02:01:02 1990
+--- ns32k.c	Tue Mar 20 22:04:57 1990
+***************
+*** 1062,1073 ****
+  		  md_number_to_chars(memP+l,generic_bignum[l>>1],sizeof(LITTLENUM_TYPE));
+  		}
+  	      } else { /* flonum */
+  		switch(size) {
+  		case 4:
+! 		  gen_to_words(memP,2,8);
+  		  break;
+  		case 8:
+! 		  gen_to_words(memP,4,11);
+  		  break;
+  		}
+  	      }
+--- 1062,1081 ----
+  		  md_number_to_chars(memP+l,generic_bignum[l>>1],sizeof(LITTLENUM_TYPE));
+  		}
+  	      } else { /* flonum */
++ 		LITTLENUM_TYPE words[4];
++ 
+  		switch(size) {
+  		case 4:
+! 		  gen_to_words(words,2,8);
+! 		  md_number_to_chars(memP                       ,(long)words[0],sizeof(LITTLENUM_TYPE));
+! 		  md_number_to_chars(memP+sizeof(LITTLENUM_TYPE),(long)words[1],sizeof(LITTLENUM_TYPE));
+  		  break;
+  		case 8:
+! 		  gen_to_words(words,4,11);
+! 		  md_number_to_chars(memP                         ,(long)words[0],sizeof(LITTLENUM_TYPE));
+! 		  md_number_to_chars(memP+sizeof(LITTLENUM_TYPE)  ,(long)words[1],sizeof(LITTLENUM_TYPE));
+! 		  md_number_to_chars(memP+2*sizeof(LITTLENUM_TYPE),(long)words[2],sizeof(LITTLENUM_TYPE));
+! 		  md_number_to_chars(memP+3*sizeof(LITTLENUM_TYPE),(long)words[3],sizeof(LITTLENUM_TYPE));
+  		  break;
+  		}
+  	      }
+
+

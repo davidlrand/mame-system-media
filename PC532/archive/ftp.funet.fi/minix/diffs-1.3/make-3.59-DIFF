@@ -1,0 +1,307 @@
+diff -cr make-3.59.orig/Makefile make-3.59/Makefile
+*** make-3.59.orig/Makefile	Thu Nov 29 03:55:08 1990
+--- make-3.59/Makefile	Sat Dec  1 00:40:44 1990
+***************
+*** 19,26 ****
+  #	Makefile for GNU Make
+  #
+  
+! CFLAGS = $(defines) -g
+! LDFLAGS = -g
+  
+  # Define nothing for BSD, USG for System V, and USGr3 (as well as USG) for
+  # SVR3, HPUX for HP-UX (as well as USG or USGr3 as appropriate).  If you have a
+--- 19,27 ----
+  #	Makefile for GNU Make
+  #
+  
+! CC = gcc -O
+! CFLAGS = $(defines)
+! LDFLAGS = 
+  
+  # Define nothing for BSD, USG for System V, and USGr3 (as well as USG) for
+  # SVR3, HPUX for HP-UX (as well as USG or USGr3 as appropriate).  If you have a
+***************
+*** 32,38 ****
+  # If you want to avoid use of floating-point numbers, define NO_FLOAT.  If your
+  # compiler can handle `enum' bitfields (and it's not GCC), define
+  # ENUM_BITFIELDS.
+! defines =
+  
+  # Define UMAX here to use Encore's inq_stats call.  Define UMAX_43 (and UMAX)
+  # if you have UMAX 4.3 instead of UMAX 4.2.  If the load average is in a symbol
+--- 33,39 ----
+  # If you want to avoid use of floating-point numbers, define NO_FLOAT.  If your
+  # compiler can handle `enum' bitfields (and it's not GCC), define
+  # ENUM_BITFIELDS.
+! defines = -DUSG -DDIRENT -DNO_ARCHIVES -DNO_FLOAT -DMINIX -DESTDIO -DBROKEN_EXEC
+  
+  # Define UMAX here to use Encore's inq_stats call.  Define UMAX_43 (and UMAX)
+  # if you have UMAX 4.3 instead of UMAX 4.2.  If the load average is in a symbol
+***************
+*** 43,53 ****
+  # union, rather than a simple `n_name' member, define NLIST_NAME_UNION.  If the
+  # `n_name' member of a `struct nlist' is an array that must be copied into,
+  # define NLIST_NAME_ARRAY.  Otherwise, define NO_LDAV.
+! LOAD_AVG =
+  
+  # If you don't want archive support, comment these out.
+! ARCHIVES = arscan.o ar.o
+! ARCHIVES_SRC = arscan.c ar.c
+  
+  # If your system needs extra libraries loaded in, define them here.
+  # System V probably need -lPW for alloca.
+--- 44,54 ----
+  # union, rather than a simple `n_name' member, define NLIST_NAME_UNION.  If the
+  # `n_name' member of a `struct nlist' is an array that must be copied into,
+  # define NLIST_NAME_ARRAY.  Otherwise, define NO_LDAV.
+! LOAD_AVG = -DNO_LDAV
+  
+  # If you don't want archive support, comment these out.
+! #ARCHIVES = arscan.o ar.o
+! #ARCHIVES_SRC = arscan.c ar.c
+  
+  # If your system needs extra libraries loaded in, define them here.
+  # System V probably need -lPW for alloca.
+***************
+*** 66,74 ****
+  extras =
+  
+  # Directory to install `make' in.
+! bindir = $(prefix)/usr/local/bin
+  # Directory to install the man page in.
+! mandir = $(prefix)/usr/local/man/man1
+  # Number to put on the man page filename.
+  manext = 1
+  
+--- 67,75 ----
+  extras =
+  
+  # Directory to install `make' in.
+! bindir = $(prefix)/usr/gnu/bin
+  # Directory to install the man page in.
+! mandir = $(prefix)/usr/gnu/man/man1
+  # Number to put on the man page filename.
+  manext = 1
+  
+diff -cr make-3.59.orig/job.c make-3.59/job.c
+*** make-3.59.orig/job.c	Wed Sep 26 09:28:07 1990
+--- make-3.59/job.c	Sat Dec  1 00:40:30 1990
+***************
+*** 88,94 ****
+--- 88,101 ----
+  #ifndef USG
+  extern int getdtablesize ();
+  #else
++ #ifndef MINIX
+  #include <sys/param.h>
++ #endif /* MINIX */
++ #ifdef MINIX
++ #ifndef NOFILE
++ #define NOFILE NFILES
++ #endif /* NOFILE */
++ #endif /* MINIX */
+  #define getdtablesize() NOFILE
+  #endif
+  
+***************
+*** 168,174 ****
+--- 175,183 ----
+  
+    /* Ignoring SIGCLD makes wait always return -1.
+       Using the default action does the right thing.  */
++ #ifdef SIGCLD
+    (void) signal (SIGCLD, SIG_DFL);
++ #endif
+  
+  #else	/* Not USG.  */
+  
+***************
+*** 186,192 ****
+--- 195,203 ----
+  {
+  #ifdef	USG
+  
++ #ifdef SIGCLD
+    (void) signal (SIGCLD, child_handler);
++ #endif
+  
+    /* It should no longer be possible for children not in the chain to die.  */
+    unknown_children_possible = 0;
+***************
+*** 940,946 ****
+--- 951,961 ----
+    else
+      {
+        /* Run the program.  */
++ #ifdef BROKEN_EXEC
++       execv (program, argv);
++ #else
+        execve (program, argv, envp);
++ #endif
+  
+        if (errno == ENOEXEC)
+  	{
+***************
+*** 966,972 ****
+--- 981,991 ----
+  		  --argc;
+  		}
+  
++ #ifdef BROKEN_EXEC
++ 	      execv (shell_path, new_argv);
++ #else
+  	      execve (shell_path, new_argv, envp);
++ #endif
+  	      perror_with_name ("execve: ", shell_path);
+  	    }
+  	}
+***************
+*** 1216,1224 ****
+--- 1235,1245 ----
+        case SIGTRAP:
+  	sys_siglist[i] = "Trace Trap";
+  	break;
++ #ifdef SIGIOT
+        case SIGIOT:
+  	sys_siglist[i] = "IOT Trap";
+  	break;
++ #endif
+  #ifdef	SIGEMT
+        case SIGEMT:
+  	sys_siglist[i] = "EMT Trap";
+***************
+*** 1238,1249 ****
+--- 1259,1274 ----
+        case SIGBUS:
+  	sys_siglist[i] = "Bus Error";
+  	break;
++ #ifdef SIGSEGV
+        case SIGSEGV:
+  	sys_siglist[i] = "Segmentation fault";
+  	break;
++ #endif
++ #ifdef SIGSYS
+        case SIGSYS:
+  	sys_siglist[i] = "Bad Argument to System Call";
+  	break;
++ #endif
+        case SIGPIPE:
+  	sys_siglist[i] = "Broken Pipe";
+  	break;
+***************
+*** 1253,1267 ****
+--- 1278,1296 ----
+        case SIGTERM:
+  	sys_siglist[i] = "Terminated";
+  	break;
++ #ifdef SIGUSR1
+  #if	!defined (SIGIO) || SIGUSR1 != SIGIO
+        case SIGUSR1:
+  	sys_siglist[i] = "User-defined signal 1";
+  	break;
+  #endif
++ #endif
++ #ifdef SIGUSR2
+  #if	!defined (SIGURG) || SIGUSR2 != SIGURG
+        case SIGUSR2:
+  	sys_siglist[i] = "User-defined signal 2";
+  	break;
++ #endif
+  #endif
+  #ifdef	SIGCLD
+        case SIGCLD:
+diff -cr make-3.59.orig/main.c make-3.59/main.c
+*** make-3.59.orig/main.c	Tue Oct 23 23:38:03 1990
+--- make-3.59/main.c	Sat Dec  1 00:37:44 1990
+***************
+*** 312,318 ****
+--- 312,320 ----
+    FATAL_SIG (SIGINT);
+    FATAL_SIG (SIGILL);
+    FATAL_SIG (SIGTRAP);
++ #ifdef SIGIOT
+    FATAL_SIG (SIGIOT);
++ #endif
+  #ifdef	SIGEMT
+    FATAL_SIG (SIGEMT);
+  #endif
+***************
+*** 321,328 ****
+--- 323,334 ----
+  #endif
+    FATAL_SIG (SIGFPE);
+    FATAL_SIG (SIGBUS);
++ #ifdef SIGSEGV
+    FATAL_SIG (SIGSEGV);
++ #endif
++ #ifdef SIGSYS
+    FATAL_SIG (SIGSYS);
++ #endif
+    FATAL_SIG (SIGTERM);
+  #ifdef SIGXCPU
+    FATAL_SIG (SIGXCPU);
+***************
+*** 335,341 ****
+  
+    /* Make sure stdout is line-buffered.  */
+  
+! #if	defined(USGr3) || defined(HPUX) || defined(hpux)
+    setvbuf (stdout, (char *) 0, _IOLBF, BUFSIZ);
+  #else	/* Not USGr3 and not HPUX.  */
+  #ifdef	USG
+--- 341,350 ----
+  
+    /* Make sure stdout is line-buffered.  */
+  
+! #ifdef ESTDIO
+! /*#define _IOLBF _IOLB*/
+! #endif
+! #if	defined(USGr3) || defined(HPUX) || defined(hpux) || defined(ESTDIO)
+    setvbuf (stdout, (char *) 0, _IOLBF, BUFSIZ);
+  #else	/* Not USGr3 and not HPUX.  */
+  #ifdef	USG
+***************
+*** 573,579 ****
+--- 582,590 ----
+  #ifdef SIGCHLD
+    (void) SIGNAL (SIGCHLD, child_handler);
+  #else
++ #ifdef SIGCLD
+    (void) SIGNAL (SIGCLD, child_handler);
++ #endif
+  #endif
+  
+    /* Install the default implicit rules.  */
+diff -cr make-3.59.orig/make.h make-3.59/make.h
+*** make-3.59.orig/make.h	Sat Sep 29 20:34:46 1990
+--- make-3.59/make.h	Sat Dec  1 00:37:45 1990
+***************
+*** 37,43 ****
+--- 37,45 ----
+  #include <sys/types.h>
+  #endif
+  
++ #ifndef MINIX
+  #include <sys/param.h>
++ #endif
+  #ifndef MAXPATHLEN
+  #define MAXPATHLEN 1024
+  #endif	/* No MAXPATHLEN.  */
+diff -cr make-3.59.orig/remake.c make-3.59/remake.c
+*** make-3.59.orig/remake.c	Sat Sep 29 20:34:45 1990
+--- make-3.59/remake.c	Sat Dec  1 00:37:46 1990
+***************
+*** 645,651 ****
+--- 645,655 ----
+  	  if (statbuf.st_size == 0)
+  	    {
+  	      (void) close (fd);
++ #ifdef O_TRUNC
+  	      fd = open (file->name, O_RDWR | O_TRUNC, 0666);
++ #else
++ 	      fd = open (file->name, O_RDWR, 0666);
++ #endif
+  	      if (fd < 0)
+  		TOUCH_ERROR ("touch: open: ");
+  	    }

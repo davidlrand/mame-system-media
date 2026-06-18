@@ -1,0 +1,18 @@
+
+
+	    National Semiconductors SCSI Printer Controller
+
+This disk contains three directories, 'SPC', 'ASC' and 'UTIL'.
+
+Directory 'SPC' contains the source and absolute code for a SCSI Printer
+Controller (SPC) board. This board and software is documented in an
+application note called "A SCSI Printer Controller using either the DP8490
+EASI or DP5380 ASI".
+
+Directory 'ASC' contains the source and executable code required to use an
+ASC-88 host adaptor to drive the SPC. This is further explained in the document
+"SCSI Printer Controller Users Guide".
+
+
+Directory 'UTIL` contains various sundry general purpose utilities unique to
+the operation of the ASC host adapter card.

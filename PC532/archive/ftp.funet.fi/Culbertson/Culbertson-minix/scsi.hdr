@@ -1,0 +1,29 @@
+From owner-pc532%daver@mips.com Tue Feb 27 06:18:27 1990
+Flags: 000000000000
+Reply-To: pc532@daver.bungi.com
+Date: Mon, 26 Feb 90 09:33:54 pst
+From: Bruce Culbertson <culberts@hplwbc.hpl.hp.com>
+To: pc532@daver.bungi.com
+Subject: Re:  Sample SCSI driver code, anyone?
+
+Hello Jerry,
+
+> I've been looking at the full SCSI spec and trying to picture just what
+> hoops I'm going to have to jump through to implement it for the floppy
+
+In my Minix driver, I only use the SCSI commands READ, WRITE, and
+REQUEST SENSE.  I really think for your (our) purposes, that should
+just about do it -- it certainly is enough to get started.
+
+I am sending along my SCSI driver.  As you read it, you may sense the
+frustration I felt writing it.  I found the both the 5380 and my
+32203 DMA controller rather difficult to work with.  The 5380, for
+example, has several "features" which are not mentioned in the
+documentation I have.  Some control register bits can only be set
+when the 5380 is already in a certain state -- a fact that lead me
+to conclude my 5380 was busted until I bought another with the
+same problem.  Anyway, you will see lots of debugging stuff in the
+code.
+
+Good luck,
+Bruce

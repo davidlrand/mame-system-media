@@ -1,0 +1,279 @@
+/************************************************************************
+*									*
+*	disconect():	This disconnects the TARGET from the initiator  *
+*			by sending the DISCONNECT message, releasing    *
+*			busy and restoring the previous initiators	*
+*			identifiers after saving the current initiators.*
+*									*
+************************************************************************/
+
+disconect()
+{
+	message=DISCONNECT;
+	messin();				/* If this message is not accepted discon is set FALSE	*/
+	if (discon)
+	{
+		recon=TRUE;		/* This is a flag set to show a reconnection must take place	*/
+		if (com[0] == PRINT)
+			recon_data = (com[4]+(com[3]*256));	/* This is the length of data to be transferred  */
+		else
+			recon_data=FALSE;	/* No data for print buffer	*/
+	} 
+	exchange();
+	reset();
+}
+
+
+/**************************************************************************
+*									  *
+*	reconnect():	This restores the identifiers of the initiator    *
+*			which disconnected, arbitrates for the bus,	  *
+*			on victory reselect the initiator, and 		  *
+*			processes its command.Status is then returned 	  *
+*			and the bus released.If the initiator has	  *
+*			reserved the bus a print command can be executed. *
+*									  *
+**************************************************************************/
+
+reconnect()
+{
+	if (DP8490)	Earbitrate();
+	else		Narbitrate();
+	re_exchange();
+	stat=GOOD;			/* status will default to this if no errors	*/
+	reselect();
+	message=(IDENTIFY | EN_DISCON);
+	messin();			/* recon can be set FALSE if IDENTIFY message is rejected	*/
+	if (recon)
+	{
+		discon=TRUE;		/* This must be TRUE if a reconnection is taking place	*/
+		if (!fail) process_cmd();
+		recon=FALSE;
+		status();
+		message=COMMAND_COMPLETE;
+		messin();
+	}
+	reset();
+	if (!in_print && print_on && !stat)
+		outbuf();
+	eni();
+}
+
+
+/************************************************************************
+*									*
+*	Narbitrate():	This arbitates for the bus in MODE N, and if	*
+*			defeated will continue arbitrating until the	*
+*			bus is won.					*
+*									*
+************************************************************************/
+
+Narbitrate()
+{
+	no_win=TRUE;
+	while(no_win)
+	{
+		write(EASIMR2,TARGET);	/* Disallow parity during arbitration	*/
+		write(EASIICR,MODE_N);
+		write(EASIODR,SCSIID);
+		poss_sel=FALSE;
+		dsi();
+		RESETA=servn;
+		eni();
+		write(EASIMR2,(EN_ARB | TARGET));
+		while ((!(read(EASIICR) & AIP)) && !poss_sel);
+		RESETA=main;
+		if (poss_sel || (read(EASIICR) & LA) || (read(EASICSD) > SCSIID))
+			write(EASIMR2,TARGET);
+		else
+		{
+			write(EASIICR,AS_SEL);
+			no_win=FALSE;
+		}
+	}
+	RESETA=gen_int;
+}
+
+
+/************************************************************************
+*									*
+*	servn(): Any interrupt that occurs during arbitration is 	*
+*		 treated as a selection, therefore parity checking 	*
+*		 must be enabled and main called.On return from the 	*
+*		 selection the possible selection (poss_sel) must	*
+*		 be set, to allow the software to reenable arbitration. *
+*									*
+************************************************************************/
+
+
+servn()
+{
+	write(EASIMR2,(TARGET | EN_PINT | EN_PCHK));
+	main();
+	poss_sel=TRUE;
+}
+
+
+
+/************************************************************************
+*									*
+*	Earbitrate():	This arbitrates for the bus in MODE E, and if	*
+*			defeated will continue arbitrating until the	*
+*			bus is won.					*
+*									*
+************************************************************************/
+
+Earbitrate()
+{
+	no_win=TRUE;
+	while(no_win)
+	{
+		write(EASIMR2,TARGET);
+		write(EASIICR,MODE_E);
+		write(EASIODR,SCSIID);
+		dsi();
+		write(EASIEMR,IMR);
+		write(EASIIMR,(MPE | EEDMA | DPHS | APHS | EBSY));
+		ano_interrupt=TRUE;
+		RESETA=serva;
+		write(EASIEMR,EN_EEARB);
+		eni();
+		while (ano_interrupt)
+		{
+			if (front != rear)
+			{
+				printarb();
+				if (front > top)  front=bottom;
+			}
+		}
+		RESETA=main;
+		write(EASIEMR,(ISR | EN_EEARB));
+		if (read(EASIISR) ^ EARB)
+		{
+			write(EASIMR2,(TARGET | EN_PINT | EN_PCHK));	/* Enable parity for use in possible selection	*/
+			main();
+		}
+		else
+		{
+			if ((!(read(EASIICR) & AIP)) || (read(EASIICR) & LA) || (read(EASICSD) > SCSIID))
+			{
+				write(EASIEMR,RPI);	/* Reset interrupt and arbitration bit	*/
+				write(EASIEMR,NO_OP);	/* Take off reset	*/
+			}
+			else
+			{
+			write(EASIICR,AS_SEL);
+			no_win=FALSE;
+			}
+		}
+	}
+	RESETA=gen_int;
+}
+
+/************************************************************************
+*	This function is similar to printit(), in that it outputs a	*
+*	character to the printer. The differences are that this routine *
+*	must monitor for an arbitration interrupt, and must escape	*
+*	the routine on a printer error.					*
+************************************************************************/
+
+printarb()
+{
+	if (!(read(PIOB) & PRINTER_ERROR))
+	{
+		while (ano_interrupt && (!(read(PIOB) & PRINTER_BUSY)) && (!(read(PIOB) & PRINTER_ERROR)));
+		if (read(PIOB) & PRINTER_BUSY)
+		{
+			dsi();			/* Interrupts are disabled to prevent a selection which may	*/
+			if (front != rear)	/* change these pointers.					*/
+			{
+				write(PIOA,*front++);
+				eni();
+				write(PIOC, (PRINTER_STROBE | LED_ON));
+				write(PIOC,LED_ON);
+			}
+			eni();
+		}
+	}
+}
+
+/************************************************************************
+*									*
+*	reselect():	This reselects the device that is currently 	*
+*			awaiting reselection.This should be proceeded	*
+*			by re_exchange() which restores the initiators	*
+*			ID and command.					*
+*									*
+************************************************************************/
+
+
+reselect()
+{
+	int i=0;
+	write(EASISER,FALSE);
+	write(EASIODR,(SCSIID | initid));
+	write(EASITCR,AS_IO);					/* assert I/O to show this is a reselection.	*/
+	if (DP8490)
+	{
+		write(EASIICR,(MODE_E | AS_SEL | AS_DBUS));
+		write(EASIEMR,NO_OP);				/* Reset arbitration bit (set in Earbitrate() )		*/
+	}
+	else
+	{
+		write(EASIICR,(AS_SEL | AS_DBUS));
+		write(EASIMR2,TARGET);				/* Reset arbitration bit ( set in Narbitrate() )	*/
+	}
+	write(EASIMR2,(TARGET | EN_PINT | EN_PCHK)); 
+	while((!(read(EASICSB) & CK_BSY)) && (i++ <= SEL_TIMEOUT));	/* Wait selection time out delay for selection	*/
+	if (!(read(EASICSB) & CK_BSY)) 
+	{
+		write(EASIICR,AS_RST);			/* Selection timeout, so RESET is enabled causing the system to restart */
+	}
+	if (DP8490)
+	{
+		write(EASIICR,(MODE_E | AS_SEL | AS_DBUS | AS_BSY));		/* In reselection busy must be 		 */
+		write(EASIICR,(MODE_E | AS_BSY));				/* asserted before SEL & DBUS deasserted */
+		write(EASIEMR,IMR);
+		write(EASIIMR,(MPE | EEDMA | DPHS | EBSY | ESEL | EARB));	/* Only allow parity or phase mismatch interrupts */
+		write(EASIEMR,RPI);
+		write(EASIEMR,EN_APHS);
+		eni();
+	}
+	else
+	{
+		write(EASIICR,(AS_SEL | AS_DBUS | AS_BSY));	/* In reselection busy must be asserted			*/
+		write(EASIICR,AS_BSY);				/* before SEL & DBUS deasserted				*/
+		eni();
+	}
+}
+
+
+/************************************************************************
+*									*
+*	exchange(): This stores the current initiators identifiers in   *
+*	alternate variables, so they are available during reconnection.	*
+*									*
+************************************************************************/
+
+exchange()
+{
+	initid_r=initid;
+	for (i=0;i<=(COMMAND_BYTES-1);i++)
+		com_r[i]=com[i];
+}
+
+
+/************************************************************************
+*									*
+*	re_exchange():	This restores the ID and command of the 	*
+*			initiator awaiting reconnection.		*
+*									*
+************************************************************************/
+
+re_exchange()
+{
+	initid=initid_r;
+	for (i=0;i<=(COMMAND_BYTES-1);i++)
+		com[i]=com_r[i];
+}
+

@@ -1,0 +1,93 @@
+Only in less: ch.o
+Only in less: command.o
+Only in less: decode.o
+diff -cr less.orig/defines.h less/defines.h
+*** less.orig/defines.h	Tue Aug  7 00:42:13 1990
+--- less/defines.h	Tue Aug  7 01:57:58 1990
+***************
+*** 21,27 ****
+  /*
+   * STAT is 1 if your system has the stat() call.
+   */
+! #define	STAT		1
+  
+  /*
+   * PERROR is 1 if your system has the perror() call.
+--- 21,27 ----
+  /*
+   * STAT is 1 if your system has the stat() call.
+   */
+! #define	STAT		0
+  
+  /*
+   * PERROR is 1 if your system has the perror() call.
+***************
+*** 47,53 ****
+   * This is normally the case only for BSD 4.2,
+   * not for BSD 4.1 or System 5.
+   */
+! #define	SIGSETMASK	1
+  
+  /*
+   * REGCMP is 1 if your system has the regcmp() function.
+--- 47,53 ----
+   * This is normally the case only for BSD 4.2,
+   * not for BSD 4.1 or System 5.
+   */
+! #define	SIGSETMASK	0
+  
+  /*
+   * REGCMP is 1 if your system has the regcmp() function.
+***************
+*** 57,63 ****
+   * If neither is 1, pattern matching is supported, but without metacharacters.
+   */
+  #define	REGCMP		0
+! #define	RECOMP		1
+  
+  /*
+   * SHELL_ESCAPE is 1 if you wish to allow shell escapes.
+--- 57,63 ----
+   * If neither is 1, pattern matching is supported, but without metacharacters.
+   */
+  #define	REGCMP		0
+! #define	RECOMP		0
+  
+  /*
+   * SHELL_ESCAPE is 1 if you wish to allow shell escapes.
+Only in less: help.o
+Only in less: input.o
+Only in less: less
+Only in less: lesskey
+Only in less: lesskey.o
+Only in less: line.o
+Only in less: linenum.o
+Only in less: main.o
+Only in less: option.o
+Only in less: os.o
+Only in less: output.o
+Only in less: position.o
+Only in less: prim.o
+Only in less: prompt.o
+diff -cr less.orig/screen.c less/screen.c
+*** less.orig/screen.c	Tue Aug  7 00:42:22 1990
+--- less/screen.c	Tue Aug  7 01:39:58 1990
+***************
+*** 157,163 ****
+--- 157,167 ----
+  		 */
+  		s = save_term;
+  	}
++ #if 1
++ 	ioctl(2, TIOCSETP, &s);
++ #else
+  	ioctl(2, TIOCSETN, &s);
++ #endif
+  #endif
+  }
+  
+Only in less: screen.o
+Only in less: signal.o
+Only in less: tags.o
+Only in less: ttyin.o
+Only in less: version.o

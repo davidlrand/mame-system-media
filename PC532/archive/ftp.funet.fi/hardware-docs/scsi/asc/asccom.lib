@@ -1,0 +1,198 @@
+/********************************************************
+*	These routines set up the Job Control Block	*
+*	and initiate the SCSI command by generating	*
+*	an MS-DOS interrupt.				*
+********************************************************/
+
+void test()
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;	/* Preset status to fault value */
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = IN;		/* Input direction is set (although no data transfer)	*/
+	jcb_1.data_len = 0;		/* No data transfer		*/
+	jcb_1.data_addr = &buffer[0];	/* Input bytes would be to buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = TEST_UNIT_READY;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0;
+	jcb_1.cdb_3 = 0;
+	jcb_1.cdb_4 = 0;
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;		/* User structure address	*/
+	regs.x.bx = FP_OFF(p);		/* These registers must contain the address of	*/
+	sregs.es = FP_SEG(p);		/* the first byte of the JCB.			*/
+
+	regs.h.ah = SCSI_PRO;			/* This register is used to define which ASC-88 software is used */
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);	/* Generate MS-DOS interrupt	*/
+}
+
+
+
+void request()
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = IN;
+	jcb_1.data_len = SENSE_BYTES;	/* Sense data transfer		*/
+	jcb_1.data_addr = &sense[0];	/* Input bytes to sense buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = REQUEST_SENSE;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0;
+	jcb_1.cdb_3 = 0;
+	jcb_1.cdb_4 = 0;
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;
+	regs.x.bx = FP_OFF(p);
+	sregs.es = FP_SEG(p);
+
+	regs.h.ah = SCSI_PRO;
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);
+}
+
+
+void print_data(data)
+int data;
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = OUT;
+	jcb_1.data_len = data;		/* Data to be printed		*/
+	jcb_1.data_addr = &buffer[0];	/* Output data from buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = PRINT;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0x00;		/* These three bytes contain	*/
+	jcb_1.cdb_3 = (data/0x100);	/* the amount of data to be	*/
+	jcb_1.cdb_4 = (data%0x100);	/* transferred			*/
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;
+	regs.x.bx = FP_OFF(p);
+	sregs.es = FP_SEG(p);
+
+	regs.h.ah = SCSI_PRO;
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);
+}
+
+
+void reserve()
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = IN;		/* Input direction (although no data transfer)	*/
+	jcb_1.data_len = 0;		/* No data transfer		*/
+	jcb_1.data_addr = &buffer[0];	/* Input bytes would be to buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = RESERVE_UNIT;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0;
+	jcb_1.cdb_3 = 0;
+	jcb_1.cdb_4 = 0;
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;
+	regs.x.bx = FP_OFF(p);
+	sregs.es = FP_SEG(p);
+
+	regs.h.ah = SCSI_PRO;
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);
+}
+
+
+void release()
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = IN;		/* Input direction (although no data transfer)	*/
+	jcb_1.data_len = 0;		/* No data transfer		*/
+	jcb_1.data_addr = &buffer[0];	/* Input bytes would be to buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = RELEASE_UNIT;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0;
+	jcb_1.cdb_3 = 0;
+	jcb_1.cdb_4 = 0;
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;
+	regs.x.bx = FP_OFF(p);
+	sregs.es = FP_SEG(p);
+
+	regs.h.ah = SCSI_PRO;
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);
+}
+
+
+void flush()
+{
+	char far *p;
+	
+	jcb_1.status_byte =FAULT;
+	jcb_1.target_id = TARGET_ID;
+	jcb_1.lun_no = 0;
+	jcb_1.arb = YES;
+	jcb_1.initiator_id = YES;
+	jcb_1.attention = YES;
+	jcb_1.disconnect = YES;
+	jcb_1.direction = IN;		/* Input direction (although no data transfer)	*/
+	jcb_1.data_len = 0;		/* No data transfer		*/
+	jcb_1.data_addr = &buffer[0];	/* Input bytes would be to buffer	*/
+	jcb_1.cdb_len = 6;
+
+	jcb_1.cdb_0 = FLUSH_BUFFER;
+	jcb_1.cdb_1 = 0;
+	jcb_1.cdb_2 = 0;
+	jcb_1.cdb_3 = 0;
+	jcb_1.cdb_4 = 0;
+	jcb_1.cdb_5 = 0;
+
+	p = &jcb_1.status_byte;
+	regs.x.bx = FP_OFF(p);
+	sregs.es = FP_SEG(p);
+
+	regs.h.ah = SCSI_PRO;
+	int86x(SCSI_BIOS,&regs,&regs,&sregs);
+}

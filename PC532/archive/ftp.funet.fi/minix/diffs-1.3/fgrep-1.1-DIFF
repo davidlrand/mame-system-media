@@ -1,0 +1,15 @@
+diff -cr fgrep-1.1.orig/Makefile fgrep-1.1/Makefile
+*** fgrep-1.1.orig/Makefile	Wed Mar  7 17:35:43 1990
+--- fgrep-1.1/Makefile	Tue Dec  4 15:03:53 1990
+***************
+*** 1,4 ****
+! DEFS=-DX_strerror
+  CFLAGS=-O $(DEFS)
+  LIBS=
+  FOBJ=fgrep.o kwset.o obstack.o std.o
+--- 1,5 ----
+! CC = gcc
+! DEFS=-DX_strerror -DDIRENT
+  CFLAGS=-O $(DEFS)
+  LIBS=
+  FOBJ=fgrep.o kwset.o obstack.o std.o
