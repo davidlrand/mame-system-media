@@ -1,0 +1,26 @@
+RFNAME=e:rules.az
+DEFEXT=.e32
+CFLAGS=-E200
+CFLAGS32=-O2 -Dns32000
+
+t:	t.o32 circle.o32
+	lnd file=t,circle,..\c\virlib.o32,..\c\hercmode.o32
+
+bltto:	bltto.o32
+	lnd file=bltto
+
+circle:	circle.o32
+	lnd file=circle
+
+extblt:	extblt.o32
+	lnd file=extblt
+
+bltor:	bltor.o32
+	lnd file=bltor
+
+movmem:	movmem.o32
+	lnd file=movmem
+
+clmem:	clmem.o32
+	lnd file=clmem
+	

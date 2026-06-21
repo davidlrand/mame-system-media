@@ -1,0 +1,107 @@
+.module	clmem.c
+.program
+.endseg
+.program
+; Version 1.1  Sun Mar 29 10:22:19 1987
+;
+;Subroutine to clear a block of memory. The granularity of this
+;algorithm is 128 bytes, to reduce the looping overhead.
+;
+;	Inputs:
+;		r0 = start of block
+;		r1 = number of 128-byte groups to clear
+;
+;	Outputs:
+;		All registers preserved.
+;
+
+clram:	cmpqd	0,r1		;any blocks to clear?
+	beq	clexit:w	;no, exit now.
+	save	[r0,r1,r2]	;save our working registers
+	movd	r1,r2		;here we set r0 = r0 + (r1 * 128) + 4
+	addd	r2,r2		;length *= 2
+	addd	r2,r2		;*4
+	addd	r2,r2		;*8
+	addd	r2,r2		;*16
+	addrd	4(r0)[r2:q],r0	;get starting point + 4
+	sprd	sp,r2		;save current stack
+	lprd	sp,r0		;move to last double
+	.align	4
+cl2:	movqd	0,tos		;clear a double
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	movqd	0,tos
+	acbd	-1,r1,cl2
+	lprd	sp,r2
+	restore	[r0,r1,r2]
+clexit:	ret	0
+
+
+	.static
+ctime:	double	0
+loopv:	double	0
+runlen:	double	0
+mess:	byte	10,'Total execution time for 100 loops is %d msec',10,0
+
+	.align	4
+
+	.comm	buf,614400
+
+	.endseg
+
+_main:-	
+
+	movd	100,loopv
+	movqd	0,tos
+	cxp	_timer
+	cmpqd	0,tos
+	movd	r0,ctime
+	addrd	buf,r0
+	movd	4800,r1			;9600 * 128 = 1.2 meg
+	.align	4
+loop:
+	bsr	clram
+
+	acbd	-1,loopv,loop		;and loop for more
+	
+	movqd	0,tos
+	cxp	_timer			;get current timer value
+	cmpqd	0,tos
+	subd	ctime,r0		;subtract start time
+	movd	r0,tos			;save on stact
+	addrd	mess,tos		;and place address of message
+	cxp	_printf
+	cmpd	tos,tos			;unstack
+	rxp	0			;and return
+
+	.importp _timer,_printf
+.endseg
+

@@ -1,0 +1,121 @@
+.module	movmem.c
+.program
+.endseg
+.program
+; Version 1.0  Sun Mar 29 12:57:20 1987
+;
+;A subroutine to move blocks of memory. Uses a granularity of
+;128 bytes.
+;
+;	Inputs:
+;		r0 = number of 128 byte blocks to move
+;		r1 = source block address
+;		r2 = destination block address
+;
+;	Outputs:
+;		r0 = 0
+;		r1 = source block address + (128 * blocks)
+;		r2 = destination block address + (128 * blocks)
+;
+;Notes:
+;	This algorithm corresponds closely to the MOVSD instruction,
+;	except that r0 contains the number of 128 byte blocks, not
+;	4 byte double words. The output values are the same as if a
+;	MOVSD instruction were used.
+
+movmem:	cmpqd	0,r0
+	beq	mvexit
+	.align	4
+mvlp1:	movd	0(r1),0(r2)
+	movd	4(r1),4(r2)
+	movd	8(r1),8(r2)
+	movd	12(r1),12(r2)
+	movd	16(r1),16(r2)
+	movd	20(r1),20(r2)
+	movd	24(r1),24(r2)
+	movd	28(r1),28(r2)
+	movd	32(r1),32(r2)
+	movd	36(r1),36(r2)
+	movd	40(r1),40(r2)
+	movd	44(r1),44(r2)
+	movd	48(r1),48(r2)
+	movd	52(r1),52(r2)
+	movd	56(r1),56(r2)
+	movd	60(r1),60(r2)
+	movd	64(r1),64(r2)
+	movd	68(r1),68(r2)
+	movd	72(r1),72(r2)
+	movd	76(r1),76(r2)
+	movd	80(r1),80(r2)
+	movd	84(r1),84(r2)
+	movd	88(r1),88(r2)
+	movd	92(r1),92(r2)
+	movd	96(r1),96(r2)
+	movd	100(r1),100(r2)
+	movd	104(r1),104(r2)
+	movd	108(r1),108(r2)
+	movd	112(r1),112(r2)
+	movd	116(r1),116(r2)
+	movd	120(r1),120(r2)
+	movd	124(r1),124(r2)
+	addrd	128(r1),r1
+	addrd	128(r2),r2
+	acbd	-1,r0,mvlp1
+mvexit:	ret	0
+
+;	movsd
+mvlp2:	movmd	0(r1),0(r2),4
+	movmd	16(r1),16(r2),4
+	movmd	32(r1),32(r2),4
+	movmd	48(r1),48(r2),4
+	movmd	64(r1),64(r2),4
+	movmd	80(r1),80(r2),4
+	movmd	96(r1),96(r2),4
+	movmd	112(r1),112(r2),4
+	addrd	128(r1),r1
+	addrd	128(r2),r2
+	acbd	-1,r0,mvlp2
+	ret	0
+
+
+	.static
+ctime:	double	0
+loopv:	double	0
+runlen:	double	0
+mess:	byte	10,'Total execution time for 100000 loops is %d msec',10,0
+
+	.align	4
+blk1:	blkd	64
+blk2:	blkd	64
+
+
+	.endseg
+
+_main:-	
+
+	movd	100000,loopv
+	movqd	0,tos
+	cxp	_timer
+	cmpqd	0,tos
+	movd	r0,ctime
+	.align	4
+loop:	addrd	@(64/32),r0
+	addrd	blk1,r1
+	addrd	blk2,r2
+	bsr	movmem
+
+	acbd	-1,loopv,loop		;and loop for more
+	
+	movqd	0,tos
+	cxp	_timer			;get current timer value
+	cmpqd	0,tos
+	subd	ctime,r0		;subtract start time
+	movd	r0,tos			;save on stact
+	addrd	mess,tos		;and place address of message
+	cxp	_printf
+	cmpd	tos,tos			;unstack
+	rxp	0			;and return
+
+	.importp _timer,_printf
+.endseg
+

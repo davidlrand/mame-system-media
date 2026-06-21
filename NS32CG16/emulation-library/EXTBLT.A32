@@ -1,0 +1,314 @@
+.module	extblt.c
+.program
+.endseg
+.program
+; Version 1.2  Mon Mar 30 11:46:15 1987
+;
+;This code runs the DP8510/11, using the 32016. An external latch
+;is assumed to control the LME and RME pins of the 8510, as well
+;as the logic for enabling the BPU. A 'disable logic' bit is included
+;in this latch as well, to help the hardware determine when a BPU cycle
+;is actually occuring.
+;
+;Timing data is 3285 clocks per character on 32016 with 1 wait state.
+;Time for a page using BPU is 1.150 seconds.
+;(3,500 characters/page @ 10 Mhz with 32016 and 1 wait state.)
+;
+;	Inputs:
+;		r0 = source address
+;		r1 = destination address
+;		r2 = BPU register
+;		r3 = source warp
+;		r4 = destination warp
+;
+;	Ouputs:
+;		Data in memory changed.
+;		r0, r1, r3 altered.
+;	
+.static
+bpu:	word	0		;BPU control register
+	.align	4
+latch:	word	0		;latch address for bpu control
+.endseg
+
+lme:	equ	1		;left mask enable value
+rme:	equ	2		;right mask enable value
+nme:	equ	0		;no mask value
+bpuoff:	equ	4		;value to turn logic off
+
+
+blt32:
+	movw	r2,bpu		;setup bpu
+;line 1
+	movb	lme,latch	;we want left mask
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 2
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 3
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 4
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 5
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 6
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 7
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 8
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 9
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 10
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 11
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 12
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 13
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 14
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 15
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 16
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 17
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 18
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 19
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 20
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 21
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 22
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 23
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 24
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 25
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 26
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 27
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 28
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 29
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 30
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 31
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+	addd	r3,r0
+	addd	r4,r1
+;line 32
+	movw	0(r0),r2	;get first word into bpu
+	orw	2(r0),0(r1)	;do first word of destination
+	movb	rme,latch	;setup right mask
+	orw	4(r0),2(r1)	;do last word of destination
+;	addd	r3,r0
+;	addd	r4,r1
+
+	movb	bpuoff,latch	;turn bpu logic off
+
+	ret	0
+
+	.static
+ctime:	double	0
+loopv:	double	0
+runlen:	double	0
+
+mess:	byte	10,'Total execution time for 3500 loops is %d msec',10,0
+buf:	blkb	128
+
+	.align	4
+bits:	blkb	1024
+
+	.endseg
+
+_main:-	
+	movd	3500,loopv
+	movqd	0,tos
+	cxp	_timer
+	cmpqd	0,tos
+	movd	r0,ctime
+	movw	h'E800,r3		;BPU control, s or d, 8 shift
+	movqd	4,r3			;source warp
+	movqd	4,r4			;destination warp
+
+	.align	4
+loop:
+	addrd	mess,r0			;source address
+	addrd	bits,r1			;destination address
+	bsr	blt32			;call the function
+	acbd	-1,loopv,loop		;and loop for more
+	
+	movqd	0,tos
+	cxp	_timer			;get current timer value
+	cmpqd	0,tos
+	subd	ctime,r0		;subtract start time
+	movd	r0,tos			;save on stact
+	addrd	mess,tos		;and place address of message
+	cxp	_printf
+	cmpd	tos,tos			;unstack
+	rxp	0			;and return
+
+	.importp _timer,_printf
+.endseg
+

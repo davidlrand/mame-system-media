@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>
+AN-634_BITBLT_Examples.ws
+</title></head><body>
+                   <b>Series 32000</b><br>
+<br>
+<br>
+                   <u><b>NS32CG16 Graphics Applications Note 4</b></u><b></b><br>
+<br>
+                              <b><u>BITBLT examples</u></b><br>
+<br>
+<br>
+<u><b>1. Introduction</b></u><br>
+<br>
+The  NS32CG16  has  several  instructions  that  automate  the  process  of <br>
+performing  a  BIT aligned BLock Transfer (BITBLT).  In  this  applications <br>
+note, the parameter setup for these instructions will be discussed.<br>
+<br>
+For  additional  information on <i>Series 32000</i> programming,  please  see  the <br>
+<i>Series  32000 Programmer's Reference Manual</i>. For additional information  on <br>
+NS32CG16-specific  instructions,  please  see  the  NS32CG16   <i>Programmer's <br>
+Reference Manual Supplement</i>.<br>
+<br>
+<br>
+<u><b>2. Description</b></u><br>
+<br>
+A  BITBLT  is a very common technique used in graphics routines to  copy  a <br>
+rectangular  area of one image to another. Various effects may be  produced <br>
+by  different  logical operations being performed between  the  source  and <br>
+destination data, and the NS32CG16 implements many of these operations.<br>
+<br>
+<br>
+<u>Conventions</u><br>
+<br>
+This  document  assumes  the displayed image is in  a  specific  format  in <br>
+memory.  The  information below explains the  terminology  and  directional <br>
+assumptions, as well as byte and bit ordering conventions in <i>Series 32000</i>.<br>
+<br>
+<pre>
+Low address                                             High Address
+                Byte offset
+┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──7V───┬───┬───┬───┬───┬───┬───┐
+│ 0  1│ 2  3│ 4  5│ 6  7│ 8  9│10 11│12::313│314 315│316 317│318 319│
+│           │           │           │  ::           │               │
+└──────────────────────────────────────=S───────────────────────────┘
+├──┘  │     │
+│Byte │     │
+├─────┘     │
+│Word       │
+└───────────┘                           
+ Doubleword
+
+</pre>
+The preceding diagram represents one scan line of a standard 8+ inch by  11 <br>
+inch  page  on  a 300 Dot Per Inch (DPI) laser  printer,  in  the  portrait <br>
+orientation  (8+  inches wide, 11 inches high). There are  3300  such  scan <br>
+lines on each page. The start of the second scan line on the page would  be <br>
+at  byte offset 320 decimal, 140 hex. Since the first scan line is  at  the <br>
+top of the page, successive scan lines proceed down the page.<br>
+<br>
+<br>
+All  <i>Series  32000</i>  processors  have 32-bit internal  data  paths,  with  a <br>
+`natural' size of 32 bits, or 4 bytes. The least significant byte is stored <br>
+at the lowest address. Referring to the previous example, writing a byte of <br>
+hex  A5  to address zero would result in address zero  containing  hex  A5. <br>
+Writing  a  word of hex A55A to address zero would result in  address  zero <br>
+containing hex 5A, and address 1 containing hex A5. Writing a doubleword of <br>
+hex  FFA55A00 to address zero would result in address zero  containing  hex <br>
+00,  address 1 containing hex 5A, address 2 containing hex A5, and 3  three <br>
+containing hex FF.<br>
+<br>
+<i>Series  32000</i> does <u>not</u> have an alignment restriction in that data of  byte, <br>
+word or doubleword size need not reside at an even memory address. The  Bus <br>
+Interface Unit, internal to all <i>Series 32000</i> processors, requests  multiple <br>
+bus transfers as required, aligning the data automatically.<br>
+<br>
+The  bit  offset  is  equally consistent.  Bit  ordering  is  always  least <br>
+significant to most significant bit. In the diagram above, bit zero of byte <br>
+zero would be the first pixel imaged on the page. Bit one would be the next <br>
+pixel, bit two the next, and so on. Bit 2549 would be the last pixel imaged <br>
+on the page in the horizontal direction, since 8+ inches * 300 DPI yields a <br>
+width  of 2,550 dots, or pixels. Bit 2549 is contained within byte 318,  at <br>
+bit  position  5.  Both  Bit Addressing (e.g.  <i>SBITD  2549,page</i>)  and  Byte <br>
+Addressing with a byte address and a bit offset (e.g. <i>SBITD 5,page+318</i>) are <br>
+available  in  <i>Series 32000</i>. On the following page is an expansion  of  the <br>
+first three bytes of a  scan line, showing the bit addressing, as it  would <br>
+appear on the page printer or graphics screen.<br>
+<br>
+<br>
+<pre>
+┌───────────────────────┬───────────────────────┬────────────────────┐
+│                       │                       │                    │
+│        Byte 0         │        Byte 1         │      Byte 2        │
+│                                               │                    │
+│                                               │                    │
+│ 0  1  2  │  ┤  5  6  7  8  9 10 11 12 1│ 1┤ 15 16 17 18 19 20 21 22│
+└──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘
+</pre>
+<br>
+To clarify these conventions further, the following example illustrates how <br>
+a line 1 dot high and 10 dots wide is drawn. This line appears on scan line <br>
+one,  starting at the ninth pixel, or bit position 8. This will  result  in <br>
+hex  FF in address one, and hex 03 in address two. This is referred  to  as <br>
+the <i>horizontal</i> direction.<br>
+<br>
+The  width  of  the memory for an image is referred to as  the  image  <i>warp</i> <br>
+(sometimes  referred to as raster, or pitch). The <i>warp</i> of the page  printer <br>
+image in the previous example is 320 decimal (140 hex) bytes, or 2560 bits. <br>
+Note  that the image width is actually 2550 on this sample page printer  at <br>
+300 DPI, since 8+ inches * 300 DPI yields a width of 2,550 dots. The  width <br>
+is rounded up to 2560 bits (320 bytes) to make memory addressing simpler in <br>
+a typical hardware design. <br>
+<br>
+When  the <i>warp</i> is known, vertical lines can be drawn. A horizontal line  10 <br>
+dots  high and 1 dot wide starting at the first line, ninth pixel,  with  a <br>
+<i>warp</i>  of 320 (140 hex) and a <i>base address</i> of 0 would result in addresses  1 <br>
+(1 hex), 321 (141 hex), 641 (281 hex) ... 2881 (B41 hex) each containing 01 <br>
+hex.<br>
+<br>
+To summarize, for portrait applications, the `top left' pixel is bit 0. The <br>
+`top  right' pixel is bit 2,549. The `bottom left' pixel is bit  8,445,440. <br>
+The  `bottom right' pixel is bit 8,447,989. To calculate <i>x</i>,<i>y</i> bit  positions <br>
+on the page, the formula:<br>
+<br>
+     Bit offset = (<i>y</i> * 2560) + <i>x</i><br>
+<br>
+may  be used, where <i>y</i> is the scan line number ranging from 0 to  3299,  for <br>
+the  sample 8+ by 11 inch page, and <i>x</i> is the pixel displacement across  the <br>
+page from the left hand edge.<br>
+<br>
+More  information  on <i>Series 32000</i> conventions can be found in  the  <i>Series <br>
+32000  Programmer's Reference Manual</i>, and the <i>Series 32000 Instruction  Set <br>
+Reference  Manual</i>. See <i>Section 3.5</i> in the <i>Instruction Set Reference  Manual</i> <br>
+for a complete discussion of bit instructions and bit addressing.<br>
+<br>
+All <i>shifts</i> in this document are in the increasing bit/byte direction. This <br>
+is a <i>Series 32000</i> Left Shift. However, visually on a page, this is a  left-<br>
+to-right shift. Zeros are inserted in the least significant bits.<br>
+<br>
+All <i>rotates</i> in this document are in the increasing bit/byte direction. This <br>
+is a <i>Series 32000</i> Left Rotate. However, visually on a page, this is a left-<br>
+to-right  shift.  Data  from  the most significant  bit  position  will  be <br>
+transferred to the least significant bit position.<br>
+<br>
+Numbers preceeded by 0x are in hexadecimal. 0x1AC would be decimal 428.<br>
+<br>
+<br>
+<br>
+                               <u>Sample BITBLT</u><br>
+<br>
+In this example, we will set up the parameters for a BITBLT operation  from <br>
+28,36 to 123,76 (see <i>figure 1</i>), with an area of 36 x 36.<br>
+<br>
+The first problem is how to describe the area to be copied. One of the best <br>
+ways  to  do this is to supply an x,y coordinate pair for  the  upper  left <br>
+corner  of the source and destination, and a width and height for the  copy <br>
+operation (see <i>figure 1</i>). From this information, each of the parameters  of <br>
+the  BITBLT  operation can be calculated. As an example, take the 36  x  36 <br>
+area starting at 28,36, and move it to 123,76.<br>
+<br>
+The  first  step  is  to translate  the  image  coordinates  into  physical <br>
+addresses.  This can be done by multiplying the y coordinate by  the  image <br>
+<i>warp</i>, or length of each scan line. In our example, the warp is 2560 pixels. <br>
+Since the source image starts at y=36, so the actual source image begins at <br>
+bit  offset 92188 (28 + 36 * 2560) from the beginning of the  image  space. <br>
+The destination starts at y=76, so the actual destination image will  begin <br>
+at  bit  offset 194683 (123 + 76 * 2560) from the beginning  of  the  image <br>
+space. Adding this to the physical starting address of the page gives the<br>
+actual starting address, as follows.<br>
+<br>
+The  base of the source address can be determined by taking the source  bit <br>
+offset, diving by 16 to obtain the offset in words, and multiply by two  to <br>
+get the offset in bytes. This value can then be added to the pysical memory <br>
+image  address, which in our example is 0x8000. The source base address  is <br>
+therefore 0x8000 + (((28 + 36 * 2560) / 16) * 2), or 0xAD02.<br>
+<br>
+The base address of the destination can be determined much in the same  way <br>
+as the base address of the source, substituting the destination bit  offset <br>
+computation. The destination base address is therefore 0x8000 + (((28 +  36 <br>
+*  2560)  /  16 * 2), or 0xDF0E. This value may be  altered  by  the  shift <br>
+computation, as will be seen.<br>
+<br>
+The BITBLT functions in the NS32CG16 operate on 16 bits of data (a word) at <br>
+once,  to  optimize speed. Since the source is not aligned on bit 0  of  an <br>
+address, we must mask the unwanted data from the source in order to extract <br>
+only the bits we are interested in. Each left-hand edge of the source is on <br>
+bit  12. This can be determined by taking the x value of the  source  (28), <br>
+and  logically  ANDing it with 15. Since we DO NOT want bits  0-11  of  the <br>
+source, our first mask will be 1111 0000 0000 0000 (0xf000).<br>
+<br>
+The second mask can be determined by taking the source x value, adding  the <br>
+width,  subtracting  one,  and logically ANDing with 15.  The  end  of  the <br>
+source, therefore, is on bit 15. We require all of this word, so the second <br>
+(or ending) mask will be 1111 1111 1111 1111 (0xffff). <br>
+<br>
+The  masks  are only required on the first and last words of  a  line.  The <br>
+reason  for this is that all words in the middle would have a mask of  1111 <br>
+1111 1111 1111 (0xffff), since all bits are required. Because of this fact, <br>
+there  is no need to compute an "inner" mask value.<br>
+<br>
+We  know  that  the image is 36 bits wide, and 36  lines  high.  From  this <br>
+information, we can determine that the source is  three words wide (a  word <br>
+is  16  bits,  and  the source cannot be contained in  two  words  in  this <br>
+example).<br>
+<br>
+The  next item we need to determine is the shift amount. This can be  found <br>
+by subtracting the source x value from the destination x value. To minimize <br>
+error,  the  best  way  to  do this is to  logically  AND  the  source  and <br>
+destination  x values with 15 with 15, to determine the bit  offset  within <br>
+the word. In this example, the source bit offset is 12, and the destination <br>
+bit offset is 11. Since the destination bit offset is less than the  source <br>
+bit  offset,  the resultant shift value will be -1. In the  NS32CG16,  only <br>
+positive  shift  values  are permitted, so we "back up"  one  word  on  the <br>
+destination,  and  add 16 to the shift amount, giving a shift of  15  bits. <br>
+This will make the destination base address 0xDF0C.<br>
+<br>
+The  adjusted  source warp, required by the BITBLT instructions,  would  be <br>
+calculated  as (Source warp in bytes - 2 * (width in words - 1)). Our  warp <br>
+for  both the source and destination is the same, 2560 bits or  320  bytes. <br>
+The  source  warp would be (320 - 2 * (3-1)) = 316. Since  the  source  and <br>
+destination images are in the same image space, the source and  destination <br>
+warps are the same. The adjusted source and destination warps are both  316 <br>
+for this example.<br>
+<br>
+Once  all  the  calculations  are complete,  we  can  convert  to  physical <br>
+parameters to the BITBLT instruction, and perform the BITBLT.<br>
+<hr/>
+If  we  assume that the memory image starts at address 0x8000, we  can  now <br>
+pass all the parameters, as follows:<br>
+<br>
+     Base address of source = 0xAD02<br>
+     Base address of dest.  = 0xDF0C<br>
+     Shift value in bits    = 15<br>
+     Height in lines        = 36<br>
+     First mask             = 0xF000<br>
+     Second mask            = 0xFFFF<br>
+     Adjusted source warp   = 316<br>
+     Adjusted dest. warp    = 316<br>
+     Width in words         = 3<br>
+<br>
+<br>
+<br>
+<b><u>3. Implementation</u></b><br>
+<br>
+This  example may be turned into a general-case program. A sample  of  this <br>
+follows, written in the C language.<br>
+<br>
+<pre>
+#define IMAGEADDR 0x8000        /* Image starting address */
+#define SOURCEWARP 2560                /* Source warp, in bits */
+#define DESTWARP 2560                /* Destination warp, in bits */
+
+unsigned int MASK1[] = {        /* First mask table */
+        0xffff,0xfffe,0xfffc,0xfff8,
+        0xfff0,0xffe0,0xffc0,0xff80,
+        0xff00,0xfe00,0xfc00,0xf800,
+        0xf000,0xe000,0xc000,0x8000,
+        0x0000 };
+unsigned int MASK2[] = {        /* Second mask table */
+        0x0001,0x0003,0x0007,0x000f,
+        0x001f,0x003f,0x007f,0x00ff,
+        0x01ff,0x03ff,0x07ff,0x0fff,
+        0x1fff,0x3fff,0x7fff,0xffff,
+        0x0000 };
+
+/*
+        Preprocessor for BITBLT function
+        Inputs:
+                sx - source x value (column)
+                sy - source y value (row)
+                dx - destination x value
+                dy - destination y value
+                wx - width of image to transfer (in bits)
+                wy - height of image to transfer (in lines)
+        
+        Outputs:
+                Calculates all required values for NS32CG16
+                internal BITBLT functions
+*/
+preproc(sx,sy,dx,dy,wx,wy)
+int sx,sy,dx,dy,wx,wy;
+{
+        int srcadd,dstadd,width,height;
+        unsigned int mask1,mask2;
+        int shift,adswarp,addwarp;
+
+        /* calculate the word-aligned source address */
+        srcadd = (((sy * SOURCEWARP) + sx)/16) * 2 + IMAGEADDR;
+
+        /* calculate the word-aligned destination address */
+        dstadd = (((dy * DESTWARP) + dx)/16) * 2 + IMAGEADDR;
+
+        /* Calculate the first and last masks */
+        mask1 = MASK1[sx &amp; 15];
+        mask2 = MASK2[(sx + wx - 1) &amp; 15];
+
+        /* Calculate the width in words. It is not permissible
+           for the width in bits or words to be zero.
+        */
+        width = ((wx+15) / 16) ;
+        if (width == 1)                /* If the width is 1, combine masks */
+                mask1 |= mask2;
+
+        shift = (dx &amp; 15) - (sx &amp; 15);        /* Calculate the shift */
+        if (shift &lt; 0) {        /* If the shift is negative */
+                shift += 16;        /* Add 16 to the shift amount */
+                dstadd -= 2;        /* and decrement the dest. addr */
+        }
+        height = wy;     /* Height computation is simply the passed height */
+
+        /* Calculate the adjusted source and destination warps */
+        adswarp = SOURCEWARP/8 - 2 * (width - 1);
+        addwarp = DESTWARP/8 - 2 * (width - 1);
+
+    BBfunc(srcadd,dstadd,shift,wy,mask1,mask2,adswarp,addwarp,width);
+}
+
+</pre>
+<br>
+<br>
+This example program will generate all required values for the BBOR, BBXOR, <br>
+BBAND, BBSTOD and BBFOR instructions. It assumes non-overlapping source and <br>
+destination  images, and a top-to-bottom, left-to-right  BITBLT  operation. <br>
+The  BBOR,  BBXOR,  BBAND and BBSTOD instructions are capable  of  full  4-<br>
+direction  BITBLTs,  required  for overlapping images,  and  the  BBFOR  is <br>
+capable of a 2 direction BITBLT.<br>
+<br>
+To  implement  a  bottom-to-top BITBLT with any of  the  BITBLT  functions, <br>
+simply adjust the source and destination starting address to the last  line <br>
+of the BITBLT, and negate the source and destination warps.<br>
+<br>
+To  implement a right-to-left BITBLT operation with the BBOR, BBXOR,  BBAND <br>
+or BBSTOD instructions, use the "-d" option on the instruction, and  adjust <br>
+the source and destination warps as follows:<br>
+<br>
+<pre>
+        /* Calculate the adjusted source and destination warps */
+        adswarp = SOURCEWARP/8 + 2 * (width - 1);
+        addwarp = DESTWARP/8 + 2 * (width - 1);
+</pre>
+<br>
+<br>
+<u><b>3.1  Implementation for non-impact printers</b></u><br>
+<br>
+Non-impact  printers  have  a slightly  different  requirement  for  BITBLT <br>
+functions.  Generally  the function required is  a  left-to-right,  top-to-<br>
+bottom, logical OR BITBLT. Source and destination are not generally in  the <br>
+same  memory space, and source and destination warps are not  equal.  Since <br>
+the  source  is usually a character bit-image, and the character  image  is <br>
+typically  left margin aligned, no first mask is required. This is why  the <br>
+BBFOR (BitBlt Fast OR) instruction was created. Based on this  information, <br>
+we  can  create  an optimized version of the  preprocessor  for  non-impact <br>
+printers.<br>
+<br>
+<pre>
+#define IMAGEADDR 0x8000        /* Image starting address */
+#define SOURCEWARP 2560                /* Source warp, in bits */
+#define DESTWARP 2560                /* Destination warp, in bits */
+
+unsigned int MASK2[] = {        /* Second mask table */
+        0x0001,0x0003,0x0007,0x000f,
+        0x001f,0x003f,0x007f,0x00ff,
+        0x01ff,0x03ff,0x07ff,0x0fff,
+        0x1fff,0x3fff,0x7fff,0xffff,
+        0x0000 };
+
+/*
+        Preprocessor for Non-Impact Printer BITBLT function
+        Inputs:
+                saddr - source character byte address
+                swarp - warp of source character ( in bytes )
+                swidth - width of character (in bits)
+                sheight - height of character (in lines)
+                dx - destination x value
+                dy - destination y value
+        
+        Outputs:
+                Calculates all required values for NS32CG16
+                internal BITBLT functions
+*/
+nipproc(saddr,swarp,swidth,sheight,dx,dy)
+unsigned char *saddr;
+int swidth,sheight,dx,dy;
+{
+        int srcadd,dstadd,width;
+        unsigned int mask1,mask2;
+        int shift,adswarp,addwarp;
+
+        srcadd = saddr;
+
+        dstadd = (((dy * DESTWARP) + dx)/16) * 2 + IMAGEADDR;
+
+        /* Calculate the first and last masks */
+        mask1 = 0xffff;         /* First mask is always 1's */
+        mask2 = MASK2[swidth &amp; 15];
+
+        /* Calculate the width in words. It is not permissible
+           for the width in bits or words to be zero.
+        */
+        width = ((swidth+15) / 16) ;
+        if (width == 1)                /* If the width is 1, combine masks */
+                mask1 &amp;= mask2;
+
+        shift = (dx &amp; 15);        /* Calculate the shift */
+
+        /* Calculate the adjusted source and destination warps */
+        adswarp = swarp - 2 * (width - 1);
+        addwarp = DESTWARP/8 - 2 * (width - 1);
+
+    BBfunc(srcadd,dstadd,shift,sheight,mask1,mask2,
+                adswarp,addwarp,width);
+}
+
+</pre>
+<br>
+Converting  this  code  to  assembly language, we  can  show  a  very  high <br>
+performance preprocessor, as follows.<br>
+<br>
+<pre>
+# Preprocessor for non-impact BITBLT function
+# Inputs:
+#        r0 - source character byte address
+#        r1 - destination y value
+#        r2 - destination x value
+#        r3 - source height (in lines)
+#        r4 - source width (in bits)
+#        r5 - source warp in bytes
+#
+        .set        DESTWARP,2560
+        .set        IMAGADDR,0x8000
+nipproc:
+        indexd        r1,$(DESTWARP-1),r2        # obtain bit index
+        lshd        $3,r1                        # divide by 8 and 
+        andd        $0xfffffffe,r1                # mask to get word offset
+        addr        IMAGADDR(r1),r1                # add image address
+        addr        0xf,r7                        # get mask value in r7
+        andd        r7,r2                        # mask dest. x to get shift
+        movd        r5,r6                        # move source warp to r6
+        movd        r4,r5                        # move width to temp
+        andd        r7,r5                        # mask to low order bits
+        movzwd        MASK2[r5:w],r5                # get second mask from table
+        addd        r7,r4                        # round width to word multiple
+        lshd        $4,r4                        # r4 is now width in words
+        addr        -1(r4),r7                # get width-1 in r7
+        subd        r7,r6                        # adjust source warp
+        subd        r7,r6                        # to swarp - 2*(width-1)
+        addd        r7,r7                        # double r7
+        negd        r7,r7                        # negate it (-2*(width-1))
+        addd        $(DESTWARP/8),r7        # add destination warp
+        movw        r4,tos                        # place width on stack
+        cmpqw        $1,r4                        # is width 1?
+        addr        0xffff,r4                # assume not, get 1st mask
+        beq        width1                        # it is a width of 1, branch
+
+        cmpb        r2,$0                        # set L flag for optimization
+        bbfor                                # do BBFOR
+           cmpqw        0,tos                        # unstack, and
+        ret        $0                        # return
+
+width1:        andd        r5,r4                        # combine masks
+        cmpb        r2,$0                        # set L flag for optimization
+        bbfor                                # do BBFOR
+        cmpqw        0,tos                        # unstack, and
+        ret        $0                        # return
+</pre>
+<br>
+<br>
+<u><b>4. Summary</b></u><br>
+<br>
+While   the  BITBLT  function  parameters  may  seem  complex,   a   simple <br>
+relationship  exists  between the desired operation values and  the  BITBLT <br>
+functions.<br>
+</body></html>

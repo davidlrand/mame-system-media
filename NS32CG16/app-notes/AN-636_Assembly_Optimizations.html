@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>
+AN-636_Assembly_Optimizations.ws
+</title></head><body>
+                   <b>Series 32000</b><br>
+<br>
+                 <u><b>Series 32000 Graphics Applications Note 9</b></u><b></b><br>
+<br>
+                      <b><u>Assembly Language Optimizations</u></b><br>
+<br>
+<br>
+<u><b>1. Introduction</b></u><br>
+<br>
+In this applications note, we discuss various optimization strategies  that <br>
+apply  to the NS32008, NS32016, NS32CG16 and NS32032 when writing  assembly <br>
+language  programs. Most optimizations will also apply to the  NS32332  and <br>
+NS32532. The emphasis will be on the NS32016 and NS32CG16.<br>
+<br>
+<br>
+<u><b>2. Description</b></u><br>
+<br>
+<br>
+All  <i>Series 32000</i> processors have a common, rich instruction set.  Choosing <br>
+the optimal instructions is often difficult. As a general rule when writing <br>
+<i>Series 32000</i> assembly language, try to minimize the number of  instructions <br>
+to  accomplish  a given task. In general, minimizing the size of  code  (or <br>
+number of instructions) will also minimize the execution time, and maximize <br>
+execution speed. For example:<br>
+<br>
+<pre>
+     addr      src1,r0   # point to source      
+     movb      0(r0),r1  # get the byte at (src1)
+     addr      dest1,r0  # point to destintation
+     movb      r1,0(r0)  # store the byte at (dest1)
+</pre>
+<br>
+This code simply moves a byte from one address to another. A better way  is <br>
+to use the <i>Series 32000</i> memory to memory architecture.<br>
+<br>
+<pre>
+     movb      src1,dest1     # get the byte at (src1), place in (dest1)
+</pre>
+<br>
+While  this  may  appear obvious, note that since this code  does  not  use <br>
+registers, it may be used in a interrupt service routine without saving  or <br>
+restoring  registers.  This technique can also be used when  a  routine  is <br>
+"out"  of registers for storing temporary values. <i>Series 32000</i> can use  any <br>
+legal  addressing  mode  for  either the  source  or  destination  of  most <br>
+instructions.<br>
+<br>
+Another technique to optimize programs is to make the fall through case  of <br>
+a branch instruction the most common case. This is an optimization  because <br>
+<i>Series  32000</i>  is pipelined, and a branch instruction breaks  the  pipeline <br>
+(flushes the instruction execution queue). An example of this would be:<br>
+<br>
+<pre>
+     cmpd      $100,r0   # is the argument out of range?
+     bgt       ok        # no, it is ok
+     addr      err,tos   # place error message on tos
+     br        err_hand  # handle the error
+ok:  ...                 # code continues
+</pre>
+<br>
+Here,  we are checking for an error condition (r0 &gt;= 100). A better way  to <br>
+write this code is to branch TO the error condition:<br>
+<br>
+<pre>
+     cmpd      $100,r0   # is the agument out of range?
+     ble       bad       # yes, branch out
+
+bad: addr      err,tos   # place error message on tos
+     br        err_hand  # handle the error
+</pre>
+<br>
+This  technique  can  be  further expanded as  well,  by  common  tail  end <br>
+expansion. If you have a section of code that reads as follows:<br>
+<br>
+<pre>
+     if (cond) {
+          process;
+          process;
+     } else {
+          process1;
+          process1;
+     }
+     com_proc;
+     com_proc;
+     com_proc; ...
+</pre>
+<br>
+This can be optimized by unrolling the common code (com_proc) into each  of <br>
+the  if cases. This eliminates at least one branch instruction.  When  code <br>
+like  this  appears  within loops, the savings in  execution  time  can  be <br>
+considerable, at the expense of code space.<br>
+<br>
+A simple optimization that can show significant benefits is the aligning of <br>
+the  target  of  branch  instructions. For the  NS32008,  no  alignment  is <br>
+required.  For the NS32016 and NS32CG16, <i>.align 2</i> should be used.  For  the <br>
+NS32032, <i>.align 4</i> should be used. For the NS32332 and NS32532, <i>.align 16</i> is <br>
+best,  but <i>.align 4</i> can also be used. The <i>.align 16</i> allows the NS32332  and <br>
+NS32532  to use the burst option, if the hardware supports this  mode.  The <br>
+most important time to align instructions is the "top" of loops, as shown:<br>
+<br>
+<pre>
+     addr      20,r0          # iterate 20 times
+     movqd     0,r1           # zero accumulator
+lp:  addd      r0,r1          # add to accumulator
+     addd      r1,r1          # again
+     subd      r0,r1          # subtract
+     acbd      $-1,r0,lp      # and loop
+</pre>
+<br>
+The <i>.align 4</i> in the above example will fill the space between the movqd and <br>
+the addd with a single, fast instruction (4 clocks or less) of length 1, 2, <br>
+or  3  bytes,  depending  on  alignment.  The  instruction  inserted  will, <br>
+effectively, be a NOP in that it will affect no registers, memory or flags.<br>
+<br>
+<br>
+When  loading  32 bit constants, the obvious technique is to use  the  <i>MOVD</i> <br>
+instruction. On the NS32008, 016, CG16, 032 and 332, a better way may be to <br>
+use  the <i>ADDR</i> instruction. The reason this may be faster is that  the  <i>ADDR</i> <br>
+instruction  is shorter due to the encoding of the immediate value. If  the <br>
+<i>MOVD</i>  instruction is not fully in the instruction queue, the <i>ADDR</i>  will  be <br>
+faster. Below is a table suggesting the range that each instruction is best <br>
+suited for. On the NS32532, the <i>MOVD</i> instruction should be used on all  but <br>
+the quick immediate range (-8 to +7).<br>
+<br>
+     <u>Range          Instruction</u><br>
+     -8 to +7       MOVQD     $imm,dest<br>
+     +8 to +8191    ADDR      imm,dest<br>
+     +8192 to 2^32  MOVD      $imm,dest<br>
+<br>
+<br>
+Another  useful technique is to make use of the pipeline  overlap  possible <br>
+after  instructions which reference memory in a Read-Modify-Write  fashion. <br>
+For   example,   on  the  NS32016  and  NS32CG16,   two   register/register <br>
+instructions  (8 clock cycles) may be executed following a RMW  instruction <br>
+that affects 32 bits of memory, as shown:<br>
+<br>
+<pre>
+     ord       r2,0(r0)       # place pattern in memory (RMW)
+     addd      r6,r0          # add source warp
+     addd      r7,r1          # add destination warp
+</pre>
+<br>
+If an instruction which references memory is executed following a  RMW-type <br>
+instruction,  the  new  instruction will not be  started  until  the  write <br>
+completes.  If only register/register instructions are used, they  will  be <br>
+executed  DURING the write cycle of the RMW. In the above example,  on  the <br>
+NS32016  and  NS32CG16,  both the <i>addd</i> instructions  will  be  executed  in <br>
+parallel with the write cycle. This can only occur if the instructions  are <br>
+in the instruction execution queue. This is one more reason to minimize the <br>
+use of the branch instruction, which flushes the queue.<br>
+<br>
+<br>
+Another techique is to make full use of the Complex Instruction Set  nature <br>
+of <i>Series 32000</i>. For example, take the following code fragment:<br>
+<br>
+<pre>
+     cmpd      $1000,r7       # Is r7 &gt; 1000?
+     ble       yes            # yes, it is
+     movqd     $0,r1          # set r1 to 0
+     br        cont           # continue the code
+
+yes: movqd     $1,r1          # set r1 to 1
+cont: ...
+</pre>
+<br>
+A better way to write this code is to use the Scond instruction, as follows:<br>
+<br>
+<pre>
+     cmpd      $1000,r7       # Is r7 &gt; 1000?
+     sled      r1             # r1 = (r7 &gt; 1000) ┐ 1 : 0
+cont: ...
+</pre>
+<br>
+<br>
+To do a three-operand add, of the form:<br>
+     c = b + a + constant<br>
+the <i>Series 32000</i> <i>addr</i> instruction can be used. For example:<br>
+<br>
+<pre>
+     addr      326(r0)[r1:b],_C    # c = a + b + 326
+</pre>
+<br>
+An  extension  of this form can be used for adds that  involve  multiplies, <br>
+when  the  multiplier is 1, 2, 4 or 8. By replacing the ":b" in  the  above <br>
+example with a ":w", the r1 register can be multiplied by two before  being <br>
+added  with  r0 and 326. ":d" will effect a multiply by 4,  and  ":q"  will <br>
+multiply  by eight. Note that the destination of the <i>addr</i> instruction  need <br>
+not be a register.<br>
+<br>
+Another  variation  of this form may be used when it is required to  add  a <br>
+large  constant to a register, producing a result to a different  variable, <br>
+as follows:<br>
+<br>
+<pre>
+     addr      320*4(r0),_start    # start = r0 + 1280
+</pre>
+<br>
+<br>
+The  scaled  index  addressing  mode may also be  used  for  generation  or <br>
+checking  of parity on characters. A 128-byte table containing the  correct <br>
+(even  or odd) parity information in the most significant bit of each  byte <br>
+is created, then a simple OR can be used to set the parity:<br>
+<br>
+<pre>
+     orb       partab[r0:b],r0     # set parity on byte in r0
+</pre>
+<br>
+An  extension of this technique can be used on strings of characters,  with <br>
+the  <i>MOVST</i>  instruction.  This  can be  used  with  variable  length,  null <br>
+terminated  strings, or fixed length strings. A 256-byte  table  containing <br>
+the complete character set, with parity information (even, odd or none)  is <br>
+created.  The  <i>MOVST</i>  then instruction copies the source string  to  a  new <br>
+destination  buffer (optionally, it may replace the source string).  During <br>
+the  copy,  each  source  character is indexed  into  the  table,  and  the <br>
+corresponding character placed in the output buffer.<br>
+<br>
+<pre>
+     movqd     -1,r0          # unlimited (very large) number of chars
+     addr      source,r1      # source pointer
+     addr      dest,r2        # destination pointer
+     addr      cpartab,r3     # point to character parity table
+     movqd     0,r4           # copy until a zero source character
+     MOVST     U              # move string, with translation, until 0
+     movqb     0,0(r2)        # place a null terminator as the last char
+</pre>
+<br>
+This technique should be used for variable length, null terminated strings.<br>
+<br>
+<br>
+A  common optimization when multiplying by powers of two is to use a  shift <br>
+instruction.  On  the  NS32008, NS32016,  NS32CG16,  NS32032  multiple  add <br>
+instructions  should be used instead of a single shift, up to a shift of  6 <br>
+(multiply by 64). On the NS32332 and NS32532, use add instructions only for <br>
+a  multiply  by  two.  When the quantity to be  multiplied  is  in  memory, <br>
+however,  a  shift  instruction should always be used, as it  only  does  a <br>
+single RMW access to memory.<br>
+<br>
+<pre>
+# On the NS320xx processors, the following code should be used instead
+# of MUL─ $16,r0 or LSH─ $4,r0
+     addd      r0,r0     # multiply by 2
+     addd      r0,r0     # multiply by 4
+     addd      r0,r0     # multiply by 8
+     addd      r0,r0     # multiply by 16
+</pre>
+<br>
+<br>
+<br>
+<br>
+A  study of the <i>Series 32000 Programmer's Reference Manual</i> will  show  many <br>
+other   opportunities  for  optimizations  using  the  full  <i>Series   32000</i> <br>
+instruction set.<br>
+   <br>
+<br>
+<br>
+</body></html>

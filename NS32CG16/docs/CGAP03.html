@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>NS32CG16 Graphics Applications Note 3 — Emulation Software for Series 32000</title></head><body>
+                   <b>Series 32000</b><br>
+<br>
+<br>
+                   <u><b>NS32CG16 Graphics Applications Note 3</b></u><b></b><br>
+<br>
+               <b><u>NS32CG16 Emulation Software for Series 32000</u></b><u></u><br>
+<br>
+<u><b>1. Introduction</b></u><br>
+<br>
+The  NS32CG16, a high speed graphics-specific version of the  <i>Series  32000</i> <br>
+family  has  a number of instructions which make graphics  processing  much <br>
+easier.  Since these instructions are available only in the NS32CG16,  this <br>
+emulation  software  was  developed to permit easy  migration  of  graphics <br>
+software between all members of the <i>Series 32000</i> family.<br>
+<br>
+For  additional  information on <i>Series 32000</i> programming,  please  see  the <br>
+<i>Series  32000 Programmer's Reference Manual</i>. For additional information  on <br>
+these   emulation  routines  and  conventions,  please  see  the   NS32CG16 <br>
+<i>Programmer's Reference Manual Supplement</i>.<br>
+<br>
+<br>
+<u><b>2. Description</b></u><b></b><br>
+<br>
+The  emulation  routines have been separated into three libraries:  a  pure <br>
+emulation library, containing only <i>Series 32000</i> instructions; a pure native <br>
+mode NS32CG16 library, containing the native NS32CG16 instructions; and  an <br>
+automatic  library,  which uses the native mode  NS32CG16  instructions  if <br>
+running  on a NS32CG16, or emulation routines if running on another  <i>Series <br>
+32000</i>  processor. The automatic library uses a small routine called at  run <br>
+time  to  determine the processor type, and sets a memory variable  so  the <br>
+emulation routines can quickly determine the processor type.<br>
+<br>
+Each  of the functions, where applicable, is furnished with a C front  end, <br>
+permitting  the  user to call the emulation routines directly  from  the  C <br>
+language.  Since the <i>TBITS</i> instruction returns substantial  information  in <br>
+the  PSR,  this  routine is not represented by a  C  front  end.  Low-level <br>
+assembly  language  entry  points are also available  for  all  instruction <br>
+emulations.<br>
+<br>
+The  user  is  cautioned  that these are  <i>functional  equivalents</i>  for  the <br>
+NS32CG16 instructions. While each emulation produces the same effect as the <br>
+equivalent  NS32CG16 instruction, the return register and/or flag  contents <br>
+may  not  be the same. This is due to the fact that each routine  has  been <br>
+carefully optimized for speed.<br>
+<br>
+<br>
+<u><b>3. Implementation</b></u><br>
+<br>
+Each  emulation routine is assembled with each of three flags,  by  running <br>
+the  source assembly language through the C preprocessor. This is  done  in <br>
+the  Makefile  (see  attached  listing).  The  NOSOFT  flag  assembles  the <br>
+file using no software emulation, only NS32CG16 graphics instructions.  The <br>
+EMULATE  flag  assembles  the  file  using  ONLY  software  emulation,  and <br>
+generating  no NS32CG16-specific instructions. The AUTO flag assembles  the <br>
+file using BOTH software emulation and native mode instructions.<br>
+Each  of the source files (see attached listings) is assembled,  then  made <br>
+into  a linkable archive with the ar command. When all archives  have  been <br>
+created,  they are copied to the /lib directory. Once the files  have  been <br>
+moved to the /lib directory, they are accessible with the -l switch on  the <br>
+C compiler, and the ln linker, as in the following example:<br>
+<br>
+<pre>
+$ cc testfile.c -o testemul -lcgemul    # Emulation library
+$ cc testfile.c -o testnat  -lcgnat     # Native mode library
+$ cc testfile.c -o testauto -lcgauto    # Automatic library
+</pre>
+<br>
+The first example uses the software emulation library, and thus will run on <br>
+any  <i>Series  32000</i> processor. The second example uses the  NS32CG16  native <br>
+mode  library,  and  will run correctly only on  the  NS32CG16.  The  third <br>
+example  uses  the  automatic library, and will run  on  any  <i>Series  32000</i> <br>
+processor.<br>
+<br>
+Each of the libraries has a specific purpose. The native mode library  runs <br>
+the  fastest  on the NS32CG16, but does not work with  other  <i>Series  32000</i> <br>
+processors. The automatic library should be used if the target processor of <br>
+the  code  is not known. If on an NS32CG16, the emulation  will  run  fast, <br>
+since it will use the native mode instructions. It will not run as fast  as <br>
+the  native mode library, however, due to the compare-and-branch  over  the <br>
+native  mode  instructions. The emulation library will run  on  any  <i>Series <br>
+32000</i>   processor,  but  will  not  take  advantage  of   NS32CG16-specific <br>
+instructions.  If  the  target is NOT an NS32CG16, this  library  will  run <br>
+slightly  faster than the automatic library, again due to the  compare-and-<br>
+branch.  If  the  Makefile  is modified  to  include  a  "-DNS32532",  then <br>
+optimization will occur for the NS32532.<br>
+<br>
+The instructions represented by this emulation library are as follows:<br>
+<br>
+<u>NS32CG16 instruction     Emulation name      Description</u><br>
+bband                    bband               BitBlt AND function<br>
+bband -s                 bbandcs             BBAND, complement source<br>
+bband da                 bbandda             BBAND, decrement address<br>
+bband da,-s              bbanddacs           BBAND, compl. src, decr. addr.<br>
+bbfor                    bbfor               BitBlt Fast OR function<br>
+bbor                     bbor                BitBlt OR function<br>
+bbor -s                  bborcs              BBOR, complement source<br>
+bbor da                  bborda              BBOR, decrement address<br>
+bbor da,-s               bbordacs            BBOR, compl. src, decr. addr.<br>
+bbstod                   bbstod              BitBlt Source TO Destination<br>
+bbstod -s                bbstodcs            BBSTOD, complement source<br>
+bbstod da                bbstodda            BBSTOD, decrement address<br>
+bbstod da,-s             bbstoddacs          BBSTOD, compl. src, decr. addr.<br>
+bbxor                    bbxor               BitBlt XOR function<br>
+bbxor-s                  bbxorcs             BBXOR, complement source<br>
+bbxorda                  bbxorda             BBXOR, decrement address<br>
+bbxorda,-s               bbxordacs           BBXOR, compl. src, decr. addr.<br>
+bitwt                    bitwt               Bit aligned Word Transfer (OR)<br>
+extblt (no pre-read)     extblt              External BitBlt (see listing)<br>
+extblt (pre-read)        extbltp             External BitBlt (see listing)<br>
+movmpb                   movmpb              Move Multiple Pattern (byte)<br>
+movmpw                   movmpw              Move Multiple Pattern (word)<br>
+movmpd                   movmpd              Move Multiple Pattern (double word)<br>
+<u>NS32CG16 instruction     Emulation name      Description</u><br>
+sbitps                   sbitps              Set Bit Perpendicular String<br>
+sbits                    sbits               Set Bit String<br>
+tbits 0                  tbits0 (no C call)  Test Bit String (zero)<br>
+tbits 1                  tbits1 (no C call)  Test Bit String (one)<br>
+<br>
+-                        testcg              Test for NS32CG16<br>
+<br>
+The  testcg  function  permits the user to test for  the  presence  of  the <br>
+NS32CG16 (returns true if present, zero otherwise). It also initializes the <br>
+memory variable used in the automatic emulation library. This function MUST <br>
+be called prior to the first call to the library if the automatic emulation <br>
+library is chosen. If it is not called, the automatic library assumes  that <br>
+the current CPU is NOT the NS32CG16.<br>
+<br>
+Each of the library functions also is usable from assembly language, simply <br>
+by suffixing the emulation name from the above table with "em", setting the <br>
+appropriate  registers,  and  issuing  a bsr or jsr  to  the  routine.  The <br>
+assembly  language  interface  is  the same register  set  up  as  for  the <br>
+NS32CG16  instructions.  More  information on the register  setup  for  the <br>
+NS32CG16  instructions  is available in the <i>Programmer's  Reference  Manual <br>
+Supplement  for  the NS32CG16</i>. Below is an example of the  assembly  and  C <br>
+calling techniques:<br>
+<br>
+<pre>
+        addr        source,r0        #point to the source
+        addr        dest,r1                 #point to the destination
+        movqd        5,r2                #set up the shift amount
+        cmpqb        $0,r2                #initialize the L bit
+        jsr        bitwtem                #call the bitwt emulation
+
+From C, this example would be:
+
+        bitwt(source,dest,5); /* Call the bitwt emulation */
+</pre>
+<br>
+<br>
+<u><b>4. Argument passing</b></u><br>
+<br>
+When  called  from  C,  arguments are passed  by  value  to  the  emulation <br>
+routines on the stack, in standard C convention.<br>
+<br>
+                               <u>BITBLT Group</u><br>
+<br>
+Each  of the BitBlt group of functions (<i>BBAND</i>, <i>BBFOR</i>, <i>BBOR</i>, <i>BBSTOD</i>,  <i>BBXOR</i>) <br>
+is passed the same arguments, in the same order, as follows:<br>
+<br>
+<pre>
+     bbxxx(source,dest,shift,height,firstmask,secondmask,swarp,dwarp,width);
+</pre>
+<br>
+Source is a 32-bit pointer to the source data. Dest is a 32-bit pointer  to <br>
+the  destination data. Shift is the shift amount. Only the last 5 bits  are <br>
+significant, but should be in the range 0-15. Height is the unsigned 32-bit <br>
+height of the BitBlt operation. Firstmask is the 16-bit first mask  applied <br>
+to  the  leading  edge of the BitBlt operation. Secondmask  is  the  16-bit <br>
+second mask applied to the trailing edge of the BitBlt operation. Swarp  is <br>
+the  adjusted source warp (Swarp = SourceWarp - 2*(width-1)). Dwarp is  the <br>
+adjusted  destination warp (Dwarp = DestWarp - 2*(width-1)). Width  is  the <br>
+unsigned  16-bit quantity of the number of words of source data to  operate <br>
+on. Shift should be in the range 0-15. Height must be non-zero, and in  the <br>
+range 0 &lt; height &lt; 2^32. Width must be non-zero, and in the range 0 &lt; width <br>
+&lt; 2^16.<br>
+<br>
+                              <u>BITWT function</u><br>
+<br>
+The <i>BITWT</i> emulation routine is passed only three arguments:<br>
+<br>
+<pre>
+     bitwt(source,dest,shift);
+</pre>
+<br>
+Source is the 32-bit pointer to the source data. Dest is the 32-bit pointer <br>
+to the destination data. Shift is the number of bits of shift desired,  and <br>
+should  be in the range 0 &lt;= shift =&lt; 15. It is strongly  recommended  that <br>
+the  <i>BITWT</i>  function NOT be called from C, as the equivalent  C  code  will <br>
+operate  faster in the general case. To use <i>BITWT</i> effectively, it  must  be <br>
+unrolled  into  the application's most common widths and  heights,  and  be <br>
+called as a unique function. The equivalent C code is as follows:<br>
+<br>
+<pre>
+     unsigned short *source,*dest;
+     int shift;
+
+
+     *(unsigned long *)dest |= (*source++ &lt;&lt; shift);
+     dest++;
+</pre>
+<br>
+                             <u>EXTBLT functions</u><br>
+<br>
+The  <i>EXTBLT</i> group has two functions, one which does pre-read, and one  that <br>
+does  not.  While this code may be used as-is, it is  strongly  recommended <br>
+that  when  using the DP8510 in a non-NS32CG16 environment the  circuit  be <br>
+designed to use a read-write mode with an extension of the write cycle to a <br>
+read-modify-write cycle, rather than a read-read-write mode. See the <i>EXTBLT</i> <br>
+listings for more information. <br>
+<br>
+The parameters for the <i>EXTBLT</i> functions are as shown:<br>
+<br>
+<pre>
+     extblt(source,dest,width,height,horzincr,swarp,dwarp);
+     extbltp(source,dest,width,height,horzincr,swarp,dwarp);
+</pre>
+<br>
+Source is a 32-bit pointer to the source data. Dest is a 32-bit pointer  to <br>
+the  destination data. Width is the unsigned 32-bit quantity of the  number <br>
+of  words of <u>destination</u> data to operate on. Height is the unsigned  32-bit <br>
+height  of  the  BitBlt operation. Horzincr  is  the  Horizontal  Increment <br>
+(usually +2 or -2). Swarp is the adjusted source warp (Swarp = SourceWarp - <br>
+(width  in  bytes  -2)). Dwarp is the adjusted destination  warp  (Dwarp  = <br>
+DestWarp - (width in bytes -2)). <br>
+<hr/>
+                              <u>MOVMP functions</u><br>
+<br>
+The  <i>MOVMP</i>  group  allows  quick  filling of  byte,  word  or  double  word <br>
+quantities. The calling sequence is as follows:<br>
+<br>
+<pre>
+     movmpb(dest,pincr,count,pat);
+     movmpw(dest,pincr,count,pat);
+     movmpd(dest,pincr,count,pat);
+</pre>
+<br>
+Dest  is a 32-bit pointer to the destination data to be affected. Pincr  is <br>
+the pointer increment, applied to the dest pointer after each write.  Count <br>
+is  the unsigned 32-bit number of times to write the pattern (note: may  be <br>
+zero, meaning write no data). Pat is the 8, 16 or 32 bit pattern to write.<br>
+<br>
+                              <u>SBITPS function</u><br>
+<br>
+The  <i>SBITPS</i>  emulation allows runs of bits to be set, if the  distance  (in <br>
+bits)  between each is constant. This allows horizontal, vertical, and  45<sup>o</sup> <br>
+lines  to be drawn. It also assists in other line drawing  algorithms  (see <br>
+<i>NS32CG16 Graphics Applications Note 2, Drawing lines</i>). The calling sequence <br>
+for the <i>SBITPS</i> emulation is as follows:<br>
+<br>
+<pre>
+     sbitps(dest,bitoff,count,dwarp);
+</pre>
+<br>
+Dest  is a 32-bit pointer to the destination base address. Bitoff is a  32-<br>
+bit signed bit offset (may be in range -2^31 &lt; bitoff &lt; 2^31). Count is the <br>
+unsigned 32-bit count of the number of bits to be set (may be zero, meaning <br>
+set no bits). Dwarp is the signed 32-bit value which is added to the bitoff <br>
+following   each  operation.  By  maintaining  true  bit  positions,   this <br>
+instruction  may  draw vertical lines (Dwarp = + or - (warp *  (pixels  per <br>
+byte))),  horizontal lines (Dwarp = + or - 1) or 45<sup>o</sup> lines (Dwarp = + or  - <br>
+(warp * (pixels per byte)) + or - 1).<br>
+<br>
+<br>
+                              <u>SBITS function</u><br>
+<br>
+The <i>SBITS</i> emulation allows a number of contiguous bits to be set in memory. <br>
+This   allows   horizontal  lines  to  be  created.  The   emulation   also <br>
+automatically  invokes an algorithm to set large quantities of bits if  the <br>
+number  of  bits  to  set is above 25. This occurs  in  all  libraries.  An <br>
+alternate  entry  point (Xsbits) is available for exact  emulation  of  the <br>
+NS32CG16 <i>SBITS</i> instruction. This entry point does nothing if the number  of <br>
+bits to be set is above 25. In assembly language, this routine returns with <br>
+the flags set such that the <i>LT</i> condition is set if the number of bits to be <br>
+set  is  above 25, and the <i>GE</i> condition set if the number is less  than  or <br>
+equal to 25. The calling sequence for <i>SBITS</i> and <i>Xsbits</i> is:<br>
+<br>
+<pre>
+     sbits(dest,bitoff,count,table);
+     Xsbits(dest,bitoff,count,table);
+</pre>
+<br>
+Dest  is a 32-bit pointer to the destination base address. Bitoff is a  32-<br>
+bit signed bit offset (may be in range -2^31 &lt; bitoff &lt; 2^31). Count is the <br>
+unsigned 32-bit count of the number of bits to be set (may be zero, meaning <br>
+set  no bits). Table is the 32-bit pointer to the sbits table as  described <br>
+in  the  <i>Programmer's Reference Manual Supplement for  the  NS32CG16</i>.  This <br>
+table  is available in the library, by declaring an external  array  called <br>
+sbitstab, as shown below:<br>
+<br>
+<pre>
+     extern unsigned long sbitstab[ ];
+     sbits(dest,200,300,sbitstab);
+</pre>
+<br>
+The  <i>SBITS</i>  instruction  is significantly faster than  <i>SBITPS</i>  for  drawing <br>
+horizontal lines. <br>
+<br>
+                              <u>TBITS functions</u><br>
+<br>
+As  the tbits0 and tbits1 instructions return the results in the PSR,  they <br>
+are  not useful when called from C. There is no calling sequence for  these <br>
+instructions, but the assembly language emulations are available.<br>
+<br>
+<br>
+<u><b>5. Optimization notes</b></u><br>
+<br>
+When  using a <i>Series 32000</i> processor other than the NS32CG16 for  graphics, <br>
+these  emulation routines offer a good start to a fully optimized  package. <br>
+To continue the optimizations, here are some general hints.<br>
+<br>
+Customize  the instruction emulations for your particular  application.  If <br>
+the  most  common  character imaged, for example, is a 32 bit  by  54  line <br>
+character,  build  a  `special case' version of the  <i>BBFOR</i>  instruction  to <br>
+handle this. By unrolling the loops, as has been done for the 1 and 2  wide <br>
+cases  in  the  emulation libraries, registers can be freed  to  hold  more <br>
+temporary  values.  If the source or destination warps are  constant  in  a <br>
+common case, code these directly into the register offsets, as is shown  in <br>
+the  <i>EXTBLT</i>  example  code. To effectively reduce run  time,  minimize  the <br>
+number  of  instructions  executed (using the two-address  mode  of  <i>Series <br>
+32000</i>),  minimize the number of memory references, and minimize the  number <br>
+of loops.<br>
+<br>
+<br>
+<u><b>6. Conclusions</b></u><b></b><br>
+<br>
+The emulation routines presented in this applications note permit the  user <br>
+to  code  freely  in C, and execute  graphics-type  instructions  directly. <br>
+Development  and testing was performed on the SYS32/25 development  system. <br>
+Other  graphics  routines  and  applications  notes  have  been   developed <br>
+successfully using these routines.<br>
+<br>
+Full emulations of the NS32CG16-specific instructions allow migration of  a <br>
+product designed with the NS32CG16 to other <i>Series 32000</i> processors without <br>
+significant rewriting of the original code. This allows a product to have a <br>
+performance  span  from  the  NS32CG16-15 through  the  NS32332-15  to  the <br>
+NS32532-30 and beyond.<br>
+<br>
+</body></html>

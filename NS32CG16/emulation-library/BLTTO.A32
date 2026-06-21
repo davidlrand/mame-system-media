@@ -1,0 +1,713 @@
+.module	blt32.c
+.program
+.endseg
+.program
+; Version 1.2  Thu Apr  2 19:23:21 1987
+;
+;	Inputs:
+;		r0 = source address
+;		r1 = destination address
+;		r2 = shift value
+;		r3 = first mask
+;		r4 = second mask
+;		r5 = temporary 1
+;		r6 = temporary 2
+;		r7 = destination warp
+;
+;	Ouputs:
+;		Data in memory changed.
+;	
+
+blt32:
+;line 1
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 2
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+
+;line 3
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 4
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 5
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 6
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 7
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 8
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 9
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 10
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 11
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 12
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 13
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 14
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 15
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 16
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+
+;line 17
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 18
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+
+;line 19
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 20
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 21
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 22
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 23
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 24
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 25
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 26
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 27
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 28
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 29
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 30
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 31
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	andd	r3,r5		;destination mask it
+	movd	0(r1),r6	;get destination
+	comd	r3,r3		;complement mask
+	andd	r3,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	andd	r4,r5		;destination mask it
+	movd	2(r1),r6	;get destination
+	comd	r4,r4		;complement mask
+	andd	r4,r6		;mask destination
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+	addqd	2,r0
+	addd	r7,r1
+;line 32
+	movw	0(r0),r5	;pick up first word
+	lshd	r2,r5		;shift it to align
+	movd	0(r1),r6	;get destination
+	andd	r3,r6		;mask destination
+	comd	r3,r3		;complement mask
+	andd	r3,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,0(r1)	;and place in destination
+
+	movw	2(r0),r5	;get next word
+	lshd	r2,r5		;shift to align
+	movd	2(r1),r6	;get destination
+	andd	r4,r6		;mask destination
+	comd	r4,r4		;complement mask
+	andd	r4,r5		;destination mask it
+	ord	r5,r6		;merge with source
+	movd	r6,2(r1)	;and place in destination
+;	addqd	2,r0
+;	addd	r7,r1
+
+	ret	0
+
+	.static
+ctime:	double	0
+loopv:	double	0
+runlen:	double	0
+
+mess:	byte	10,'Total execution time for 3500 loops is %d msec',10,0
+mes1:	byte	10,'Enter run length to test for? ',0
+spec:	byte	'%d',0
+buf:	blkb	128
+	.align	4
+
+bits:	blkb	1024
+
+	.endseg
+
+_main:-	
+	movd	3500,loopv
+	movqd	0,tos
+	cxp	_timer
+	cmpqd	0,tos
+	movd	r0,ctime
+	movd	8,r2			;shift amount
+	movd	h'ffff,r3
+	movd	h'ffff,r4		;masks
+	movqd	4,r7			;destination warp
+
+	.align	4
+loop:
+	addrd	mess,r0			;source address
+	addrd	bits,r1			;destination address
+	bsr	blt32			;call the function
+	acbd	-1,loopv,loop		;and loop for more
+	
+	movqd	0,tos
+	cxp	_timer			;get current timer value
+	cmpqd	0,tos
+	subd	ctime,r0		;subtract start time
+	movd	r0,tos			;save on stact
+	addrd	mess,tos		;and place address of message
+	cxp	_printf
+	cmpd	tos,tos			;unstack
+	rxp	0			;and return
+
+	.importp _timer,_printf
+.endseg
+

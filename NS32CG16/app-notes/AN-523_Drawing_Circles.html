@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>
+AN-523_Drawing_Circles.ws
+</title></head><body>
+                   <b>Series 32000</b><br>
+<br>
+<br>
+                       <u><b>NS32CG16 Applications Note 1</b></u><b></b><br>
+<br>
+                     <u><b>Drawing circles with the NS32CG16</b></u><br>
+<br>
+<br>
+<u><b>1. Introduction</b></u><br>
+<br>
+The NS32CG16 is a 32-bit CMOS, graphics oriented processor. It is  software <br>
+compatible  with  other Series 32000(tm) CPUs, with  new  instructions  for <br>
+high-speed  graphics.  The  NS32CG16 is  designed  specifically  for  page-<br>
+oriented printing technologies such as laser, LCD, LED, Ion-Deposition, and <br>
+Ink Jet.<br>
+<br>
+In  this applications note, a method for high-speed circle generation  will <br>
+be described, using an optimized version of Bresenham's circle algorithm.<br>
+<br>
+<br>
+<u><b>2. Description</b></u><br>
+<br>
+A  circle can be described by the center coordinates (<i>xc, yc</i>),  the  radius <br>
+(<i>r</i>), and the width (<i>w</i>). With the Pythagorean theorem, pixels along the path <br>
+described by the equation:<br>
+<br>
+     <i>(x - xc)<sup>2</sup> + (y - yc)<sup>2</sup> = r<sup>2</sup></i><br>
+<br>
+can be set for a width of <i>w</i> perpendicular to the tangent of the arc.<br>
+<br>
+This, however, involves substantial computation for each point on the line. <br>
+Even  taking  advantage  of  the symmetry of circles,  a  large  number  of <br>
+instructions must be executed to calculate the path.<br>
+<br>
+Bresenham's  circle algorithm works by determining which of two pixels  are <br>
+nearer  the actual circle at each step. Then, using symmetry, eight  points <br>
+on  the circle's path can be determined. Applying the width (<i>w</i>) to each  of <br>
+these  eight points yields a displayed (or imaged) circle. For  the  actual <br>
+derivation of Bresenham's algorithm, see <i>Reference 1</i>, and <i>Reference 2</i>. This <br>
+derivation was done by J. Michener.<br>
+<br>
+Bresenham's algorithm can be implemented in the following manner:<br>
+<br>
+    1.    Select the first position for display as<br>
+                    (<i>x<sub>1</sub></i> , <i>y<sub>1</sub></i>) = (0 , <i>r</i>)<br>
+<br>
+    2.    Calculate the first parameter as<br>
+                    <i>p<sub>1</sub></i> = 3 - 2<i>r</i><br>
+<br>
+          If  <i>p<sub>1</sub></i>  &lt; 0, the next position is (<i>x<sub>1</sub></i> + 1 , <i>y<sub>1</sub></i>).  Otherwise,  the <br>
+          next position is (<i>x<sub>1</sub></i> + 1 , <i>y<sub>1</sub></i> - 1).<br>
+<hr/>
+    3.    Continue  to  increment  the  <i>x</i> coordinate  by  unit  steps,  and <br>
+          calculate each succeeding parameter <i>p</i> from the preceding one.  If <br>
+          for the previous parameter we found that <i>p<sub>i</sub></i> &lt; 0 then<br>
+<br>
+                    <i>p<sub>i+1</sub></i> = <i>p<sub>i</sub></i> + 4<i>x<sub>i</sub></i> + 6<br>
+<br>
+          Otherwise (for <i>p<sub>i</sub></i> &gt;= 0),<br>
+<br>
+                    <i>p<sub>i+1</sub></i> = <i>p<sub>i</sub></i> + 4(<i>x<sub>i</sub></i> - <i>y<sub>i</sub></i>) + 10<br>
+<br>
+          Then,  if  <i>p<sub>i+1</sub></i> &lt; 0 the next point selected is (<i>x<sub>i</sub></i> + 2  ,  <i>y<sub>i+1</sub></i>). <br>
+          Otherwise,  the  next  point  is  (<i>x<sub>i</sub></i> + 2 ,  <i>y<sub>i+1</sub></i>  -  1).  The  y <br>
+          coordinate is <i>y<sub>i + 1</sub></i> = <i>y<sub>i</sub></i> , if <i>p<sub>i</sub></i> &lt; 0 or <i>y<sub>i+1</sub></i> = <i>y<sub>i</sub></i> - 1 , <br>
+          if <i>p<sub>i</sub></i> &gt;= 0.<br>
+<br>
+    4.    Repeat the procedures in step 3 until the <i>x</i> and <i>y</i> coordinates are <br>
+          equal.<br>
+<br>
+<br>
+<u><b>3. Implementation</b></u><br>
+<br>
+With the path of the circle described, the pixels along the path can be set <br>
+using the basic symmetry of the circle. Below is an example of  Bresenham's <br>
+circle algorithm in the C language, based on Michener's derivation.<br>
+<br>
+<pre>
+circle(xc,yc,radius,width)
+register unsigned int xc,yc,radius,width;
+{
+    register int y, x, p;
+    x = 0;
+    y = radius;
+    p = 3 - 2 * radius;
+    while (x &lt; y) {
+        setgrp(xc,yc,x,y,width);
+        if (p &lt; 0)
+            p += 4 * x + 6;
+        else {
+            p += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+    if (y == x)
+        setgrp(xc,yc,x,y,width);
+}
+/* Listing continues on following page */
+</pre>
+<hr/>
+<pre>
+setgrp(xc,yc,x,y,width)
+register int xc,yc,x,y,width;
+{
+    if ((y - x) &lt;= (width / 2) {
+        hset(xc + y, yc + x,width);
+        hset(xc - y, yc + x,width);
+        hset(xc + y, yc - x,width);
+        hset(xc - y, yc - x,width);
+        vset(xc + x, yc + y,width);
+        vset(xc - x, yc + y,width);
+        vset(xc + x, yc - y,width);
+        vset(xc - x, yc - y,width);
+    } 
+    vset(xc + y, yc + x,width);
+    vset(xc - y, yc + x,width);
+    vset(xc + y, yc - x,width);
+    vset(xc - y, yc - x,width);
+    hset(xc + x, yc + y,width);
+    hset(xc - x, yc + y,width);
+    hset(xc + x, yc - y,width);
+    hset(xc - x, yc - y,width);
+}
+
+
+</pre>
+The  <i>setgrp</i>  routine  in the previous example uses symmetry  to  set  eight <br>
+points of the circle. <i>Setgrp</i> has a special case to handle the boundaries of <br>
+the  eight sections. When the distance between the boundaries is less  than <br>
+half the width of the circle, both vertical and horizontal lines are imaged <br>
+for  each  section. The <i>vset</i> routine sets <i>width</i> pixels  vertically  in  the <br>
+image,  centered  around the second argument. The <i>hset</i> routine  sets  <i>width</i> <br>
+pixels horizontally, centered around the first argument. Since these  cases <br>
+are  so well defined, the NS32CG16 instructions <i>SBITPS</i> and <i>SBITS</i>  are  used <br>
+for these routines.<br>
+<br>
+The  NS32CG16  implementation  is  very much like the  C  version,  but  is <br>
+optimized for speed. Note the use of the <i>ADDR</i> instruction to do the two  <i>p<sub>i</sub></i> <br>
+computations, each in one line of 32000 assembly code.<br>
+<br>
+<pre>
+        .data
+xwarp:        equ        2544                #bits of xwarp to get to next scan
+        .comm        _page,4
+hlfwdth:double        0
+        .text
+#
+#Bresenham's circle algorithm, as expressed in "Computer Graphics" by
+#Donald Hearn and M. Pauline Baker (1986, Pretice-Hall, 
+#ISBN 0-13-165382-2)
+#
+#        Inputs:
+#                r0 = x coodinate of centre of circle
+#                r1 = y coodinate of centre of circle
+#                r2 = width (in pixels)
+#                r3 = radius (in pixels)
+#
+#        Outputs:
+#                no registers altered
+#                circle drawn in ram
+#
+#Notes:
+#        This routine uses two special case line drawing routines:
+#                a horizontal case (called HLINE)
+#                a vertical case (called VLINE)
+#        A general purpose line drawing algorithm could be used, however
+#        the new 32CG16 instructions are much faster.
+#        If the line is to have a width of &gt; 25 pixels, the BIGSET algorithm
+#        must be added to the HLINE routine. No other changes are required.
+#
+circle:        save        [r4,r5,r6,r7]        #save our working registers
+        movd        r2,r7                #get current width
+        lshd        $-1,r7                #divide by two
+        movd        r7,hlfwdth        #and store it away
+        movqd        0,r4                #x1 = 0
+        movd        r3,r5                #y1 = radius
+        movqd        3,r6                #p = 3 - (radius * 2)
+        subd        r3,r6
+        subd        r3,r6
+        br        cirtest
+        .align        4
+cirlp:        bsr        setgrp                #set a group of points
+        cmpqd        0,r6                #is P less than zero?
+        blt        pge0                #no, it is not. skip
+        addr        6(r6)[r4:d],r6        #p += 4 * x1 + 6
+        addqd        1,r4                #x1 ++
+cirtest:cmpd        r4,r5                #is x1 &lt;= y1 ?
+        ble        cirlp                #it is. Loop
+        br        cirot1
+
+        .align        4
+pge0:        movd        r4,r7                #t = x1
+        subd        r5,r7                #t = x1 - y1
+        addr        10(r6)[r7:d],r6        #p += 4 * (x1 - y1) + 10
+        addqd        -1,r5                #y1 --
+        addqd        1,r4                #x1 ++
+        cmpd        r4,r5                #is x1 &lt;= y1 ?
+        ble        cirlp                #it is. Loop
+cirot1: bne     cirout          #if x1 != y1, get out
+        bsr     setgrp          #else set last group
+cirout:        restore        [r4,r5,r6,r7]        #restore working registers
+        ret        0                #and return
+
+
+
+
+
+#
+#Setgrp sets eight points on a circle, given starting x and y, and the
+#current xoffset and y offset.
+#
+#        Inputs:
+#                r0 = centerpoint of circle (x coodinate)
+#                r1 = centerpoint of circle (y coodinate)
+#                r2 = line width
+#                r4 = x offset
+#                r5 = y offset
+#
+#        Ouputs:
+#                all registers preserved.
+#
+        .align        4
+setgrp:        movd        r6,tos                #get two temporary values
+        movd        r7,tos
+        movd        r0,r6                #save old x
+        movd        r1,r7                #and y
+        movd        r5,r1
+        subd        r4,r1                #r1 = (y1 - x1)
+        cmpd        r1,hlfwdth        #if the difference is less than
+        ble        sg1:w                #half the width, fill in the edges
+        movd        r7,r1                #restore y
+        addd        r4,r0                #x += x1
+        addd        r5,r1                #y += y1
+        bsr        vline                #do a vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r4,r0                #x += x1
+        subd        r5,r1                #y -= y1
+        bsr        vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r4,r0                #x -= x1
+        addd        r5,r1                #y += y1
+        bsr        vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r4,r0                #x -= x1
+        subd        r5,r1                #y -= y1
+        bsr        vline
+
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r5,r0                #x += y1
+        addd        r4,r1                #y += x1
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r5,r0                #x += y1
+        subd        r4,r1                #y -= x1
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r5,r0                #x -= y1
+        addd        r4,r1                #y += x1
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r5,r0                #x -= y1
+        subd        r4,r1                #y -= x1
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        movd        tos,r7                #and unstack
+        movd        tos,r6
+        ret        0
+
+sg1:        movd        r7,r1                #restore y
+        addd        r4,r0                #x += x1
+        addd        r5,r1                #y += y1
+        bsr        hline                #do a hline
+        bsr        vline                #and a vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r4,r0                #x += x1
+        subd        r5,r1                #y -= y1
+        bsr        hline
+        bsr        vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r4,r0                #x -= x1
+        addd        r5,r1                #y += y1
+        bsr        hline
+        bsr        vline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r4,r0                #x -= x1
+        subd        r5,r1                #y -= y1
+        bsr        hline
+        bsr        vline
+
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r5,r0                #x += y1
+        addd        r4,r1                #y += x1
+        bsr        vline
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        addd        r5,r0                #x += y1
+        subd        r4,r1                #y -= x1
+        bsr        vline
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r5,r0                #x -= y1
+        addd        r4,r1                #y += x1
+        bsr        vline
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        subd        r5,r0                #x -= y1
+        subd        r4,r1                #y -= x1
+        bsr        vline
+        bsr        hline
+        movd        r6,r0                #restore x and y
+        movd        r7,r1
+        movd        tos,r7                #and unstack
+        movd        tos,r6
+        ret        0
+
+#
+#A vertical line drawing algorithm, making use of the SBITPS instruction.
+#
+#        Inputs:
+#                r0 = x coodinate of line
+#                r1 = centerpoint of y coordinate of line
+#                r2 = line length
+#
+#        Outputs:
+#                no registers altered.
+#                line drawn in memory.
+#
+        .align        4
+vline:        save        [r0,r1,r2,r3]        #save working registers
+        subd        hlfwdth,r1        #y -= half of width to centre vline
+        addr        @(xwarp-1),r3        #r3 = xwarp -1
+        indexd        r1,r3,r0        #bit off = y * (xwarp) + x
+        addqd        1,r3                #move to correct warp value
+        movd        _page,r0        #page address in r0
+        SBITPS                        #set bit perpendicular string
+        restore        [r0,r1,r2,r3]        #restore registers
+        ret        0
+
+#
+#A horizontal line drawing algorithm, using SBITS.
+#
+#        Inputs:
+#                r0 = centerpoint of x coordinate
+#                r1 = y coodinate of line
+#                r2 = line length
+#
+        .align        4
+hline:        save        [r0,r1,r3]        #save working registers
+        subd        hlfwdth,r0        #x -= half of width to centre values
+        indexd        r1,(xwarp - 1),r0 # bit off = (y * xwarp) + x
+        movd        _page,r0        #page address in r0
+        addr        stab,r3                #address of sbits table
+        SBITS
+        restore        [r0,r1,r3]
+        ret        0
+</pre>
+<br>
+<i>Figure  1</i> (attached) shows this algorithm 'at work'. 20 circles  of  radius <br>
+350 pixels, and widths of 1 to 20 pixels are shown. A full listing of  this <br>
+test program is attached as <i>Figure 2</i>.<br>
+<hr/>
+<u><b>4. Timing</b></u><br>
+<br>
+The  execution  speed of this algorithm is dependent on the radius  of  the <br>
+circle, and the circle's width. The test program supplied executes in  2.92 <br>
+seconds  on a NS32016 at 10 Mhz with no wait states. The execution time  on <br>
+the NS32CG16 at 15 Mhz with no wait states is 1.54 seconds. By using macros <br>
+for the VLINE and HLINE routines, instead of subroutine calls, the time can <br>
+be further reduced to 1.39 seconds.<br>
+<br>
+<br>
+<u><b>5. Conclusions</b></u><br>
+<br>
+The  NS32CG16  provides  several instructions that increase  the  speed  of <br>
+imaging  common  graphic items such as circles, lines,  and  ellipses.  The <br>
+NS32CG16's  high  code  density,  and fast execution,  make  it  ideal  for <br>
+intensive graphics processing.<br>
+<br>
+This  algorithm  does,  however, show an apparent  `thinning'  on  the  45<sup>o</sup> <br>
+boundaries,  when the width of the circle is greater than five  pixels.  An <br>
+alternate  algorithm will be presented in a future applications note.  This <br>
+algorithm is optimized for speed.<br>
+<br>
+<br>
+<u><b>6. References</b></u><br>
+<br>
+1. Hearn, Donald and M. Pauline Baker. (1986). <i>Computer Graphics</i>. Englewood <br>
+Cliffs, N.J.: Prentice-Hall, 65-69.<br>
+<br>
+2.  Foley,  James  D.  and  Van  Dam,  Andries.  (1982).  <i>Fundamentals   of <br>
+Interactive  Computer  Graphics</i>. Reading,  Massachusetts.:  Addison-Wesley, <br>
+441-446.<br>
+<br>
+</body></html>

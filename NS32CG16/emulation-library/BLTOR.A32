@@ -1,0 +1,355 @@
+.module	blt32.c
+.program
+.endseg
+.program
+; Version 1.1  Sun Mar 29 14:12:25 1987
+;
+;	Inputs:
+;		r0 = source address
+;		r1 = destination address
+;		r2 = shift value
+;		r3 = used as temporary
+;		r4 = used as temporary
+;		r5 = destination warp
+;
+;	Ouputs:
+;		Data in memory changed.
+;	
+
+blt32:
+;line 1
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 2
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 3
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 4
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+
+;line 5
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 6
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 7
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 8
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 9
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 10
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 11
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 12
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 13
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 14
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 15
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 16
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 17
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 18
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 19
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 20
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 21
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 22
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 23
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 24
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 25
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 26
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 27
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 28
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 29
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 30
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 31
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+	addqd	4,r0		;add source warp
+	addd	r5,r1		;add destination warp
+;line 32
+	movzwd	0(r0),r3	;pick up first
+	movzwd	2(r0),r4	;two source words
+	lshd	r2,r3		;shift source 1
+	ord	r3,0(r1)	;or into destination
+	lshd	r2,r4		;shift second (overlaps previous instr)
+	ord	r4,2(r1)	;or into destination
+;	addqd	4,r0		;add source warp
+;	addd	r5,r1		;add destination warp
+
+	ret	0
+
+	.static
+ctime:	double	0
+loopv:	double	0
+runlen:	double	0
+
+mess:	byte	10,'Total execution time for 3500 loops is %d msec',10,0
+mes1:	byte	10,'Enter run length to test for? ',0
+spec:	byte	'%d',0
+buf:	blkb	128
+	.align	4
+
+bits:	blkb	1024
+
+	.endseg
+
+_main:-	
+	movd	3500,loopv
+	movqd	0,tos
+	cxp	_timer
+	cmpqd	0,tos
+	movd	r0,ctime
+	movd	8,r2			;shift amount
+	movqd	4,r5			;dest warp
+
+	.align	4
+loop:
+	addrd	mess,r0			;source address
+	addrd	bits,r1			;destination address
+	bsr	blt32			;call the function
+	acbd	-1,loopv,loop		;and loop for more
+	
+	movqd	0,tos
+	cxp	_timer			;get current timer value
+	cmpqd	0,tos
+	subd	ctime,r0		;subtract start time
+	movd	r0,tos			;save on stact
+	addrd	mess,tos		;and place address of message
+	cxp	_printf
+	cmpd	tos,tos			;unstack
+	rxp	0			;and return
+
+	.importp _timer,_printf
+.endseg
+
