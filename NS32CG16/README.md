@@ -97,6 +97,14 @@ plain Series 32000, plus the demo and support code referenced by the Makefile.
 | [T.C](emulation-library/T.C)               | 1987-04-14 | Test driver |
 | [MAKEFILE](emulation-library/MAKEFILE)     | 1987-04-14 | Build |
 
+## Further reading
+
+- **[NS32CG16 Technical Design Handbook](https://bitsavers.org/components/national/ns32000/1988_NS32GC16_Technical_Design_Handbook.pdf)**
+  — NSC reference **630069-001** (1988, 172 pp), on bitsavers. The companion
+  handbook to the Programmer's Reference Supplement; it collects much of the
+  NS32CG16 design and programming material, including several of the application
+  notes listed above.
+
 ## See also
 
 The NS32CG16 graphics instructions are emulated in MAME's `ns32000` CPU core;
