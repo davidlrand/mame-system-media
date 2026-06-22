@@ -51,6 +51,8 @@ completeness; it can be replaced if a cleaner bitsavers-grade scan surfaces.
 
 ## Series 32000 Programmer's Reference Manual (Hunter)
 
+<img src="hunter_cover.jpg" alt="Series 32000 Programmer's Reference Manual — cover (Colin Hunter, Prentice-Hall, 1987)" width="240" align="right">
+
 Colin B. Hunter's **_Series 32000 Programmer's Reference Manual_** (Prentice-Hall,
 1987, ISBN 0-13-806936-0) — the architecture-level reference for the whole
 Series 32000 family: the programming model, addressing modes, the full
