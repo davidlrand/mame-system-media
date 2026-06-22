@@ -37,6 +37,18 @@ repository:
 The same scan has also been contributed to bitsavers. The entire collection in
 this folder is additionally mirrored in the Internet Archive item linked above.
 
+## The datasheet
+
+The **NS32CG16-10** device datasheet (82 pp) — the device-level reference for
+the part itself: pin-out, bus and timing characteristics, electrical
+specifications, and the graphics-instruction summary. It is the datasheet the
+application notes below refer back to.
+
+- [NS32CG16-10_Datasheet.pdf](NS32CG16-10_Datasheet.pdf)
+
+This copy is an aggregator scan (sourced via DigChip.com), included here for
+completeness; it can be replaced if a cleaner bitsavers-grade scan surfaces.
+
 ## Application notes (`app-notes/`)
 
 National's NS32CG16 application-note series. Each is the published PDF; for the
