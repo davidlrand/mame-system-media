@@ -109,6 +109,12 @@ The bring-up corrected several long-standing MAME device-model gaps
 and interrupt-acknowledge translation, i86 port-I/O wait-states, the
 84-key AT keyboard matrix); upstream submissions in progress.
 
+## See also
+
+- [ISA bus slave NS32016 processor board](https://hackaday.io/project/189965-isa-bus-slave-ns32016-processor-board)
+  — a related Hackaday project documenting an ISA-bus NS32016 coprocessor
+  card, with additional reference information.
+
 ## Provenance
 
 From the personal archives of David L. Rand, co-designer of the board.
