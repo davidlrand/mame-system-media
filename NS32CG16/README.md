@@ -105,6 +105,12 @@ plain Series 32000, plus the demo and support code referenced by the Makefile.
   NS32CG16 design and programming material, including several of the application
   notes listed above.
 
+- **[1986 NS32000 Series Databook](https://bitsavers.org/components/national/_dataBooks/1986_National_NS32000_Databook.pdf)**
+  — National's full Series 32000 databook (1986, ~90 MB), on bitsavers; also on
+  the [Internet Archive](https://archive.org/details/bitsavers_nationaldaNS32000Databook_89675465).
+  The device-level reference for the NS32016 core the NS32CG16 is built on — the
+  CPU, FPU (NS32081), MMU (NS32082), ICU (NS32202) and peripheral datasheets.
+
 ## See also
 
 The NS32CG16 graphics instructions are emulated in MAME's `ns32000` CPU core;
