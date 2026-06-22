@@ -49,6 +49,18 @@ application notes below refer back to.
 This copy is an aggregator scan (sourced via DigChip.com), included here for
 completeness; it can be replaced if a cleaner bitsavers-grade scan surfaces.
 
+## Series 32000 Programmer's Reference Manual (Hunter)
+
+Colin B. Hunter's **_Series 32000 Programmer's Reference Manual_** (Prentice-Hall,
+1987, ISBN 0-13-806936-0) — the architecture-level reference for the whole
+Series 32000 family: the programming model, addressing modes, the full
+instruction set, and the design rationale behind the architecture.
+
+- [Series_32000_Programmers_Reference_Manual_Hunter_1987.pdf](Series_32000_Programmers_Reference_Manual_Hunter_1987.pdf)
+
+> One of the best sources of knowledge on programming the 32000 series. Highly
+> recommended, I used it extensively over the years. — Dave Rand
+
 ## Application notes (`app-notes/`)
 
 National's NS32CG16 application-note series. Each is the published PDF; for the
