@@ -1,14 +1,9 @@
 # Xerox 820-II / 16-8 Expansion-Box Controller ROMs
 
-> **Update (2026-06):** the **rgd5 / EM-II box ROM is now identified and dumped** —
-> it is **`537p3682.rom`** (see [`537p3682.md`](537p3682.md)), the **WD1002-05**
-> driver, *not* a SASI/SA1403D ROM. The "rgd5 box" description further down is
-> corrected accordingly. The **RX024 (5.25" floppy) box ROM remains undumped**.
-> The broader correction (MAME `x1685s` is the WD1002-05 EM-II, the rgd5=SA1403D
-> assumption in `xerox820.cpp` is wrong) lands with the EM-II re-model.
-
-The RX024 floppy-box ROM is still undumped; nothing here should be mistaken for a
-dump unless it is documented as one (537p3682 is a real dump; see its `.md`).
+The **rgd5 / EM-II box ROM is dumped**: [`537p3682.rom`](537p3682.md) — the
+**WD1002-05** hard-disk/floppy driver, not a SASI/SA1403D ROM. The **RX024
+(5.25" floppy) box ROM is undumped**. Nothing here should be mistaken for a dump
+unless it is documented as one.
 
 ## The two boxes
 
