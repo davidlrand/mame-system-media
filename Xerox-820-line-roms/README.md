@@ -155,11 +155,6 @@ keystation tables. No LPK ROM file exists to include here.
 
 ### 824 material (from the "824 BIOS TEST DISK ... HORTON 12/23/81", B18D9)
 
-> `537p3682.rom` was previously listed here. It has been **re-identified as the
-> 16/8 EM-II (WD1002-05) controller box ROM and moved to
-> [`expansion-box/537p3682.rom`](expansion-box/537p3682.md)** — it was merely
-> *stored* on the 824 test disk, not part of the 824. See its `.md`.
-
 | File | Size | CRC32 | SHA1 | Origin | Validation |
 |---|---|---|---|---|---|
 | `expansion-box/537p3682.rom` | 4096 | `88f30a00` | `54d205e5a7ed80feb7cd06eddc863110fc655dde` | B18D9 + B13D16 `537P3682.ROM`, hex decode (byte-identical, verified) | **16/8 EM-II WD1002-05 box ROM** — `DSKDRV`@`$F4C1` matches the EM-II `INIT.MAC`; drives the WD1002-05 task file `$A8-$AF`; B13D16 has the `537P3682.Z80` disassembly. See `expansion-box/537p3682.md` |

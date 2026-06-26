@@ -16,11 +16,9 @@ unless it is documented as one.
   controller ROM at ports 0xB0-0xBF; `ddskld` loads its driver from it. The
   controller is a **Western Digital WD1002-05** (WD1010 Winchester+floppy combo,
   register-level task file at I/O ports **0xA8-0xAF**), driving a 5.25" ST-506
-  rigid + 5.25" floppies — **not** a Shugart SA1403D / SASI box. Its driver ROM
-  is **dumped**: [`537p3682.rom`](537p3682.rom) / [`537p3682.md`](537p3682.md)
-  (`DSKDRV`@`$F4C1`, matching the EM-II's `INIT.MAC`). (The earlier "SA1403D
-  SASI / SDVR" attribution for this box was wrong; SDVR/SA1403D is the **820-II
-  8" 8 MB** rigid box.)
+  rigid + 5.25" floppies. Its driver ROM is **dumped**:
+  [`537p3682.rom`](537p3682.rom) / [`537p3682.md`](537p3682.md)
+  (`DSKDRV`@`$F4C1`, matching the EM-II's `INIT.MAC`).
 
 ## What MAME uses instead
 
