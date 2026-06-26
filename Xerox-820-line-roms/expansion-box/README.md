@@ -1,8 +1,14 @@
-# Xerox 820-II / 16-8 Expansion-Box Controller ROMs — UNDUMPED
+# Xerox 820-II / 16-8 Expansion-Box Controller ROMs
 
-No ROM binaries live in this directory on purpose. The two expansion-box
-controller ROMs are **undumped**; nothing here should be mistaken for a dump,
-and none has been fabricated.
+> **Update (2026-06):** the **rgd5 / EM-II box ROM is now identified and dumped** —
+> it is **`537p3682.rom`** (see [`537p3682.md`](537p3682.md)), the **WD1002-05**
+> driver, *not* a SASI/SA1403D ROM. The "rgd5 box" description further down is
+> corrected accordingly. The **RX024 (5.25" floppy) box ROM remains undumped**.
+> The broader correction (MAME `x1685s` is the WD1002-05 EM-II, the rgd5=SA1403D
+> assumption in `xerox820.cpp` is wrong) lands with the EM-II re-model.
+
+The RX024 floppy-box ROM is still undumped; nothing here should be mistaken for a
+dump unless it is documented as one (537p3682 is a real dump; see its `.md`).
 
 ## The two boxes
 
@@ -10,10 +16,16 @@ and none has been fabricated.
   ROM is read by the host through ports 0xB0-0xBF (select latch at 0x1C);
   the v5.0 monitor's `ddskld` loader pulls the WDVR (WD1797) floppy driver
   out of it at boot.
-- **rgd5 box** — the 5.25" rigid disk unit ("Expansion Box II", XR rev 500;
-  SASI rigid + floppies via a Shugart SA1403D). Box ID 0x21 at port 0xA6,
-  controller ROM at ports 0xB0-0xBF; `ddskld` loads the SDVR (SA1403D SASI)
-  driver from it.
+- **rgd5 box / EM-II (Disk Expansion Module, product F89)** — the 5.25" rigid
+  disk unit ("Expansion Box II", XR rev 500). Box ID 0x21 at port 0xA6,
+  controller ROM at ports 0xB0-0xBF; `ddskld` loads its driver from it. The
+  controller is a **Western Digital WD1002-05** (WD1010 Winchester+floppy combo,
+  register-level task file at I/O ports **0xA8-0xAF**), driving a 5.25" ST-506
+  rigid + 5.25" floppies — **not** a Shugart SA1403D / SASI box. Its driver ROM
+  is **dumped**: [`537p3682.rom`](537p3682.rom) / [`537p3682.md`](537p3682.md)
+  (`DSKDRV`@`$F4C1`, matching the EM-II's `INIT.MAC`). (The earlier "SA1403D
+  SASI / SDVR" attribution for this box was wrong; SDVR/SA1403D is the **820-II
+  8" 8 MB** rigid box.)
 
 ## What MAME uses instead
 
