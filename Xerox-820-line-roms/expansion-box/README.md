@@ -1,42 +1,36 @@
 # Xerox 820-II / 16-8 Expansion-Box Controller ROMs
 
-The **rgd5 / EM-II box ROM is dumped**: [`537p3682.rom`](537p3682.md) — the
-**WD1002-05** hard-disk/floppy driver, not a SASI/SA1403D ROM. The **RX024
-(5.25" floppy) box ROM is undumped**. Nothing here should be mistaken for a dump
-unless it is documented as one.
+The 16/8's 5.25" disk expansion is the **DEM (Disk Expansion Module / "Expansion
+Box II" / EB2)** — a **Western Digital WD1002-05** controller (WD1010
+Winchester+floppy combo), driven register-level through a task file at I/O ports
+**0xA8-0xAF**. Its box ROM is **dumped**: [`537p3682.rom`](537p3682.md), the
+unified WD1002-05 driver (floppy on drive units 0-3, rigid on 4-7).
 
-## The two boxes
+## DEM configurations
 
-- **RX024 box** — the v5.0-era 5.25" floppy expansion box. Its controller
-  ROM is read by the host through ports 0xB0-0xBF (select latch at 0x1C);
-  the v5.0 monitor's `ddskld` loader pulls the WDVR (WD1797) floppy driver
-  out of it at boot.
-- **rgd5 box / EM-II (Disk Expansion Module, product F89)** — the 5.25" rigid
-  disk unit ("Expansion Box II", XR rev 500). Box ID 0x21 at port 0xA6,
-  controller ROM at ports 0xB0-0xBF; `ddskld` loads its driver from it. The
-  controller is a **Western Digital WD1002-05** (WD1010 Winchester+floppy combo,
-  register-level task file at I/O ports **0xA8-0xAF**), driving a 5.25" ST-506
-  rigid + 5.25" floppies. Its driver ROM is **dumped**:
-  [`537p3682.rom`](537p3682.rom) / [`537p3682.md`](537p3682.md)
-  (`DSKDRV`@`$F4C1`, matching the EM-II's `INIT.MAC`).
+One WD1002-05 box, one box ROM (`537p3682`), two drive complements. The v5.0
+monitor's `ddskld` reads the box ID at port 0xA6 and loads the driver from the
+box's paged ROM (ports 0xB0-0xBF) identically for both; the ID only records
+whether a rigid is present:
 
-## What MAME uses instead
+- **flpy5** — floppy-only DEM. Box ID **0x20** → config `flpy5id` **0x14**
+  (`c.five`+`c.eb2`); two 5.25" floppies.
+- **rgd5** — rigid + floppy DEM ("16/8 5.25" rigid unit"). Box ID **0x21** →
+  config `rgd5id` **0x24** (`c.rgd5`+`c.eb2`); one 5.25" ST-506 rigid (Shugart
+  "712", 11 MB) + one 5.25" floppy.
 
-The MAME driver (`src/mame/xerox/xerox820.cpp`, `rx024_rom_r()` /
-`rgd5_rom_r()`) serves **reconstructions** of these ROMs, generated from the
-recovered Balcones driver source — not from dumps:
+`537P3682`'s `SELECT` dispatches by drive number (<4 → floppy via `SMF`, >=4 →
+rigid); `DSKDRV`@`$F4C1` matches the DEM's `INIT.MAC`. See
+[`537p3682.md`](537p3682.md). `537p3682` is dumped from the rgd5-config material;
+a floppy-only DEM may ship a stripped build, but none has been dumped separately.
 
-- `WDVR.HEX` / `WD1797.MAC` — the WD1797 physical floppy driver
-  (v4.0-era build `6c4b0e06` on B16D35; v5.0-era `2cc863eb` on B16D40/B23D13)
-- `SDVR.HEX` / `SA1403.MAC` — the SA1403D SASI physical driver
-  (`11468ce3`, identical on B16D35/B16D40/B23D13)
+## Related drivers (separate subsystems, not the DEM)
 
-The published copies of that source and the assembled driver images are in
-[`../../Xerox-820-16-8/source/rom-v50/`](../../Xerox-820-16-8/source/rom-v50/)
-(`sdvr.hex`, `wdvr.hex`, `sa1403.mac`, `sa1403-525.mac`, `wd1797.mac`,
-`sdvr5.bin`, plus the linker pieces). The drivers are authentic period
-Balcones code; only the box-ROM *packaging* around them (header/loader
-glue actually burned into the box controller ROMs) is reconstruction.
+- **WDVR / `WD1797.MAC`** — the WD1797 driver for the **main-board** floppies
+  (8", and the non-EB2 5.25" daughterboard). Not an expansion box.
+- **SDVR / `SA1403.MAC`** — the Shugart **SA1403D** SASI driver for the **820-II
+  8" 8 MB rigid box** (`c.sasi` config) — a different expansion box, box ROM
+  undumped.
 
-If a real RX024 or rgd5 box surfaces, its controller ROM(s) should be dumped
-and placed here, and the MAME reconstruction retired.
+Source for both is published in
+[`../../Xerox-820-16-8/source/rom-v50/`](../../Xerox-820-16-8/source/rom-v50/).
