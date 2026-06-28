@@ -48,6 +48,19 @@ SCSI loaders, and a signature+checksum autoboot. Build steps + the boot-block
 format are in [`roms/et532/README.md`](roms/et532/README.md); the hardware
 reference is [`docs/et532_hardware.md`](docs/et532_hardware.md) §9.
 
+### Dual-boot ROM (`roms/dualboot/`)
+
+A reset EPROM that **is** the OS loader — no monitor handoff. It probes the two
+SCSI controllers and boots the OS the live one implies: **AIC6250 → UNIX System V**
+(loads `/unix` off slice `0s0`), **DP8490 → NetBSD**. `pcrom.bin` (32 KB, CRC32
+`ed5d7a78`) is the built binary; the source (`bootsel.c`, `pc532romstart.s`,
+`aic_live.c`, `dp8490.c`, `coffbin.c`, `hexout.c`) and the build recipe
+(`mkrom.sh`) are in the folder. Add it to `src/mame/homebrew/pc532.cpp` as a BIOS
+option and select with `-bios dualboot` — it boots the System V distribution in
+[`disks/`](disks/) straight to the console. The AIC6250/System V path is tested;
+the DP8490/NetBSD path is still static. Details in
+[`roms/dualboot/README.md`](roms/dualboot/README.md).
+
 ## Running it
 
 The PC532 has no removable media — you bootstrap an OS over the serial console
@@ -91,10 +104,39 @@ with the two ncr5380 SCSI fixes (see `disks/README.md`); a mamedev PR is planned
 
 See `tools/README.md` for the exact protocol and the harness API.
 
+### Booting System V (the distribution disk)
+
+![PC532 booting UNIX System V Release 2.0 in MAME via the dual-boot ROM](docs/images/PC532-sysv-boot.png)
+
+*The dual-boot ROM detects the AIC6250 disk and boots UNIX System V Release 2.0 to
+single-user — `probe AIC6250... live -> System V`, the COFF load of `/unix`, the
+kernel banner, then `mount /dev/dsk/0s1 /usr`.*
+
+`disks/pc532_sysv.chd.gz` is a binary **UNIX System V Release 2.0 / NS32000**
+distribution — the native PC532 System V port (the ICM-3216 SVR lineage). Build
+MAME with the dual-boot ROM (`roms/dualboot/`) added as a BIOS option, then:
+
+```
+gunzip disks/pc532_sysv.chd.gz
+mame pc532 -bios dualboot -scsi:1 harddisk -hard2 disks/pc532_sysv.chd
+```
+
+The disk goes on the **AIC6250** bus at target 1 (`-scsi:1 harddisk`) and is the
+*second* harddisk image (`-hard2`, after the DP8490 bus's default `slot:0` =
+`-hard1`); a bare `-hard` would put it on the DP8490 bus where the ROM's AIC6250
+probe never finds it. The ROM auto-detects the AIC6250 disk and boots `/unix` off
+`0s0` to the System V console. The disk's slices: `0s0` = `/`, `0s1` = `/usr`,
+`0s5` = swap, with `0s2` and `0s3` free. Until it merges, this also needs the mc68681 console fix
+([#15564](https://github.com/mamedev/mame/pull/15564)). Disk format, geometry and
+provenance are in [`disks/README.md`](disks/README.md); System V is AT&T-licensed,
+so this is a **binary-only** image — no System V source is redistributed.
+
 ## Other operating systems
 
 - **Minix 1.3/pc532** — a community port; boots from SCSI disk.
-- **System V** — a native NS32000 SVR port (see the ICM-3216 lineage).
+- **System V Release 2.0** — a native NS32000 port (the ICM-3216 SVR lineage); a
+  ready-to-run binary distribution disk ships here — see
+  [Booting System V](#booting-system-v-the-distribution-disk) above.
 
 ## ET532 — the Ethernet/serial variant
 

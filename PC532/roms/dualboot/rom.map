@@ -1,0 +1,27 @@
+/*
+ * pc532 ROM-resident bootloader link map -- AT&T SVR2 `ld' dialect.
+ *
+ * Modelled on the icm3216 stand/pivot/rommon/map.file (the ROM monitor built
+ * on the ICM-3216's own System V).  The original rom.map used GNU-ld AT>/
+ * LOADADDR (Bruce Culbertson's NetBSD/pc532 build environment), which the SVR2
+ * build-host `ld' does not have.
+ *
+ * SVR2 idiom: with `.text >rom' and `.data >ram', the AT&T ld still writes
+ * .text then .data CONTIGUOUSLY into the a.out, so the initialised .data image
+ * lands in ROM at _etext.  The reset prologue (pc532romstart.s) copies it
+ *   _etext (ROM)  ->  0x200000 (.data VMA, = ram org)   for (_edata-0x200000) bytes
+ * then zeroes .bss (_edata.._end).  No AT>/__datarom machinery needed.
+ *
+ *   .text -> EPROM @ 0x10000000 (32KB; also overlaid at phys 0 at reset).
+ *   .data -> VMA in RAM @ 0x00200000 (image carried in ROM after .text).
+ *   .bss  -> RAM after .data.
+ */
+MEMORY {
+	rom : org = 0x10000000, len = 0x8000
+	ram : org = 0x00200000, len = 0x00100000
+}
+SECTIONS {
+	.text : { } >rom
+	.data : { } >ram
+	.bss : { } >ram
+}
