@@ -81,8 +81,8 @@ lineage). `gunzip` it to `pc532_sysv.chd` before mounting.
 | Disk | Seagate ST-296 class, 84 MB, one SCSI drive on the AIC6250 (target 1) |
 | Geometry | 1024 cyl × 6 heads × 27 sec, 512 B/sec = 84,934,656 bytes (165,888 sectors) |
 | CHD | v5, uncompressed; 22 MB on disk (sparse from the 84.9 MB logical image) |
-| Distributed as | `pc532_sysv.chd.gz` — gzip −9, 6.0 MB; SHA1 `94f80ea4988ed69f0685229a437b2861c9e34cda` |
-| `pc532_sysv.chd` | SHA1 `3951cef25abed1165e8d4e1b298e000caad460a4` (after `gunzip`) |
+| Distributed as | `pc532_sysv.chd.gz` — gzip −9, 6.0 MB; SHA1 `5b0f7a17f1299f0189c0acb0dcbc01bbd85f208a` |
+| `pc532_sysv.chd` | SHA1 `2fa17266dec764e288c3a6999e485af1b56515c2` (after `gunzip`) |
 
 ### Disk format
 
