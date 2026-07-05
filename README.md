@@ -17,6 +17,7 @@ archive — not here.
 | [`toshiba-t250-t200/`](toshiba-t250-t200/) | Toshiba T-250 (8") / T-200 (5.25") CP/M (8085) | [mamedev/mame#15372](https://github.com/mamedev/mame/pull/15372) |
 | [`bigboard2/`](bigboard2/) | Big Board II (Digital Research Computers, Z80 CP/M) | [mamedev/mame#15412](https://github.com/mamedev/mame/pull/15412) |
 | [`trs80-model3-cpm/`](trs80-model3-cpm/) | TRS-80 Model III CP/M ("CP/M Cheap" mod, Z80) | patch in folder (not upstreamed) |
+| [`Xerox-820/`](Xerox-820/) | Xerox 820 / 820-II loose disk media (Z80 CP/M and application disks) | in mamedev (`x820`, `x820ii`, `x820ii5`, `x820iilp`, `x820iis`) |
 | [`Xerox-820-16-8/`](Xerox-820-16-8/) | Xerox 16/8 (820-II Z80 CP/M-80 + 8086 coprocessor, CP/M-86) | [mamedev/mame#15485](https://github.com/mamedev/mame/pull/15485) |
 | [`Xerox-820-line-roms/`](Xerox-820-line-roms/) | Xerox 820 line ROM lineage (820, 820-II, 16/8; sources + recovered sets) | [mamedev/mame#15485](https://github.com/mamedev/mame/pull/15485) |
 | [`ADE-MK3000/`](ADE-MK3000/) | ADE Elettronica MK3000 / MK-83 (Z80 CP/M, multi-format disk gateway) | [mamedev/mame#15489](https://github.com/mamedev/mame/pull/15489) |

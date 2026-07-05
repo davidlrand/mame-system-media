@@ -146,12 +146,27 @@ image below.
 | `hardware/chargen/x820ii.u58` | 820-II v4.0x (= part 537P2849) | 2048 | `aca4b9b3` | `77f41470b0151945b8d3c3a935fc66409e9157b3` | MAME `x820ii` | board dump; part number established via B13D17 `537P2849.U58` |
 | `hardware/chargen/u57.04.north.rom` | 820-II/16-8 v5.0 | 2048 | `eda727a2` | `292cd8a0dc6699c3a2091b20c0fc63d97a266fbf` | MAME `x820ii` | board dump |
 | `hardware/chargen/u58.03.north.rom` | 820-II/16-8 v5.0 | 2048 | `a2e514f3` | `8ac22dd0cf0324a857718adf67b41912864893a3` | MAME `x820ii` | board dump |
-| `hardware/keyboard/820iikey.bin` | 820-II/16-8 standard (G25) keyboard | 1024 | `8ea3b39b` | `3f05959f54a558b273567b1b4f0c7cdf46d8d9bf` | MAME `x820kb` | board dump (8748 MCU inside the keyboard); implements both the plain-ASCII G25 layout and a strap-selected bit-paired layout — protocol notes in `../Xerox-820-16-8/docs/g25-keyboard.md` |
+| `hardware/keyboard/820iikey.bin` | 820-II/16-8 **X928 ASCII** keyboard | 1024 | `8ea3b39b` | `3f05959f54a558b273567b1b4f0c7cdf46d8d9bf` | MAME `x820kb` | board dump (8748 MCU inside the keyboard); the standard detached keyboard (Product Code **#X928**), sends single-byte codes over the strobed parallel bus; a strap selects typewriter-paired vs bit-paired ASCII output.  Protocol notes in `../Xerox-820-16-8/docs/x928-keyboard.md` |
 
-The **Low Profile Keyboard** (spec 156P82508, position-encoded, 97 keystations
-US / 100 RX) contains its own — **undumped** — microcontroller; MAME's
-`xerox_lpk` device is a high-level emulation reconstructed from the LPKYBD.MAC
-keystation tables. No LPK ROM file exists to include here.
+The **Low Profile Keyboard** (Product Code **#G25**; spec 156P82508,
+position-encoded, 97 keystations US / 100 RX) contains its own — **undumped** —
+microcontroller; MAME's `xerox_lpk` device is a high-level emulation
+reconstructed from the LPKYBD.MAC keystation tables. No LPK ROM file exists to
+include here.
+
+The G25 sends *position* codes (a make/break + shift-state prefix byte, then a
+scan byte) — it does **not** send ASCII.  The host **u36** ROM's translation
+table converts position → character, so the u36 version sets the character
+layout:
+
+- **`rx024` = bit-paired ASCII** (shift-2=`"`, shift-6=`&`, shift-8=`(`, shift-0=`=`)
+- **`v018` (`537p10831`) = typewriter ASCII** (shift-2=`@`, shift-6=`^`, shift-8=`*`, shift-0=`)`) — the standard-US layout the G25 keytops actually show.
+
+The B23D13 v5.0 source disk carries a single u36 (`U36-V18.ROM` = `537p10831`,
+`cda7f598`), so **v5.0's u36 is the typewriter build** — the one MAME's `v50`
+loads.  The G25 ships on the 16/8 EM-II (`x168em`) and the low-profile 820-II
+(`x820iilp`); the 8" / 5.25" / SASI 16/8 (`x168` / `x1685` / `x168s`) ship the
+X928 ASCII keyboard above.
 
 ### 824 material (from the "824 BIOS TEST DISK ... HORTON 12/23/81", B18D9)
 

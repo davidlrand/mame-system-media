@@ -57,4 +57,4 @@ undumped (it is keyboard-specific). Included for completeness/comparison.
 
 | File | CRC32 | SHA1 | Notes |
 |---|---|---|---|
-| `820iikey.bin` | `8ea3b39b` | `3f05959f…` | Intel 8748 (1 KB) microcontroller firmware in the keyboard itself. It implements **two** selectable layouts — the standard plain-ASCII **G25** layout and a strap-selected bit-paired/Teletype layout. Reverse-engineered protocol + both encodings in [`../docs/g25-keyboard.md`](../docs/g25-keyboard.md). |
+| `820iikey.bin` | `8ea3b39b` | `3f05959f…` | Intel 8748 (1 KB) microcontroller firmware in the **X928 ASCII** keyboard (the standard detached keyboard). It implements **two** strap-selectable layouts — the standard plain-ASCII (typewriter) layout and a bit-paired/Teletype layout.  Reverse-engineered protocol + both encodings in [`../docs/x928-keyboard.md`](../docs/x928-keyboard.md). |

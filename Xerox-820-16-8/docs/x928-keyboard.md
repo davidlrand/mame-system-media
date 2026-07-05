@@ -1,8 +1,14 @@
-# The Xerox G25 keyboard — interface & protocol
+# The Xerox X928 ASCII keyboard — interface & protocol
 
-This documents the Xerox 820-II / 16-8 detached keyboard well enough to **build
-a compatible one** (or a microcontroller emulation of one). It was reverse-
-engineered from two sources:
+> This documents the **X928** — the standard detached 820-II/16-8 ASCII keyboard,
+> built around an Intel 8748 MCU that sends single-byte codes over a strobed
+> parallel bus.  The line's other detached keyboard, the position-encoded **G25
+> Low Profile Keyboard** (scan codes decoded by the host u36 ROM), is a separate
+> device — see the `Xerox-820-line-roms` README.
+
+This documents the Xerox 820-II / 16-8 detached ASCII keyboard well enough to
+**build a compatible one** (or a microcontroller emulation of one). It was
+reverse-engineered from two sources:
 
 1. the keyboard-handling code in the **820-II Technical Reference** monitor
    BIOS (the host side — how the Z80 expects to be talked to), and
@@ -74,9 +80,9 @@ digits, the usual punctuation, and a real `]` key — the shipped keyboard is
 The same `820iikey.bin` supports **two** keyboard layouts, selected by a hardware
 **strap** the firmware reads on test input T0 (8748 `jt0`):
 
-- **Strap high (shipped / G25): standard US-ASCII layout.** The alternate
+- **Strap high (shipped): standard US-ASCII (typewriter) layout.** The alternate
   remap below is bypassed. This is the layout the 820-II/16-8 actually ships
-  with, and the one a G25-compatible keyboard should reproduce.
+  with, and the one a compatible X928 keyboard should reproduce.
 - **Strap low: an alternate bit-paired / Teletype (ANSI X3.23-style) layout.**
   The firmware overlays a remap table at ROM offset **`0x21C`** — twelve
   3-byte entries `[8748 scancode, unshifted ASCII, shifted ASCII]`:
