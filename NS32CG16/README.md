@@ -49,6 +49,12 @@ application notes below refer back to.
 This copy is an aggregator scan (sourced via DigChip.com), included here for
 completeness; it can be replaced if a cleaner bitsavers-grade scan surfaces.
 
+The companion **DP8510 BitBlt Processing Unit (BPU)** datasheet — the external
+BPU that the NS32CG16's BitBlt instruction drives (see the overview above) — is
+included alongside it:
+
+- [DP8510.PDF](DP8510.PDF)
+
 ## Series 32000 Programmer's Reference Manual (Hunter)
 
 <img src="hunter_cover.jpg" alt="Series 32000 Programmer's Reference Manual — cover (Colin Hunter, Prentice-Hall, 1987)" width="240" align="right">
@@ -58,7 +64,8 @@ Colin B. Hunter's **_Series 32000 Programmer's Reference Manual_** (Prentice-Hal
 Series 32000 family: the programming model, addressing modes, the full
 instruction set, and the design rationale behind the architecture.
 
-- [Series_32000_Programmers_Reference_Manual_Hunter_1987.pdf](Series_32000_Programmers_Reference_Manual_Hunter_1987.pdf)
+A commercially published book (still in copyright), so it is **not redistributed
+here** — listed as the definitive architecture-level reference for the family.
 
 > One of the best sources of knowledge on programming the 32000 series. Highly
 > recommended, I used it extensively over the years. — Dave Rand
