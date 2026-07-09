@@ -1,0 +1,4086 @@
+Siemens PC-MX2
+Betriebsanleitung
+
+
+
+
+Ausgabe März 1987 (PC-MX2 V2.1A)
+  Bestell-Nr. U2606-J-Z96-2
+  Printed in the Federal Republic of Germany
+  2700 AG 3874. (3350)
+
+
+SINIX ist der Name der Siemens-Version des
+Softwareproduktes XENIX.
+XENIX ist ein Warenzeichen der Microsoft Corporation.
+XENIX ist aus dem UNIX-System III unter Lizenz der Firma AT & T
+entstanden.
+
+Copyright © an der Übersetzung Siemens AG, 1984, alle Rechte
+Vorbehalten.
+
+Vervielfältigung dieser Unterlage sowie Verwertung ihres Inhalts
+unzulässig, soweit nicht ausdrücklich zugestanden.
+
+Im Laufe der Entwicklung des Produktes können aus technischen
+oder wirtschaftlichen Gründen Leistungsmerkmale hinzugefügt
+bzw. geändert werden oder entfallen. Entsprechendes gilt für
+andere Angaben in dieser Druckschrift.
+                                                                   78211
+
+
+
+
+Siemens Aktiengesellschaft
+Vorwort
+
+Der Inhalt dieser Betriebsanleitung ist so verfaßt, daß Sie ohne Vorkennt­
+nisse Ihren PC-MX2 in Betrieb nehmen können. Bitte führen Sie alle
+Anweisungen in der beschriebenen Reihenfolge aus. Auf diese Weise ver­
+meiden Sie Fehler und kommen zügig voran.
+Die Ziffern in den eckigen Klammern verweisen auf das Literaturverzeich­
+nis am Ende des Manuals.
+Der folgende Abschnitt gibt Ihnen einen kurzen Überblick über den Inhalt
+dieser Betriebsanleitung:
+
+
+Vorstellen
+Kapitel 1 stellt die Hard- und Software des PC-MX2 mit den möglichen
+Ausbaustufen vor.
+
+
+Hardware installieren
+Kapitel 2 beschreibt die Installation Ihres PC-MX2 und seiner Peripherie
+vom Auspacken, Aufstellen, Verkabeln, in Betrieb nehmen bis zur Pflege­
+anleitung in detaillierten Arbeitsschritten.
+
+
+SINIX installieren
+Kapitel 3 beschreibt, wie Sie Ihren PC-MX2 erstmalig installieren und
+konfigurieren, eine Teilkonfigurierung durchführen, zusätzliche Software
+laden, Ihr SINIX-System sichern und die Systemuhr stellen.
+
+
+Standortwechsel
+Kapitel 4 zeigt, worauf Sie bei einem Transport Ihres PC-MX2 achten
+müssen.
+Fehlersuche
+Kapitel 5 beschreibt, wie Sie etwaige Fehler erkennen und selbst beheben
+können.
+
+
+Test- und Diagnosesystem TDS2
+Kapitel 6 beschreibt das Produkt TDS2, mit dessen Hilfe Sie etwaige
+Fehler und Störungen Ihres Systems selbst erkennen und beheben können.
+
+
+Eine Bitte an Sie
+Keine Dokumentation kann perfekt sein. Eine Dokumentation lebt. Sie
+lebt auch von Ihren Anregungen, Ideen oder Verbesserungsvorschlägen.
+Helfen Sie uns, indem Sie uns Ihre ’’Stolpersteine” mitteilen, damit wir sie
+aus dem Weg räumen können.
+
+
+
+Manualredaktion K D ST QM2
+Otto-Hahn-Ring 6, 8 München 83
+Inhalt
+
+1        Vorstellen.....................................................................................1-1
+1.1      System einheit..............................................................................1-2
+1.2      B edieneinheiten.........................................................................1-4
+1.3      D ru c k er....................................................................................... 1-4
+1.4      M agnetband-Streamer............................................................... 1-4
+
+2        Hardware installieren.................................................................2-1
+2.1      Wahl des A ufstellungsortes..................................................... 2-1
+2.2      PC-MX2 auspacken               ............................................................... 2-2
+2.3      PC-MX2 a u fs te lle n ....................................................................2-4
+2.3.1    Montieren des B ild s c h ir m s ..................................................... 2-4
+2.3.2    Aufstellen der System einheit..................................................... 2-5
+2.4      PC-MX2 v e rk a b e ln ....................................................................2-6
+2.4.1    Bedieneinheit (und Bildschirm) mit Tastatur verkabeln . . 2-6
+2.4.2    Bedieneinheit (Konsole) mit Systemeinheit verkabeln . . 2-8
+2.4.3    Zusätzliche Bedieneinheiten und Drucker
+         mit Systemeinheit v e rk a b e ln ................................................... 2-10
+         Standard-Anschluß über Schnittstelle S S 9 7 ........................... 2-11
+         Fernanschluß über 4-Draht-Standleitungen/AFP . . . . 2-13
+2.4.4    MB-Streamer v e r k a b e l n ........................................................ 2-19
+2.4.5    Systemeinheit an Datennetze a n s c h lie ß e n ........................... 2-21
+2.5      PC-MX2 in Betrieb n e h m e n ................................................... 2-23
+2.5.1    Systemeinheit in Betrieb n e h m e n ..........................................2-23
+2.5.2    Bedieneinheiten in Betrieb nehmen                      .....................................2-26
+2.5.3    Drucker in Betrieb n e h m e n ................................................... 2-28
+         Standardeinstellung für Drucker 9001 .................................. 2-28
+         Standardeinstellung für Drucker 9004 .................................. 2-30
+         Standardeinstellung für Drucker 9 0 1 3 .....................................2-31
+2.5.4    MB-Streamer in Betrieb n e h m e n ..........................................2-32
+2.6      P fleg ean leitu n g .......................................................................2-35
+2.6.1    Pflege der S y ste m e in h eit........................................................ 2-35
+2.6.2    Pflege der B e d ie n e in h e ite n ................................................... 2-36
+2.6.3    Pflege der D r u c k e r ..................................................................2-36
+2.6.4    Pflege des M B -Stream ers........................................................ 2-36
+3       SINIX installieren......................................................................3-1
+3.1     Vorbereitungen zur S o ftw are-In sta lla tio n ............................. 3-2
+3.1.1   Umgang mit D isk e tte n ............................................................... 3-2
+3.1.2   T astaturbedienung....................................................................3-6
+3.2     SINIX von Diskette laden                     ................................................... 3-10
+3.2.1   Ü b e r b lic k ................................................................................ 3-10
+3.2.2   Überprüfung der F e s tp la tte ................................................... 3-12
+3.2.3   Installieren eines Basis-SINIX -System s................................ 3-18
+3.3     Peripherie und PC-MX2 System konfigurieren...................... 3-34
+3.4     RESTOR-Disektte - Sichern von SINIX-Systemdateien . . 3-47
+        RESTOR-Diskette e r s te lle n ................................................... 3-47
+        RESTOR-Diskette e i n i e s e n ................................................... 3-61
+3.5     Laden von zusätzlicher S o f t w a r e ..........................................3-63
+3.6     Systemsicherung.......................................................................3-68
+3.7     Systemuhr stellen              ..................................................................3-73
+
+4       Standortwechsel...........................................................................4-1
+        PC-MX2 tr a n s p o r tie r e n .......................................................... 4-1
+
+5       Fehlersuche................................................................................5-1
+        Was tue ich, w e n n ? .................................................................... 5-1
+
+6       Test- und Diagnosesystem T D S 2 .............................................6-1
+6.1     Installation           ..............................................................................6-1
+6.2     Aufrufen von T e s t s ....................................................................6-4
+6.3     N ü tz lic h es.................................................................................. 6-5
+6.4     F irm w arestände.........................................................................6-6
+6.5     Protokolldateien.........................................................................6-7
+6.6     Testen der S ystem einheit.......................................................... 6-8
+6.7     Bildschirmtest              .......................................................................6-15
+6.8     D r u c k e r t e s t ............................................................................6-17
+6.9     P lo tte r te s t................................................................................ 6-21
+6.10    K a n a l t e s t ................................................................................ 6-22
+6.11    D U E -P ro z esso ren ..................................................................6-30
+
+Literatur
+Stichwörter
+1 Vorstellen
+
+Der Siemens PC-MX2 ist ein Personal Computer, der mit dem Betriebssy­
+stem SINIX betrieben wird.
+Der PC-MX2 besteht aus folgender Hardware:
+— Systemeinheit
+— Bildschirmeinheiten
+— Drucker
+1.1 Systemeinheit
+
+Die Systemeinheit besteht aus den Bausteinen:
+•   SINIX-Prozessor
+    Standardmäßig enthält dieser Prozessor einen eigenen Hauptspeicher
+    von 1 MByte. Der Hauptspeicher kann wahlweise entweder
+    um 1 MByte oder um 3 MByte erweitert werden.
+    Damit ergeben sich Ausbaustufen mit 1 MByte, 2 MByte oder 4 MByte.
+    Der zusätzliche Hauptspeicher kann für SI NIX-An Wendungen ver­
+    wendet werden.
+•   Plattenspeicher
+    Die Systemeinheit enthält eine Platte mit einer Speicherkapazität von
+    40 MByte oder 80 MByte.
+•   Diskettenlaufwerk
+    Größe der Diskette: 5 *A Zoll Kapazität: 650 KByte
+•   Ein-/Ausgabe Controller
+    An den Ein-/Ausgabe Controller werden die Bildschirmeinheiten und
+    Drucker angeschlossen.
+    Standardmäßig ist im PC-MX2 der Ein-/Ausgabe Controller
+    97802-202 mit
+    — 4 Schnittstellen SS97 für Direktanschluß bis max. 60 m Entfernung
+      und
+    — 2 Schnittstellen RS 232C (V24-Variante) eingebaut.
+    Eine Erweiterung dieses Ein-/Ausgabe Controllers ist möglich
+    — mit dem Ein-/Ausgabe Controller 97802-202 gleichen Typs oder
+    — mit dem Ein-/Ausgabe Controller 97802-201 mit 6 Schnittstellen
+      SS97.
+    Dann verfügt die Systemeinheit über maximal 10 Anschlüsse für Bild­
+    schirmeinheiten (6)/Drucker (4):
+    — 6 Anschlüsse SS97 und 4 Anschlüsse RS 232C oder
+    — 8 Anschlüsse SS97 und 2 Anschlüsse RS 232C.
+    Die Ein-/Ausgabe Controller 97802-201/202 sind mit einem AFP-
+    Anschlußzusatz ausrüstbar. Damit können Bildschirmeinheiten und
+    Drucker innerhalb Ihres Telefonnebenstellennetzes über 4-Draht-
+    Standleitungen bis 2 km betrieben werden. Für die Übertragung wird
+    das Übertragungsverfahren AFP (Alternierendes Flanken-Puls-Verfah-
+    ren) eingesetzt.
+•   Ladbarer Communication-Controller
+    Wahlweise kann die Systemeinheit bis zu 3 CCs bestückt werden. Sie
+    ermöglicht den Anschluß des PC-MX2 an verschiedene Netze (z.B.
+    TRANSDATA, WAN, LAN, BAM) über MSV1 mit max. 9600 bit/sec
+    (siehe Kapitel 2).
+1.2 Bedieneinheiten
+
+Die Bedieneinheit ist modular aufgebaut und besteht aus
+— dem Bildschirm mit der Zeichendarstellung schwarz auf weißem Hin­
+  tergrund (der Bildschirm ist umschaltbar auf Zeichendarstellung weiß
+  auf schwarzem Hintergrund)
+— der flachen Tastatur mit verschieden möglichen Belegungen.
+Zur optimalen Einstellung ist der Bildschirm dreh- und kippbar. Maximal
+6 Bedieneinheiten sind am PC-MX2 anschließbar. Bei der Systeminstalla­
+tion ist eine Bedieneinheit als Konsole zu definieren
+(siehe Kapitel 3.3).
+Jede Bedieneinheit kann für das Übertragungsverfahren AFP mit einem
+AFP-Anschlußzusatz ausgerüstet werden.
+
+
+1.3 Drucker
+
+An den PC-MX2 sind die Drucker 9001, 9004 und 9013 anschließbar.
+Maximal 4 Drucker sind zugelassen.
+
+
+1.4 Magnetband-Streamer
+
+Der Magnetband-Streamer dient zur Sicherung des Festplatteninhalts auf
+einer speziellen Magnetband-Kassette.
+2 Hardware installieren
+
+2.1   Wahl des Aufstellungsortes
+
+Sie können sich die Arbeit mit Ihrem PC-MX2 erleichtern, wenn Sie von
+Anfang an einen ergonomisch günstigen Standplatz auswählen.
+Bitte beachten Sie dabei folgendes:
+
+
+
+
+           • Direktblendung und Refle­          • Reflexionsblendung durch
+             xionsblendung vermeiden              Lichtquellen vermeiden
+
+
+
+
+       • Bildschirm im                         • Tastatur im optimalen
+         bevorzugten Sehraum                     Qriffbereich
+
+
+
+
+           • Entlüftungsflächen freihalten        Richtige Sitzhaltung
+                                                  einnehmen
+
+
+
+Bild 2-1          Wahl des Aufstellungsortes
+2.2 PC-MX2 auspacken
+
+Werfen Sie die Verpackung nicht weg!
+Einzelteile des PC-MX2 sind bei einem eventuellen späteren Transport nur
+in der Verpackung zu transportieren.
+Das ist besonders bei dem Bildschirm zu beachten (Implosionsgefahr).
+Beim Auspacken prüfen Sie bitte, ob die Lieferung vollständig und unbe­
+schädigt ist. Falls ein Teil fehlt oder beschädigt ist, benachrichtigen Sie
+bitte die Zweigniederlassung (ZN) der Fa. Siemens, bei der Sie Ihren
+PC-MX2 bestellt haben.
+Im Grundausbau besteht der PC-MX2 aus
+— 1 Bedieneinheit, mit Netzkabel sowie Bildschirm und Tastatur, jeweils
+  mit Verbindungskabel.
+— Tastaturmasken
+— 1 Systemeinheit mit Netzkabel
+— 1 Verbindungskabel von der Systemeinheit zur
+  Datenübertragungseinrichtung
+— mehreren Disketten zum Installieren der
+  SINIX-Software
+Bild 2-2   Grundausbau des PC-MX2
+
+
+Zusätze zum Grundausbau sind
+— maximal 5 Bedieneinheiten
+— maximal 4 Drucker
+— weitere PC-MX2-Software auf Disketten
+2.3 PC-MX2 aufstellen
+
+2.3.1   Montieren des Bildschirms
+
+Montieren Sie zunächst den Bildschirm.
+— Setzen Sie den Bildschirm, um 90 Grad zur Vorderseite der Bedienein­
+  heit gedreht, auf die Halterung der Bedieneinheit.
+— Achten Sie darauf, daß der Verriegelungsknopf in der entsprechenden
+  Öffnung am Monitor sitzt (siehe Bild).
+— Drehen Sie ihn nach links oder rechts, bis er hörbar einrastet.
+Der Bildschirm ist richtig montiert, wenn er sich nach beiden Seiten um
+etwa 60 Grad drehen läßt.
+
+
+
+
+Um den Bildschirm wieder zu demontieren, gehen Sie folgendermaßen
+vor:
+— Schalten Sie die Bedieneinheit aus und lösen Sie die Sicherungs­
+  schraube des Steckers. Jetzt können Sie die Verbindung abstecken.
+— Kippen Sie den Bildschirm so weit wie möglich nach vorne.
+— Drehen Sie den Bildschirm bis zum Anschlag nach links oder rechts.
+— Drücken Sie an der Unterseite des Bildschirms die Lasche am Drehge­
+  lenk ein und drehen Sie den Bildschirm weiter bis er quer zu Ihnen
+  steht.
+In dieser Position läßt er sich abnehmen.
+2.3.2   Aufstellen der Systemeinheit
+
+Stellen Sie die Systemeinheit in Griffnähe der ersten Bedieneinheit (Kon­
+sole) auf. Nur von dieser Konsole aus ist das Ein- und Ausschalten der
+Systemeinheit möglich.
+Beachten Sie außerdem folgendes:
+— Der Lufteintritt an der Vorderseite darf nicht verdeckt sein.
+
+— Die Warmluft muß an der Rückseite ungehindert austreten können.
+
+— Das Diskettenlaufwerk muß zugänglich sein.
+
+— Falls Sie die Systemeinheit in Büromöbel einbauen wollen, muß sie von
+  oben zugänglich sein (Wartung). Um Peripheriegeräte anzuschließen,
+  sollte die Systemeinheit auch an der Rückseite zugänglich sein.
+
+— Stellen Sie die Systemeinheit nicht auf den Boden (Staub!).
+Jetzt können Sie die Transportsicherung aus dem Diskettenlaufwerk neh­
+men. Bewahren Sie sie auf. Bei einem späteren Transport der Systemein­
+heit wird diese Sicherung benötigt.
+2.4 PC-MX2 verkabeln
+
+Sie haben nun Ihren PC-MX2 aufgestellt. Beginnen Sie mit dem Verka­
+beln. Sie benötigen dazu einen kleinen Schraubendreher. Achten Sie dar­
+auf, daß das Netzkabel der Bildschirmeinheit nicht am Netz angeschlossen
+ist.
+
+   Hinweis
+    Sollten Sie beim Anschließen der einzelnen Systemkomponenten auf
+    Schwierigkeiten stoßen oder diesbezügliche Fragen haben, wenden Sie
+    sich bitte an Ihren Kundendienst.
+
+2.4.1   Bedieneinheit (und Bildschirm) mit Tastatur verkabeln
+
+— Legen Sie die Tastatur vor die Bedieneinheit.
+— Stecken Sie das Bildschirmkabel in die im Bild mit ’’Monitor” bezeich-
+  nete Buchse auf der Rückseite der Bedieneinheit und sichern Sie den
+  Stecker mit der Sicherungsschraube.
+— Stecken Sie das Kabel der Tastatur in die mit ’’Tastatur” bezeichnete
+  Buchse und sichern Sie den Stecker mit der Sicherungsschraube.
+Die übrigen Buchsen bleiben noch frei.
+
+
+
+
+            SS97        RS232 ,        AFP
+
+            |System! o [Tastatur! * [Monitor!
+
+
+        V
+
+
+Bild 2-5      Anschlußleiste der Bedieneinheit
+2.4.2   Bedieneinheit (Konsole) mit Systemeinheit verkabeln
+
+Achten Sie darauf, daß die Netzkabel von Bedieneinheit und Systemein­
+heit nicht am Netz angeschlossen sind.
+— Öffnen Sie an der Rückseite der Systemeinheit die Abdeckplatte. Dazu
+  lösen Sie an der Unterseite die Schnappverschlüsse und heben die
+  Abdeckung nach oben weg.
+Sie können jetzt an der Anschlußleiste der Systemeinheit mit dem Verka­
+beln beginnen.
+Für den Anschluß der Konsole ist das 5m-Verbindungskabel zu verwenden.
+— Stecken Sie den passenden Stecker des Verbindungskabels (von der
+  Systemeinheit zur Konsole) in die im Bild mit ’’Konsole” bezeichnete
+  Buchse ”SS97” der Systemeinheit.
+
+
+
+
+       SS97        SS97       SS97       SS97    SS97       SS97
+
+
+
+
+                                     RS232       SS97      SS97
+
+
+
+           Streamer                  RS232       SS97
+
+
+
+           AFP
+                                  1AFP1                 1AFP1
+                                                    SS-97 für
+                                                    Konsole
+
+
+Bild 2-8      Anschlußleiste der Systemeinheit
+— Stecken Sie den anderen Stecker des Verbindungskabels in die im Bild
+  mit ’’SYSTEM” bezeichnete Buchse der Bedieneinheit (Konsole).
+— Sichern Sie den Stecker.
+
+
+
+
+Bild 2-9    Anschlußleiste der Bedieneinheit
+
+
+2.4.3   Zusätzliche Bedieneinheiten und Drucker mit Systemeinheit verka­
+        beln
+
+An die Systemeinheit Ihres PC-MX2 können Sie maximal 5 weitere
+Bedieneinheiten und bis zu 4 Drucker anschließen.
+Folgende Anschlußarten sind möglich:
+— Standard-Anschluß über Schnittstellen SS97 bis 60 m Leitungslänge
+— Fernanschluß über 4-Draht-Leitung/AFP bis 2 km Leitungslänge
+Achten Sie darauf, daß die Netzkabel von Bedieneinheit, Drucker und
+Systemeinheit nicht am Netz angeschlossen sind. Sollte die Rückseite der
+Systemeinheit verschlossen sein, öffnen Sie sie wie in Kapitel 2.4.2
+beschrieben.
+Standard-Anschluß über Schnittstelle SS97
+Verlegen Sie die Verbindungskabel so, daß bei jedem Gerät eine Kabel
+schleife von ca. 50 cm bleibt. Zugbelastungen auf Steckeranschlüsse wer­
+den dadurch vermieden.
+Gehen Sie nun für alle Bedieneinheiten wie folgt vor:
+— Stecken Sie den Stecker des Verbindungskabels (von der Bedieneinheit
+  zur Systemeinheit) in die im Bild mit ’’SYSTEM” bezeichnete Buchse
+  der Bedieneinheit.
+— Sichern Sie den Stecker.
+
+
+
+
+Bild 2-10    Anschlußleiste der Bedieneinheit
+— Stecken Sie bei allen Druckern den Stecker des Verbindungskabels
+  (vom Drucker zur Systemeinheit) ein. Beachten Sie dabei die Bedie­
+  nungsanleitung des jeweiligen Druckers.
+— Stecken Sie den anderen Stecker des Verbindungskabels in eine im Bild
+  mit ”SS97” bezeichnete Buchse der Systemeinheit. Es ist Ihnen freiges­
+  tellt, welche der Buchsen ”SS97” Sie verwenden.
+
+
+                             CO
+                             CO
+                   CO
+                   CO
+
+
+
+
+                             CD
+                             h-
+       CO
+       CO
+       CD
+
+
+
+
+                   CD
+
+
+
+
+                                         SS97    SS97       SS97
+
+
+
+
+                                    RS232         SS97      SS97
+
+
+
+            Streamer                RS232         SS97
+
+
+
+            AFP                    AFP                    AFP
+
+
+                                                     SS-97 für
+                                                     Konsole
+
+
+Bild 2-11     Anschlußleiste der Systemeinheit
+
+
+   Hinweis
+   Wollen Sie Fernanschlüsse über 4-Draht-Standleitung/AFP verwen­
+   den, bleiben die entsprechenden Buchsen SS97 frei
+   (siehe Kapitel 2.4.3).
+Fernanschluß über 4-Draht-Standleitungen/AFP
+Ist die Systemeinheit Ihres PC-MX2 mit einem AFP-Anschlußzusatz aus­
+gerüstet (siehe Kapitel 1.1), können Bedieneinheiten und Drucker inner­
+halb Ihres Telefonnebenstellennetzes über 4-Draht-Standleitungen bis 2
+km betrieben werden.
+Für die Übertragung wird das Übertragungsverfahren AFP
+(Alternatierendes Flanken-Puls-Verfahren) eingesetzt.
+Ein AFP-Zusatz benötigt zwei ”SS97”-Kanäle.
+Standardmäßig sind die AFP-Anschlüsse den ”SS97”-Kanälen wie folgt
+zugeordnet:
+
+
+
+
+                                                     Konsole
+
+
+Bild 2-12    Zuordnung der AFP-Anschlüsse zu den SS97-Kanälen
+Die über zwei 4-Draht-Standleitungen angeschlossene Bedieneinheit muß
+ebenfalls einen AFP-Zusatz enthalten (Typ 97801-303). Da auf diese Weise
+zwei Standardkanäle zum Übertragen vorhanden sind, können Sie an der
+Bedieneinheit mit AFP-Zusatz ein weiteres Gerät mit einfacher Schnitt­
+stelle ”SS97” anschließen. Das kann z.B. ein Drucker oder eine Bedienein­
+heit ohne AFP-Zusatz (Typ 97801-302) sein.
+
+
+
+
+Bild 2-13    Fernanschluß mit AFP
+
+
+   Hinweis
+   Da das System intern nicht unterscheidet, ob die Bedieneinheiten und
+   Drucker an Standardschnittstellen 97 oder über AFP angeschlossen
+   sind, müssen Sie die über 4-Draht-Standleitungen angeschlossenen
+   Geräte genau so konfigurieren, als wären sie an den entsprechenden
+   Schnittstellen 97 angeschlossen.
+Die folgenden Darstellungen verdeutlichen, wie Sie Bedieneinheiten und
+Drucker mit AFP-Anschlüssen konfigurieren müssen.
+
+
+
+
+Bild 2-14    Fernanschluß einer Bedieneinheit und eines Druckers
+Bild 2-15   Fernanschluß zweier Bedieneinheiten
+Gehen Sie am Aufstellungsort Ihrer Systemeinheit wie folgt vor:
+— Das Netzkabel der Systemeinheit darf nicht am Netz angeschlossen
+  sein.
+— Stecken Sie den Stecker der 4-Draht-Standleitung in eine mit ”AFP”
+  bezeichnete Buchse der Systemeinheit.
+— Sichern Sie den Stecker.
+
+
+
+
+       SS97        SS97      SS97         SS97   SS97       SS97
+
+
+
+
+                                    RS232         SS97      SS97
+
+
+
+            Streamer                RS232         SS97
+
+
+
+            AFP                     AFP                   AFP
+
+
+                                                     SS-97 für
+                                                     Konsole
+
+
+Bild 2-16     Anschlußleiste der Systemeinheit
+
+Gehen Sie am Aufstellungsort Ihrer Bedieneinheit mit AFP-Zusatz (Typ
+97801-302) wie folgt vor:
+— Die Netzkabel der Bedieneinheit und evtl. Drucker dürfen nicht am
+  Netz angeschlossen sein.
+— Stecken Sie den Stecker der 4-Draht-Standleitung in die mit ”AFP”
+  bezeichnete Buchse der Bedieneinheit (Typ 97801-302).
+
+— Sichern Sie den Stecker.
+— Haben Sie eine zusätzliche Bedieneinheit ohne AFP-Zusatz (Typ
+  97801-303), verbinden Sie beide Bedieneinheiten, indem Sie das zuge­
+  hörige Verbindungskabel in die mit ”SS97” bezeichneten Buchsen ein­
+  stecken.
+— Haben Sie einen Drucker, verbinden Sie Bedieneinheit und Drucker
+  mit dem zugehörigen Verbindungskabel über die mit ”SS97” bezeich­
+  neten Buchsen. Beachten Sie dabei die Bedienungsanleitung des Druk-
+  kers.
+
+
+
+
+Bild 2-17   Anschlußleiste der Bedieneinheit
+2.4.4 MB-Streamer verkabeln
+
+Der MB-Streamer dient zur Sicherung Ihrer System- und Anwenderda­
+teien. Wie Sie die Sicherung durchführen können, ist in Kapitel 3.6
+beschrieben.
+
+Der MB-Streamer benötigt zwei Anschlüsse:
+
+  — die Verbindung zur Systemeinheit und
+  — den Netzanschluß
+
+Gehen Sie beim Verkabeln wie folgt vor:
+
+  — Stellen Sie zuerst den MB-Streamer so auf, daß Sie die Rückseite des
+    Gerätes leicht einsehen und erreichen können.
+  — Schalten Sie den Netzschalter an der Rückseite aus, d.h. nach rechts.
+  — Stecken Sie das Verbindungskabel zur Systemeinheit am MB-Strea­
+    mer ein.
+  — Sichern Sie den Stecker mit den beiden Schrauben.
+
+
+
+
+                                                           Netzanschluß
+
+
+
+
+Bild 2-18    Rückansicht des MB-Streamers
+— Stecken Sie den anderen Stecker des Verbindungskabels in die mit
+  ’’Streamer” bezeichnete Buchse der Systemeinheit.
+— Sichern Sie den Stecker mit den beiden Schrauben.
+
+
+
+
+       SS97        SS97      SS97         SS97   SS97         SS97
+
+
+
+
+                                     RS232       SS97         SS97
+
+
+
+            Streamer                 RS232       SS97
+
+
+
+            AFP                     AFP                    AFP
+
+
+                                                      SS-97 für
+                                                      Konsole
+
+
+Bild 2-19     Anschlußleiste der Systemeinheit
+— Stecken Sie jetzt das Netzkabel erst am MB-Streamer (siehe Bild 2-5)
+  und dann am Netz ein.
+  Beachten Sie, daß MB-Streamer, Systemeinheit und Konsole in dersel­
+  ben Mehrfachsteckdose eingesteckt werden.
+— Stellen Sie den MB-Streamer an seinen vorgesehenen Platz.
+2.4.5   Systemeinheit an Datennetze anschließen
+
+Für den Anschluß Ihres PC-MX2 an ein Datennetz (z.B. TRANSDATA,
+LAN, WAN, BAM, STA, SNA) benötigen Sie eine Datenübertragungsein­
+richtung (Modem), die an einer Datenübertragungsfernleitung angeschlos­
+sen ist.
+Fragen zur Datenübertragungseinrichtung und Datenübertragungsfernlei­
+tung beantwortet die für Sie zuständige SIEMENS-Zweigniederlassung
+oder die Deutsche Bundespost.
+Gehen Sie am Aufstellungsort Ihrer Systemeinheit wie folgt vor:
+— Das Netzkabel der Systemeinheit darf nicht am Netz angeschlossen
+  sein.
+— Stecken Sie den Stecker des Verbindungskabels (von der Datenübertra­
+  gungseinrichtung zur Systemeinheit) in die mit ”DFÜ” bezeichnete
+  Buchse des RS232-Steckplatzes der Systemeinheit.
+— Sichern Sie den Stecker.
+
+
+   Hinweis
+    Da der PC-MX2 in viele verschiedene Netze eingebunden werden
+    kann, weicht Ihre Rückwand vielleicht von der hier abgebildeten ab.
+    Falls Sie also beim Verkabeln unsicher sind, wenden Sie sich an den
+    Kundendienst.
+       SS97        SS97      SS97         SS97   SS97      SS97
+
+
+
+
+                                    RS232        SS97      SS97
+
+
+
+            Streamer                RS232        SS97
+
+
+
+            AFP                     AFP                  AFP
+
+
+                                                    SS-97 für
+                                                    Konsole
+
+
+Bild 2-20     Anschlußleiste der Systemeinheit
+2.5 PC-MX2 in Betrieb nehmen
+
+Nachdem Sie Ihre Geräte miteinander verkabelt haben, können Sie diese
+in Betrieb nehmen.
+Überprüfen Sie, ob die Netzsteckdosen für 220V mit mindestens 10
+Ampere gesichert sind.
+
+
+2.5.1   Systemeinheit in Betrieb nehmen
+
+— Schalten Sie den Netzschalter an der Vorderseite aus, d.h. nach unten.
+— Stecken Sie das Netzkabel zuerst an der Systemeinheit ein.
+— Schließen Sie die Abdeckung an der Rückseite der Systemeinheit. Hän­
+  gen Sie dazu die Abdeckung oben ein und drücken Sie unten dagegen
+  bis die Schnappverschlüsse einrasten.
+
+
+
+
+— Stecken Sie den Netzstecker am Netz ein.
+  Beachten Sie, daß die Systemeinheit und die Bedieneinheit, die als
+  Konsole verkabelt ist, in derselben Mehrfachsteckdose stecken.
+An der Systemeinheit befinden sich folgende Bedienelemente
+(siehe Bild 2-4):
+— Der Netzschalter, der während des normalen Betriebs grundsätzlich
+  eingeschaltet sein muß, d.h. nach oben gekippt.
+  Der Netzschalter darf nur in Notfällen ausgeschaltet, d.h. nach unten
+  gekippt werden. Schalten Sie die Systemeinheit im normalen Betrieb
+  immer mit dem Netzschalter an der Konsole ab (siehe folgendes Kapitel
+  2.5.2). Beim Wiederanlauf des Systems können sonst evtl. Daten verlo­
+  ren gehen, da sich das Dateisystem in einem Undefinierten Zustand
+  befindet und bereinigt werden muß.
+— Der Rücksetzknopf, der nur in Fehlerfällen (siehe Kapitel 5) zu drük-
+  ken ist (z.B. mit einem kleinen Schraubendreher).
+— Der Monitorknopf, den Sie grundsätzlich nicht betätigen sollten, da er
+  nur für Wartungsarbeiten vorgesehen ist.
+  Sollten Sie ihn aus Versehen doch einmal drücken, dann drücken Sie
+  ganz einfach den Rücksetzknopf (siehe oben).
+— Das Diskettenlaufwerk mit dem Verriegelungshebel. Der Umgang mit
+  Disketten ist im Kapitel 3.1.1 beschrieben.
+                                                      Plattenzugriffsanzeige
+
+                                                    Floppyzugriffsanzeige
+
+
+
+
+                                                                Netzschalter
+
+
+
+                                                          Netzkontroll-
+                                                          anzeige
+                                                  Selbsttest­
+                                                  anzeige
+      Leuchtkette
+
+                     Monitorknopf               Rücksetzknopf
+
+
+Bild 2-22    Bedienelemente der Systemeinheit
+2.5.2   Bedieneinheiten in Betrieb nehmen
+
+— Schalten Sie den Netzschalter an der linken Seite der Bedieneinheit aus
+  (nach hinten drücken).
+— Stecken Sie jetzt das Netzkabel zuerst in die Buchse ’’Netz” an der
+  Rückseite der Bedieneinheit und dann in die Steckdose zum Netz.
+  Beachten Sie, daß die Bedieneinheit, die als Konsole verkabelt ist, und
+  die Systemeinheit in derselben Mehrfachsteckdose stecken müssen.
+
+
+
+
+Bild 2-23     Anschlußleiste der Bedieneinheit (Rückansicht)
+An der Bedieneinheit befinden sich folgende Bedienelemente:
+— Der Netzschalter.
+  Er ist eingeschaltet, wenn er nach vorne gekippt ist (Stellung I). Mit
+  dem Netzschalter der Konsole schalten Sie die Systemeinheit ein oder
+  aus.
+— Der Helligkeitseinsteller an der Unterseite der Bedieneinheit.
+  Um die Helligkeit des Bildschirms zu erhöhen, drehen Sie den Hellig­
+  keitseinsteller nach vorn. Beachten Sie jedoch, daß der Bildschirm
+  automatisch dunkel gesteuert wird, wenn längere Zeit (mehr als 10
+  Minuten) keine Ein- oder Ausgabe erfolgt. In diesem Fall betätigen Sie
+  eine beliebige Taste, um den Bildschirm wieder einzuschalten. Das
+  eingegebene Zeichen wird nicht als Eingabe gewertet.
+— Der Einsteller ’’halbhell” an der Rückseite der Bedieneinheit.
+  In manchen Fällen erscheinen Ausgaben am Bildschirm halbhell. Sie
+  können die Helligkeit dieser Bildschirmausgaben mit dem Einsteller
+  ’’halbhell” gesondert einstellen (mittels eines kleinen Schraubendre­
+  hers).
+
+
+
+
+Bild 2-25           Regler halbhell
+
+
+2.5.3      Drucker in Betrieb nehmen
+
+Zur Inbetriebnahme der Drucker benutzen Sie bitte die zu Ihren Druckern
+gehörenden Betriebsanleitungen, die jedem Gerät beigepackt sind. Gehen
+Sie nach den Anweisungen in der Betriebsanleitung vor.
+Im folgenden sind die Standardeinstellungen für die Drucker 9001, 9004
+und 9013 beschrieben, wie sie für die übliche Betriebsart erforderlich sind.
+
+Standardeinstellung für Drucker 9001
+
+
+SCHALTER      1       2       3     4      5     6     7     8     9     0
+STELLUNG
+              Ein     Ein     Ein   Ein    Ein   Aus   Aus   Aus   Ein   X
+
+
+
+Bei Gerät 9001               80-spaltig:         X = Ein
+Bei Gerät 9001              136-spaltig:         X = Aus
+Eingestellt sind damit folgende Parameter:
+ASCII-Zeichensatz
+Papierbewegung: CR = CR; LF = LF
+ungerade Parität
+Formularlänge 12 Zoll
+Zeilenvorschub Ve Zoll
+Standardeinstellung für Drucker 9004
+Schalter auf der Rückseite:
+
+
+TEST:        Aus              (nicht gedrückt)
+
+BAUDRATE:    1200
+
+             SCHALTER         1     2      3      4
+             STELLUNG
+                              Ein   Ein    Aus       Aus
+
+PROTOKOLL:   ETX/ACK
+             DC1/DC3
+             1 Stopbit
+             7 Bit
+             ungerade
+             Parität
+
+             SCHALTER         1     2      3         4           5           6           7           8
+             STELLUNG
+                              Aus   Aus     Ein      Aus         Aus         Ein         Aus         Aus
+
+
+
+
+Schalter an der Vorderseite:
+
+
+Zeichenvorrat:     ASCII                  SCHALTER         1           2           3           4
+                                          STELLUNG
+                                                           Ein         Aus         Aus         Aus
+
+Typenrad:          Standard               SCHALTER         1           2           3           4
+                                          STELLUNG
+                                                           Ein         Aus         Aus         Aus
+
+Formularlänge:     12 Zoll                SCHALTER         1           2           3           4
+                                          STELLUNG
+                                                           Aus         Ein         Aus         Aus
+Standardeinstellung für Drucker 9013
+Drehschalter links:
+-Zeilenabstand:           3         Vorschub V öZoll
+-Formularhöhe:            7         12 Zoll
+-Zeichenteilung:          1         10Zeichen/Zoll
+-Zeichenvorrat:           1         Datenqualität
+
+
+
+Konfigurationsschalter:
+
+
+-Druckparameter      SCHALTER   1      2     3     4     5     6     7     8
+                     STELLUNG
+                                Aus    Ein   Aus   Aus   Aus   Aus   Ein   Aus
+
+-Schnittstellen-     SCHALTER   1      2     3     4     5     6     7     8
+ parameter 1         STELLUNG
+                                Ein    Aus   Ein   Ein   Aus   Aus   Aus   Aus
+
+-Schnittstellen-     SCHALTER   1      2     3     4     5     6     7     8
+ parameter 2         STELLUNG
+                                Aus    Aus   Aus   Aus   Aus   Aus   Aus   Aus
+
+-Geräteparameter 1   SCHALTER   1      2     3     4     5     6     7     8
+                     STELLUNG
+                                Aus    Aus   Aus   Aus   Ein   Aus   Aus   Aus
+
+-Geräteparameter 2   SCHALTER   1      2     3     4     5     6     7     8
+                     STELLUNG
+                                U      U     U     U     Aus   Aus   Ein   Ein
+
+
+
+U: unterschiedliche Werkseinstellung; bitte nicht verändern!
+2.5.4   MB-Streamer in Betrieb nehmen
+
+Einschalten des Gerätes
+Schalten Sie als erstes das Gerät ein. Dadurch wird ein Selbsttest gestartet,
+dessen positiver Ausgang durch eine grün leuchtende LED an der Vorder­
+seite angezeigt wird. Ist eine Kassette eingelegt, so wird das Band zunächst
+gespannt. Dazu wird es vor- und zurückgespult. Schließlich positioniert
+das Gerät den Magnetkopf, wobei es ebenfalls noch einige Male vor- und
+zurückspult. Jetzt ist der MB-Streamer bereit.
+
+   Hinweis
+   Neue Magnetbandkassetten müssen vor der ersten Verwendung forma­
+   tiert werden. Dies ist im Kapitel 3.6 beschrieben.
+Einlegen einer Kassette
+— Öffnen Sie den Verschlußdeckel des Kassettenschachtes durch Drük-
+  ken der Verschlußtaste am Deckel (siehe unten).
+
+
+
+
+                LED                Deckel
+
+
+
+Bild 2-26     Bedienelemente des MB-Streamers
+— Nehmen Sie die Kassette mit der Metallplatte nach unten und mit der
+  Bandöffnung nach rechts (siehe unten) und schieben Sie sie bis zum
+  Anschlag in den Schacht ein. Die Kassette sollte jetzt noch etwa 5
+  Millimeter über das Gehäuse vorstehen.
+
+
+
+
+Bild 2-27    Einlegen (Entnehmen) einer MB-Kassette
+— Schließen Sie nun das Fach. Dabei wird die Kassette vollständig
+  eingefahren. Der Verschluß muß einrasten.
+Entnehmen einer Kassette
+— Warten Sie auf jeden Fall, bis das Band gestoppt ist.
+— Öffnen Sie den Verschlußdeckel des Kassettenschachtes durch Drük-
+  ken der Verschlußtaste am Deckel (siehe oben).
+— Entnehmen Sie die Kassette und schließen Sie das Fach wieder.
+Hinweis zur Behandlung der MB-Kassetten
+— Berühren Sie niemals das Band.
+
+— Bewahren Sie die Kassetten nur in den dafür vorgesehenen Hüllen auf.
+
+— Schützen Sie die Kassetten vor zu hohen und zu niedrigen Temperaturen,
+  sowie vor magnetischen Einflüssen.
+2.6 Pflegeanleitung
+
+Die Pflege ist regelmäßig vom Benutzer durchzuführen. Vor der Durchfüh­
+rung von Reinigungsarbeiten ist der Netzstecker zu ziehen.
+
+
+2.6.1   Pflege der Systemeinheit
+
+Zur Reinigung der Gehäuseteile ist das Abwischen mit einem trockenen
+Tuch ausreichend. Bei stark verschmutzter Oberfläche kann ein feuchtes
+Tuch verwendet werden, das in lauwarmes Wasser mit mildem Spülmittel
+getaucht und gut ausgewrungen wurde. Außerdem muß der Luftfilter des
+Kühlgebläses regelmäßig mit Hilfe eines Staubsaugers gereinigt werden
+(siehe Bild unten).
+
+
+
+
+Bild 2-28     Pflege der Systemeinheit
+2.6.2   Pflege der Bedieneinheiten
+
+Für die Reinigung der Gehäuse gilt das gleiche wie für die Systemeinheit.
+Zur Reinigung der Tastatur können Desinfektionstücher (z.B. SAGRO-
+SEPT-Tücher, die in jeder Apotheke erhältlich sind) verwendet werden.
+Die Einwirkzeit darf jedoch 5 Minuten nicht überschreiten.
+Lassen Sie diese Tücher nach Gebrauch auf keinen Fall auf dem Gehäuse
+liegen.
+Die Bildschirmfläche sollte ebenfalls in regelmäßigen Abständen gereinigt
+werden. Verwenden Sie dafür ein weiches, angefeuchtetes, nicht fuselndes
+Tuch und reiben Sie die Bildschirmfläche mit einem trockenen weichen
+Tuch nach.
+
+
+2.6.3   Pflege der Drucker
+
+Da Drucker eine aufwendige Mechanik enthalten und sich durch das
+Papier größere Mengen Staub im Inneren absetzen, ist eine regelmäßige
+Säuberung der Drucker unbedingt nötig.
+Einzelheiten entnehmen Sie bitte der jeweiligen Betriebsanleitung Ihres
+Druckers.
+
+
+2.6.4   Pflege des MB-Streamers
+
+Bei diesem Gerät ist es nötig, den Magrietkopf in regelmäßigen Abständen
+zu reinigen. Die Abstände, in denen eine Reinigung nötig wird, richten sich
+nach
+— der Betriebsdauer
+— den Umweltbedingungen.
+Abhängig von der Betriebsdauer sollten Sie folgendes beachten:
+— Bei Betrieb von 8 Stunden täglich ist eine tägliche
+  Reinigung notwendig.
+— Bei kurzzeitigem täglichen Betrieb genügt eine wöchentliche Reini­
+  gung.
+— Bei einmaligem Betrieb pro Woche reicht eine monatliche Reinigung.
+Reinigen Sie den Magnetkopf immer, wenn Sie ein neues Band verwenden.
+Zum Reinigen benötigen Sie Isopropyl-Alkohol und Baumwollstäbchen
+(siehe Bild unten). Ein solches Reinigungs-Set ist im Fachhandel erhält­
+lich. Verwenden Sie auf keinen Fall scharfe Gegenstände zum Reinigen des
+Magnetkopfes. Er könnte beschädigt werden.
+
+
+
+
+Bild 2-29    Pflege des MB-Streamers
+3 SINIX installieren
+
+Piktogramme und Rasterflächen
+In den folgenden Kapiteln werden zwei Piktogramme verwendet:
+        Bedeutung: Hier müssen Sie etwas tun.
+        Bedeutung: Hier ist die Reaktion des PC-MX2 beschrieben.
+
+
+
+Werden Bildschirmausgaben durch weitere Meldungen ergänzt oder über­
+schrieben, so sind diese durch graue Rasterflächen in den Bildschirmdar­
+stellungen gekennzeichnet.
+3.1 Vorbereitungen zur Software-Installation
+
+3.1.1   Umgang mit Disketten
+
+Disketten dienen zum Installieren des SINIX-Betriebssystems und Soft­
+ware, sowie zum Sichern Ihrer Daten. Die Diskette wird auch als Floppy
+Disk oder Floppy bezeichnet.
+
+
+   Hinweis
+    Es dürfen nur Disketten verwendet werden, die folgende Bedingungen
+    erfüllen:
+    — Größe der Diskette 5 1/ a Zoll,
+    — two sided/double density
+      (beidseitig beschreibbar/doppelte Dichte),
+    — 96 tpi (96 Spuren pro Zoll),
+    — sectors soft
+Behandlung von Disketten
+So behandeln Sie Disketten richtig:
+
+
+
+
+       Nur an den Ecken anfassen.
+
+       Ungeschützte Oberfläche nicht berühren.
+
+       Immer in der Schutzhülle aufbewahren.
+
+       Niemals biegen oder falten.
+
+
+
+
+     • Nicht Sonnen- oder Wärmeeinwirkung aussetzen.
+
+     • Lagertemperatur einhalten: min. +10C, max. 50C.
+
+     • Von magnetischen Gegenständen fernhalten.
+
+     • Keine Reinigungsmittel verwenden.
+
+
+
+
+     • Nur mit weichem Filzstift auf einem Etikett beschriften.
+
+     • Niemals bei aufgeklebten Etikett mit spitzem Bleistift
+       oder Kugelschreiber beschriften.
+
+     • Nicht auf der Diskette radieren.
+
+     • Keine Büroklammern verwenden.
+
+
+
+
+Bild 3-1        Behandlung von Disketten
+Mechanischer Schreibschutz
+Disketten schützen Sie vor unbeabsichtigtem Beschreiben oder Löschen
+wie folgt:
+— Überkleben Sie die rechteckige Aussparung am Rand der Diskette mit
+  einem lichtundurchlässigen Klebestreifen (wird üblicherweise mitge­
+  liefert). Die Diskette kann jetzt weder beschrieben noch gelöscht wer­
+  den.
+— Achten Sie darauf, daß der Klebestreifen glatt auf der Diskette aufliegt.
+  Damit wird verhindert, daß die Diskette beim Entfernen aus dem Lauf­
+  werk hängen bleibt.
+
+
+
+
+           Diskette nicht schreibgeschützt   Diskette schreibgeschützt
+
+
+
+Bild 3-2     (mechanischer) Schreibschutz für Disketten
+Diskette einlegen
+— Diskette (Etikett links oben, d.h. zum Verriegelungshebel hin gerichtet,
+  Abtastschlitz voraus) bis zum Anschlag in das Laufwerk einschieben.
+— Verriegelungshebel des Laufwerks im Uhrzeigersinn bis zum Anschlag
+  drehen.
+
+
+
+
+Diskette entnehmen
+Die Diskette darf nicht entnommen werden, solange die Zugriffsanzeige
+am Laufwerk leuchtet.
+Diskettentypen
+Die Software für Ihren PC-MX2 wird auf folgenden Diskettentypen gelie­
+fert:
+— Disketten mit dem SINIX-System
+— Disketten mit Anwendersoftware.
+3.1.2   Tastaturbedienung
+
+Die Tastatur besteht aus
+— Schriftzeichentasten
+— Funktionstasten
+— Tasten zum Positionieren der Schreibmarke
+Bildverweilzeit
+Um die Bildröhre zu schonen, wird das Bild automatisch dunkelgesteuert,
+wenn länger als 10 Minuten keine Eingabe erfolgt. Der Inhalt des Bild­
+schirms geht dabei nicht verloren.
+Damit der Inhalt des Bildschirms wieder angezeigt wird, drücken Sie eine
+beliebige Taste. Diese Eingabe an der Tastatur dient ausschließlich zur
+Hellsteuerung des Bildschirms und beeinflußt nicht die Bildschirmanzeige.
+Schriftzeichentasten
+Schriftzeichentasten sind alle Tasten für
+— alphanumerische Zeichen
+— Interpunktionszeichen
+— Sonderzeichen
+— Leerzeichen
+Diese Tasten haben eine Wiederholfunktion: Drücken Sie eine dieser
+Tasten länger als eine Sekunde, wird das der Taste entsprechende Zeichen
+solange am Bildschirm wiederholt abgebildet, wie die Taste gedrückt wird.
+
+
+
+      Tastatur
+      Belegung deutsch/international
+
+        P1    P2       P3       P4       P5       P6        P7       P8       P9       P10         P11       P12        P13   P14    P15   P16 P17         P18   P19       P20       EM DS
+        F1    F2       F3       K1       K2       K3       LZE       AM       RU       MAR          P        RS         EM    DU1    LZF   LVD WAZ         DU2   LSP       NIL       Tastaturmaske
+
+
+        F1    F2       F3       F4       F5       F6       F7        F8       F9       F10         F11       F12    F13       F14   F15    F16       F17   F18   F19       F20       F21       F22
+
+
+
+      r-® -,,-® —,          M0DE pR!NT                            tNSERT                                 DELETE                     HELP START END
+      CAPS CH.CODE                                                                             =         =     =
+      r~n i i i i i i i c                                 CHAR WORD LINE                       CHAR WORD LINE
+                                                                                                                          3         i i i i i iz i :r
+                             cD§ $                %        &          /        (       )                      ?
+      ESC     i        2      3 4                 5        6          7        8       9             0       ~ß         > <*] DEL                          0       +         *           -r          =
+
+
+     k - -H        Q        W        E        R        T         Z        U        I         0           P         Jo         +                  \                 CE            7         8         9
+     CTRL LOCK«■ A           S       D            F       G       H        ]       K             L            , ‘ ä #               J                                  -     4             5         6
+                  >                                                                                           —1                                                       E
+                  <     Y        X        C           V       B       N        M           •                                        MENU                               N     1             2         3
+                                                                                                                                                                       T
+                                                                                                                                                                       E
+                                                                                                                                     a                                 R
+                                                                                                                                                                                     0
+
+
+
+
+Bild 3-4               Tastatur (Typ: deutsch)
+Funktionstasten
+Funktionstasten können abhängig von Anwenderprogrammen unter­
+schiedliche Funktionen haben. Beachten Sie deshalb dazu die Hinweise in
+den entsprechenden Anwenderprogrammbeschreibungen
+Folgenden Funktionstasten sind feste Funktionen zugeordnet:
+Ic a p s |       Mit der CAPS-Taste werden bei nicht aktiver SHIFT- bzw.
+                 LOCK-Taste die Buchstaben als Großbuchstaben abgebildet.
+                 Die Anzeige in der Tastatur leuchtet. Durch erneutes Drücken
+                 der CAPS-Taste wird die Funktion rückgesetzt.
+1e s c |         Mit der ESC-Taste und einer oder mehreren Folgetasten wird ein
+                 Steuerzeichen oder eine Steuerzeichenfolge abgesetzt. Die Aus­
+                 wertung dieser Steuerzeichen oder Steuerzeichenfolgen ist
+                 abhängig von den entsprechenden Anwenderprogrammen.
+| ctrl       |   Mit der CTRL-Taste wird der Folgetaste eine Steuerzeichen­
+                 funktion zugeordnet. Die Auswertung ist abhängig von den ent­
+                 sprechenden Anwenderprogrammen.
+                 Mit dieser Taste wird das letzte eingegebene Zeichen gelöscht. In
+                 bestimmten Systemzuständen wird diese Funktion nicht unter­
+                 stützt.
+IcSSeI           Mit dieser Taste wird von nationalem auf internationalen Zei­
+                 chenvorrat umgeschaltet (Anzeige INT leuchtet).
+                 Durch erneutes Drücken dieser Taste wird auf nationalen Zei­
+                 chenvorrat zurückgeschaltet.
+| s h if t   |   Bei gedrückter SHIFT-Taste wird umgeschaltet
+                  — auf Großbuchstaben bei den Schriftzeichen und
+                  — auf die obere Ebene bei doppelt belegten Tasten.
+| lo ck      |   Mit dieser Taste wird die Funktion SHIFT festgestellt (Anzeige
+                 in der Taste LOCK leuchtet). Diese Funktion wird durch Drük-
+                 ken der SHIFT-Taste ausgeschaltet (Anzeige in der Taste
+                 erlischt).
+                 Diese Taste ist abhängig von der CHCODE-Taste. Im internatio­
+                 nalen Zeichenvorrat (Anzeige INT leuchtet) wird der Punkt
+                 abgebildet, bei nationalem Zeichenvorrat das Komma.
+[TI              Mit dieser Taste werden Eingaben abgeschlossen.
+Tasten zum Positionieren der Schreibmarken
+Mit diesen Tasten kann jede Position des Bildschirms mit der Schreib­
+marke (blinkender Unterstrich) erreicht werden. Diese Tasten haben eine
+Wiederholfunktion, d.h. diese Funktionen werden solange wiederholt wie
+die entsprechende Taste gedrückt wird.
+Ausnahmen entnehmen Sie bitte den jeweiligen Programmbeschreibungen
+und den Manualen SINIX Buch 1 [5] und SINIX Buch 2 [6]. Folgenden
+Tasten zum Positionieren der Schreibmarke sind feste Funktionen zuge­
+ordnet:
+m         Die Schreibmarke springt um eine Zeile spaltengleich nach
+          oben.
+[TI       Die Schreibmarke springt um eine Zeile spaltengleich nach
+          unten.
+0         Die Schreibmarke springt entgegen der Schreibrichtung um eine
+          Position nach links.
+0         Die Schreibmarke springt in Schreibrichtung um eine
+          Position nach rechts.
+0         Die Schreibmarke springt in die erste Spalte der ersten Zeile.
+0         Die Schreibmarke springt in Schreibrichtung nach rechts zur
+          nächsten Tabulatorstelle. *)
+0         Die Schreibmarke springt entgegen der Schreibrichtung nach
+          links zur nächsten Tabulatorstelle. *)
+
+
+*)    Die Standardschrittweite ist 8 Stellen.
+      Ausnahmen sind den Programmbeschreibungen zu entnehmen.
+3.2 SINIX von Diskette laden
+
+3.2.1   Überblick
+
+Für das Neuinstallieren des SINIX-Systems benötigen Sie ungefähr 2 bis 3
+Stunden Zeit. Sorgen Sie dafür, daß Sie während dieser Zeit ungestört
+arbeiten können.
+Das Installieren führen Sie in mehreren Arbeitschritten durch. Zwischen­
+durch fordert Sie das System auf, Ihren PC-MX2 auszuschalten.
+Achten Sie darauf, daß Sie einen Arbeitsschritt vollständig beenden, wenn
+Sie das System unterbrechen müssen.
+Das gesamte Installieren ist menügeführt. Sie sollten aber trotzdem die
+einzelnen Arbeitsschritte in den folgenden Kapiteln verfolgen.
+Das Installieren können Sie nur an der Bedieneinheit durchführen, die als
+Konsole angeschlossen ist.
+
+
+Das Neuinstallieren Ihres SINIX-Systems führen Sie in folgenden Arbeits­
+schritten durch:
+
+
+1. Übertragen eines Minimalsystems (siehe Kapitel 3.2.2)
+    Sie benötigen dazu die Diskette SINIXO. In diesem Arbeitsschritt wird
+    in den PC-MX2 ein Minimalsystem übertragen für die Überprüfung
+    der Platte (Winchesterplatte).
+
+
+2. Installieren eines Basis-SINIX-Systems (siehe Kapitel 3.2.3)
+    Sie benötigen dazu die Disketten SINIX 1 bis SINIX7 und wahlfrei
+    eine RESTOR-Diskette. In diesem Arbeitsschritt wird ein Einplatz-
+    SINIX-System in Ihren PC-MX2 übertragen. Zusätzlich wird der
+    Tastaturtyp (z.B. international, deutsch) Ihrer Konsole konfiguriert.
+    Wollen Sie Systemdaten und Systemparameter übernehmen, die Sie bei
+    einer vorhergehenden Installation auf einer RESTOR-Diskette gesi­
+    chert haben, müssen Sie diese am Ende des Arbeitsschrittes eingeben.
+    Nach Abschluß dieses Arbeitsschrittes ist in Ihrem PC-MX2 ein Ein-
+    platz-SINIX-System eingerichtet.
+3. Peripherie und PC-MX2 System konfigurieren (siehe Kapitel 3.3)
+   Die Konfigurierung der Peripherie und des PC-MX2 Systems führen
+   Sie unter der Kennung admin durch unter dem Menü ’’Konfigurierung
+   des lokalen Systems”, einem Folgemenü des Menüs ’’Systemverwal­
+   tung”. Sie benötigen dazu keine Disketten.
+   In diesem Arbeitsschritt legen Sie folgende Konfiguration fest:
+    — Steckplätze für Ihre Datensichtstationen und den Tastaturtyp
+      (z.B. international, deutsch)
+    — Steckplätze für Drucker und den Druckertyp
+      (z.B. 9001)
+   Sie müssen aus vier Ausbaustufen für die Systemeinheit diejenige wäh­
+   len, die Ihrem Ausbau entspricht. Danach können Sie die Steckplätze
+   und den Tastaturtyp bzw. Druckertyp wählen.
+Nach diesen Arbeitsschritten können Sie Ihre zusätzlichen Benutzerpro­
+gramme für den PC-MX2 installieren.
+
+
+4. Installieren von zusätzlicher Software
+
+   (siehe Kapitel 3.5)
+   Dieser Arbeitsschritt setzt ein funktionsfähiges SINIX-System voraus.
+   Das Installieren von zusätzlicher Anwendersoftware erfolgt ebenfalls
+   menügeleitet im Menü ’’Installation von Softwareprodukten”, einem
+   Folgemenü des Menüs ’’Systemverwaltung”.
+In den folgenden Kapiteln ist die Menüführung für die einzelnen Arbeits­
+schritte detailliert beschrieben.
+3.2.2   Überprüfung der Festplatte
+
+Halten Sie die Diskette SINIXO bereit.
+
+
+   Hinweis
+    Der Netzschalter an der Vorderseite der Systemeinheit Ihres PC-MX2
+    muß eingeschaltet, d.h. nach oben gekippt sein.
+   =     Legen Sie die Diskette SINIXO ohne Schreibschutz in das Lauf­
+         werk (Etikett links oben zum Verriegelungshebel, Abtastschlitz
+         voraus). Verriegeln Sie das Laufwerk; drehen Sie dazu den Verrie­
+         gelungshebel im Uhrzeigersinn. Schalten Sie die erste Bedienein­
+         heit (Konsole) ein.
+Drehen Sie den Helligkeitseinsteller an der Konsole, bis der Bild­
+schirminhalt sichtbar wird.
+
+
+
+
+Der PC-MX2 führt nun einen Selbsttest durch. Der positive
+Abschluß des Selbsttests wird mit Meldungen angezeigt:
+
+
+r                                                              \
+        testend
+
+
+
+
+    Hinweis
+    Sollten die Meldungen des Selbsttests nicht ausgegeben wer­
+    den, ist eine der im Kapitel 5 beschriebenen Fehlerursachen
+    eingetreten (siehe Fehlersuche Kapitel 5).
+Anschließend folgt die Bildschirmausgabe:
+
+               INSTALLATION EINES SINIX-SYSTEMS
+
+
+
+
+       Herzlich Willkommen zur Selbstinstallation Ihres
+
+
+                          SINIX-Systems
+
+
+
+
+         Wird auf diesem Rechner zum ersten Male ein
+         SINIX-Betriebssystem installiert?
+
+         Antworten Sie mit      (j/n)
+
+          (j=ja/n=nein)
+
+
+                                                          Weiter mit J
+
+
+
+
+Mit der Antwort j wird das Einrichten der Platte begonnen.
+
+
+   Hinweis
+   Sobald Sie die Antwort j abgeschickt haben, kann auf die
+   bisherigen Daten auf der Festplatte nicht mehr zugegriffen
+   werden.
+   Mit der Antwort n wird Ihnen die Möglichkeit gegeben, vor­
+   handene SINIX-Systemdateien von der Platte auf eine
+   RESTOR-Diskette zu sichern. Wie Sie dann Vorgehen müssen,
+   finden Sie im Kapitel 3.4 beschrieben.
+Wählen Sie die Antwort j und drücken Sie die Taste |7T
+      Hinweis
+      Dieser Bildschirm wird nur ausgegeben, wenn die Platte noch nicht
+      formatiert wurde oder wenn die Formatierung der Platte zerstört
+      wurde. Ist die Platte bereits formatiert, wird mit der nächsten Bild­
+      schirmausgabe fortgesetzt. Erscheint dieser Bildschirm also nicht,
+      blättern Sie einfach weiter.
+
+
+              Wichtige Information !
+
+
+        Es war dem System leider nicht moeglich, den Plattentyp
+        automatisch zu erkennen.
+
+        Waehlen Sie den Plattentyp, den Sie fuer diese Anlage bestellt
+        haben.
+
+        Durch Druecken der Leer-Taste koennen Sie die Nummer der fuer
+        Sie in Frage kommenden Platte waehlen und sie durch Druecken
+        von J dem System bekannt geben.
+
+        Plattentyp Nr. 4 ist frei waehlbar. Abschluss der Eingabe mit END
+
+
+                        NR                Plattentyp
+
+                        1        R0202E
+
+
+
+                                                              Weiter mit    J
+
+
+
+
+Achtung
+Erscheint dieser Bildschirm, so ist Ihre Festplatte zerstört. Fahren
+Sie in diesem Fall NICHT mit der Installation fort, sondern schalten
+Sie die Systemeinheit ab.
+Wenden Sie sich dann an die Wartung.
+Ist die Platte in Ordnung, meldet das System folgende interne
+Arbeitsschritte:
+
+
+    P la t t e w ird f o r m a t ie r t . BITTE WARTEN
+    Spur xxxx
+    y y yy Spuren f o r m a t ie r t , 0 E rs a tz s p u r e n aus 104 zugew iesen
+    E t i k e t t & Ladeprogramm e in g e r ic h t e t ****************
+
+    In den fo lg e n d e n M inuten w ird e in M in im a ls y ste m a u f
+    d ie F e s t p la t t e u e b e rtra g e n .
+
+
+
+
+Anschließend folgt die Bildschirmausgabe
+
+
+
+
+r       H a lt th e p r o c e s s o r
+Ergebnis
+Sie haben nun ein Minimalsystem für das Einrichten des SINIX-Systems auf
+der Festplattte übertragen und sind bereit, mit der Installation fortzufahren.
+
+
+     Warten Sie, bis die Meldung ’’Halt the processor” ausgegeben
+     wird. Schalten Sie mit dem Bedienschalter an der Konsole die
+     Systemeinheit aus. Nehmen Sie die Diskette SINIXO aus dem
+     Laufwerk. Warten Sie ca. 30 Sekunden und schalten Sie dann die
+     Konsole wieder ein.
+
+     Der PC-MX2 führt nun wieder einen Selbsttest durch. Derposi-
+     tive Abschluß des Selbsttests wird mit Meldungen angezeigt:
+
+
+     r          te s te n d
+
+
+
+
+                g o in g to h a rd d is k
+
+
+
+
+           Hinweis
+           Sollten die Meldungen des Selbsttests nicht ausgegeben wer­
+           den, ist eine der im Kapitel 5 beschriebenen Fehlerursachen
+           eingetreten (siehe Fehlersuche Kapitel 5).
+3.2.3   Installieren eines Basis-SINIX-Systems
+
+In diesem Arbeitsschritt übertragen Sie ein Einplatz-SINIX-System auf die
+Festplatte.
+
+         Halten Sie die Disketten SINIX1 bis SINIX7 für das Installieren
+         eines Basis-SINIX-Systems bereit.
+
+         Die folgende Bedienerführung am Bildschirm werden Sie nun
+         mehrmals sehen, jedesmal mit veränderten Eintragungen. Beim
+         erstenmal sieht sie so aus:
+
+                             INSTALLATION EINES SINIX-SYSTEMS
+
+
+
+
+                 D is k e t t e SINIX1 e in le g e n und m it ' j   J'   b e s ta e tig e n :
+
+
+
+
+         Legen Sie die Diskette SINIX1 ein, verriegeln Sie das Laufwerk
+         und bestätigen Sie mit j und der Taste |T I-
+Die drei leeren Felder werden nacheinander beschrieben, wenn
+der Einlesevorgang gestartet bzw. beendet ist.
+Beim zweitenmal sieht die Bedienerführung so aus:
+
+
+
+
+Nehmen Sie die Diskette SINIX1 aus dem Laufwerk. Legen Sie
+die Diskette SINIX2 ein, verriegeln Sie das Laufwerk und bestäti­
+gen Sie mit j und der Taste P T
+             INSTALLATION EINES SINIX-SYSTEMS
+
+
+
+
+D is k e t t e SIN IX 2 e in le g e n und m it ' j    J ' b e s ta e tig e n :   j
+
+
+
+
+                        SIN IX 2 D is k e t t e w ir d g e le s e n . . . .
+
+
+
+
+                              SIN IX 2 D is k e t t e e in g e le s e n
+
+
+
+
+               B i t t e SIN IX 2 D is k e t t e aus dem La u fw erk nehmen
+In der gleichen Weise erfolgt die Bedienerführung für die Disket­
+ten SINIX3, SINIX4 und SINIX5.
+
+                       INSTALLATION EINES SINIX-SYSTEMS
+
+
+
+
+        D is k e t t e SIN IX 5 e in le g e n und m it ' j     J ' b e s ta e tig e n :   j
+
+
+
+
+                                  SINXX5 D is k e t t e w ir d g e le s e n . . . .
+
+
+
+
+                                        SIN IX 5 D is k e t t e e in g e le s e n
+
+
+
+
+                          B i t t e SIN IX 5 D is k e t t e aus dem L a u fw erk nehmen
+
+
+
+
+r      B it t e w a rte n . . .
+                                                                                              'S
+
+
+
+
+Nehmen Sie die Diskette SINIX5 aus dem Laufwerk.
+         Nun fordert Sie das System auf, den Typ der Tastatur Ihrer Kon­
+         sole einzugeben.
+
+              (c o n s o le )           Ausw ahl des T a s t a t u r t y p s fu e r d ie K o n so le
+
+
+
+
+                      Waehlen S ie j e t z t d u rch Druecken der
+                      L e e r z e ic h e n ta s te den T a s t a t u r t y p der
+                      K o n so le . Wenn S ie den r ic h t ig e n Typ
+                      gefunden haben, d rue cken S ie J .
+                      D ie K o n fig u r ie r u n g w e it e r e r D ru ck e r                in t e r n a t io n a l
+                      und T e rm in a ls e r f o lg t in d e r B e t r ie b s ­
+                      k o n fig u r ie r u n g d u rch den B e n u tze r 'a d m in '.
+
+
+
+
+                          1234567890--             ! "#$%&' ()
+                          q w e rtyuiop ® [        QWERTYUIOP'{
+                          a s d f g h j k l; :]    ASDFGHJKL+*}
+                          I zx cv b n m ,. /       IZXCVBNMo?
+
+
+
+
+        Nach jedem Drücken der Leertaste gibt das System im kleinen
+        Feld rechts eine der folgenden Tastaturbezeichnungen aus:
+         — international                                                franzoesisch
+         — deutsch                                                      italienisch
+         — belgisch (AZ)                                                schwedisch
+         — belgisch (QW)                                                schweizer
+         — daenisch                                                     spanisch
+        Gleichzeitig gibt das System im großen Feld links unten ein
+        Abbild der jeweiligen Tastatur (ohne Umlaute) aus. Bitte verglei­
+        chen Sie Ihre Tastatur mit den Abbildern. Achten sie dabei beson­
+        ders auf die Lage der Buchstaben Y und Z sowie der Sonderzei­
+        chen [, {, ] und }.
+
+^       Drücken Sie die Leertaste so oft bis das Abbild mit Ihrer Tastatur
+        übereinstimmt. Ist das der Fall, drücken Sie die Taste |~J1.
+    Hinweis
+
+    Bei deutschen Systemen werden nur die Tastaturtypen ’’international”
+    und ’’deutsch” unterstützt. Eine andere Wahl kann zum Mißlingen der
+    Installation führen.
+Nun fordert das System die Diskette SINIX6 an.
+
+
+
+
+Legen Sie die Diskette SINIX6 ein, verriegeln Sie das Laufwerk
+und bestätigen Sie mit j und der Taste |~J1.
+Die drei leeren Felder werden nacheinander beschrieben, wenn
+der Einlesevorgang gestartet bzw. beendet ist.
+Nun fordert das System die Diskette SINIX7 an.
+
+
+
+
+Nehmen Sie die Diskette SINIX6 aus dem Laufwerk. Legen Sie
+die Diskette SINIX7 ein, verriegeln Sie das Laufwerk und bestäti­
+gen Sie mit j und der Taste |~Jl-
+                            INSTALLATION EINES SINIX-SYSTEHS
+
+
+
+
+                D is k e t t e SINIX7 e in le g e n und m it ' j    J' b e s ta e tig e n :   j
+
+
+
+
+                                       SINIX7 D is k e t t e w ir d g e le s e n . . . .
+
+
+
+
+                                             SIN IX7 D is k e t t e e in g e le s e n
+
+
+
+
+                               B i t t e S1NIX7 D is k e t t e aus dem La u fw e rk nehmen
+
+
+
+
+ljrg p   Nehmen Sie die Diskette SINIX7 aus dem Laufwerk.
+       Am Bildschirm werden folgende Meldungen ausgegeben:
+
+
+       r   E in r ic h t e n des Menuesystems
+
+           Wenn S ie v o r d e r I n s t a l l a t i o n des neuen G rundsystem s d ie R E S T O R -D iskette
+           ( S ic h e r u n g s d is k e tte m it w ic h tig e n S y ste m d a te ie n ) a n g e le g t haben, muessen
+           S ie s ie j e t z t e in ie s e n .
+
+           S o l l d ie s e D is k e t t e j e t z t e in g e le s e n werden ? ( j/ n ) >
+
+
+
+
+       Haben Sie eine RESTOR-Diskette erstellt, antworten Sie mit j.
+       Setzen Sie Ihre Installation mit dem Einlesen der RESTOR-Dis­
+       kette fort wie in Kapitel 3.2 beschrieben.
+       Mit der Antwort n setzen Sie Ihre Installation ohne Einlesen der
+       RESTOR-Diskette fort.
+       Geben Sie als Antwort n ein und bestätigen Sie das Ende der
+       Eingabe mit der Taste f j |.
+
+       Am Bildschirm werden folgende Meldungen ausgegeben:
+
+
+       r           E in r ic h t e n des Standard -M enuesystem s
+
+
+
+
+                   Neue A u t o r is ie r u n g s d a t e i w ir d g e n e r ie r t . . .
+                   f e r t ig .
+                   Menuesystem e in g e r ic h t e t .
+                   Das P la tte n s y s te m i s t f e r t i g e rz e u g t.
+                   Es w ird j e t z t in den M u lti-U s e r-M o d e gegangen.
+                   V i e l E r f o lg beim A r b e it e n .
+
+
+
+
+Danach erscheint der Eröffnungsbildschirm. Damit ist das Laden des
+SINIX-Betriebssystems von Diskette beendet.
+r
+
+
+
+
+    Rechnername: sieO O l
+    Benutzerkennung:
+    K ennwort:
+
+
+
+
+V                           J
+Geben Sie als Benutzerkennung admin ein, gefolgt von (T|-
+
+
+                                     D
+
+
+
+ Rechnername: sie0 01
+ Benutzerkennung: admin
+ Kennwort:
+
+
+
+
+V___________________________________J
+Geben Sie das Kennwort siemens (in Kleinbuchstaben) bzw. das
+von Ihnen vergebene ein.
+Das Kennwort wird am Bildschirm nicht angezeigt.
+Drücken Sie die Taste fj~|.
+
+
+   Hinweis
+   Meldet SINIX ’’Falsche Angaben.”, dann haben Sie die
+   Benutzerkennung oder das Kennwort falsch eingegeben.
+   Geben Sie die Benutzerkennung und das Kennwort nochmals
+   richtig ein.
+        Am Bildschirm wird das Hauptmenü ausgegeben.
+
+
+        r              ...... ......                                                                                       A
+            (m ain)           S I E H E     N S      P E R S O N A L               C O M P U T I E R       SIN IX V 2 .0
+
+
+                                            b     - B u e ro fu n k tio n e n
+
+                                            k     - K o m m u n ika tio n sfu n k tio n e n
+
+                                            a     - A r c h iv fu n k t io n e n
+
+                                            d     - Dienstprogram m e
+
+                                            e     - E n tw ick lu n g ss y s te m e
+
+                                            s     - S y stem v erw altu n g
+
+             Fuer je d e s Menue g i l t :     .<HELP> g ib t e in e B e d ie n u n g s a n le itu n g ,
+             <HELP> g ib t M e n ue -In fo rm a tio n e n und : J e in g lo b a le s Menue aus.
+
+             T e rm in a l:   co n s o le          G i 2 5 .F e b .1 9 8 6 , 1 3:1 9:53
+
+            B it t e waehlen! >
+
+
+
+        V.                                                                                                                 J
+
+Das folgende Installieren des PC-MX2 führen Sie unter Menüführung
+durch. Was Sie beim Arbeiten mit Menüs beachten müssen, ist im folgen­
+den kurz beschrieben (siehe auch SINIX Buch 2, Menüs [6]):
+Aufbau eines Menüs
+In der ersten Zeile steht der Titel des Menüs. Danach folgen die Auswahl­
+möglichkeiten des Menüs, bestehend aus einem Kleinbuchstaben und
+einer Kurzbeschreibung (z.B. s - Systemverwaltung). Nach der letzten
+Menüzeile steht der Text ’’Bitte waehlen! > ” gefolgt von der Schreib­
+marke.
+Menüauswahl
+Eine Auswahl führen Sie durch, indem Sie den entsprechenden Buchsta­
+ben eingeben. Der Text Ihrer gewählten Funktion wird dadurch invers
+gezeigt.
+Durch Drücken der Taste [J\ senden Sie Ihre Eingabe an das
+SINIX-System.
+Menüauswahl löschen
+Sie müssen z.B. eine Auswahl löschen, wenn Sie vom aktuellen in ein
+anderes Menü verzweigen möchten.
+Drücken Sie die Taste [ d e l ]. Die vorherige Auswahl wird gelöscht, d.h. der
+Text der Funktion wird nicht mehr invers gezeigt.
+Drücken Sie dann z.B. die Taste |m e n u |, erhalten Sie das Menü am Bild­
+schirm, das in der Reihenfolge vor dem aktuellen Menü liegt.
+Menüauswahl ändern
+Wollen Sie eine getroffene Auswahl ändern, da Sie z.B. einen falschen
+Buchstaben eingegeben haben, so drücken Sie die Taste | d e l |. Die getrof­
+fene Auswahl wird gelöscht, d.h. der Text der Funktion wird nicht mehr
+invers angezeigt. Jetzt können Sie eine andere Funktion wählen.
+Hilfsinformationen
+Ist ein Menü am Bildschirm abgebildet, können Sie Informationen über
+dieses Menü abrufen. Drücken Sie die Taste | h e l p |. Einige Hilfsinformatio­
+nen erstrecken sich über mehrere Bildschirmausgaben. Sie erhalten den
+vorhergehenden bzw. folgenden Bildschirm, wenn Sie ein Minus- bzw.
+Pluszeichen eingeben und die Taste [j] drücken. Wollen Sie vom Bild­
+schirm mit den Hilfsinformationen wieder zurück in das Menü verzweigen,
+so drücken Sie die Tasten | d e l | und | m e n u |.
+Bildschirmausgabe nach der Menüauswahl
+Nachdem Sie im Menü gewählt haben, kann SINIX wie folgt reagieren:
+1.   Sie erhalten einen Text am Bildschirm, der Sie informiert, ob die
+     gewählte Funktion korrekt ausgeführt wurde oder ob eine Fehlersi­
+     tuation die Ausführung verhindert hat.
+2.   Sie erhalten eine Frage am Bildschirm, die Sie beantworten, indem Sie
+     z.B. ”j ” (für Ja) oder ”n” (für Nein) eingeben.
+3.   Sie erhalten ein weiteres Menü, wenn die ausgewählte Funktion ihrer­
+     seits aus mehreren Unterfunktionen besteht.
+4.   Sie erhalten ein Formular oder eine Auswahlliste am Bildschirm,
+     wenn weitere Eingaben von Ihnen notwendig sind, damit SINIX die
+     Funktion ausführen kann.
+ßrgp   Geben Sie s ein. Drücken Sie die Taste [JJ-
+
+       Folgendes Menü wird ausgegeben:
+3.3 Peripherie und PC-MX2 System konfigurieren
+
+In diesem Arbeitsschritt konfigurieren Sie Ihre Datensichtstationen und
+Drucker. Sie führen diese Konfigurierung durch unter dem Menü
+’’Konfigurierung des lokalen Systems”, einem Folgemenü des Menüs
+’’Systemverwaltung”.
+
+        Folgendes Menü wird ausgegeben:
+
+          (admin)                   SYSTEMVERWALTUNG
+
+
+
+
+                                 - L o g in - A d m in is t r a t io n
+
+                                 - S p o o l- A d m in is t r a t io n
+
+                                 - I n s t a l l a t i o n von S o ftw a re p ro d u k te n
+
+                                 - K o n fig u r ie r u n g des lo k a le n System s
+
+                                 - P a ra m e trie ru n g d e r N e tz e in b in d u n g
+
+                                 - S y ste m s ic h e ru n g a u f M B -Kassete
+
+
+
+
+          B i t t e waehlen! >
+
+
+
+
+        V.                                                                                    J
+
+        Geben Sie k ein.
+        Drücken Sie die Taste p ] .
+Darauf erhalten Sie folgendes Menü:
+
+    ( c o n f ig )             KONFIGURIERUNG DES LOKALEN SYSTEMS
+
+
+
+
+                       a   -   A k t u e lle K o n fig u r ie r u n g z e ig e n
+
+
+                       k   -   B ild s c h ir m a r b e it s p lä t z e und D ru ck e r k o n f ig u r ie r e n
+
+
+                       u   -   System uhr s t e ll e n
+
+
+
+
+    B i t t e waehlen! >
+
+
+
+
+V                                                                                                                 J
+Geben Sie k ein.
+Drücken Sie die Taste [J\.
+       Folgender Bildschirm wird ausgegeben:
+
+
+
+
+03?"   Drücken sie die Leertaste bis j erscheint, dann [71
+Folgende Rückansicht der Systemeinheit wird auf dem Bild­
+schirm ausgegeben:
+
+     ( d is p k o n f1 )           S T E C K E R A N O R D N U N G
+                                   R u e c k a n s ic h t d e r S y s te m e in h e it:
+
+
+
+
+               M B -K a sse tte                                                           K o n so le
+
+
+
+
+     Stimmen d ie s e r Ausbau und d ie S te c ke ra n o rd n u n g m it Ihrem G erae t u e b e re in ?
+     Waehlen S ie d ie A n tw o rt d u rch Druecken d e r L e e r ta s te j    und J
+
+
+
+
+V.                                                                                                        J
+Drei weitere Rückansichten werden am Bildschirm ausgegeben,
+wenn Sie jeweils mit der Leertaste die Antwort n wählen, und die
+Taste [j] drücken.
+
+    (d is p k o n f2 )            S T E C K E R A N O R D N U N G
+                                  R u e c k a n s ic h t d er S y s te m e in h e it:
+
+
+
+
+              M B -K a sse tte                                                          K o n so le
+
+
+
+
+    Stimmen d ie s e r Ausbau und d ie S te c ke ra n o rd n u n g m it Ihrem G erae t u e b e re in ?
+    W aehlen S ie d ie A n tw o rt du rch Druecken d e r L e e r ta s te j    und J
+
+
+
+
+V                                                                                                        J
+        M B -K a sse tte                                                            K on sole
+
+
+
+
+Stimmen d ie s e r Ausbau und d ie S te c ke ra n o rd n u n g m it Ihrem G erae t u e b e re in ?
+Waehlen S ie d ie A n tw o rt du rch Druecken d e r L e e r ta s te     j und J
+    r                                                                                                          a
+
+
+
+
+                                                                                              K o n so le
+
+
+
+
+          Stimmen d ie s e r Ausbau und d ie S te c ke ra n o rd n u n g m it Ihrem G erae t u e b e re in ?
+          Waehlen S ie d ie A n tw o rt d u rch Druecken d e r L e e r ta s te    j und J
+
+
+
+
+    V______________________________________________ J
+
+    Wird die zu Ihrer Konfiguration passende Steckeranordnung aus­
+    gegeben, wählen Sie mit der Leertaste die Antwort j und drücken
+    Sie die Taste p ] .
+
+
+Hinweis
+Bedingt durch das breite Spektrum der möglichen Netzeinbindungen
+kann es Vorkommen, daß Ihre Rückwand von den hier abgebildeten
+abweicht (z.B. bei zusätzlichen Netz-baugruppen). Wenden Sie sich
+bitte in diesem Fall an den Kundendienst, der Ihnen bei der weiteren
+Installation gerne behilflich ist.
+    Danach fordert Sie das System auf, die gewünschten AFP-
+    Anschlüsse zu konfigurieren.
+
+          (a fp k o n f2 )                    A F P - A N S C H L U S S
+                                           R u e c k a n s ic h t d e r S y s te m e in h e it:
+
+
+
+
+                    M B -K a sse tte                                                                   K o n so le
+
+
+
+
+          Wenn S ie e in e n A F P -A n s c h lu s s k o n f ig u r ie r e n m öchten, w ählen S ie d ie s e n
+          d u rch Drücken d e r L e e r z e ic h e n ta s te .
+
+
+
+
+      ___________________________________________________V
+
+    Haben Sie eine AFP-Anschluß konfiguriert, folgen die Bild­
+    schirme zur Auswahl der Gerätetypen am AFP-Anschluß.
+    Wollen Sie keinen AFP-Anschluss konfigurieren, drücken Sie ein­
+    fach Q}
+    Anschließend fordert Sie das System auf, die Gerätetypen ent­
+    sprechend Ihrer gewählten Steckeranordnung auszuwählen.
+
+
+Hinweis
+Im folgenden ist nur eine der möglichen Serien von Bildschirmen
+beschrieben. Haben Sie eine andere Rückwand gewählt, verfahren Sie
+bitte analog.
+  (m akekonf2)                         G E R A E T E T Y P E N
+                                  R u e c k a n s ic h t d er S y s te m e in h e it:
+
+
+
+
+          M B -K a sse tte                                                                  CONSOL
+
+                                                                                            K on sole
+
+
+
+
+  P o s it io n ie r e n S ie d ie S ch re ib m a rk e a u f den gew uenschten S t e c k p la t z und
+  w aehlen S ie d ie B elegung du rch Druecken d e r L e e r z e ic h e n ta s te .
+
+
+
+
+v __________________________________________________ y
+
+Positionieren Sie die Schreibmarke auf den gewünschten Steck­
+platz.
+Drücken Sie die Leertaste und wählen Sie eine der folgenden
+Möglichkeiten:
+TERMIN Der Steckplatz ist für eine Datensichtstation vorgese­
+       hen
+PRINTR Der Steckplatz ist für einen Drucker vorgesehen
+= = = = = = Der Steckplatz bleibt frei.
+Der Steckplatz CONSOL ist für die Konsole vergeben und kann
+nicht verändert werden.
+   (m akekonf2)                        G E R A E T E T Y P E N
+                                  R u e c k a n s ic h t d e r S y s te m e in h e it:
+
+
+
+
+                                                                                   TERMIN   PRINTR
+
+
+
+
+          M B -K a sse tte                                                                  CONSOL
+
+                                                                                            K o n so le
+
+
+
+
+  P o s it io n ie r e n S ie d ie S ch re ib m a rk e a u f den gew uenschten S t e c k p la t z und
+  w aehlen S ie d ie Belegung du rch Druecken d e r L e e r z e ic h e n ta s te .
+
+
+
+
+Drücken Sie die Taste |~Jl.
+Anschließend fordert Sie das System auf, die Tastatur- und Druk-
+kertypen entsprechend Ihrer gewählten Steckeranordnung zu
+bestimmen.
+
+   (m akekonf2)                  TASTATUR- UND DRUCKERTYPEN WAEHLEN
+                                    R u e c k a n s ic h t d e r S y s te m e in h e it:
+
+
+       fre i             fre i               fre i            fre i             fre i       fre i
+
+
+
+
+                                                                                            9001
+
+
+
+
+          M B -K a sse tte                                                      fre i
+
+                                                                                            K o n so le
+
+
+
+
+  P o s it io n ie r e n S ie d ie S ch re ib m a rk e a u f den gew uenschten S t e c k p la t z und
+  w aehlen S ie d ie Belegung d u rch Druecken d e r L e e r z e ic h e n ta s te .
+Positionieren Sie die Schreibmarke auf den gewünschten Steck­
+platz. Drücken Sie die Leertaste und wählen Sie je Typ eine der
+folgenden Möglichkeiten:
+Tastaturtypen der Datensichtstationen
+      inter                franz
+      deut                 ital
+      belgaz               schwed
+      belgqw               schwz
+      daen                 span
+   Hinweis
+   Nationale Tastaturen außer ’’deutsch” werden nicht unter­
+   stützt.
+Druckertypen
+     Tintenstrahl- oder Nadeldrucker                   9001
+     Breiter Tintenstrahl- oder Nadeldrucker           9001-b
+     Typenraddrucker                                   9004
+     Multifunktionsdrucker                             9013
+Drücken Sie die Taste |~J1.
+         Es werden nun einige Bildschirme ausgegeben, die Hilfsinforma­
+         tion zur aktuellen Konfiguration geben.
+         (vgl. SINIX Buch2, Kapitel ’’Systemverwalter”, Konfigurierung
+         des lokalen Systems). Zum Abschluss erfolgt die Frage:
+
+
+         r     S o l l d ie s e K o n fig u r ie r u n g in K r a f t t r e t e n ?   ( j/ n )
+
+
+
+
+ljggfs   Drücken Sie j und Q]-
+
+         Es erscheint die neue Konfiguration und die Meldung:
+
+
+         r     D ie neue K o n fig u r a t io n i s t nun in K r a f t .
+
+
+
+
+         Damit ist die Konfigurierung des lokalen Systems abgeschlossen.
+3.4 RESTOR-Disektte - Sichern von SINIX-Systemdateien
+
+RESTOR-Diskette erstellen
+
+Eine RESTOR-Diskette müssen Sie erzeugen, wenn Sie z.B. eine neue
+SINIX-Betriebssystem-Version installieren wollen.
+Es werden u.a. gerettet:
+— Benutzerkennungen und ihre Eigenschaften, jedoch keine Daten.
+— Parameter für die Datenfernübertragung, falls installiert.
+
+
+Vor dem Erzeugen einer RESTOR-Diskette müssen Sie beachten:
+— Alle Benutzer müssen Ihre wichtigen Datenbereiche gerettet haben.
+— Alle von Benutzern gestarteten Prozesse müssen beendet sein.
+— Alle Benutzer müssen das System verlassen haben (logout).
+Für das Erzeugen einer RESTOR-Diskette benötigen Sie die Diskette
+SINIX1 und eine leere Diskette. Halten Sie beide Disketten bereit.
+Sie haben nach dem Einlesen der Diskette SINIXO den Begrü­
+ßungsbildschirm INSTALLATION EINES SINIX-SYSTEMS
+erhalten.
+
+                    INSTALLATION EINES SINIX-SYSTEMS
+
+
+
+
+       H e r z lic h W illkom m en z u r S e l b s t i n s t a l l a t i o n   I h re s
+
+
+                                   S IN IX -S ystem s
+
+
+
+
+           W ird a u f diesem Rechner zum e rs te n M ale e in
+           S I N IX - B e trie b s s y s te m i n s t a l l i e r t ?
+
+           A n tw o rten S ie m it          ( j/ n )
+
+            (j= ja /n = n e in )
+
+
+                                                                                          W e ite r m it J
+
+
+
+
+Wählen Sie die Antwort n und drücken Sie die Taste (Tj-
+       Anschließend folgt die Bildschirmausgabe:
+
+
+
+
+ßrgp   Wählen Sie die Antwort n und drücken Sie die Taste (T|-
+Anschließend folgt die Bildschirmausgabe:
+
+                               HINWEISE ZUR SICHERUNG
+
+
+
+
+       V orgehe nsw eise um w ic h t ig e S y ste m d a te ie n zu re t te n :
+
+                      -   Meldung "N orm al System Shutdown" abw arten.
+                      -   D is k e t t e aus dem Laufw erk nehmen.
+                      -   System an d e r K o n so le a b s c h a lte n .
+                      -   System nach ca . 30 Sekunden w ie d e r e in s c h a lt e n .
+                      -   D is k e t t e SINIX1 e in le g e n .
+                      -   U n te r d e r Kennung "adm in" d ie F u n k tio n
+                          " I n s t a l l a t i o n von S o ftw a re p ro d u k te n " a u fr u fe n ,
+                          um d ie R e ttu n g s p ro z e d u re n zu i n s t a l l i e r e n .
+                      -   S ic h e ru n g d u rc h fu e h re n . D ie s e e r f o lg t u n te r
+                          genauer B e d ie n e rfu e h r u n g .
+                      -   Nach A b s c h lu s s d e r S ic h e ru n g koennen S ie e rn e u t
+                          m it d er S e l b s t i n s t a l l a t i o n I h re s S IN IX -S ystem s
+                          b e g in n e n .
+
+                                                                    ** S y n c in g d i s k s . . .   done.
+
+
+
+
+r      H a lt th e p r o c e s s o r
+                                                                                                              "\
+
+
+
+Warten Sie, bis die Meldung Halt the processor ausgegeben wird.
+Nehmen Sie die Diskette SINIXO aus dem Laufwerk.
+Schalten Sie mit dem Bedienschalter an der Konsole die System­
+einheit aus.
+Warten Sie ca. 30 Sekunden und schalten Sie die Systemeinheit
+wieder ein.
+
+
+r       te s te n d
+
+
+
+
+    Hinweis
+    Sollten die Meldungen des Selbsttests nicht ausgegeben wer­
+    den, ist eine der im Kapitel 5 beschriebenen Fehlerursachen
+    eingetreten (siehe Fehlersuche Kapitel 5).
+      Der PC-MX2 meldet sich mit dem SINIX-Eröffnungsbildschirm.
+
+
+
+                               a          a
+
+
+
+       Rechnername: sieO O l
+       Benutzerkennung:
+       Kennwort:
+
+
+
+
+      V___________________________________ J
+
+¢3=   Geben Sie als Benutzerkennung admin ein.
+      Drücken Sie die Taste (TJ-
+ Rechnername: sieO O l
+ B enutzerkennung: admin
+ Kennwort:
+
+
+
+
+Geben Sie das Kennwort siemens (in Kleinbuchstaben) bzw. das
+von Ihnen vergebene ein.
+Das Kennwort wird am Bildschirm nicht angezeigt.
+Drücken Sie die Taste [J].
+
+
+   Hinweis
+   Meldet SINIX ’’Falsche Angaben”, dann haben Sie die Benut­
+   zerkennung oder das Kennwort falsch eingegeben.
+   Geben Sie die Benutzerkennung und das Kennwort nochmals
+   richtig ein.
+Was Sie beim Arbeiten mit Menüs beachten müssen, finden Sie im Kapitel
+3.2.3 beschrieben.
+
+        Am Bildschirm wird das Hauptmenü ausgegeben.
+
+        r ~         -        -                                                                                           n
+          (m ain)           S I E M E N S         P E R S O N A L               C O M P U T I E R        SIN IX V 2 .0
+
+
+                                           b   - B u e ro fu n k tio n e n
+
+                                           k   - K o m m u n ik a tio n sfu n k tio n e n
+
+                                           a   - A r c h iv fu n k t io n e n
+
+                                           d   - Dienstprogram m e
+
+                                           e   - E n tw ick lu n g ss y s te m e
+
+                                           s   - S y stem v erw altu n g
+
+           Fuer je d e s Menue g i l t :     .<HELP> g ib t e in e B e d ie n u n g s a n le itu n g ,
+           <HELP> g ib t M e n ue -In fo rm a tio n e n und : J e in g lo b a le s Menue aus.
+
+           T e rm in a l:   c o n s o le        D i 2 5 .F e b .1 9 8 6 , 1 3:1 9:53
+
+          B i t t e w aehlen! >
+
+
+
+
+                                                                                                                         J
+
+        Geben Sie s ein.
+        Drücken Sie die Taste P I.
+Q   Folgendes Menue wird ausgegeben:
+
+    rr                                                                                        :\
+      (admin)                      SYSTEMVERWALTUNG
+
+
+
+
+                             1   - L o g in - A d m in is t r a t io n
+
+                             s   - S p o o l- A d m in is t r a t io n
+
+                             i   - I n s t a l l a t i o n von S o ftw a re p ro d u k te n
+
+                             k   - K o n fig u r ie r u n g des lo k a le n System s
+
+                             p   - P a ra m e trie ru n g d er N e tz e in b in d u n g
+
+                             m   - S y ste m s ic h e ru n g a u f M B -K a s se tte
+
+
+
+
+      B i t t e waehlen! >
+
+
+
+
+    V.                                                                                        J
+    Geben Sie i ein.
+    Drücken Sie die Taste p ] .
+Anschließend folgt die Bildschirmausgabe:
+
+
+r                              I n s t a lla t io n s p r o z e d u r
+       B it t e d ie e r s t e D is k e t t e des zu in s t a ll ie r e n d e n
+       S o ftw a re p ro d u k te s in das Laufw erk e in le g e n
+
+       S o l l d ie I n s t a l l a t i o n   j e t z t b eg innen ? ( j/ n ) —►J
+
+
+
+
+Mit der Antwort n wird die Funktion abgebrochen.
+Mit der Antwort j beginnen Sie die Installation.
+
+
+Legen Sie zuerst die Diskette SINIX1 in das Laufwerk.
+Bestätigen Sie mit j und der Taste (T|*
+
+Das Einlesen und Ausführen der Installationsanweisungen wird
+mit folgenden Meldungen protokolliert:
+
+
+                               I n s t a lla t io n s p r o z e d u r
+                                                                                     A
+       B it t e d ie e r s t e D is k e t t e des zu in s t a ll ie r e n d e n
+       S o ftw a re p ro d u k te s in das Laufw erk e in le g e n
+
+       S o l l d ie I n s t a l l a t i o n   j e t z t b eg innen ? ( j/ n ) —► j
+
+       E in le s e n d e r I n s ta lla tio n s a n w e is u n g e n   ...
+
+       A u sführung d e r I n s ta lla tio n s a n w e is u n g e n :
+       Anschließend folgt die Bildschirmausgabe:
+
+       r
+                                     S Y S T E M D A T E I E N                     R E T T E N
+
+
+            Im V e r la u f d ie s e r P ro ze d u r zum R e tte n w ic h t ig e r S y ste m d a te ie n w ird e in e
+            le e r e D is k e t t e ( S ic h e r u n g s d is k e t t e ohne S c h r e ib s c h u tz ) b e n o e tig t.
+
+            Es werden u .a . g e r e t t e t :
+                - Benutzerkennungen und ih r e E ig e n s c h a fte n (je d o c h n ic h t ih r e Daten)
+                - Param eter f u e r d ie D a te n fe rn u e b e rtra g u n g ( f a l l s i n s t a l l i e r t )
+
+            Da k e in e Daten von B e n u tze rn          g e r e t t e t w erden, so rg en S ie b i t t e d a fu e r,
+            d ass a l l e B e n u tze r a l l e ih r e    Daten a u f D is k e tt e n r e t t e n , ueber d ie s ie
+            nach d e r N e u fo rm a tie ru n g d e r     F e s t p la t t e v e rfu e g e n w o lle n , ode r u e b e r-
+            nehmen S ie d ie S ic h e ru n g d e r        B e n u tze rd a te n .
+
+
+
+
+        Haben a l l e   B e n u tze r ih r e D a te n b e re ic h e g e r e t t e t ?         ( j/ n ) >
+
+
+
+
+       V                                                                                                                    J
+
+grgp   Geben Sie j ein und drücken Sie die Taste fX|.
+        Anschließend folgt die Bildschirmausgabe:
+
+
+
+                                     S Y S T E M D A T E I E N                   R E T T E N
+
+
+             Im V e r la u f d ie s e r P ro ze d u r zum R e tte n w ic h t ig e r S y ste m d a te ie n w ird e in e
+             le e r e D is k e t t e ( S ic h e r u n g s d is k e t t e ohne S c h r e ib s c h u tz ) b e n o e tig t.
+
+             Es werden u .a g e r e t t e t :
+                 - Benutzerkennungen und ih r e E ig e n s c h a fte n (je d o c h n ic h t ih r e Daten)
+                 - Param eter fu e r d ie D a te n fe rn u e b e rtra g u n g ( f a l l s i n s t a l l i e r t )
+
+             Da k e in e Daten von B e n u tze rn         g e r e t t e t werden, so rg en S ie b i t t e d a fu e r,
+             d ass a l l e B e n u tze r a l l e ih r e   Daten a u f D is k e t t e r e t t e n , ueber d ie s ie
+             nach d e r N e u fo rm a tie ru n g d e r    F e s t p la t t e v e rfu e g e n w o lle n , oder u e b e r-
+             nehmen S ie d ie S ic h e ru n g d e r       B e n u tze rd a te n .
+
+
+             Haben a l l e B e n u tze r ih r e D a te n b e re ic h e g e r e t t e t ?          ( j/ n ) > j
+             S in d a l l e von B e n u tze rn g e s t a r t e t e n P ro z e s s e bee n det?    (j/ n ) >
+             Haben a l l e B e n u tz e r d as System v e r la s s e n ( lo g o u t ) ?           ( j/n ) >
+
+
+
+        V.                                                                                                                 J
+[jr^>   Beantworten Sie auch die weiteren zwei Fragen mit j.
+r                           S Y S T E H D A T E I E N                    R E T T E N
+
+
+    Im V e r la u f d ie s e r P ro ze d u r zum R e tte n w ic h t ig e r S y ste m d a te ie n w ird e in e
+    le e r e D is k e t t e ( S ic h e r u n g s d is k e t t e ohne S c h r e ib s c h u tz ) b e n o e tig t.
+
+    Es werden u .a . g e r e t t e t :
+        - Benutzerkennungen und ih r e E ig e n s c h a fte n                 (je d o c h n ic h t ih r e Daten)
+        - Param eter fu e r d ie D a te n fe rn u e b e rtra g u n g          ( f a lls in s t a llie r t )
+
+    Da k e in e Daten von B e n u tze rn          g e r e t t e t w erden, so rg en S ie b i t t e d a fu e r,
+    d a ss a l l e B e n u tze r a l l e ih r e   Daten a u f D is k e tt e n r e t t e n , u eber d ie s ie
+    nach d e r N e u fo rm a tie ru n g d e r     F e s t p la t t e v e rfu e g e n w o lle n , oder u e b e r-
+    nehmen S ie d ie S ic h e ru n g d e r        B e n u tze rd a te n .
+
+
+    Haben a l l e B e n u tze r ih r e D a te n b e re ic h e g e r e t t e t ?          (j / n ) > j
+    S in d a l l e von B en u tze rn g e s t a r t e t e n P ro ze s se b een det?       ( j/ n ) > j
+    Haben a l l e B e n u tze r das System v e r la s s e n ( lo g o u t) ?              ( j/ n ) > j
+
+    B i t t e D is k e t t e entnehmen und d ie le e r e D is k e t t e e in le g e n ,
+    a u f d e r d ie w ic h tig e n S y ste m d a te ie n g e r e t t e t werden s o lle n .
+
+    S o b a ld d ie le e r e D is k e t t e e in g e le g t wurde, b i t t e m it ' j '      b e s ta e tig e n .   >
+
+V _________________________ _____________________________ J
+
+
+Nehmen Sie die Diskette SINIX1 aus dem Laufwerk.
+Legen Sie ein leere Diskette ohne Schreibschutz ein.
+Geben Sie j ein und drücken Sie die Taste fj~l
+Ihre RESTOR-Diskette wird formatiert. Anschließend werden
+Ihre Systemdateien gesichert.
+
+f                                                                                                                        \
+    Im V e r la u f d ie s e r P ro ze d u r zum R e tte n w ic h t ig e r S y ste m d a te ie n w ir d e in e
+    le e r e D is k e t t e ( S ic h e r u n g s d is k e t t e ohne S c h r e ib s c h u tz ) b e n o e tig t.
+
+    Es werden u .a . g e r e t t e t :
+        - Benutzerkennungen und ih r e E ig e n s c h a fte n                  (je d o c h n ic h t ih r e Daten)
+        -  Param eter fu e r d ie D a te n fe rn u e b e rtra g u n g          ( f a lls in s t a llie r t )
+
+    Da k e in e Daten von B e n u tze rn          g e r e t t e t werden, so rg en S ie b i t t e d a fu e r,
+    d a ss a l l e B e n u tze r a l l e ih r e   Daten a u f D is k e tt e n r e t t e n , ueber d ie s ie
+    nach d e r N e u fo rm a tie ru n g d e r     F e s t p la t t e v e rfu e g e n w o lle n , oder u e b e r-
+    nehmen S ie d ie S ic h e ru n g d e r        B e n u tze rd a te n .
+
+
+    Haben a l l e B e n u tze r ih r e D a te n b e re ic h e g e r e t t e t ?           ( j/ n ) > j
+    S in d a l l e von B e n u tze rn g e s t a r t e t e n P ro ze s se b ee n det?      ( j/ n ) > j
+    Haben a l l e B e n u tze r das System v e r la s s e n ( lo g o u t) ?               ( j/ n ) > j
+
+    B i t t e D is k e t t e entnehmen und d ie le e r e D is k e t t e e in le g e n ,
+    a u f d e r d ie w ic h tig e n S y ste m d a te ie n g e r e t t e t werden s o lle n .
+
+    S o b a ld d ie le e r e D is k e t t e e in g e le g t wurde, b i t t e m it ' j '     b e s ta e tig e n .   > j
+
+
+
+V ______________________________________________________ /
+
+
+
+r         R E S TO R E-D iskette w ir d neu f o r m a t ie r t . . .
+
+
+          R e tte n d e r S y s te m d a te ie n ...
+          U eb erp ru efe n d e r R E S T O R E -D is k e tte ...
+Anschließend folgt die Bildschirmausgabe:
+ —
+
+
+                          W I C H T I G E R            H I N W E I S
+
+
+     D ie P ro ze d u r zum S ic h e r n w ic h t ig e r S y ste m d a te ie n wurde
+     e r f o lg r e ic h bee n det.
+
+     B i t t e machen S ie j e t z t k e in e Aenderungen im System !
+
+     Beginnen S ie m it d e r I n s t a l l a t i o n des neuen G rundsystem s w ie f o lg t :
+
+           1 ) Nehmen S ie d ie R E S T O R E-D iskette aus dem Lau fw erk
+               ( s ie w ird zum gegebenen Z e itp u n k t a n g e fo rd e r t)
+
+          2) D is k e t t e SINIXO e in le g e n
+
+          3) System m it dem S c h a lt e r an d e r K o n so le a b s c h a lte n
+
+          4) S c h a lte n S ie ca. 30 Sekunden nachdem s ic h d ie A n la g e
+             a b g e s c h a lte t h a t, d ie s e an d e r K o n so le w ie d e r e in .
+
+
+
+
+V                                                                                                J
+
+
+
+r           ** S y n c in g D is k s . . .
+            ** Norm al System Shutdown
+                                           **
+                                           *
+
+            H a lt th e p r o c e s s o r
+
+
+
+
+Nehmen Sie die RESTOR-Diskette aus dem Laufwerk.
+Schalten Sie mit dem Bedienschalter an der Konsole die System­
+einheit aus.
+Legen Sie die Diskette SINIXO in das Laufwerk.
+Warten Sie ca. 30 Sekunden und schalten Sie die Systemeinheit
+wieder ein.
+Beginnen Sie dann Ihre Installation wieder wie in Kapitel 3.2
+beschrieben.
+
+
+     Hinweis
+     Im Laufe dieser Installation werden Sie aufgefordert, die von
+     Ihnen erstellte RESTOR-Diskette einzulegen (siehe dazu
+     Kapitel 3.4).
+RESTOR-Diskette einiesen
+
+Wollen Sie ein neues SINIX-Betriebssystem installieren, können Sie dazu
+eine von Ihnen erstellte RESTOR-Diskette (Sicherungsdiskette) einiesen.
+Nachdem die Diskette SINIX7 eingelesen wurde, werden am Bildschirm
+folgende Meldungen ausgegeben:
+
+
+        r   E in r ic h t e n des M enuesystem s. . .
+                                                                                                                            "\
+            Wenn S ie v o r d e r I n s t a l l a t i o n des neuen G rundsystem s d ie R E S T O R -D iskette
+            ( S ic h e r u n g s d is k e t t e m it w ic h tig e n S y ste m d a te ie n ) a n g e le g t haben, muessen
+            S ie s ie j e t z t e in ie s e n .
+
+            S o l l d ie s e D is k e t t e j e t z t e in g e le s e n werden ? ( j/ n ) > J
+
+
+
+
+        Haben Sie eine RESTOR-Diskette erstellt, geben Sie als Antwort j
+        ein und bestätigen Sie das Ende der Eingabe mit der Taste (T|-
+
+
+        r   B it t e d ie R E S T O R -D iskette in das Laufw erk le g e n und m it ' j ' b e s ta e tig e n .
+            Jed e andere T a s te u n te rd ru e c k t das E in le s e n d e r R E S T O R -D iskette und es
+            w ir d e in Standardm enue e in g e r ic h t e t . > J
+
+
+
+
+ßrjp    Geben Sie j ein.
+        Drücken Sie die Taste p ] .
+Am Bildschirm werden folgende Meldungen zum RESTOR-Lauf
+ausgegeben:
+
+
+r       E in le s e n d e r RESTOR-Anweisungen. . .
+                                                                                              "\
+
+
+        D ie g e r e t t e t e n S y ste m d a te ie n werden j e t z t e in g e le s e n .
+
+        W ie d e r e in le s e n d e r g e r e t t e t e n S y s te m d a te ie n ...
+        B it t e D is k e t t e aus dem Laufw erk nehmen.
+        R e k o n s tru k tio n d e r K e n n w o r td a t e i...
+        W ie d e r e in r ic h te n d e r B e n u t z e r b e r e ic h e . ..
+
+        R e sto re e r f o lg r e ic h a b g e s c h lo s s e n .
+
+        Menuesystem e in g e r ic h t e t .
+
+
+
+
+Nehmen Sie die Diskette aus dem Laufwerk. Kennzeichnen Sie
+diese Diskette mit einem Etikett als RESTOR-Diskette. Setzen Sie
+Ihre Installation fort mit der Konfigurierung ihrer Peripherie
+(siehe Kapitel 3.3).
+3.5 Laden von zusätzlicher Software
+
+Zusätzliche Software erhalten Sie auf einer oder mehreren Disketten gelie­
+fert. Um mit der zusätzlichen Software arbeiten zu können, müssen Sie
+diese in den Speicher Ihres PC-MX2 laden.
+Das folgende Kapitel beschreibt das Laden von zusätzlicher Anwender­
+software.
+
+         Der PC-MX2 meldet sich mit dem SINIX-Eröffnungsbildschirm.
+
+
+
+
+/rjp ’   Geben Sie als Benutzerkennung admin ein.
+         Drücken Sie die Taste (T).
+ Rechnername: sieO O l
+ B enutzerkennung: admin
+ Kennwort:
+
+
+
+
+. ____________________________________________________ ,
+
+Geben Sie das Kennwort siemens (in Kleinbuchstaben) bzw. das
+von Ihnen vergebene ein.
+Das Kennwort wird am Bildschirm nicht angezeigt.
+Drücken Sie die Taste |~J).
+
+
+   Hinweis
+   Meldet SINIX ’’Falsche Angaben”, dann haben Sie die Benut­
+   zerkennung oder das Kennwort falsch eingegeben.
+   Geben Sie die Benutzerkennung und das Kennwort nochmals
+   richtig ein.
+Das folgende Laden der SINIX-Softwareprodukte führen Sie unter Menü­
+führung durch. Was Sie beim Arbeiten mit Menüs beachten müssen, finden
+Sie im Kapitel 3.2.3 beschrieben.
+
+        Am Bildschirm wird das Hauptmenü ausgegeben.
+
+
+        r                                ~                                ___                    ____
+            (m ain)           S I E H E      N S      P E R S O N A L               C O M P U T E R        SIN IX V 2 .0
+
+
+                                             b     - B u e ro fu n k tio n e n
+
+                                             k     - K o m m u n ik a tio n sfu n k tio n e n
+
+                                             a     - A r c h iv fu n k t io n e n
+
+                                             d     - Dienstprogram m e
+
+                                             e     - E n tw ick lu n g ss y s te m e
+
+                                             s     *- S y stem v erw altu n g
+
+             Fuer je d e s Menue g i l t :     .<HELP> g ib t e in e B e d ie n u n g s a n le itu n g ,
+             <HELP> g ib t M e n ue -In fo rm a tio n e n und : J e in g lo b a le s Menue aus.
+
+             T e rm in a l:   c o n s o le           D i 2 5 .F e b .1 9 8 6 ,   1 3:1 9:53
+
+            B it t e w aehlen! >
+
+
+
+
+        V.                                                                                                                 J
+        Geben Sie s ein.
+        Drücken Sie die Taste 0 .
+Folgendes Menü wird ausgegeben:
+
+  (adm in)                 SYSTEMVERWALTUNG
+
+
+
+
+                        - L o g in - A d m in is t r a t io n
+
+                        - S p o o l- A d m in is t r a t io n
+
+                        - I n s t a l l a t i o n von S o ftw a re p ro d u k te n
+
+                        - K o n fig u r ie r u n g des lo k a le n System s
+
+                        - P a ra m e trie ru n g d er N e tz e in b in d u n g
+
+                        - S y ste m s ic h e ru n g a u f M B -K a sse tte
+
+
+
+
+ B i t t e waehlen! >
+
+
+
+
+V.                                                                                   J
+
+Geben Sie i ein.
+Drücken Sie die Taste 0 .
+        Anschließend folgt die Bildschirmausgabe:
+
+
+                                       I n s t a lla t io n s p r o z e d u r
+                B it t e d ie e r s t e D is k e t t e des zu in s t a ll ie r e n d e n
+                S o ftw a re p ro d u k te s in das Laufw erk e in le g e n
+
+                S o l l d ie I n s t a l l a t i o n    j e t z t beg innen ? ( j/ n ) —► J
+
+
+
+
+       Mit der Antwort n wird die Funktion abgebrochen.
+       Mit der Antwort j beginnen Sie die Installation.
+Entsprechend Ihrer Bestellung können Sie nun Ihre Software gemäß den
+Anweisungen nacheinander einiesen.
+        Legen Sie die erste Diskette in das Laufwerk.
+        Bestätigen Sie mit j und der Taste (T).
+        Das Einlesen und Ausführen der Installationsanweisungen wird
+        mit folgenden Meldungen protokolliert:
+
+
+                                      I n s t a lla t io n s p r o z e d u r
+                 B it t e d ie e r s t e D is k e t t e des zu in s t a ll ie r e n d e n
+                 S o ftw a re p ro d u k te s in das Laufw erk e in le g e n
+
+                 S o l l d ie I n s t a l l a t i o n    j e t z t beg innen ?    ( j/ n ) —>   j
+
+                 E in le s e n d e r I n s t a lla tio n s a n w e is u n g e n   ...
+                 A u sfü hru n g d e r I n s t a l la t i o n :
+
+
+
+
+Der weitere Verlauf des Dialogs am Bildschirm ist vom jeweiligen
+Softwareprodukt abhängig.
+Fehlermöglichkeit
+Meldet das System Installationsanweisung nicht gefunden, dann haben Sie
+entweder
+— eine falsche Diskette eingelegt oder
+— die Information auf der eingelegten Diskette ist fehlerhaft.
+
+        Mit der Taste |s t a r t | gelangen Sie wieder zum ersten Menübild­
+        schirm in der Benutzerkennung admin.
+        Mit der Taste |e i m p | kommen Sie wieder zum SINIX-Eröffnungs-
+        bildschirm.
+3.6 Systemsicherung
+
+Systemsicherungen führen Sie unter der Benutzerkennung admin im Menü
+”Systemverwaltung” durch. Was Sie beim Arbeiten mit Menüs beachten
+müssen, finden Sie in Kapitel 3.2.3 beschrieben.
+
+        Der PC-MX2 meldet sich mit dem SINIX-Eröffnungsbildschirm.
+
+
+
+
+        Geben Sie als Benutzerkennung admin ein.
+        Drücken Sie die Taste |~JI-
+r                                                        ■\
+
+
+
+
+ Rechnername: sieO O l
+ B enutzerkennung: admin
+ Kennwort:
+
+
+
+
+ ___________________________________________________ /
+
+Geben Sie das Kennwort siemens (in Kleinbuchstaben) bzw. das
+von Ihnen vergebene ein.
+Das Kennwort wird am Bildschirm nicht angezeigt.
+Drücken Sie die Taste p ] .
+
+
+    Hinweis
+    Meldet SINIX ’’Falsche Angaben.”, dann haben Sie die
+    Benutzerkennung oder das Kennwort falsch eingegeben.
+    Geben Sie die Benutzerkennung und das Kennwort nochmals
+    richtig ein.
+Am Bildschirm wird das Hauptmenü ausgegeben.
+
+r                —                                                                                                 r\
+    (m ain)           S I E M E N S         P E R S O N A L               C O M P U T E R          SIN IX V 2 .0
+
+
+                                     b   - B u e ro fu n k tio n e n
+
+                                     k   - K o m m u n ik a tio n sfu n k tio n e n
+
+                                     a   - A r c h iv fu n k t io n e n
+
+                                     d   - Dienstprogram m e
+
+                                     e   - E n tw ick lu n g ss y s te m e
+
+                                     s   - S y stem v erw altu n g
+
+     Fuer je d e s Menue g i l t :     ,<HELP> g ib t e in e B e d ie n u n g s a n le itu n g ,
+     <HELP> g ib t M e n ue -In fo rm a tio n e n und : J e in g lo b a le s Menue aus.
+
+     T e rm in a l:   c o n s o le        D i 2 5 .F e b .1 9 8 6 ,    1 3:1 9:53
+
+    B i t t e waehlen! >
+
+
+
+
+V.                                                                                                                 J
+
+Geben Sie s ein.
+Drücken Sie die Taste s
+         Folgendes Menü wird ausgegeben:
+
+
+
+
+[jrrgp   Geben Sie m ein.
+         Drücken Sie die Taste [T|.
+Darauf erhalten Sie folgendes Menü:
+
+   (ts a v e )                DATENSICHERUNG AUF MAGNETBAND-KASSETTEN
+
+                 S t r a ff u n g M B -K a sse tte :
+
+                              t    - S t r a f f e n des Magnetbandes
+
+                 P h y s ik a lis c h e D a te n sic h e ru n g :
+
+                                      System abzug a u f M B -K a sse tte ausgeben
+                                      System abzug von M B -K a s se tte e in ie s e n
+
+                 L o g isc h e D a te n sic h e ru n g :
+
+                              v    - V e r z e ic h n is d e r M B -K a s se tte ausgeben
+                              s    - System abzug a u f M B -K a s se tte s c h re ib e n
+                              1    - System abzug von M B -K a sse tte le s e n
+
+
+
+
+  B i t t e waehlen! >
+
+
+
+
+(wird ergänzt)
+3.7 Systemuhr stellen
+
+         Sie haben die Funktion s-Systemverwaltunggewählt. Darauf erhal­
+         ten Sie folgendes Menü:
+
+
+
+
+Ijrg p   Geben Sie k ein.
+         Drücken Sie die Taste (T|.
+Es erscheint folgendes Menü
+
+  ( c o n f ig )           KONFIGURIERUNG DES LOKALEN SYSTEMS
+
+
+
+
+                   a   -   A k t u e lle K o n fig u r ie r u n g ze ig e n
+
+
+                   k   -   B ild s c h ir m a r b e it s p lä t z e und D ru ck e r k o n f ig u r ie r e n
+
+
+                   u   -   System uhr s t e ll e n
+
+
+
+
+                                                                                                              J
+
+Geben Sie u ein. Drücken Sie die Taste [T|-
+In den aktuellen Bildschirm wird ein Formular eingeblendet.
+
+  ( c o n f ig )                  KONFIGURIERUNG DES LOKALEN SYSTEMS
+
+
+                                                      ( c lo c k )           Uhr s t e ll e n
+
+                        a    - a k t u e lle K
+                                                                 Jahr        ( 8 0 ..9 9 )      _86
+                                                                 Monat       ( 0 1 . .12)
+                        k        - B ild s c h ir m              Tag         (0 1 ..3 1 )
+                                                                 Stunde      (0 0 ..2 3 )
+                                                                 M in u te   (0 0 ..5 9 )
+                        u        - System uhr                    Sekunde     (0 0 ..5 9 )
+                                                                                                —
+
+
+                                                       Fuehrende N u lle n muessen m it e in g e -
+                                                       geben werden.
+
+
+
+
+     B i t t e w aehlen! >   u
+
+
+
+
+V.                                                                                                    J
+Tragen Sie in die Formularfelder die geforderten Angaben ein;
+führende Nullen bitte mit angeben. Falsche Eingaben können Sie
+mit der Taste (S) korrigieren.
+Nachdem Sie das Formular ausgefüllt haben, drücken Sie die
+Taste [m e n u [ oder die Taste (T).
+Sie erhalten das vorhergehende Menü.
+Wollen Sie keine Angaben machen, drücken Sie die Taste | d e l |.
+Sie erhalten das vorhergehende Menü.
+4 Standortwechsel
+
+PC-MX2 transportieren
+
+Alle Teile einzeln transportieren. Außerdem sollte eine zweite Person
+helfen (Türen, Treppen).
+Bildschirm
+Den Bildschirm nur in der Originalverpackung transportieren. Er ist wegen
+der Implosionsgefahr der Bildröhre gegen mechanische Einwirkungen zu
+schützen.
+Systemeinheit
+Die Systemeinheit darf auf keinen Fall an der hinteren Abdeckung festge­
+halten werden, da diese nach hinten wegklappt (Schnappverschlüsse). Am
+besten tragen Sie die Systemeinheit so, daß die Vorderseite zu Ihnen
+gerichtet ist (vorne ist das Gerät schwerer).
+
+
+
+
+Bild 4-1     Transport der Systemeinheit
+5 Fehlersuche
+
+Was tue ich, wenn?
+
+Dieses Kapitel beschreibt Fehlerursachen und deren Behebung. Die
+Anweisungen zur Fehlerbehebung sind durch Piktogramme gekennzeich­
+net. Führen Sie diese Anweisungen bitte in der angegebenen Reihenfolge
+aus.
+
+
+Die grüne Netzkontrollampe leuchtet nicht
+Netzspannungsversorgung fehlerhaft.
+ßrgp     Systemeinheit ausschalten.
+         Gerätestecker des Netzkabels an der Systemeinheit auf richtigen
+         Sitz prüfen.
+         Netzspannung an der Steckdose kontrollieren.
+         Systemeinheit einschalten.
+         Wenn die grüne Netzkontrollampe immer noch nicht leuchtet,
+         dann verständigen Sie den Wartungsdienst.
+
+
+Die rote Kontrollampe für den Selbsttest erlischt nicht nach
+max. 30 Sekunden oder blinkt
+Der Selbsttest ist nicht fehlerfrei abgelaufen.
+frgp     Systemeinheit aus- und wieder einschalten.
+         Leuchtet oder blinkt die rote Kontrollampe für den Selbsttest
+         immer noch?
+         — Notieren Sie die leuchtenden und nichtleuchtenden Lampen
+           der Fehlanzeige.
+         — Notieren Sie zusätzliche Bildschirmausgaben.
+         — Verständigen Sie den Wartungsdienst.
+Die Plattenzugriffslampe leuchtet rot auf
+[jT.gp   Verständigen Sie den Wartungsdienst.
+
+Der Bildschirm bleibt dunkel
+Bildschirm wurde automatisch dunkel gesteuert. Heiligkeitseinsteller auf
+Dunkel eingestellt. Verbindung von der Systemeinheit zum Bildschirm
+fehlerhaft.
+ßrgp     Drücken Sie eine beliebige Taste.
+         Drehen Sie den Helligkeitseinsteller ganz nach vorne.
+         Schalten Sie die Systemeinheit aus.
+         Prüfen Sie, ob folgende Stecker richtig in den Buchsen der
+         Systemeinheit stecken:
+          — Gerätestecker des Verbindungskabels vom Bildschirm zur
+            Systemeinheit,
+          — Gerätestecker des Netzkabels.
+         Prüfen Sie, ob die Steckdose Spannung führt.
+         Schalten Sie die Systemeinheit wieder ein.
+         Sollte der Bildschirm immer noch dunkel bleiben, dann verständi­
+         gen Sie den Wartungsdienst.
+Die Meldung "testend" erscheint nicht
+Der Selbsttest ist nicht fehlerfrei abgelaufen.
+Die rote Kontrollampe für den Selbsttest erlischt nicht nach
+max. 30 Sekunden oder blinkt.
+ßrzgp   Systemeinheit aus- und wieder einschalten.
+         Leuchtet oder blinkt die rote Kontrollampe für den Selbsttest
+         immer noch?
+         — Notieren Sie die leuchtenden und nichtleuchtenden Lampen
+           der Fehleranzeige.
+         — Notieren Sie zusätzliche Bildschirmausgaben.
+         — Verständigen Sie den Wartungsdienst.
+
+
+Die Systemeinheit kann nicht ausgeschaltet werden
+ljrgp   Drücken Sie den Rücksetzknopf.
+         Sollte dieser Fehler öfters auftreten, dann verständigen Sie den
+         Wartungsdienst.
+Keine Ausgabe auf den Drucker
+ßrjp    Überprüfen Sie, ob der Drucker ’On-Line’ ist.
+
+        Überprüfen Sie, ob die Druckerverwaltung aktiv ist.
+        Schalten Sie den Drucker aus.
+        Überprüfen Sie, ob
+        — die beiden Stecker des Verbindungskabels zwischen
+          Systemeinheit und Drucker richtig in den Buchsen stecken,
+        — der Gerätestecker des Netzkabels in der Buchse der
+          Systemeinheit richtig steckt.
+        Schalten Sie den Drucker wieder ein.
+        Wenn immer noch keine Ausgabe auf den Drucker möglich ist,
+        dann überprüfen Sie den Drucker anhand der mitgelieferten
+        Betriebsanleitung.
+        Sollten Sie dann immer noch keinen Erfolg haben, verständigen
+        Sie den Wartungsdienst.
+6 Test- und Diagnosesystem TDS2
+
+Mit dem Text- und Diagnosesystem 2 (TDS 2) steht Ihnen ein umfangrei­
+ches Diagnoseprogramm für Ihren PC-MX2 zur Verfügung. Sollte Ihre
+Anlage nicht einwandfrei arbeiten, dann können Sie damit feststellen, auf
+welche Komponente Ihres PC-MX2 dies zurückzuführen ist. Vom Testpro­
+gramm gemeldete Fehler sind nur von einem Servicetechniker zu beheben.
+Eventuell ist die betroffene Komponente über den Depotservice aus­
+tauschbar.
+
+
+6.1 Installation
+
+Installiert wird die TDS2-Diskette wie zusätzliche Software, nämlich über
+das ’admin’-Menü (s. Kapitel 3.5).
+
+        Ausgabebildschirm ist der Sinix-Eroffnungsbildschirm
+Sie erhalten den Menübildschirm ’main’ des SINIX-Standardmeniis. Ver­
+fahren Sie bitte wie folgt:
+
+
+                PI             für Systemverwaltung oder
+                PI             für Installation von Softwareprodukten
+
+
+        r      I n s t a lla t io n s p r o z e d u r
+                                                                                    A
+
+               s o l l d ie I n s t a l l a t i o n     j e t z t beg innen j / n
+
+
+
+
+^       j          GD
+
+
+               E in le s e n d e r I n s t a lla tio n s a n w e is u n g e n
+               A u sfü hru n g d e r I n s t a l la t i o n :
+               SINW D is k e t t e w ir d e in g e le s e n . . .
+               Dummy Kennung w ir d e in g e r ic h t e t
+               Neues Kennwort:
+
+
+
+
+            Hinweis
+            Die Eingabe des Kennwortes entfällt, wenn das MES instal­
+            liert ist.
+
+
+a       service Q]
+
+
+f l     f                                                                           \
+               Neues Kennwort w ie d e rh o le n :
+
+
+
+
+        service [Jj
+
+
+        r      S e r v ic e Kennung w ird e in g e r ic h t e t
+               Neues Kennwort:
+
+
+
+
+ßrgp    service (T)
+        r      Neues Kennwort w ie d e rh o le n :
+                                                                                              ■\
+
+
+
+
+gr^     service (7)
+
+
+        r      SINW D is k e t t e g e le s e n .
+               B it t e d ie D is k e t t e SINW1 e in le g e n und m it j b e s tä tig e n
+
+
+
+
+        j         0
+
+
+               SINW1 D is k e t t e w ir d g e le s e n
+                                                                                              \
+€ 3            F lo p p y kann aus dem L aufw erk genommen w erden.
+               R e fe re n z d a te ie n werden e r s t e l l t .
+               I n s t a l l a t i o n e r f o lg r e ic h a b g e s c h lo s s e n .
+
+
+
+
+        m l
+
+Unter der Benutzerkennung service und dem von Ihnen festgelegten Kenn­
+wort steht jetzt ein Wartungsmenü zur Verfügung. Damit ist es möglich,
+schnell ein Prüfprogramm zu starten, oder mit | h e l p | über die Programme
+eine Kurzinformation zu erhalten.
+Alle Dateien, die für einen reibungslosen Ablauf sorgen, wurden bei der
+Installation automatisch eingespielt bzw. neu erstellt.
+6.2 Aufrufen von Tests
+
+Um einen Test ausführen zu können, benötigen Sie den dazugehörigen
+Menübildschirm. Über den abgebildeten Bildschirmen befindet sich oben
+links eine durch Leerzeilen getrennte Buchstabenfolge. Dies sind die Aus­
+wahlbuchstaben der vorgeordneten Menüs, immer vom Bildschirm des
+Wartungshauptmenüs ausgehend. Geben Sie diese Folge, ausgehend vom
+Wartungshauptmenü, ein, dann erhalten Sie sofort den abgebildeten
+Menübildschirm.
+
+        Sie gelangen in das Wartungsmenü, wenn Sie sich unter der
+        Benutzerkennung service anmelden. Es erscheint der Startbild­
+        schirm.
+
+
+
+
+Sie können die gewünschte Funktion durch Eingabe des Wahlbuchstabens
+oder durch Betätigen der Positioniertasten für die Schreibmarke auswäh­
+len. Die gerade gewählte Funktion erscheint invers. Der dazugehörige
+Auswahlbuchstabe erscheint in der letzten Zeile.
+Ein Testauftrag läßt sich mit der Taste |d e l |löschen oder abbrechen. Wollen
+Sie zum Anfangsbildschirm zurück, dann betätigen Sie |m e n u |s o oft hinter­
+einander, bis dieser Bildschirm wieder erscheint.
+Zunächst folgt die Beschreibung der Menüpunkte, die nicht zu einem Test
+führen.
+6.3 Nützliches
+
+            Nach Wahl des Menüpunktes ’Nützliches’ erscheint folgendes
+            Untermenü.
+
+                                         N ü t z lic h e s
+
+
+
+
+                   p -   P la t t e n in f o
+                   f -   f 16 read
+                   s -   S tream er R e in ig u n g s k a s s e t te
+                   r -   T D S 2 -R e v is io n s s tä n d e
+
+
+
+
+            V.                                                         J
+Platteninfo
+fl 6 read
+Streamer Reinigungskassette
+In regelmäßigen Abständen (nach 5 - 1 0 Betriebsstunden) sollten Sie den
+Kopf des Magnetbandstreamers reinigen. Dies machen Sie mit einer Reini­
+gungskassette.
+Legen Sie das Reinigungsband in den Streamer und rufen Sie diesen
+Menüpunkt auf. Es wird automatisch ein Reinigungsdurchlauf vorgenom­
+men.
+TDS2-Revisionsstände
+Dieser Menüpunkt gibt dem Wartungstechniker Auskunft darüber, ob Ihr
+TDS2 die notwendigen Testprogramme enthält, um Ihre Anlage zu über­
+prüfen.
+6.4 Firmwarestände
+
+Alle Funktionen der Bedieneinheit (Bildschirm und Tastatur) sind als Pro­
+grammcode in EPROM’s ( = Firmware) hinterlegt. Ausgegeben werden die
+Firmwarestände der angeschlossenen Bedieneinheiten.
+Bei Start der Funktion f ist sicherzustellen, daß kein anderer Benutzer
+arbeitet, da nach Ausführung der Funktion ”f ’ a l l e Benutzerprozesse,
+außer dem eigenen, beendet werden.
+
+
+Beispiel
+
+                  Name:                 T e rm in a l:               Login-D atum :
+
+                  s e r v ic e          c o n s o le                 Dec     2 12:23
+                  gast                  tty 0 1                      DEc     2 10:34
+
+                  Es i s t s ic h e r z u s t e lle n , daß k e in a n d e re r B e n u tze r im System i s t !
+
+                  Pro gram m start j/n >
+
+
+
+
+Wenn sich der Benutzer gast vom System abgemeldet hat:
+
+
+           i                GD
+
+
+           r   / d e v / c o n s o le
+               / d e v / c o n s o le
+                                                T a s ta tu r:
+                                                B ild s c h ir m :
+                                                                           800105 *
+                                                                           000018 *
+                                                                                                   A n g e s ch lo ss e n e s
+                                                                                                   T e rm in a l in Ordnung
+
+               /d e v / tty 0 1                T a s ta tu r:              K e in e A n tw o rt   [A n g e sch lo sse n e s T e r -
+               / d e v / tty 0 1               B ild s c h ir m :          K e in e A n tw o rt   - m in a l a b g e s c h a lte t
+                                                                                                    o de r d e fe k t
+
+               / d e v / tty 0 3               T a s ta tu r:                                     j K e in T e rm in a l
+               / d e v / tty 0 3               B ild s c h ir m :                                  [a n g e s ch lo ss e n
+
+               * Firm w arestand
+6.5 Protokolldateien
+
+Während eines Testdurchlaufs werden die Ergebnisse in eine Datei einge­
+tragen. Diese Dateien können hier weiter bearbeitet werden.
+
+        Geben Sie p ein.
+
+                         P r o t o k o lld a t e ie n
+
+
+             Protokoll
+             fdat.exos                        D a te i
+             firmware
+                                              le s e n
+                                              d rucken
+                                              lö s c h e n
+
+
+
+
+        V___________________________________ /
+Diese Dateien werden nur erzeugt, wenn der entsprechende Test gelaufen
+ist. Wird nach einem Test die Datei nicht gelöscht, dann wird das Ergebnis
+des nächsten Testes an das vorherige Testergebnis angehängt.
+Wenn Sie eine der Dateien mit den Positioniertasten ausgewählt haben,
+erscheint das Untermenü. Hier können Sie angeben, ob Sie die gewählte
+Datei lesen, ausdrucken oder löschen möchten.
+        Nehmen Sie Ihre Wahl mit den Positioniertasten vor und bestäti­
+        gen Sie die Wahl mit [j]
+6.6 Testen der Systemeinheit
+
+        Alle ausführbaren Tests werden von diesem Menü aus gestartet.
+        Zum Test der Systemeinheit haben Sie s (T) eingegeben. Es
+        erscheint der Menübildschirm SYSTEMTEST.
+
+                                         S y s te m te s t
+
+              Beim S y ste m te st s in d fo lg e n d e Param eter z u lä s s ig :
+
+              f    F lo p p y te s t                   b tc   B TC -T est
+              b    B ild s c h ir m t e s t            h      H a lt b e i F e h le r
+              d1   D r u c k e rte s t 9001            pc2000 HTS4 Kom m unikation
+              d4   D ru ck e r 9004
+              k    K a n a lte s t
+              s    S tre a m e r te s t
+
+              D ie D r u c k e rs ta tio n e n ste h e n im Kopf von s y s t e s t .
+              W ird k e in Param eter e in g eg eb en , so w ir d nur d e r
+              B e fe h ls m ix C o m p ile r te s t S o r t t e s t g e s t a r t e t .
+
+              Achtung d e r T e s t l ä u f t e n d lo s !
+              Beenden des T e s te s d u rch B e tä tig e n d e r D E L-T a ste
+
+              Der T e s t a u ft r a g s ie h t z . B . so aus:      f dl b
+
+              Geben S ie nun b i t t e        Ih re n T e s t a u ft r a g —►
+
+
+
+
+        V.                                                                                J
+Über Schalter können Sie angeben, welche Komponenten gleichzeitig mit
+der Systemeinheit getestet werden sollen. Es ist empfehlenswert, die Druk-
+kertests als Einzeltests zu starten (siehe Druckertests). Das Setzen von
+Schaltern ist nur für den geübten Bediener zu empfehlen. Für einen Funk­
+tionstest der Bildschirmsteuereinheit wird der Systemtest ohne Schalter
+gestartet.
+Setzen Sie die Schalter ab der ersten Position der Linie, wobei mehrere
+Schalter jeweils durch ein Leerzeichen getrennt werden müssen. Schließen
+Sie Ihre Eingabe mit (T) ab, und der Test wird gestartet. Der Test läuft
+endlos, er muß mit | d e l | abgebrochen werden.
+       Starten Sie zunächst den Test, indem Sie s Q] eingeben.
+
+
+
+                S t a r t S in i x S y s te m te s t Rev 2. . . .
+
+
+
+
+Bei Beendigung des Test erfolgt der Hinweis:
+
+            r
+                Program m abschluß R o u tin e g e s t a r t e t
+
+
+
+
+Danach werden die noch laufenden Prozesse beendet und die Ergebnisda­
+tei wird ausgegeben.
+Protokolliert sind Vergleichsfehler beim Auswerten der einzelnen Tester­
+gebnisse und die Zahl der Durchläufe der Prozesse.
+
+Beispiele
+
+
+Test ohne Schalter
+
+
+            r   s y s t e s t : . . . abgebrochen
+                E r g e b n is lis t e - S in i x S y s te m te s t - T e rm in a l: c o n s o le
+                Datum d er A u sführung: . . .
+                Max. D a te ig rö ß e : . . . B yte
+                * * F e h le r ............         (n u r, wenn F e h le r a u f g e t r e t e n ! )
+                D u rc h la u f whet: x
+                D u r c h la u f s o r t : x
+                D u rc h la u f cc        : x
+
+
+
+
+whet   ist ein CPU-intensiver Befehlsmix
+
+sort   sortiert eine Datei zeilenweise
+
+cc     übersetzt ein C-Programm, wenn CES installiert ist
+Die Ergebnisse von whet, sort und cc werden mit Kontrolldateien vergli­
+chen. Stimmt das Ergebnis nicht mit der Kontrolldatei überein, wird dies
+als Fehler in die Protokolldatei eingetragen.
+Test mit Setzen von Schaltern
+Schalter:       f                Floppytest
+                b                Bildschirmtest
+                dl               Druckertest 9001
+                d4               Druckertest 9004
+                k                Kanaltest
+                st               Streamertest
+                btc              BTC-Test
+                h                Halt bei Fehler
+                pc2000           HTS4 Kommunikation
+
+
+Fehlerstopp                    (Schalter h)
+Wenn Sie den Systemtest gerade solange laufen lassen wollen, bis der 1.
+Fehler aufgetreten ist, dann setzen Sie den Schalter h.
+
+
+Floppytest                   (Schalter f)
+Hierbei wird das Laufwerk getestet, indem eine Diskette beschrieben und
+kontrollgelesen wird.
+Es muß eine Diskette eingelegt werden. Ist diese Diskette keine Testdis­
+kette, dann erfolgt die Ausgabe
+
+
+            r   F lo p p y i n i t i a l i s i e r e n ?
+                                  oder
+                . . . e n t h ä lt Daten. S o lle n s ie ü b e rs c h rie b e n werden?
+
+
+
+
+        i           0
+
+Nun wird der Testablauf fortgesetzt. Dabei wird die Diskette mit einem
+Testdateisystem beschrieben, sie wird zur Testdiskette. Ist schon zu Beginn
+eine Testdiskette eingelegt worden, dann entfallen obige Abfragen.
+Es erfolgt ein Hinweis auf das Testdateisystem und eventuell aufgetretene
+Fehler:
+
+
+                W arning: . . . s e c t o r s in l a s t c y lin d e r u n a llo c a te d
+                /d e v /f1 2 : 1168 s e c t o r s in 73 c y lin d e r o f 2 t r a c k s ,   8 s e cto rs
+                                598016 B in 3 c y lin d e r group (32 . . .                            )
+                su p e r b lo c k backups ( f o r f s c k -b#) at:
+                32, 552, 1056
+                ./ flo p p y : f i l e system f u l l
+                ./ flo p p y : w r it e f a i l l e d , f i l e system i s f u l l
+
+
+
+
+         Wenn die Zeile mit ’’Warning:” fehlt, ist der Test fehlerfrei abgelau­
+         fen.
+
+
+Bildschirmtest                           (Schalter b)
+In 10 Problemen (Schirmen) werden sämtliche Funktionen des Bildschir­
+mes, die ohne Dialogschritt arbeiten, ausgeführt. Die Schirme sind so
+aufgebaut, daß die Funktionen, die der Bildschirm gerade ausgeführt hat,
+daraus hervorgehen.
+[jrg p    Schalten Sie dabei auf deutschen Zeichenvorrat
+Die Tests für den Bildschirm werden pro Testdurchlauf alle einmal ausge­
+führt. Eine gezielte Auswahl von Einzeltests ist nur möglich, wenn der
+Bildschirmtest einzeln aufgerufen wird.
+Welche Tests durchgeführt werden, entnehmen Sie bitte der Beschreibung
+des Bildschirmtests.
+Streamertest                        (Schalter st)
+Es wird getestet, ob eine Magnetbandkassette fehlerfrei beschrieben und
+gelesen werden kann.
+[jrgp   Legen Sie eine nicht schreibgeschützte Kassette in den Streamer
+        ein und starten Sie den Test mit fj]
+
+        Nachstehend ist eine der möglichen Ausgaben dargestellt.
+
+
+        /      ;                                                                                     ^
+               E r g e b n is lis t e S in ix - S y s t e m t e s t - T e r m in a l: c o n s o le
+               Datum: ............
+               * * F e h le r: Feh lerd atu m
+               * * F e h le r: t a r c v : 0         Returncode=1
+               * * F e h le r: F ehlerd atum
+               * * F e h le r: t a r xv: 0           Returncode=1
+               * * F e h le r: S tre a m e r :1
+               S tre a m e rte s t: 1
+
+
+
+
+Bei Returncode = 1:               Ist der Streamer eingeschaltet?
+Bei Returncode = 2:              Ist das Band eingelegt ?
+Bei Returncode = 3:               Ist der Schreibschutz deaktiviert worden ?
+Wenn Sie alle Fragen mit ”ja” beantworten konnten, ist entweder die
+Kassette unbrauchbar oder der Streamer defekt.
+
+
+    Hinweis
+    Eine Magnetbandkassette ist, nachdem sie 100 mal gelesen und
+    beschrieben wurde so abgenutzt, daß sie gegen eine neue ausgetauscht
+    werden sollte. Sonst kann es geschehen, daß gesicherte Daten nicht
+    mehr fehlerfrei zurückgeschrieben werden können!
+Druckertest 9001 und 9004                                (Schalter d)
+Wenn Sie die Drucker 9001 oder 9004 im Systemtest testen wollen, dann
+müssen Sie dem TDS2 mitteilen, welche Drucker an Ihrer Systemeinheit
+angeschlossen sind und über welche Kanäle diese bedient werden.
+[jrg p   Gehen Sie hierfür von dem SINIX-Eröffnungsbildschirm aus.
+         Geben als Benutzerkennung root an.
+Nach Erscheinen des Promptings ( # ) fahren Sie wie folgt fort:
+
+li w     cd /devE)
+         11 Ip900*(7|
+Es werden die Einträge für die an Ihre Systemeinheit angeschlossenen
+Drucker und ihre logischen Anschlußkanäle ausgegeben.
+         Beispiel
+
+         f          c r w -r w -r— 1 ro o t, 6 ,1 1 5 Nov 24 18:23 Ip9001-D11
+                                                                                   \
+                    c r w - r w - r — 1 ro o t, 6 ,1 1 3 Nov 24 18:23 Ip9004-D09
+
+
+
+
+Am Ende der ausgegebenen Zeilen stehen die Druckernamen und die
+zugehörigen logischen Anschlußkanäle (hier unterstrichen). Notieren Sie
+sich hier die unterstrichenen Teile auf ein Blatt Papier, in diesem Beispiel
+also:
+
+               Ip9001-D 11
+               Ip9004-D09
+
+
+ljr_gp   cd/usr/service (T)
+         ced systest Q]
+Die Datei ’’systest” wird im ced ausgegeben.
+Die Zeilen, die mit PRINT1 und PRINT2 beginnen, müssen nun folgen­
+dermaßen abgeändert werden:
+
+
+              PRINT1 = /dev/lp9001-***
+              PRINT2 = /dev/lp9004-***
+
+
+
+* * * sind die symbolischen Kanaladressen. Diese übertragen Sie nun von
+Ihrem Blatt Papier in die Datei, indem Sie die Angaben, die dort hinter
+dem Druckernamen stehen überschreiben. Für den Drucker 9001 würde
+die Zeile dann lauten:
+
+              PRINT1 = /dev/lp9001-D11
+
+
+
+Beenden Sie nun Ihre Änderung mit:
+^       MENU
+
+        v
+
+        j
+
+
+
+
+Sie erhalten den Eröffnungsbildschirm, von dem aus Sie sich wieder unter
+der Benutzerkennung service einlogen können.
+In 12 beziehungsweise 13 Problemen werden alle ausführbaren Funktionen
+der Drucker 9001 und 9004 durchgeführt.
+Die Funktionen werden durch selbsterklärende Texte angezeigt. Bitte stel­
+len sie sicher, daß für den Testdrucker keine Druckaufträge laufen.
+6.7 Bildschirmtest
+
+In 9 Problemen (Schirmen) werden sämtliche Funktionen des Bildschir­
+mes, die ohne Dialogschritt arbeiten, ausgeführt. Die Schirme sind so
+aufgebaut, daß die Funktionen, die der Bildschirm gerade ausgeführt hat,
+daraus hervorgehen.
+IjQp           Schalten Sie dabei auf deutschen Zeichenvorrat
+               Vom Hautpmenü aus wird der Bildschirmtest aufgerufen mit:
+       bGD
+                   Nach Start muß der Programmablauf ausgewählt werden:
+       a   ( T )            (automatisch) alle Tests laufen einmal ab.
+       d PI                  (automatischer Dauerbetrieb) der Test wird immer
+                             wieder gestartet. Nach jedem Testdurchlauf wird der
+                             Durchlaufzähler ausgegeben. Stop durch Taste | p e l |,
+       b [j]                (bedient > Problemauswahl: # (Nummer) a(alle)
+                             # (Nummer): Problem 1 - 9 kann direkt gewählt
+                                         werden. Geben Sie für # die Num­
+                                         mer des Problemes an. Fortsetzung
+                                         nach Problemausführung.
+                                             s    (same) Gleiches Problem noch
+                                                  einmal
+                                             e    (end) Ende Bildschirmtest
+                                                  Beispiel
+                                                  b 4 (~T)
+                            a (alle):        Die Probleme können mit dem Fort­
+                                             setzungsparameter gesteuert, ausge­
+                                             führt werden.
+                                             s:    Gleiches Problem noch einmal
+                                             n:    Nächstes Problem
+                                             e:    Ende des Bildschirm-Testes
+Mögliche Probleme für den Bildschirmtest
+Problem   1    Zeichensätze
+Problem   2    Cursorbewegungen
+Problem   3    Zeichen/Zeilen einfügen/löschen
+Problem   4    Darstellungsarten
+Problem   5    Zeile löschen
+Problem   6    Bildschirm löschen
+Problem   7    24 Zeilen Mode
+Problem   8    5 Zeilen Mode
+Problem   9    Bildverschiebebereich
+
+Problem 10:    Ladbare Tastatur
+6.8 Druckertest
+
+        Geben Sie d ein.
+
+                             Druckertestprogramme
+
+
+
+
+               9001   -   Drucker 9001, PT88/89
+               9001-S -   Drucker 9001-S, PT88/89-20
+               9004   -   Drucker 9004
+               9013   -   Drucker 9013
+               9022   -   Drucker 9022
+
+
+
+
+        V                                                           J
+In diesem Formular legen Sie fest, welchen Druckertyp Sie testen wollen.
+
+
+        Erteilen Sie den Testauftrag mit:
+        90..          GQ
+         Es folgt ein Untermenü, in dem Sie Parameter für den Testauftrag
+         setzen können.
+
+
+                               Druckertest 90
+
+
+
+
+                Durch Betätigen der Leertaste werden die Parameter verändert
+
+                Testgerät
+                Anzahl Durchläufe                -              d = Dauertest
+                Probleme                        alle
+                Zeilenbreite                    80
+
+
+
+
+         V                                                                      J
+
+Testgerät:            Geben Sie durch Drücken der Leertaste an, welchen
+                      Drucker Sie testen möchten.
+Anzahl der
+Durchläufe:
+                      e         Alle Probleme werden einmal durchlaufen
+                      d         Dauertest (Abbruch mit | d e l \)
+Probleme:
+                      alle      Alle Probleme werden einmal ausgeführt
+                      #         Das durch eine Nummer ( # ) gekennzeichnete
+                                Problem wird ausgeführt
+
+Bei Falscheingabe oder nicht angeschlossenem Drucker erfolgt die Aus­
+gabe:
+
+
+
+                Gerät nicht erreichbar
+
+
+
+
+Ein falscher Testauftrag ist mit 1d e l | löschbar.
+Probleme Drucker 9001
+Problem i     Schriftarten
+Problem 2     Zeichensätze
+Problem 3     Druckbildausgabe
+Problem 4     Füllschritte
+Problem 5     Unterstreichen
+Problem 6     1/2 Zeilenvorschub vor/rückwärts
+Problem 7     Horizontaltabulator
+Problem 8     Vertikaltabulator
+Problem 9     Zeilenabstand
+Problem 10:   Formularlänge
+Problem 11:   Ausgabeformatsteuerung
+Problem 12:   Zeichengenerator 2
+
+
+
+Probleme Drucker 9004
+Problem i     Schriftarten
+Problem 2     Druckbildausgabe
+Problem 3     Proportional Space Mode
+Problem 4     Unterstreichen
+Problem 5     Zeilenvorschub vor/rückwärts
+Problem 6     Horizontaltabulator
+Problem 7     Vertikaltabulator
+Problem 8     Zeilenabstand
+Problem 9     Zeichenabstand
+Problem 10:   Linker und rechter Rand
+Problem 11:   Rückwärtsdruck
+Problem 12:   Formularlängen
+Problem 13:   Bidirectional Print Mode
+Probleme Drucker 9013 (nicht im Systemtest)
+Problem 1      Zeichenvorrat
+Problem 2      Druckbildausgabe
+Problem 3      Sperrschrift
+Problem 4      Unterstreichen
+Problem 5      1/2 Zeilenvorschub
+Problem 6      Horizontal-Tabulator
+Problem 7      Vertikal-Tabulator
+Problem 8      Zeilenabstand
+Problem 9      Formularlänge
+Problem 10:    Zeichensätze
+Problem 11:    Ladbarer Zeichengenerator
+Problem 12:    Zeichenvorräte
+Problem 13:    Druckgeschwindigkeit
+Problem 14:    Bi- und Unidirektionaldruck
+Problem 15:    Zeilenanfang
+Problem 16:    Randausgleich
+Problem 17:    Zentrieren
+Problem 18:    Repeat
+Problem 19:    Proportionalschrift
+Problem 20:    Automatische Einzelblattzuführung
+Problem 21:    Man. anlegbar bei automatischer Einzelblattzufuhr
+Problem 22:    Ausw. Traktor/Vorsteck
+Problem 23:    Barcode Code 29
+Problem 24:    Barcode 2 aus 5 Industrial
+Problem 25:    Barcode 2 aus 5 Interleave
+Problem 26:    Barcode EAN 8
+Problem 27:    Barcode EAN 13
+Problem 28:    Barcode Codabar
+Problem 29:    Grafik
+Problem 30:    Scannergrafik
+6.9 Plottertest
+
+        Geben Sie pl ein.
+
+                               Plottertest 9009
+
+             Durch Betätigen der Leertaste werden die Parameter verändert
+
+
+
+
+             Testgerät
+             Anzahl der Durchläufe      -            d = Dauertest
+             Probleme                       alle
+
+
+
+
+        V___________________________________J
+Als Testgerät ist /dev/plotter einzustellen. Sie können die Probleme 1 bis 7
+einzeln, oder alle gleichzeitig aufrufen. Der Test wird mit Q] gestartet.
+6.10 Kanaltest
+
+Der Kanaltest ermöglicht es, die Ein/Ausgabebaugruppen, an denen die
+Bildschirme und Drucker angeschlossen sind zu testen. Gleichzeitig ist ein
+Test der Datenleitungen zu diesen Geräten möglich.
+Die folgenden Abbildungen geben die möglichen Rückansichten Ihrer
+Systemeinheit und die darauf befindlichen Schnittstellen wieder. Die
+Bezeichnungen der Kanäle, die Sie testen wollen, entnehmen Sie bitte der
+passenden Abbildung.
+
+
+  D 1 1 /S 1 5   D10/s14   D 1 0 /S 1 3        D 0 8 /S 1 2   D 0 7 /S 1 1     D 0 6 /S 1 0
+
+   SS97           SS97      SS97                   SS97        SS97             SS97
+
+
+
+                                          D05/s5              D04/s4           D03/s3
+
+                                           RS 232              SS97             SS97
+
+
+
+                                          D02/s2              D 0 1 /S 1     console/sO
+
+   Streamer                                Rs 232              SS97             cons-
+           D 1 1 /S 1 5   D 1 0 /S 1 4     D10/s13
+
+            RS 232         SS97             SS97
+
+
+
+           D 0 8 /S 1 2   D 0 7 /S 1 1     D 0 6 /S 1 0
+
+            Rs 232         SS97             cons-
+
+
+
+           D05/s5         D 0 4 /S 4       D03/s3
+
+            RS 232         SS97             SS97
+
+
+
+           D02/s2         D 0 1 /S 1     console/sO
+
+Streamer    RS 232         SS97             SS97
+        Gestartet wird der Test von dem Menü KANALTEST aus: Geben
+        Sie k ein.
+
+                                 Kanaltest
+
+
+           Durch Betätigen der Leertaste werden die Parameter verändert.
+
+
+           Kanal 1:                     S5            Bei Test auf einem
+           Kanal 2:                                   Kanal, nur
+           Dauertest:                                 Kanal 1 angeben
+
+
+
+           Test beginnt mit Baudrate:          1200
+           Test endet mit Baudrate:          38400
+
+
+
+
+        V______________________________________________ J
+
+Getestet werden können die Schnittstellen: SS97 (Sl, S3, S4, S10, Sil, S12,
+S13, S14, S15)
+RS 232 (S2,S5)
+SO ist der Kanal, der die Konsole bedient und kann nicht getestet werden.
+Um einen Kanal zu testen, benötigen Sie einen kurzschlußstecker oder,
+wenn Sie gleichzeitig zwei Kanäle testen wollen, ein Kreuzungskabel.
+Kurzschlußstecker und Kreuzungskabel erhalten Sie von der für Sie
+zuständigen Servicestelle.
+Kurzschlußstecker und Kreuzungskabel
+
+SS-97 (9-poliger Stecker) Verbindungen:
+                                                  Pin 1 - - 3
+                                                  Pin 6 - - 8
+
+        (2 mal 9-poligen Stecker und Verbindungsleitung)
+              Kreuzungskabel Verbindungen:
+                                        Stecker A     Stecker B
+                                            Pin 1 - - Pin 3
+                                            Pin 3 - - Pin 1
+                                            Pin 6 - - Pin 8
+                                            Pin 8 - - Pin 6
+
+                                       n:
+RS-232 (25-poliger Stecker) Verbindungen:
+                                                  Pin   2 - -3
+
+
+
+
+                                                          OO
+                                                  Pin
+                                                          io
+                                                           1
+                                                           1
+                                                           1
+                                                           1
+                                                  Pin   6--20--22
+
+
+Sie wollen einen Kanal testen?
+
+— Möchten Sie die Verbindungsleitung mittesten, dann stecken Sie den
+  Kurzschlußstecker auf das noch freie Ende der Verbindungsleitung,
+  die zu dem zu testenden Kanal führt. Wenn Sie den Kanal alleine testen
+  wollen, dann stecken Sie den Kurzschlußstecker auf den entsprechen­
+  den Ausgang auf der Rückseite der Systemeinheit.
+
+— Betätigen sie die Leertaste so oft hintereinander, bis der zu testende
+  Kanal (z.B. S5) in der ersten Zeile des Testauftrages, also hinter
+  Kanal 1, erscheint.
+
+— Bewegen Sie die Schreibmarke mit der Positioniertaste in die 3. Zeile.
+  Durch Drücken der Leertaste können Sie zwischen Einzeltest (e) und
+  Dauertest (d) wählen.
+
+— Sie können den Bereich der zu testenden ßUbertragungsgeschwindig-
+  keit verändern. In der 4. Zeile des Testauftrages legen Sie die niedrig­
+  ste, in der 5. Zeile die höchste Übertragungsfrequenz fest. Die mögli­
+  chen Geschwindigkeiten sind: 300, 600, 1200, 2400, 4800, 9600, 19200
+  oder 38400 Bit/s
+
+Der Dauertest ist mit | d e l [ abzubrechen. Erteilen Sie den Testauftrag mit (T|-
+Sie wollen zwei Kanäle gleichzeitig testen?
+— Verbinden sie die beiden zu testenden SS97-Kanäle mit dem Kreu­
+  zungskabel.
+— Betätigen Sie die Leertaste so oft hintereinander, bis der 1. zu testende
+  Kanal in der 1. Zeile erscheint.
+— Positionieren Sie die Schreibmarke in die 2. Zeile. Betätigen Sie die
+  Leertaste so oft hintereinander, bis der 2. zu testende Kanal erscheint.
+— Positionieren Sie die Schreibmarke in die 3. Zeile und wählen Sie durch
+  Drücken der Leertaste zwischen Einzeltest (e) und Dauertest (d).
+— Sie können den Bereich der zu testenden Übertragungsgeschindigkeit
+  verändern. In der 4. Zeile legen Sie die niedrigste, in der 5. Zeile die
+  höchste Übertragungsfreauenz fest. Der Dauertest ist mit | d e l | abzubre­
+  chen. Erteilen Sie den Testauftrag mit [J\.
+
+
+       Hinweis
+       Mit Setzen dieses Schalters läuft der Kanaltest, bis er durch die
+       Taste 1p e l | abgebrochen wird. Am Bildschirm wird ein Durchlauf­
+       und Fehlerzähler geführt. Ein Dauertest ist sinnvoll, um die Güte
+       einer Leitung festzustellen. Der Test sollte über einen Zeitraum von
+       ca. 8 Stunden laufen. Treten dabei keine Fehler auf, dann ist der
+       Kanalaus- und Kanaleingang (Leitung) als geeignet zu betrachten.
+Auswerten des Kanaltests
+Die Ausgabe erfolgt entweder auf den Bildschirm oder in eine Datei.
+Möchten Sie den Test zur Dokumentation abspeichern, dann muß diese
+Protokolldatei erst angelegt werden. Gehen Sie vom Wartungshauptmenü
+aus und geben Sie für die einzelnen Menübildschirme an:
+
+                  0            für Standard-Menüsystem
+        a         Q            für Archivfunktion
+        n         0            für ’’neuen Ordner Anlegen”
+
+
+o       c
+              Wie s o l l d e r neue O rdner h e iß e n ?
+
+
+
+
+grgp    Statistik Q]
+
+Wenn Sie das Ergebnis der Leitungsstatistik lesen möchten, gehen Sie
+wieder von Hauptmenü aus. Geben Sie ein:
+        m         0            für Standard-Menüsystem
+        a         0            für Archivfunktion
+        0         0            für Ordner öffnen
+
+
+        r
+              W elchen O rdner möchten S ie ö ffn e n ?     ...    S t a t is t ik    ...
+
+
+
+
+        Statistik [J\
+
+
+        r      W elches Dokument möchten S ie le s e n ?     ...    K a n a lte s t
+
+
+
+
+[jrg^   Kanaltest [J\
+Nun wird Ihnen der Inhalt der Datei Kanaltest ausgegeben. Wie eine
+solche Datei aussehen kann, und wie die Einträge zu interpretieren sind,
+entnehmen Sie bitte dem folgenden Beispiel.
+Mögliche Einträge in der Datei Kanaltest
+
+       Status        Ein/Ausgabekanal   Ergebnis     Datum der Ausführung
+
+1 Statistikbeginn       s3 — ► s3       Kanaltest    Wed Oct 15 11:38:49 1986
+  Statistikende         s3 — s3         100 : 0      Wed Oct 15 11:43:45 1986
+
+2 Statistikbeginn       s2     s2       Kanaltest    Wed Oct 15 14: 10: 13 1986
+  Vergleichsfehler      s2 — ► s2       1200 Baud    Wed Oct 15 14:15:42 1986
+  Statistikende         s2 — ► s2       118 : 1      Wed Oct 15 14:15:47 1986
+
+3 Statistikbeginn       s2 — ► s5       Kanaltest    Wed Oct 15 14:18:05 1986
+  Statistikende         s2     s5       22 : 0       Wed Oct 15 14:19:15 1986
+
+4 Statistikbeginn       s2     s5       Kanaltest    Wed   Oct   15   14:44: 17   1986
+  Vergleichsfehler      s2 — ► s5       1200 Baud    Wed   Oct   15   14:44:18    1986
+  Zeitablauf            s2 — ► s5       38400 Baud   Wed   Oct   15   14:45:18    1986
+  Zeitablauf            s5 — ► s2       1200 Baud    Wed   Oct   15   14:45:25    1986
+  Vergleichsfehler      s5 — ► s2       38400 Baud   Wed   Oct   15   14:45:27    1986
+  Vergleichsfehler      s2 —► s5        1200 Baud    Wed   Oct   15   14:45:30    1986
+  Vergleichsfehler      s2 — ► s5       38400 Baud   Wed   Oct   15   14:45:59    1986
+  Vergleichsfehler      s5 — ► s2       1200 Baud    Wed   Oct   15   14:46:01    1986
+  Zeitablauf            s5 — ► s2       38400 Baud   Wed   Oct   15   14:46:32    1986
+  Vergleichsfehler      s2     s5       1200 Baud    Wed   Oct   15   14:46:33    1986
+  Vergleichsfehler      s2 — ► s5       38400 Baud   Wed   Oct   15   14:47:03    1986
+  Vergleichsfehler      s5 — ► s2       1200 Baud    Wed   Oct   15   14:47:04    1986
+  Vergleichsfehler      s5     s2       38400 Baud   Wed   Oct   15   14:47:33    1986
+  Statistikende         s2 — ► s5       12 : 12      Wed   Oct   15   14:47:42    1986
+Auswertung der Einträge
+Jeder Test beginnt mit dem Status Statistikbeginn und endet mit dem Status
+Statistikende. Sind während des Testes Fehler aufgetreten, dann werden
+diese durch die Status Vergleichsfehler und Zeitablauf gemeldet.
+Zu 4:
+Teststart:             15. Oktober 1986 um 14:44:17 Uhr
+                       Getestet wurden die Kanäle S2 und S5
+Übertragungs
+geschwindigkeit:       1200 bit/s und 38400 bit/s für beide Kanäle in Ein-
+                       und Ausgaberichtung
+Vergleichsfehler:      Die im Eingangskanal empfangenen Daten stim­
+                       men nicht mit den Ausgabedaten überein.
+                       Wurden die Verbindungskabel richtig installiert?
+Zeitablauf:            Die gesendeten Daten kommen nicht am Emp­
+                       fangskanal an, oder werden zu lange verzögert.
+                       Ist der Kurzschlußstecker         (Kreuzungskabel)
+                       gesteckt?
+Testende:               15. Oktober 1986 um 11:47:42 Uhr
+Ergebnis:              Bei 12 Testdurchläufen traten 12 Fehler auf. Wenn
+                       die Verbindungen richtig installiert waren, liegt ein
+                       Fehler der Ein/Ausgabeprozessors vor.
+6.11 DUE-Prozessoren
+
+       Wenn sie in Ihrer Systemeinheit außer den Basis-Ein/Ausgabe­
+       prozessoren noch weitere Datenübertragungsprozessoren einge­
+       baut haben, dann sind diese unter diesem Menü zu testen. Geben
+       Sie p ein.
+
+                               D U E -P ro zessoren
+
+
+
+
+                         e - E th e r n e t- P r o z e s s o r
+
+
+
+
+       \________________________________y
+Wählen Sie den gewünschten Test, indem sie den Auswahlbuchstaben
+eingeben und bestätigen Sie mit p ] .
+Test des Ethernetprozessors
+Mit dem TDS2 kann der Selbsttest der Ethernet-Flachbaugruppe angesto­
+ßen, der Zugriff des SINIX-Betriebssystems auf das Board und das Netz­
+werk überprüft werden.
+Nach Testende wird die Datei fdat.exos ausgegeben, in der die Meldungen
+der Tests protokolliert werden. Es kann ausgegeben werden:
+
+
+             EXOS: TC P/IP
+             EXOS: My E th e rn e t a d d re s s = 0 8 -0 0 -1 4 -5 1 -3 6
+             EXOS: ARP en abled
+             EXOS: My I n te r n e t a d d re s s = 0 x 5 9 .0 x 1 0 .0 x 5 1 .0 x 3 6
+             EXOS: S o ftw a re R e le a se :   3.1 (March 1985)
+             EXOS: Firm w are R e le a se : 5 .3
+             EXOS. Hardware R e le a se : xxx
+
+              E th e rn e t- T e s t:   Datum
+
+             C o n fig u                                          0 K / F a ile d
+             IA se tu p                                           0 K / F a ile d
+             RU s t a r t                                         0 K / F a ile d
+             T ra n s m it                                        0 K / E r ro r xx
+             L o o p te st                                        0 K / E r ro r xx
+
+             T e s t end - Goodbye!
+
+
+
+
+Hierbei bedeutet OK, daß der Test fehlerfrei abgelaufen ist. Failed kenn­
+zeichnet einen nicht näher qualifizierten Fehler. Error xx kennzeichnet
+einen oder mehrere Fehler durch eine zweistellige Hex-Nummer.
+Wenn ein Fehler angegeben wird, überprüfen Sie bitte, ob die Stecker der
+Anschlußeinheit richtig gesteckt sind.
+Wenn dies der Fall ist, dann verständigen Sie bitte die Wartung.
+Literatur
+
+
+m     Betriebssystem SINIX
+      Buch 1
+      Benutzerhandbuch
+          Zielgruppe
+          Alle die das Betriebssystem SINIX kennenlernen wollen.
+          Inhalt
+          Beschreibung des Betriebssystems SINIX
+          (Dateisystem, Shell, Systemverwaltung, Kommandos)
+
+[2]   Betriebssystem SINIX
+      Buch 2, Menüs
+      Benutzerhandbuch
+          Zielgruppe
+          Benutzer des SINIX-Standard-Menüsystems
+          Inhalt
+          Beschreibung und Bedienung der SINIX-Standard-Menüs
+          für Sachbearbeiter und Systemverwalter
+
+[3]   SINIX
+      Schnittstellen
+      Benutzerhandbuch
+          Zielgruppe
+          Administrator,Programmierer
+          Inhalt
+          Beschreibung der Hardware- und Softwareschnittstellen
+          des SINIX-Betriebssystems
+Stichwörter
+
+AFP-Anschluß wählen 3-40
+AFP-Anschlußzusatz 1-3
+AFP-Fernanschluß 2-11, 2-14
+Anschlußarten 2-11
+Aufstellungsort 2-1
+Bedieneinheit 1-4
+-,    Pflege der 3-1
+Bildschirm, Kontrast 3-14
+-,   Montieren des 2-4
+Communication-Controller, ladbarer 1-3
+Datensichtstation konfigurieren 3-34
+Disketten 3-2
+Diskettenlaufwerk 1-2
+Drucker 1-4
+    konfigurieren 3-34
+    Standardeinstellung 2-30
+-,  Pflege 3-1
+Druckertypen bestimmen 3-43
+Ein-/Ausgabe Controller 1-2
+Festplatte 1-2
+Funktionstasten 3-8
+Gerätetypen wählen 3-41
+Hauptmenü 3-31, 3-63
+Helligkeitsregler 3-14
+Installation, SINIX 3-10
+Installation, Software 3-61
+Lieferumfang 2-2
+Magnetbandkassette 2-36
+Magnetband-Streamer (MB-Streamer) 2-1
+-, Betrieb 2-35
+-, Pflege 3-1
+-, verkabeln 2-21
+Menü 3-31
+Monitorknopf 2-28
+Netzschalter 2-24
+PC-MX2 Grundausbau 2-2
+RESTOR-Diskette 3-46
+Rücksetzknopf 2-28
+Rückwand 3-36
+SINIX 3-1
+SINIX-Prozessor 1-2
+-,   Ausbaustufen 1-2
+Standardanschluß SS97 2-11
+Steckeranordnung 3-40
+Systemeinheit öffnen 2-9
+     transportieren 4-1
+-,   Aufstellen der 2-5
+-,   Pflege der 3-1
+-,   Systemeinheit, Rückansichten der 3-36
+Tastatur 3-6
+Tastaturtyp wählen 3-23, 3-43
+Transport 4-1
+Uhr 3-69
+Verkabeln 2-6
+

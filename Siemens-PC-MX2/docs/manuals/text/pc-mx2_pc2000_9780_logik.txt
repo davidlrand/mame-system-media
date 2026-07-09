@@ -1,0 +1,1045 @@
+ Siemens
+
+S ystem einheit /System Unit
+PC-MX2 / PC-2000
+9780-40
+
+
+Logik / Logic
+Best.-Nr. / O rd e r No. U68051-J
+                                                                                                                           PC-MX2 / PC-2000
+        S IE M E N S                                                                                                           9780:40
+                                                                                                                                 S26361-L9-V2
+
+
+
+
+                                                                                                                       Prozessor/Processor
+                                                                                                                             BS2000
+                                                                                                                                S26361-H87-X
+
+
+                                                                                                                        Zusatzgehäuse
+                                                                                                                       Additional housing
+                                                                                                                            PC-MX2
+
+                                                                                                                           S26361-L33-V***
+
+
+
+
+        Siemens PC-MX2 / PC-2000
+
+
+
+        A rb eitsp latzco m p u ter
+        V id e o W o r k s t a t io n
+        9780-40
+
+
+
+
+    %
+w
+
+
+
+
+        Logik / L o g ic
+
+        S26361 -L9-V2-*-92                                                                                             8est.-Nr. / Order No.
+        S2636l-H87-X-*-92                                                                                                    U68051-J
+
+        H e r a u s g e g e b e n v o n / Issued by                                         V e r v ie lfä ltig u n g d ie s e r U n t e r la g e s o w ie V e r w e r t u n g Ih re s
+W       S IE M E N S A K T IE N G E SE LLS C H A FT                                       In h a lts ist u n zu lä s s ig , s o w ie n ic h ta u s d rü c k lic h z u g e s t a n d e n .
+        B e re ic h D a te n te c h n ik
+        T e c h n is c h e r K u n d e n d ie n s t   C o p y in g o I th e d o c u m e n t a n d g iv in g it to o th e rs a n d th e use o r c o m m u n ic a tio n o f th e
+        O tto -H a h n -R m g 6                                                             c o n te n ts t h e r e o f a r e f o r b id d e n w it h o u t e x p re s s a u t h o r ity .
+        800 0 M ü n ch e n 83
+                                                                                                                                      Sit MFNSAKHf NGEStl I SCHAU
+                                         N a c h tra g s ü b e r s ic h t
+
+
+Gerät: Systemeinheit PC-MX2 / PC-2000                                       Druckschrift: Best.-Nr. U 6 8 0 5 1 - J
+       Logik entsprechend den Unterlagenbeipacklisten (UBL)                                             ( 2 . A u fla g e )
+
+
+              a) S26361-L9-V2-M2
+              b) S2636l-H87-X-*-92
+Übersicht
+       NACHTR. AUSGABE AUSGABE UBL OSm in.                                     ERLÄUTERUNGEN
+         NR.    DATUM (z.Zt.OSmax ,)
+                9.86   a)*) 1 *) (0)
+                                                  1.Auflage
+                       b) 7 (5)          -
+
+                8.88   a)       *) 1 *) (0)
+                                                  2.Auflage
+                       b) 7   (5)
+
+
+
+
+         OS * Objektausgabestand         I—   * hat das Produkt/Objekt den angegebenen OS ain. erreicht, so ist der
+                                                gelieferte Nachtrag unter Berücksichtigung der "Erläuterung" einxuordnen.
+
+
+   Anleitung
+
+   ENTFERNE BZW.FÜGE FOLGENDE UNTERLAGEN HINZU:
+            ENTFERNE BISHERIGE AUSGABE                                                  FÜGE H IN Z U
+
+
+
+
+                                                                                    —
+
+
+
+
+  LEGENDE ZI BEMERKUNG:
+   1    (OS... nur aus tauschen, wenn der angegebene OS eingebaut ist.
+  2     (Oa...) nur zusätzlich einordnen, wenn der angegebene OS eingebaut ist.
+  3             unabhängig vom eingebauten OS austauschen.
+  k             unabhängig vom eingebauten OS zusätzlich einordnen.
+               Ausgabe / Nachtrag                         U68051-J                              I.Auft. 2.A ufl.
+T         7
+    o m
+               Ausgabt - Datum                                                                   9.86     8.88
+    i      u
+    5      a   Unterlagenbeipackliste                         S26361-L9-V2-* -92           OS     0            0
+    ^     J5
+                 Unterlagen - Bezeichnung                               Unterlagen Nt                     A us g a be   d (? r   U n t e r 1a g e
+    l
+               R egister 1;
+               U nterlagen beipackliste                           S26361-L9-V2-*-92              1»)      1*)
+               K o n tro llre g is te r                           S2636l-L9-V2-»-81              AA*)     95*)
+               PC-MX2/PC-2000                                     S2636U 9-V2-*-93               19 *)    19*)
+
+1.1             G rundeinheit                                      S2636l-K101-V2-*-7            10       19
+                                                                   S26361-K101-V2-*-31            A       6
+                                                                   S26113-E26A-X-M1               1       2
+
+1.3             P la tte r                            XPLAE        S26361-E76-X---11              3        3
+                d to .                                XPLAE        S2636l-E76-X-*-17              A        A
+
+    1.¾         Flachbaugruppe                        PANAA        S2636l-0255-X-*-11             2        2
+                d to.                                 PANAA        S2636l-D255-X-*-17             2        2
+
+    507         Basis E/A Proz.AxSS97/2x RS232C                    S26361-F320-V1---31            3        A
+
+    508         E/A Proz. AxSS97/2xRS232C(Erveiterung]             S26361-F320-V2-*-31            1        3
+                                                                   S2636l-D279-X-*-11             7        11
+                                                                   S2636l-0279-X-»-17             6        9                     #
+    511         E/A Proz. 6xSS97                                   S26361-F129-V2---31            2        5
+                Flachbaugruppe                        SERAG        S2636l-0312-V1-*-11            1        A
+                d to .                                SERAG        S2636l-D312-V1-*-17            2        A
+
+    512         AFP an 0312                                        S2636l-F339-V1-*-31            1        1
+                AFP an 0279                                        S2636l-F339-V2-*-31            1        2
+
+    521         DFÜ-Proz.1xV.2A+X. 21 und 2xX.21                   S2636l-F315-V***-*-31          3        8
+                DÜ-Proz.Adr./Daten In te rfa c e                   S26361-0277-X-*-11             A        6
+                Flachbaugruppe                   DUEAI             S2636l-D277-X-*-17             A        6
+
+    538         E th ern et-P ro z.                                S2636l-D3A3-V2-*-31             2       2
+
+    551         Flachbaugruppe                        MEMAD        S2636l-D303-V1-#-11             A       6
+                d to .                                MEMAD        S2636l-0303-V1-*-17             A       6
+
+    553         Flachbaugruppe                        MEMAD        S2636l-0303-V3~**-11            3       5
+                d to .                                MEMAD        S2636l-D303-V3-*-17             3       5
+    5            Flachbaugruppe                       CPUAP        S2636l-D333-X-*-11              7       7
+                 d to .                               CPUAP        S2636l-D333-X-»-17              2       2
+                 Flachbaugruppe                       CPUAP        S2636l-D333-V12-*-11               2    5
+                 d to .                               CPUAP        S2636l-0333-V12-*-17               1    2
+
+
+
+
+               *) U nterlage n ich t r e g is tr ie r t                                                                                               _ Logik / Logic^
+                                                                                                                                                     ^C-MX2/PC-2000“
+                                                                                                                                                                         B la tt 1
+                                                                                                                                                    Inhaltsübersicht     1    B lo tW
+   P C - M   X 2 j   P C   - 2 0 0 0
+
+
+J 2 6 3 6 1 - L 9 - V 2 - + -81
+Grundei nheit
+mit Omti -Controller
+S2 6361-K101 - V 2 - * - 3 1
+  Grundeinheit
+  mit Storagen
+
+
+
+52 63 61-K 101-U 2 ~ *-3 1
+  Grundeinheit
+  255MB
+>26361-K101-V2-*-31
+[   SV   XAPCA
+-   Stromversorgung
+
+
+)   S 2 6 1 1 3 - E 2 6 A - X - “ - 11
+Platter XFLAE
+Einbauplatze
+
+S26361-E76-X-*-11
+                                                         m ______
+------ »w. M aler       P l a t t e r XPLAE             « _______
+      üiT               P r io r itä ts lo g ik         ;cn
+                         A b s c h lu ß w id e r s t .
+      i », l   DA52   ____________ . , „ . ______________________
+st£ Siemens AG S26361-E76-X-M1                         ES*—
+■te£_____ _______ ;
+                  --------
+.86                                                   '
+
+
+
+ik—             PLATTER              xPl OE
+
+                                              jääTT
+S RG   S 2 6 3 6 1 =E76-X-** ■=1 ^            j
+         _____________ ___________________ F l b g r .   PA.NAA                                       --- -----------
+             _____________________________ HUfen« r                                                   *L ---------
+             _____________________________ «2L                                                           ______
+
+                          ~ Z Z Z Z Z T Z U üül                   ___________________________ _ _ _     0010__
+         ÖT ^      -      -* j.sm ~ JT r ^m ensAG                    S26361-0255-X-M1                 gL _
+j |^ PJL__
+     i>ii —<m<>;____
+                ____ 23.9.83- H U E _______________ _ _____ _________________________ _____
+                        <<t»« *«m _________ _________
+- Basis-                                             e
+I E/A-Proz.4xSS97/2xRS232C
+"                          h ö c h s t e B l r Nr.
+
+• S26361-F320-VW-31
+                           Blatt
+J   .........      ~ ----- 1            1-
+s q ---------------------------------------------------------------
+  E/A-Proz. 4xSS97/2xRS2B2C                                                e
+— (Erweiterung)
+""""   "                                            h ö c h s te 6 i N r
+
+
+\G     S26B61- F320-V2-H-31                         I____
+                                                    Blatt ^
+z
+
+
+
+
+                _________________________ _______           ■      ___i__
+    :8S
+    <
+
+    ^              Fbgr. PANAA
+    ?
+                                                        h ö c h s te   ö l "N r
+
+     AG S263 61-D255"X-^-17 -------- :                  B la tt
+    ................... ..................- - -   —   j -          j-
+3Z     F l b g r . SERAD
+±L _
+_ Mailbox
+
+AG S26361-0279-X-M1
+
+
+
+                           )
+                                    KO
+ Flachbaugr. SERAB                 7_
+                                    7_
+ Mailbox-Schnittst.                — ---
+                                     70 +
+ S26361-0279-X-*—11                p£—
+______________________________ r     7*
+ IFlbgr. SERAD          \«o
+                         si___
+_ Dual Fort Steuerung
+                              6   O1-
+~r ~ “                  -*ochti«
+G S26361-D279-X-*-11                    -
+HT   Periph. Interface
+     Mailbox-Request
+     S26361-0279-X-*—11
+Farallei/Seriell
+Wandler
+
+S26361-0279-X— 11
+                                   KO
+r       S S 97 I n t e r f a c e   sT
+-----                              EP
+—       C le a r ,   Pow er on     —
+
+_                 '                ^
+^       S26361-0279-X—
+                     *-11          &
+                        K
+                        s
+                        E
+
+
+
+                        5
+S26361—
+      0279—
+          X—**—11   |
+()   )   )                          )
+
+
+
+
+                e
+
+                                            Kl
+             ~~ E/A-Prozeosor           I
+                                            El
+             ~ AD-DEMITX
+             5 S26361-0279-X-*-11       i
+_    FLOCMBOUGRUPPE                    SERGO
+
+
+—. ------------------ -----1   ----------------------------- pTTTTF"
+,G S 2 6 3 6 1 - O ^ ' X - . - J / *                            4-
+(   c   c                     c
+
+
+
+
+                E
+
+            M                     [kÖ
+            r! Flbgr. SERAG       s»
+                                  CP
+            “ EAP, AD-DEMUX
+            3~S26SW)312-vi-»-11   £
+86 j                          Ei
+lcH~ I/O u . Memory-           si
+------ D e c o d ie r u n g    -
+
+
+ AG S26361-0312-VW-11         a
+(   (   (                               (
+
+
+
+
+            H______________
+            C le a r P e r lp h .» P o w e r   I
+                                                   El
+            o n . T im er , M B -In t.
+
+            S26361-0312-V1'*-11                «
+     '                                      JkÖ
+Ül       P a ra 11« l / a e r l a l l .     11
+—        Wandlar                             “
+
+—■ -                                      ” iöl
+■G S26361-0312-V1— n                          £
+(   (   (                   (
+
+
+
+
+            Interface zur           ]
+            Peripherie              -
+
+            S26361-0312-V1- « - n   s
+_l_l_   —               [ ko
+  Mallbox-Steuerung      *L
+                         EP
+
+
+! ■ITT*T-r-i            T4oc
+  S26361-D312-V1-*- n   ^
+\\   i 1J   ~              n:
+   Schnitteteilen          j
+                           t
+_ zur Mallbox
+ÄG S26361-0312-V1-- - 11    >
+i J
+;h       f.allbox               ü
+                                EP
+
+_                                    8
+     '              '         "" >*och»
+AG       S26361-D312-V1---H     |ys
+_ fLPCHBRUGRUPPE MEMRD
+
+                         BLS”
+IG S26361-D303-VW-17     "T*~
+AFP an D279
+(1. E/A)
+
+S26361-F339-V2-*-31
+   AFP an D279
+   (2. E / A )
+                      Ro
+
+
+S26361-F339-V2-K-31
+                      B l'
+. DFÜ-Proz. mit Streifen ^E*
+.
+
+
+r    S26B61-FB15-V***-*-B1
+    __________________________________ 5I
+DFUE-Proz.    m it
+
+  HDLC/WTUE
+         W- GS                   U                                                            M i ,5:!                   "I
+        —            .......— .. —           '     '         ....... .""                                         K
+
+
+
+
+                                         IDPTUmI 10.02.87             .......""...        ’
+        ______________________________ BEffÜS Mg j er         F L P C H B f- iU G R U P P E   DUEß I
+                                     __ m S c & Z f a - j
+        _________________ _____________NORM_____________
+        ______________________________ T-Nr] D 1 5 2 _________________________________________________________
+
+
+       .   = = = = = = -------------- _ S I E M E N S   RG     5 2 8 3 6 1 - D 2 7 7 - X - * - 17
+l l f t l l 0 6 7 A 0 5*» 3   10.02.87 Ma E                  ____________________________        _____________       1
+     I     7IICT MITTPIIIINT.   nOTlIM NÜMF
+,.84                        |xoI
+•ich DÜ-Prozessor           s»____
+     Adr./Daten Interface        --
+       _______________
+s AG S26361-0277-X-*-11     Tu?"—
+                            mort
+3.5.84 |          —            1^91 .
+Llrich Ram-Controller          U____
+---                            tr
+■      ■—                         20+
+-------- ““   ~       "         Hochflt
+       AG S26361-D277-X-*-11   ^
+<   c   (                               (
+
+
+
+
+                     AA E
+                     30 -
+            5.8j                                    |xo |
+            rieh          MB-Schnittstelle           s?______
+                                                         EP
+
+            -----------                                   30t
+
+            ns AG S26361-0277-X-M1                   pL Z
+            ____                             _______ f    it
+      SIGNAL EINGANG   ~ p f e ~ n T T T T n o "*'i r n   n   n   r n g g E D i i n i «* i g e o j ? i »«i »   1» » » n n n n 1» r » r » r » 1« 1» r e i »1g o n » 1* i g i » i » r ^ ü r n n n i « . i « i «« 1h ü i m
+20   CAS - N
+10   WR -N
+10   RO - N
+20   HUXAORO - P
+20   MUX ADR 1 - P
+20   MUX AOR 2 - P
+20   MUX ADR 3 - P
+20   MUX AOR - P
+20   MUX ADR 5 - P
+20   MUX AOR 6 - P
+20   MUX ADR 7 - P
+
+
+
+
+                                                                                                                                                                                                                                    0Achtung:
+                                                                                                                                                                                                                                    “ 64K * 4 : PIN 18*$0V , PIN 9=$ 5 v
+                                                                                                                                                                                                                                    * 64K * 1 : PIN 1 6-$0V , PIN 8=$ 5V
+
+                                                                                                                                                                                                                          0
+                                                                                                                                                                                                                          TT      “°S p e i c h e r           r T ~_
+                                                                                                                                                                                                                                                              [s^_____
+                                                                                                                                                                                                                          -----     6 4 K B .. .256KB         r - t ------
+                                                                                                                                                                                                                          -
+                                                                                                                                                                                                                          AG s26361-0277-X-*-11  L _ —
+                                                                                                                                                                                                                            j___________________ I S *
+(   (   (                             (
+
+
+
+
+            K/         030 I
+            |.«-| 50.5.6¾ 1"^   "             ____
+            “i^TJIIrlcH“ Dual Port Window   sr___
+                                            m ______
+
+            rS.l---~-------------
+                     S26361-0277-X-*-11
+            s Siemens AG                &f—
+    I          “               I ko I
+~       SCC,   I/O-Reg.        | L ______
+
+I DMA- M U X                       6Qt
+6 S26361-0277-X-*-11           ^ —
+        __________________ _            6 -f
+             A
+             E
+
+
+..e l             ~       M
+Tcfi- Kanal At V2**-Mux   si___
+-- X21-Überwachung
+--
+ --                           70 +
+--------- -----           pochsTe
+s AG S28361—
+           0277-X— 11     p L _
+VON   SIGNAL EINGANG   SIGNAL AUSGANG
+
+
+
+
+80    BRxC/S-N
+50    RESET - N
+
+
+
+
+60    B MOOE 0
+      B MOOE 1
+
+
+
+      B.TkO'N
+      BLATCHT-N
+
+
+
+
+60    B RTS-N
+      B LATCHE-P
+
+
+SO    RESET-N
+
+
+
+
+80    BR*C/SN
+      BRxC/R-N
+
+
+
+
+                                                   e
+
+                                            dh I        •                          |xo
+                                        icH“ Kanal B: V24 Mux                      m
+                                        -------                                    CPI
+                                        -- X21-Überwachung
+                                        rr—            ______________________________
+                                        >   AG S26361-D277-X-*- 11                 [££—
+                                                                                        ____ ö t
+VON   Sl&NAL EINGANG
+(   (   (                               (
+
+
+
+
+            78A                                   « L ______
+            Ich        M1-Überwachung             s?____
+                  “    Read I/O-Latch             M
+            r —       _________________________
+            S AG S26361-0277-X-*-11
+Ethernet-Prozessor
+
+
+
+
+S26361-F343-V2-*-31
+BAI                  Fpl
+:
+—   DATEN-ENABLE-    5T
+— STEUERUNG          ep *
+- RAS-MULTIPLEXER     -----
+~ DEKODIERUNG_________ 10
+  S26361-0303-V1 - - - 11
+io .e4|                        jw _____
+ner ADRESSEN-UND               «____
+___ CAS-TREIBER                H
+2_________ 2
+    . _
+           ±_
+»SAG S26361-0303-V1 -» • 11
+                               -kKtv.N
+                                ilj»— .
+                    ____________H "      ; .-
+(   (   (                      (
+
+
+
+
+            V
+            —LJ            -              i*0
+                BANKO 512 KB              5!_____
+                                            er |
+                                                30
+                S26361-0303-V1"“ * 11           -------
+            _______________________________      3»
+                                  A
+  hPROHI - N                020 *
+
+               V ) . 1 0 .3 * 4                                  fe il   ____
+    __ iw> HUbner                 BANK 1 512 KB                  11____
+_______ u*____________                                           tP
+             >•'«                                                   i. n
+------------r i r h f r a _________________________________________ ^
+           Siemens AG S2636W1303-V1- *- 11                       L„        ■-
+QU h u e ________ ___________________ __ — __
+    ••••                              •______ _ _ _
+(   (   (                                            (
+
+
+
+
+            PROMI -   N        070   f
+                   ^ .■1 3Q .1013AI       ’                    p
+                   •«'* HUbner      BANK 7 512 KJB             SI_
+                   Ü7.                                          ep|
+            ___ - — — .________                                   50
+            ___ I ÖC57               __________________________ _________
+            ^ S ie m e n s AG S2 6 3 6 W )3 (ö -V t-.-11
+            J(UE____________ I__________________________ I-----——
+            »«-«          _____________________ __
+         020      '
+
+
+i. i o '. s a i              ..                   E F]        ~
+Ibner                 BANK3512 KB                !L___
+                                                   _
+                                                  jp
+                                                         60
+452_______________________________________________
+^ AG S26361—
+           0303-V1 - « ^ - 1 1                           ------
+                        _______________________ 1 6 »
+3*»|           "                       F?"I       I
+        BANKt512 KB                    *l{__
+Z                                      «MV—
+_                                         70
+
+^G S26361-0303—V 1- »-11                      ------
+       ____________________________|    i *        -
+          A Achtung! Pin 16«*$ OV
+          °          Pin 8 -8 >5V
+   020   E
+
+
+O .öAj         “                    K I _.
+er       BANX5 512 KB               **____
+                                    EP_________
+
+Z Z
+[______             80
+        ______________
+ AG S26361-0303-V i - » - n         1     —
+         ______________ » -
+  W - 0 3 ___________________________________________________________________             A' b :   1____________ L ,
+
+
+
+
+                                  [DPTUHj 10 0 2. 8 6       _
+  __________________________, ___ BEPRSMpjpr            FLRCHBAUGRUPPE                  SERAG
+     4 Z Z Z Z I _____ mMskfu.-
+  Z______________________________NORM_____________
+   04 8 A 0 4 2 9  22 01~68~ HB j^Nrl D 452          ~ ______________________ ___________________________ __
+   03 7 A 0 4 0 2  17.02.87 HB                                                                            IBLPTT
+  ~ÜT 6 a 0 5 9 7   0 2 . 0 6 8 6 Zab S I E M E N S AG   5 2 6 3 6 1 - D 3 1 2 - V1 - * - - 1 7             v f- *
+- 01 6 A 0 5 4 4   10.02. $6 McE                       _____________ .__________________________ L l _
+  ZUSTl MITTEILUNG    DATUM IhOHEl_________________
+ö 'm r D                              fö "
+Ä? DATEH-ENABLE-                       Ü----
+---- STEUERUNG                         I r -----
+-- RAS-MULTIPLEXER                     — TT--
+2------- DEKODIERUNG______________________ 1U
+
+! AG S26361-0303-VB--11               ,,¾.
+101S-P                AB     E
+                                 Original mit Z u itand OS arn eu a rt?______
+ m - I M . 1 0 .1 4    I                                        0* °l          _
+       Hübner _ ADRESSEN-UND                                     *1 ____
+       ___ _ CAS-TRElftKR                                        rn ~
+ »"■                                                                      20
+ i-a« | O 4S 2             ____________________________ _____ _____
+
+ Siemens AG                  S26361-030S-V 3-*»- 11              ST
+                                                                  älati
+ _____________________________ P__ i i _
+       020 E
+
+.10.3 ^1                                  5 °T     I
+bner        BANKO 512 KB                  |*L___
+                                          [EP_______
+                                              BO
+(.52       ________ ________________________________
+"«AG S26361-0303-V3- - - 11                      —-
+                     fc,-|30.10.8U J                                            S®____
+                          HUbncr   BANK 1 512 KB                                Ü ____
+            ---------^ -------------------                                      E l l _____
+            ____ Ü=__ _ _ _ _ _ _ _                                                40
+            ____ n r T        o f , s ? _______________________________________
+            ^ S ie m e n s AG S26361-0303-V3 --r 11                            L ------
+            h H U E _ __________ ___________— ------------------ -- — -----
+              Urn,_________________ ,________________;_________________ ____________________
+
+
+
+
+(   (   (                                                      (
+     070f
+lO lS ^ I ^                   EU     ~
+ier       BANK? 512 KB         U___
+                               EP_________
+
+
+E E __________________ ü              _
+sag     S26361-0303-V3 -1 1     ------
+       _ _ _ _________________1 s ■»
+    3 .1 0 .8 4 1                                              K l.
+    Jbner            BANK3512 KB                               II____
+    -------------                                              ICPI
+
+    B l -------- -------------------------------------------   |      60
+    «'S AG S26361-0303-V3---11                                 ^ -------
+                       ________________________ _                     6*
+
+
+
+
+(
+      0?0 E
+
+1 0 .8 A |                         ~                      (ü£ 4 ____
+ner           BANKl512 KB                                 51__
+1
+---------
+_____
+
+s AG          S26361-D303-V3-*- 11
+                                                           i i L
+                                                               70
+                                                                      _
+
+ ------------------------------------- ----------------------------------
+                                                          — ------
+             _______________________________                     7*
+             020   f
+
+        .10.341                                  jK0
+        bner       BANK5 512 KB                  «___
+                                                 tp
+                                                       80
+        ^__ ___________________
+        ns AG S26361-0303-V3 -*-11                     ------
+        _______________________________________ « -
+
+
+
+
+(   (                              (
+                MQSSCTQB 1,5: 1                   i
+
+
+
+M .0 1 . 8 6                "                                             F
+Mo»er             FLPCHBOU.GRUPPE MEMQD
+
+
+ 0 AL 2 — I     ___________________________________________________________________
+                                                                           9Lnr
+
+M E >H S   RG     5 2 6 3 6 1 -D 3 0 3 -V    3 - •>»- 1 7                 - p g r
+lS5       CPUAP        —----
+__ CPU / MMU / FPU     er1
+--- TCU                    10
+                        Hoctwt*
+sAG S26361-A333-X-M1   Is t —
+' i             CPUAP          ™___
+>r    ADRESSDECODER           £!____
+___   adresslatch             i l l ______
+__    INT.DATENTEANSCEIV            20 -
+      PAPTTY-^rMFRTKRtlNC._______
+AG S26361—
+         D333-X-*—11          gL—
+030 I
+
+L]        CFUAP         \K°\
+_ SPEICHERSTEUERUNG
+_ SCHNITTSTELLE         i-l---
+_ ERWEITERUNG              30
+1   —■                  -*OCK»»*
+
+VG S26361-D333-X-*-11   p V '
+2.8 5 ;        CPUAP          --
+bner multibus-arbiter       II---
+___ BUSCONTROLLER
+        BOARDADRESSIERUNG
+                            ELI---
+                               UQ
+S2 ^ aUY-TIMEOUT-LOG.        ___
+"sAG s26361-0333-X-*-11
+15   A CPUAP           « L _______
+er    MULTIBUS         « _________
+      SCHNITTSTELLE    *P 1
+      DATEN/ADRESSEN       5 9
+
+
+
+5AG S26361-0333-X-M1   £ 2 |—
+DC I ' "CpUAP              ----
+                           KO
+        EPROMS             IF
+—       UHR« ANSTEUERUNG   ------
+-----                       60
+
+AG                         at -Nr
+__ S26361-0333-X-*-11      p™ ^
+    u ru t
+
+r     i                     ""           ’       \*o
+             CPUAP                              sT---
+E—         PROC.DIAG REG.                           -----------
+------       SWITCH-REG.                       — f “ --------
+------       NMI-STEUERUNG                         ' 0
+------------ PO V ER -O N /O FF— RESET-------------------------
+
+AG S26361-C333-X-11                             F      7   T '
+        L_                 CPU AP            — ------------
+b n e r „ „ IN TE R R U P TC O i STROLLER   ~ --------------
+________ T A K T - T E IL E R                    -----------
+____mapprom-recister                             ¢0
+ns AG                                       a»-N.
+____ S26361-D333-X-*—11                     h" e>
+/u   E
+
+
+X U                       f e i l _____
+~~                         51
+~ BANK 0 512 KB           EP1
+                               90
+
+3 S26361-0333-X   -*-11
+    __LJ                  {ko I
+—      CPUHP              £7
+“      BANK    5 1 2 KB   N tl
+
+
+= ------------ — --------- p
+G S26361-0333-X -*-11 Ur
+                                                                                    M      1 ,t> : 1                    —
+
+
+
+
+xmjHhl 0 1 8 5 ~ |                                                                                                          “
+g a g H a ie r                     f l p c h b p u GRUPPE                               CPUPP
+GEPRL(q/M Ü j
+norh[
+r-Nrf D 452
+----------------------------- ------------------------------------------------------------------- —   ----------- m   r H
+
+S IE M E N S            OG         5 2 6 3 6       ! - D 3 3 3 - x - * - 1 7
+
+
+____________________ l___________________________________________________________________
+                        TkoT
+       CPUAP           [“  ---~
+CPU / MHU / FPU        M
+TCU                    I IQ
+S26351-D333-V12-*-11
+ 30   I
+_J                  CPUAP                   [--1 -
+L__       SPEICIERSTCUERUNG                 i ! ------
+__    SCHNITTSTELLE                         £ !jL _
+__    ERHEITERUNG                                BO
+
+
+*G    S 2 6 3 6 1 -0 3 3 3 -V 1 2 -* -1 1   iL #
+           CPUAP         -°----
+_ MULTIBUS-ARBITER       1L--
+   DUSCONTROLLER
+' BOARDADRESSIERUL’G     il4
+                           l-Q
+                               -
+I _nEADY-TIMEOUT-LOG.___
+G S26361-0333-V12-*-11
+ j CPUAP                      JM
+ MULTIBUS                     *L
+  SCHNITTSTELLE               El
+_ DATEN/ADRESSEN                «
+
+J S26361-D333-V1 2 -“ - 1 1   h
+(   (   (                            (
+
+
+
+
+                                         ►
+            -- cpuap                     ;
+            - EPROMS                     i
+            -   UliR-» ANSTEUERUNG
+
+
+            5 S26361-0333-V12-"-11       I
+__LL—                    Iko
+   CPUAP               \~ --
+- PROC.DI H6.REG       for--
+- SWITCH-RES           I— --
+   NMI-STEUERUNG           70
+--POWER-ON/GFF— RESET-- L___
+’ S26361-D333-V12-*-11   p y;
+           CPUAP         ——
+_ INTERRUPTCONTROLLER    fl_
+_ TAKT-TEILER
+_MAPPROM-REGISTER          80
+
+’ S26361-0333-V12-*-11
+  020   £
+
+
+
+
+i = r BANK 0    512 KB
+                              fE=
+                              FM
+______________________________ I 90
+
+; AG S26361—
+           D333—V12 -*-11
+
+
+
+                     (\
+c   C   (                     (
+
+
+
+
+                                      KO
+            -   CPUHP                 jf
+
+            I BANK 512 KB             LL
+                                 ___[
+            3 S26361-D333-V12 -*-11   ss
+_    FLfiCHBRUGRUPPE                  CPURP
+
+
+
+    1                                          iBLfiTT
+     S 2 6 3 6 1 - D 3 3 3 - V 12 - * -   17      1-
+
+    — ------------------------- --- *
+                                                                            O LLE          RECHTE                      VO RBEHALTEN                  '   1   l RESERVADOS          TO DO S    LOS     DERECHOS
+                                                                            ALL     R IG H T S                        RESERVED                                TO US   D R O IT S    RESERVES
+                                                                            RESERVADOS                                TO DO S   OS   D IR E IT O S            TUTTI     I   D IR IT T I      R IS E R V A T I
+
+
+
+
+                                                           n
+
+
+
+
+flG
+                                                           FLRCHBRUGRUPPE
+                                    — Jumper für PC-2000
+                                                                                     MQSSSTQB 2:1_______ |
+
+
+
+
+S 2 6 3 6 1- D 3 3 2 - X - * - 17
+                                                                                                         __________
+■ r DOtun 18.0? .86          rtöCHBöuW.orCftB                    prjjrcnr
+  - SÄHT BRAEU                   rt - ?000                        ir i
+  « Hilft Tpfri              BUS-KOPPLER                          IF U ö r
+  C 7ÜJT          6          flORESS-ORIEN                        m flf
+  ; -ü n rra —                 Treiber
+  ; ----------------------------------------------------------- bt^tt-
+      S I E ME N S AG         S?636l-D320-X-»-H                    1*
+4^|sQv/fl£l6Ö0l /flÖD«|BftünNHEHNfln£|?roo^?ö                 jEa^nfF
+                                                                                                                                       p BAfUrt I i M r .M       fiMHMuM.AKM-----------[ M M
+                                                                                                                                       - w        m      c             PC- 2000        |T T ~
+                                                                                                                                       g «TCr~ 6P777
+                                                                                                                                       c 7051 ~ ~ i              «fww-cowiit«                no 1r
+                                                                                                                                       " — ns 76 IS r ~                      SiHC-iPCiK_______ U J 1 L
+                                                                                                                                       5 ------------------------------------------ BlAi I
+                                                                                                                                       ; SIEMENS HC                S2S36I 0320 X-.-II            2.
+    _______________________   |   |   I   11 I_____ rJL_JL_________ _____________ _____ ___________________ r.j\ir f\ [Spy/ «E| 000» / . OOg<..W » liH tiiiw i
+
+
+(                                 (                                                      (                                                                              (
+K       'CLOCK-Cf
+           r r HCROIW
+                  , w(M.... w     U]WT
+                                       1
+
+
+
+     T - lo T
+--------------- 032
+                |OT_C
+                    _
+tKSKC   S?6 361-0 320-»- • - 11   3-
+(   (   c                                          c
+
+
+
+
+                  HQSSSlQG 1,S: I         I        ________    ___
+
+
+            __                                                .
+            ___    FLO C H BOU GR U PPE   O PCPB
+
+
+
+                                                              —
+
+            0G S2G361'D320-x-*-l<?                            -~ r
+                        c
+
+
+
+
+____ SIEM EN S _
+        Logik / Logic
+   ]"zusatzqehäuse f. PC-MX2
+                               Blatt   1
+   Inhaltsübersicht             1   Blatter
+ Grundeinheit
+
+S26361-K149-V2-*-31
+r
+
+
+
+
+c
+
+
+
+
+    _ SV                APCAA
+    ^    Stromversorgung
+
+    G S26113-D296-V1-K-11
+                                Bl
+• I SV APCAA
+' Stromversorgung
+
+G S 26113 -D296-V1 '**1 7
+ _____________ _______a
+

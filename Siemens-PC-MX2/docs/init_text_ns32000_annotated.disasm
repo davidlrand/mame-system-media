@@ -1,0 +1,3222 @@
+; NS32000 annotated linear disassembly: Siemens /etc/init
+; Derived from init_text.bin, SHA-256:
+; f0c731cff35458d9f5e6d34cbe40bb9c40d7c1f50671c09b151773a344452a5c
+;
+; Confidence vocabulary:
+;   CONFIRMED       Proven by executable header, SCCS marker, syscall number,
+;                   or direct instruction semantics.
+;   HIGH CONFIDENCE Inferred from calls, embedded paths, and init control flow.
+;   PROBABLE        Plausible functional assignment requiring dynamic confirmation.
+;
+; This is Siemens init.c 1.17 (1986-02-18), a compact /etc/ttys-based init.
+; The available AT&T System V init.c 1.8 is structurally related but implements
+; the larger /etc/inittab state-machine model. Its shared responsibilities were
+; used for comparison; its function order was not imposed on this binary.
+;
+; Functional map:
+;   0x02ab-0x02db  crt0
+;   0x02dc-0x0a23  Siemens init proper
+;   0x0a24-0x0b0a  linkage/constants/padding
+;   0x0b0b-0x121b  assembly runtime and syscall wrappers
+;   0x121c-0x1889  linked libc/stdio/allocator support
+;   0x188a-0x1bff  zero-filled tail
+;
+
+; -----------------------------------------------------------------------------
+; NON-CODE: module descriptors, link tables, and zero padding.
+; Linear decoding here is retained for byte coverage only.
+; -----------------------------------------------------------------------------
+000000: ADDB    R0, R0
+000002: ADDB    R0, R0
+000004: ADDB    R0, R0
+000006: ADDB    R0, R0
+000008: ADDB    R0, R0
+00000a: ADDB    R0, R0
+00000c: ADDB    R0, R0
+00000e: ADDB    R0, R0
+000010: ADDB    R0, R0
+000012: ADDB    R0, R0
+000014: ADDB    R0, R0
+000016: ADDB    R0, R0
+000018: ADDB    R0, R0
+00001a: ADDB    R0, R0
+00001c: ADDB    R0, R0
+00001e: ADDB    R0, R0
+000020: ADDB    R3, ((FP))
+000024: MOVB    R0, (R3)
+000027: ADDB    (0x2(SB)), R0
+00002b: ADDB    -0x11(R5), 0x64
+00002f: ADDB    R0, (0x1C(FP))
+000033: ADDB    R4, (0xA(FP))
+000037: ADDB    0x39, ((FP))
+00003c: LPRW    INTBASE, -0x1C(R5)
+00003f: ADDB    (0x1C(SP)), R0
+000043: ADDB    R2, (0xB(FP))
+000047: ADDB    R1[R2:D], R0
+00004a: ADDB    R0, R0
+00004c: LPRW    INTBASE, -0x1C(R5)
+00004f: ADDB    (0x1C(SP)), R0
+000053: ADDB    , (0xB(FP))
+000057: ADDB    R3, R0
+000059: BICD    R0, R0
+00005b: ADDB    -0x11(R5), 0x64
+00005f: ADDB    @0x1C, R0
+000062: ADDB    R0, R0
+000064: ORB     R1, (R7)
+000067: ADDB    , (0xB(FP))
+00006b: ADDB    -0x11(R5), 0x64
+00006f: ADDB    @0x1C, R0
+000072: ADDB    R0, R0
+000074: CMPB    R1, ((FP))
+000078: ORB     R1, (R7)
+00007b: ADDB    -0x11(R5), 0x64
+00007f: ADDB    @0x1C, R0
+000082: ADDB    R0, R0
+000084: XORB    R1, ((FP))
+000088: BICB    R1, ((FP))
+00008c: LPRW    INTBASE, -0x1C(R5)
+00008f: ADDB    @0x1C, R0
+000092: ADDB    R0, R0
+000094: ANDB    R1, ((SP))
+000098: SFSB    R1
+00009a: ADDB    R0, R0
+00009c: LPRW    INTBASE, -0x1C(R5)
+00009f: ADDB    @0x1C, R0
+0000a2: ADDB    R0, R0
+0000a4: ORB     R1, ((SB))
+0000a8: LPRB    FP, R1
+0000aa: ADDB    R0, R0
+0000ac: LPRW    INTBASE, -0x1C(R5)
+0000af: ADDB    @0x1C, R0
+0000b2: ADDB    R0, R0
+0000b4: BICB    R1, 
+0000b6: ADDB    R0, R0
+0000b8: CMPQB   -7, R1
+0000ba: ADDB    R0, R0
+0000bc: LPRW    INTBASE, -0x1C(R5)
+0000bf: ADDB    @0x1C, R0
+0000c2: ADDB    R0, R0
+0000c4: XORB    R1, 
+0000c6: ADDB    R0, R0
+0000c8: ACBB    -7, R1, 0xC8
+0000cb: ADDB    -0x11(R5), 0x64
+0000cf: ADDB    @0x1C, R0
+0000d2: ADDB    R0, R0
+0000d4: SUBB    R1, 0x0
+0000d7: ADDB    R1[R4:Q], ((FP))
+0000dc: LPRW    INTBASE, -0x1C(R5)
+0000df: ADDB    @0x1C, R0
+0000e2: ADDB    R0, R0
+0000e4: MOVB    R1, (FP)
+0000e7: ADDB    R4, R0
+0000e9: ADDQW   0, R0
+0000eb: ADDB    -0x11(R5), 0x64
+0000ef: ADDB    R5, (0x1D(FP))
+0000f3: ADDB    0xE(R1), R0
+0000f6: ADDB    R0, R0
+0000f8: CMPQB   -4, R1
+0000fa: ADDB    R0, R0
+0000fc: LPRW    INTBASE, -0x1C(R5)
+0000ff: ADDB    R5, (0x1D(FP))
+000103: ADDB    0xE(FP), R0
+000106: ADDB    R0, R0
+000108: ACBB    -4, R1, 0x108
+00010b: ADDB    -0x11(R5), 0x64
+00010f: ADDB    R5, (0x1D(FP))
+000113: ADDB    0xF(R0), ((FP))
+000118: ADDB    R1, 0x118
+00011b: ADDB    -0x11(R5), 0x64
+00011f: ADDB    0x1D(R1), ((FP))
+000124: SUBCB   R1, R0[R0:W]
+000127: ADDB    0xF(R0), ((FP))
+00012c: LPRW    INTBASE, -0x1C(R5)
+00012f: ADDB    0x1D(R1), ((FP))
+000134: XORB    R1, R0[R0:D]
+000137: ADDB    0xF(R6), ((FP))
+00013c: LPRW    INTBASE, -0x1C(R5)
+00013f: ADDB    0x1D(R1), ((FP))
+000144: ANDB    R1, R0[R0:Q]
+000147: ADDB    TOS, (0xF(FP))
+00014b: ADDB    -0x11(R5), 0x64
+00014f: ADDB    0x1D(R1), ((FP))
+000154: MOVB    R2, R0
+000156: ADDB    R0, R0
+000158: LPRB    MOD, R1
+00015a: ADDB    R0, R0
+00015c: LPRW    INTBASE, -0x1C(R5)
+00015f: ADDB    0x1D(R1), ((FP))
+000164: ADDB    R2, R1
+000166: ADDB    R0, R0
+000168: ORB     R2, R0
+00016a: ADDB    R0, R0
+00016c: LPRW    INTBASE, -0x1C(R5)
+00016f: ADDB    0x1D(R1), ((FP))
+000174: LPRB    UPSR, R2
+000176: ADDB    R0, R0
+000178: CMPB    R2, R1
+00017a: ADDB    R0, R0
+00017c: LPRW    INTBASE, -0x1C(R5)
+00017f: ADDB    0x1D(R1), ((FP))
+000184: ORB     R2, R2
+000186: ADDB    R0, R0
+000188: SUBCB   R2, R1
+00018a: ADDB    R0, R0
+00018c: LPRW    INTBASE, -0x1C(R5)
+00018f: ADDB    0x1D(R1), ((FP))
+000194: ANDB    R2, R4
+000196: ADDB    R0, R0
+000198: CMPQB   1, R2
+00019a: ADDB    R0, R0
+00019c: LPRW    INTBASE, -0x1C(R5)
+00019f: ADDB    0x1D(R5), ((FP))
+0001a4: MOVQB   2, R2
+0001a6: ADDB    R0, R0
+0001a8: ANDB    R2, R4
+0001aa: ADDB    R0, R0
+0001ac: LPRW    INTBASE, -0x1C(R5)
+0001af: ADDB    0x1D(R5), ((FP))
+0001b4: BICB    R2, R6
+0001b6: ADDB    R0, R0
+0001b8: SUBB    R2, R5
+0001ba: ADDB    R0, R0
+0001bc: LPRW    INTBASE, -0x1C(R5)
+0001bf: ADDB    0x1D(R5), ((FP))
+0001c4: CMPB    R2, R7
+0001c6: ADDB    R0, R0
+0001c8: ADDQB   3, R2
+0001ca: ADDB    R0, R0
+0001cc: LPRW    INTBASE, -0x1C(R5)
+0001cf: ADDB    0x1D(R5), ((FP))
+0001d4: TBITB   R2, R7
+0001d6: ADDB    R0, R0
+0001d8: CMPB    R2, R7
+0001da: ADDB    R0, R0
+0001dc: LPRW    INTBASE, -0x1C(R5)
+0001df: ADDB    0x1D(R5), ((FP))
+0001e4: CMPQB   4, R2
+0001e6: ADDB    R0, R0
+0001e8: XORB    R2, R7
+0001ea: ADDB    R0, R0
+0001ec: LPRW    INTBASE, -0x1C(R5)
+0001ef: ADDB    0x1D(R6), R0
+0001f2: ADDB    R0, R0
+0001f4: CMPB    R2, 
+0001f6: ADDB    R0, R0
+0001f8: CMPQB   4, R2
+0001fa: ADDB    R0, R0
+0001fc: LPRW    INTBASE, -0x1C(R5)
+0001ff: ADDB    (0x1D(SB)), R0
+000203: ADDB    R4, R0
+000205: MOVW    R0, R0
+000207: ADDB    R2[R4:W], ((FP))
+00020c: LPRW    INTBASE, -0x1C(R5)
+00020f: ADDB    (0x1D(SB)), R0
+000213: ADDB    0x17(R1), R0
+000216: ADDB    R0, R0
+000218: ANDB    R2, 0x0
+00021b: ADDB    -0x11(R5), 0x64
+00021f: ADDB    R5, (0x1E(FP))
+000223: ADDB    (0x17(FP)), -0x20((FP))
+000229: MOVD    R0, R0
+00022b: ADDB    -0x11(R5), 0x64
+00022f: ADDB    0x1E(R1), ((FP))
+000234: BICB    R2, R0[R0:D]
+000237: ADDB    (0x17(SP)), R0
+00023b: ADDB    -0x11(R5), 0x64
+00023f: ADDB    R1, R0
+000241: SUBW    R0, R0
+000243: ADDB    R2[R7:B], R0
+000246: ADDB    R0, R0
+000248: ADDCB   R2, R0[R0:D]
+00024b: ADDB    -0x11(R5), 0x64
+00024f: ADDB    R1, (0x21(FP))
+000253: ADDB    R3, R0
+000255: ORB     R0, R0
+000257: ADDB    R2[R7:W], R0
+00025a: ADDB    R0, R0
+00025c: LPRW    INTBASE, -0x1C(R5)
+00025f: ADDB    R1, (0x21(FP))
+000263: ADDB    0x18(R2), ((FP))
+000268: ORB     R3, R0
+00026a: ADDB    R0, R0
+00026c: LPRW    INTBASE, -0x1C(R5)
+00026f: ADDB    R5, R0
+000271: SUBW    R0, R0
+000273: ADDB    (0x18(FP)), -0x28((FP))
+000279: ORB     R0, R0
+00027b: ADDB    -0x11(R5), 0x64
+00027f: ADDB    R5, R0
+000281: SUBW    R0, R0
+000283: ADDB    (0x18(SP)), 0x818((FP))
+00028a: ADDB    R0, R0
+00028c: LPRW    INTBASE, -0x1C(R5)
+00028f: ADDB    0x28(R0), R0
+000292: SUBD    R5, R4
+000294: SUBD    -0xC(R6), 0x30(R1)
+000298: EXTD    R6, R1, R5, 50
+00029c: EXTW    R6, R4, R0, -17
+0002a0: 
+0002a1: SUBB    R7, R0
+0002a3: TBITW   R5, R6[R0:B]
+0002a6: XORB    R5, R6[R1:B]
+0002a9: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: crt0 entry point (a_entry=0x2ab).
+; Builds argc/argv/environ, initializes SB, calls link[0]=main, then link[1]=exit.
+; -----------------------------------------------------------------------------
+0002ab: ADJSPB  0x8
+0002ae: MOVD    0x8(SP), (SP)
+0002b2: ADDR    0xC(SP), R0
+0002b5: MOVD    R0, 0x4(SP)
+0002b8: CMPQD   0, (R0)
+0002bb: ADDQD   4, R0
+0002bd: BNE     0x2B8
+0002bf: CMPD    R0, (0x4(SP))
+0002c3: BLS     0x2C7
+0002c5: ADDQD   -4, R0
+0002c7: MOVD    R0, 0x8(SP)
+0002ca: MOVD    R0, (SB)
+0002cd: CXP     0
+0002cf: MOVD    R0, TOS
+0002d1: CXP     0x1
+0002d3: BPT
+0002d4: SUBCB   R0, R0
+0002d6: ADDB    R0, R0
+0002d8: ADDB    R0, R1
+0002da: ORD     R0, R0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: init main().
+; Installs handlers, opens startup resources, initializes process slots,
+; launches startup work, and enters the child-management loop.
+; -----------------------------------------------------------------------------
+0002dc: ENTER   [], 0
+0002df: MOVQD   0, TOS
+0002e1: CXP     0xA
+0002e3: ADDR    EXT(0x17), (SP)
+0002e8: CXP     0xF
+0002ea: ADDR    EXT(0x24), (SP)
+0002ef: MOVQD   1, TOS
+0002f1: CXP     0xB
+0002f3: CMPQD   0, TOS
+0002f5: CXP     0x25
+0002f7: BR      0x2FB
+0002f9: CXP     0x26
+0002fb: MOVQD   0, (SP)
+0002fe: ADDR    0x41(SB), TOS
+000302: CXP     0x18
+000304: CMPQD   0, TOS
+000306: MOVD    R0, EXT(0x22)
+00030a: CMPQD   0, R0
+00030c: BGT     0x2F9
+00030e: MOVD    EXT(0x22), (SP)
+000313: CXP     0x1E
+000315: CXP     0x27
+000317: CXP     0x28
+000319: CXP     0x29
+00031b: BR      0x2F5
+00031d: CMPQD   0, TOS
+00031f: EXIT    []
+000321: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: early init initialization.
+; Sets signal dispositions, clears the process table, closes inherited fds,
+; and establishes the initial console/session environment.
+; -----------------------------------------------------------------------------
+000323: ENTER   [R6,R7], 0
+000326: MOVQD   0, TOS
+000328: ADDR    @0x1A4, (SP)
+00032d: ADDR    0x4B(SB), TOS
+000331: CXP     0xC
+000333: CMPQD   0, TOS
+000335: MOVD    R0, (SP)
+000338: CXP     0x1E
+00033a: MOVQD   1, (SP)
+00033d: MOVQD   2, TOS
+00033f: CXP     0xB
+000341: CMPQD   0, TOS
+000343: MOVQD   1, (SP)
+000346: MOVQD   3, TOS
+000348: CXP     0xB
+00034a: CMPQD   0, TOS
+00034c: ADDR    EXT(0x20), R6
+000350: BR      0x365
+000352: MOVD    R6, (SP)
+000355: CXP     0x2A
+000357: MOVD    R6, (SP)
+00035a: CXP     0x2B
+00035c: MOVQB   0, (R6)
+00035f: ADDD    0xE, R6
+000365: ADDR    EXT(0x20) + 0x578, R0
+00036a: CMPD    R6, R0
+00036c: BLO     0x352
+00036e: ADDR    EXT(0x24), (SP)
+000373: ADDR    @0xE, TOS
+000376: CXP     0xB
+000378: CMPQD   0, TOS
+00037a: ADDR    @0x3C, (SP)
+00037e: CXP     0x16
+000380: MOVQD   0, R7
+000382: ADDR    @0x9, (SP)
+000386: MOVQD   -1, TOS
+000388: CXP     0x1B
+00038a: CMPQD   0, TOS
+00038c: ADDQD   1, R7
+00038e: CMPQD   5, R7
+000390: BGT     0x382
+000392: BR      0x394
+000394: MOVQD   0, (SP)
+000397: CXP     0x1D
+000399: CMPQD   -1, R0
+00039b: BNE     0x394
+00039d: MOVQD   0, (SP)
+0003a0: CXP     0x16
+0003a2: MOVQD   0, (SP)
+0003a5: ADDR    @0xE, TOS
+0003a8: CXP     0xB
+0003aa: CMPQD   0, TOS
+0003ac: MOVQD   0, R7
+0003ae: MOVD    R7, (SP)
+0003b1: CXP     0x1E
+0003b3: ADDQD   1, R7
+0003b5: CMPD    0x23, R7
+0003bb: BGT     0x3AE
+0003bd: BR      0x3BF
+0003bf: CMPQD   0, TOS
+0003c1: EXIT    [R6,R7]
+0003c3: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: run /etc/rc through /bin/sh.
+; Forks, resets signals/fds in the child, execs the shell startup command,
+; and waits for the startup child in the parent.
+; -----------------------------------------------------------------------------
+0003c5: ENTER   [R7], 0x4
+0003c8: MOVQD   0, TOS
+0003ca: CXP     0x23
+0003cc: MOVD    R0, R7
+0003ce: CMPQD   0, R0
+0003d0: BNE     0x421
+0003d3: MOVQD   0, (SP)
+0003d6: MOVQD   1, TOS
+0003d8: CXP     0xB
+0003da: CMPQD   0, TOS
+0003dc: MOVQD   0, (SP)
+0003df: MOVQD   2, TOS
+0003e1: CXP     0xB
+0003e3: CMPQD   0, TOS
+0003e5: MOVQD   0, (SP)
+0003e8: MOVQD   3, TOS
+0003ea: CXP     0xB
+0003ec: CMPQD   0, TOS
+0003ee: MOVQD   0, (SP)
+0003f1: ADDR    @0xE, TOS
+0003f4: CXP     0xB
+0003f6: CMPQD   0, TOS
+0003f8: CXP     0x2
+0003fa: MOVQD   2, (SP)
+0003fd: ADDR    0x63(SB), TOS
+000401: CXP     0x18
+000403: CMPQD   0, TOS
+000405: MOVQD   0, (SP)
+000408: CXP     0x6
+00040a: MOVQD   0, (SP)
+00040d: CXP     0x6
+00040f: MOVQD   0, (SP)
+000412: ADDR    0x37(SB), TOS
+000415: ADDR    0x24(SB), TOS
+000418: CXP     0x8
+00041a: CMPD    TOS, TOS
+00041c: MOVQD   0, (SP)
+00041f: CXP     0xE
+000421: ADDR    EXT(0x2C), (SP)
+000426: ADDR    @0xF, TOS
+000429: CXP     0xB
+00042b: CMPQD   0, TOS
+00042d: MOVD    R0, -0x4(FP)
+000430: BR      0x43E
+000432: ADDR    EXT(0x2C), (SP)
+000437: ADDR    @0xF, TOS
+00043a: CXP     0xB
+00043c: CMPQD   0, TOS
+00043e: MOVQD   0, (SP)
+000441: CXP     0x1D
+000443: CMPD    R0, R7
+000445: BNE     0x432
+000447: MOVD    -0x4(FP), (SP)
+00044b: ADDR    @0xF, TOS
+00044e: CXP     0xB
+000450: CMPQD   0, TOS
+000452: BR      0x454
+000454: CMPQD   0, TOS
+000456: EXIT    [R7]
+000458: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: spawn a getty/console child.
+; Forks, establishes the child tty/session state, execs /etc/getty,
+; then records and monitors the child pid.
+; -----------------------------------------------------------------------------
+00045a: ENTER   [R6,R7], 0x4
+00045d: MOVQD   0, TOS
+00045f: CXP     0x23
+000461: MOVD    R0, R7
+000463: CMPQD   0, R0
+000465: BNE     0x4A6
+000468: MOVQD   0, (SP)
+00046b: ADDR    0x1C(SB), TOS
+00046e: CXP     0x18
+000470: CMPQD   0, TOS
+000472: MOVQD   0, (SP)
+000475: CXP     0x6
+000477: MOVQD   0, (SP)
+00047a: CXP     0x6
+00047c: MOVQD   1, (SP)
+00047f: MOVQD   1, TOS
+000481: CXP     0xB
+000483: CMPQD   0, TOS
+000485: MOVQD   0, (SP)
+000488: MOVQD   3, TOS
+00048a: CXP     0xB
+00048c: CMPQD   0, TOS
+00048e: CXP     0x2
+000490: MOVQD   0, (SP)
+000493: ADDR    0x39(SB), TOS
+000496: ADDR    0x24(SB), TOS
+000499: ADDR    0x24(SB), TOS
+00049c: CXP     0x8
+00049e: ADJSPB  0xF4
+0004a1: MOVQD   0, (SP)
+0004a4: CXP     0xE
+0004a6: ADDR    EXT(0x2C), (SP)
+0004ab: ADDR    @0xF, TOS
+0004ae: CXP     0xB
+0004b0: CMPQD   0, TOS
+0004b2: MOVD    R0, -0x4(FP)
+0004b5: BR      0x4C3
+0004b7: ADDR    EXT(0x2C), (SP)
+0004bc: ADDR    @0xF, TOS
+0004bf: CXP     0xB
+0004c1: CMPQD   0, TOS
+0004c3: MOVQD   0, (SP)
+0004c6: CXP     0x1D
+0004c8: CMPD    R0, R7
+0004ca: BNE     0x4B7
+0004cc: MOVD    -0x4(FP), (SP)
+0004d0: ADDR    @0xF, TOS
+0004d3: CXP     0xB
+0004d5: CMPQD   0, TOS
+0004d7: MOVQD   1, (SP)
+0004da: ADDR    0x55(SB), TOS
+0004de: CXP     0x18
+0004e0: CMPQD   0, TOS
+0004e2: MOVD    R0, R6
+0004e4: CMPQD   0, R6
+0004e6: BGT     0x52C
+0004e9: MOVQD   2, (SP)
+0004ec: MOVQD   0, TOS
+0004ee: MOVD    R6, TOS
+0004f0: CXP     0x3
+0004f2: CMPD    TOS, TOS
+0004f4: ADDR    @0x8, (SP)
+0004f8: ADDR    0x1E(SB), TOS
+0004fb: ADDR    EXT(0x10), TOS
+0004ff: CXP     0x12
+000501: CMPD    TOS, TOS
+000503: ADDR    @0x8, (SP)
+000507: ADDR    0x20(SB), TOS
+00050a: ADDR    EXT(0x10) + 0x8, TOS
+00050e: CXP     0x12
+000510: CMPD    TOS, TOS
+000512: ADDR    EXT(0x10) + 0x10, (SP)
+000517: CXP     0x15
+000519: ADDR    @0x14, (SP)
+00051d: ADDR    EXT(0x10), TOS
+000521: MOVD    R6, TOS
+000523: CXP     0x1A
+000525: CMPD    TOS, TOS
+000527: MOVD    R6, (SP)
+00052a: CXP     0x1E
+00052c: BR      0x52E
+00052e: CMPQD   0, TOS
+000530: EXIT    [R6,R7]
+000532: RXP     0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED BY CONTROL FLOW: signal flag handler.
+; Reinstalls itself and converts selected signals into global pending flags.
+; -----------------------------------------------------------------------------
+000534: ENTER   [], 0
+000537: MOVQD   0, TOS
+000539: MOVQD   1, (SP)
+00053c: MOVD    0xC(FP), TOS
+00053f: CXP     0xB
+000541: CMPQD   0, TOS
+000543: CMPD    0xF, 0xC(FP)
+00054a: BNE     0x552
+00054c: MOVQD   1, EXT(0xD)
+000550: BR      0x566
+000552: CMPQD   2, 0xC(FP)
+000555: BNE     0x55D
+000557: MOVQD   1, EXT(0x1)
+00055b: BR      0x566
+00055d: CMPQD   3, 0xC(FP)
+000560: BNE     0x566
+000562: MOVQD   1, EXT(0x5)
+000566: BR      0x568
+000568: CMPQD   0, TOS
+00056a: EXIT    []
+00056c: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: main wait/reap and restart loop.
+; Waits for children, matches pids to process slots, accounts/removes dead
+; entries, and reacts to pending rescan/shutdown/power flags.
+; -----------------------------------------------------------------------------
+00056e: ENTER   [R6,R7], 0
+000571: MOVQD   0, TOS
+000573: MOVQD   0, EXT(0x5)
+000577: MOVQD   0, EXT(0x1)
+00057b: MOVQD   0, EXT(0xD)
+00057f: ADDR    EXT(0x2D), (SP)
+000584: MOVQD   2, TOS
+000586: CXP     0xB
+000588: CMPQD   0, TOS
+00058a: ADDR    EXT(0x2D), (SP)
+00058f: MOVQD   3, TOS
+000591: CXP     0xB
+000593: CMPQD   0, TOS
+000595: ADDR    EXT(0x2D), (SP)
+00059a: ADDR    @0xF, TOS
+00059d: CXP     0xB
+00059f: CMPQD   0, TOS
+0005a1: CMPQD   0, EXT(0x1)
+0005a5: BNE     0x5B4
+0005a7: CMPQD   0, EXT(0xD)
+0005ab: BNE     0x5B4
+0005ad: MOVQD   0, (SP)
+0005b0: CXP     0x1D
+0005b2: MOVD    R0, R6
+0005b4: CMPQD   0, EXT(0x1)
+0005b8: BEQ     0x5BF
+0005ba: CXP     0x28
+0005bc: BR      0x577
+0005bf: CMPQD   0, EXT(0xD)
+0005c3: BEQ     0x5CA
+0005c5: CXP     0x2C
+0005c7: BR      0x577
+0005ca: CMPQD   -1, R6
+0005cc: BNE     0x5DD
+0005ce: CMPQD   4, EXT(0x32)
+0005d2: BNE     0x5DB
+0005d4: MOVQD   0, EXT(0x32)
+0005d8: BR      0x577
+0005db: BR      0x60F
+0005dd: ADDR    EXT(0x20), R7
+0005e1: BR      0x603
+0005e3: CMPD    0xA(R7), R6
+0005e6: BEQ     0x5ED
+0005e8: CMPQD   -1, 0xA(R7)
+0005eb: BNE     0x5FD
+0005ed: MOVD    R7, (SP)
+0005f0: CXP     0x2E
+0005f2: CMPQD   0, EXT(0x5)
+0005f6: BNE     0x5FD
+0005f8: MOVD    R7, (SP)
+0005fb: CXP     0x2F
+0005fd: ADDD    0xE, R7
+000603: ADDR    EXT(0x20) + 0x578, R0
+000608: CMPD    R7, R0
+00060a: BLO     0x5E3
+00060c: BR      0x5A1
+00060f: CMPQD   0, TOS
+000611: EXIT    [R6,R7]
+000613: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: terminate/clear one managed process slot.
+; Performs accounting/cleanup and clears the stored child pid.
+; -----------------------------------------------------------------------------
+000615: ENTER   [R7], 0
+000618: MOVQD   0, TOS
+00061a: MOVD    0xC(FP), R7
+00061d: CMPQD   0, 0xA(R7)
+000620: BEQ     0x632
+000622: MOVD    R7, (SP)
+000625: CXP     0x2E
+000627: ADDR    @0x9, (SP)
+00062b: MOVD    0xA(R7), TOS
+00062e: CXP     0x1B
+000630: CMPQD   0, TOS
+000632: MOVQD   0, 0xA(R7)
+000635: BR      0x637
+000637: CMPQD   0, TOS
+000639: EXIT    [R7]
+00063b: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: utmp/wtmp accounting update.
+; Builds a fixed record and updates /etc/utmp and /usr/adm/wtmp.
+; -----------------------------------------------------------------------------
+00063d: ENTER   [R7], 0
+000640: MOVQD   0, TOS
+000642: MOVD    0xC(FP), R7
+000645: CMPQB   0, (R7)
+000648: BEQ     0x67F
+00064a: ADDR    0x79(SB), (SP)
+00064f: ADDR    EXT(0x14), TOS
+000653: CXP     0x1F
+000655: CMPQD   0, TOS
+000657: ADDR    @0x8, (SP)
+00065b: MOVD    R7, TOS
+00065d: ADDR    EXT(0x14), TOS
+000661: CXP     0
+000663: CMPD    TOS, TOS
+000665: MOVQD   0, (SP)
+000668: MOVQD   0, TOS
+00066a: ADDR    EXT(0x14), TOS
+00066e: CXP     0x4
+000670: CMPD    TOS, TOS
+000672: ADDR    @0x1B6, (SP)
+000677: ADDR    EXT(0x14), TOS
+00067b: CXP     0x7
+00067d: CMPQD   0, TOS
+00067f: BR      0x681
+000681: CMPQD   0, TOS
+000683: EXIT    [R7]
+000685: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: parse one /etc/ttys entry.
+; Reads status/name fields character-by-character and validates the line.
+; -----------------------------------------------------------------------------
+000687: ENTER   [R6,R7], 0
+00068a: MOVQD   0, TOS
+00068c: CXP     0x30
+00068e: MOVD    R0, R7
+000690: CMPQD   0, R7
+000692: BLE     0x699
+000694: MOVQD   0, R0
+000696: BR      0x72B
+000699: CMPQD   0, R7
+00069b: BNE     0x69F
+00069d: BR      0x68C
+00069f: MOVB    R7, EXT(0x11) + 0x9
+0006a3: CXP     0x30
+0006a5: MOVD    R0, R7
+0006a7: CMPQD   0, R7
+0006a9: BLT     0x6AD
+0006ab: BR      0x68C
+0006ad: MOVB    R7, EXT(0x11) + 0x8
+0006b1: ADDR    @0x8, (SP)
+0006b5: ADDR    0x21(SB), TOS
+0006b8: ADDR    EXT(0x11), TOS
+0006bc: CXP     0x12
+0006be: CMPD    TOS, TOS
+0006c0: MOVQD   0, R6
+0006c2: CXP     0x30
+0006c4: MOVD    R0, R7
+0006c6: CMPQD   0, R7
+0006c8: BLT     0x6CC
+0006ca: BR      0x6DB
+0006cc: MOVB    R7, EXT(0x11)[R6:B]
+0006d1: ADDQD   1, R6
+0006d3: CMPD    0x8, R6
+0006d9: BGT     0x6C2
+0006db: BR      0x6E1
+0006dd: CXP     0x30
+0006df: MOVD    R0, R7
+0006e1: CMPQD   0, R7
+0006e3: BLT     0x6DD
+0006e5: CMPQB   0, EXT(0x11)
+0006e9: BNE     0x6EE
+0006eb: BR      0x68C
+0006ee: CMPB    0x30, EXT(0x11) + 0x9
+0006f3: BNE     0x6F8
+0006f5: BR      0x68C
+0006f8: ADDR    0x79(SB), (SP)
+0006fd: ADDR    EXT(0x14), TOS
+000701: CXP     0x1F
+000703: CMPQD   0, TOS
+000705: ADDR    @0x8, (SP)
+000709: ADDR    EXT(0x11), TOS
+00070d: ADDR    EXT(0x14), TOS
+000711: CXP     0
+000713: CMPD    TOS, TOS
+000715: MOVQD   6, (SP)
+000718: ADDR    EXT(0x14), TOS
+00071c: CXP     0x13
+00071e: CMPQD   0, TOS
+000720: CMPQD   0, R0
+000722: BLE     0x727
+000724: BR      0x68C
+000727: MOVQD   1, R0
+000729: BR      0x72B
+00072b: CMPQD   0, TOS
+00072d: EXIT    [R6,R7]
+00072f: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: buffered single-character input helper.
+; Reads one byte from the current ttys file descriptor and normalizes EOF/newline.
+; -----------------------------------------------------------------------------
+000731: ENTER   [], 0x2
+000734: MOVQD   0, TOS
+000736: MOVQD   1, (SP)
+000739: ADDR    -0x1(FP), TOS
+00073c: MOVD    EXT(0x22), TOS
+000740: CXP     0x19
+000742: CMPD    TOS, TOS
+000744: CMPQD   1, R0
+000746: BEQ     0x74C
+000748: MOVQD   -1, R0
+00074a: BR      0x75C
+00074c: CMPB    0xA, -0x1(FP)
+000750: BNE     0x756
+000752: MOVQD   0, R0
+000754: BR      0x75C
+000756: MOVXBD  -0x1(FP), R0
+00075a: BR      0x75C
+00075c: CMPQD   0, TOS
+00075e: EXIT    []
+000760: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: rescan /etc/ttys and reconcile process slots.
+; Marks old entries, parses current entries, creates/updates slots, then
+; removes or respawns entries whose configuration changed.
+; -----------------------------------------------------------------------------
+000762: ENTER   [R7], 0
+000765: MOVQD   0, TOS
+000767: MOVQD   0, (SP)
+00076a: ADDR    0x41(SB), TOS
+00076e: CXP     0x18
+000770: CMPQD   0, TOS
+000772: MOVD    R0, EXT(0x22)
+000776: CMPQD   0, R0
+000778: BLE     0x77D
+00077a: BR      0x862
+00077d: ADDR    EXT(0x20), R7
+000781: BR      0x78C
+000783: MOVQB   0, 0x9(R7)
+000786: ADDD    0xE, R7
+00078c: ADDR    EXT(0x20) + 0x578, R0
+000791: CMPD    R7, R0
+000793: BLO     0x783
+000795: BR      0x80F
+000798: ADDR    EXT(0x20), R7
+00079c: BR      0x7D1
+00079e: ADDR    @0x8, (SP)
+0007a2: ADDR    EXT(0x11), TOS
+0007a6: MOVD    R7, TOS
+0007a8: CXP     0x1C
+0007aa: CMPD    TOS, TOS
+0007ac: CMPQD   0, R0
+0007ae: BEQ     0x7B2
+0007b0: BR      0x7CB
+0007b2: SBITB   0x0, 0x9(R7)
+0007b7: CMPB    EXT(0x11) + 0x8, 0x8(R7)
+0007bc: BEQ     0x7C8
+0007be: SBITB   0x1, 0x9(R7)
+0007c3: MOVB    EXT(0x11) + 0x8, 0x8(R7)
+0007c8: BR      0x80F
+0007cb: ADDD    0xE, R7
+0007d1: ADDR    EXT(0x20) + 0x578, R0
+0007d6: CMPD    R7, R0
+0007d8: BLO     0x79E
+0007da: ADDR    EXT(0x20), R7
+0007de: BR      0x806
+0007e0: CMPQB   0, (R7)
+0007e3: BEQ     0x7E7
+0007e5: BR      0x800
+0007e7: ADDR    @0x8, (SP)
+0007eb: ADDR    EXT(0x11), TOS
+0007ef: MOVD    R7, TOS
+0007f1: CXP     0x12
+0007f3: CMPD    TOS, TOS
+0007f5: ORB     0x3, 0x9(R7)
+0007f9: MOVB    EXT(0x11) + 0x8, 0x8(R7)
+0007fe: BR      0x80F
+000800: ADDD    0xE, R7
+000806: ADDR    EXT(0x20) + 0x578, R0
+00080b: CMPD    R7, R0
+00080d: BLO     0x7E0
+00080f: CXP     0x31
+000811: CMPQD   0, R0
+000813: BNE     0x798
+000816: MOVD    EXT(0x22), (SP)
+00081b: CXP     0x1E
+00081d: ADDR    EXT(0x20), R7
+000821: BR      0x857
+000823: MOVXBD  0x9(R7), R0
+000827: TBITB   0x0, R0
+00082a: BFS     0x83E
+00082c: CMPQB   0, (R7)
+00082f: BEQ     0x836
+000831: MOVD    R7, (SP)
+000834: CXP     0x2A
+000836: MOVD    R7, (SP)
+000839: CXP     0x2B
+00083b: MOVQB   0, (R7)
+00083e: MOVXBD  0x9(R7), R0
+000842: TBITB   0x1, R0
+000845: BFC     0x851
+000847: MOVD    R7, (SP)
+00084a: CXP     0x2A
+00084c: MOVD    R7, (SP)
+00084f: CXP     0x2F
+000851: ADDD    0xE, R7
+000857: ADDR    EXT(0x20) + 0x578, R0
+00085c: CMPD    R7, R0
+00085e: BLO     0x823
+000860: BR      0x862
+000862: CMPQD   0, TOS
+000864: EXIT    [R7]
+000866: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: start one configured tty/getty entry.
+; Forks and execs /etc/getty with the selected tty name; parent stores pid.
+; -----------------------------------------------------------------------------
+000868: ENTER   [R6,R7], 0
+00086b: MOVQD   0, TOS
+00086d: CXP     0x23
+00086f: MOVD    R0, R7
+000871: CMPQD   0, R0
+000873: BNE     0x910
+000876: MOVQD   0, R6
+000878: MOVD    R6, (SP)
+00087b: CXP     0x1E
+00087d: ADDQD   1, R6
+00087f: CMPD    0x23, R6
+000885: BGT     0x878
+000887: MOVQD   0, (SP)
+00088a: MOVQD   1, TOS
+00088c: CXP     0xB
+00088e: CMPQD   0, TOS
+000890: MOVQD   0, (SP)
+000893: MOVQD   2, TOS
+000895: CXP     0xB
+000897: CMPQD   0, TOS
+000899: MOVQD   0, (SP)
+00089c: MOVQD   3, TOS
+00089e: CXP     0xB
+0008a0: CMPQD   0, TOS
+0008a2: CXP     0x2
+0008a4: ADDR    0x79(SB), (SP)
+0008a9: ADDR    EXT(0x14), TOS
+0008ad: CXP     0x1F
+0008af: CMPQD   0, TOS
+0008b1: ADDR    @0x8, (SP)
+0008b5: MOVD    0xC(FP), TOS
+0008b8: ADDR    EXT(0x14), TOS
+0008bc: CXP     0
+0008be: CMPD    TOS, TOS
+0008c0: MOVQD   0, (SP)
+0008c3: MOVQD   0, TOS
+0008c5: ADDR    EXT(0x14), TOS
+0008c9: CXP     0x4
+0008cb: CMPD    TOS, TOS
+0008cd: ADDR    @0x192, (SP)
+0008d2: ADDR    EXT(0x14), TOS
+0008d6: CXP     0x7
+0008d8: CMPQD   0, TOS
+0008da: MOVQD   2, (SP)
+0008dd: ADDR    EXT(0x14), TOS
+0008e1: CXP     0x18
+0008e3: CMPQD   0, TOS
+0008e5: MOVQD   0, (SP)
+0008e8: CXP     0x6
+0008ea: MOVQD   0, (SP)
+0008ed: CXP     0x6
+0008ef: MOVB    0x8(0xC(FP)), EXT(0x14)
+0008f5: MOVQB   0, EXT(0x14) + 0x1
+0008f9: MOVQD   0, (SP)
+0008fc: ADDR    EXT(0x14), TOS
+000900: ADDR    0x37(SB), TOS
+000903: ADDR    0x2C(SB), TOS
+000906: CXP     0x8
+000908: ADJSPB  0xF4
+00090b: MOVQD   0, (SP)
+00090e: CXP     0xE
+000910: MOVD    R7, 0xA(0xC(FP))
+000914: BR      0x916
+000916: CMPQD   0, TOS
+000918: EXIT    [R6,R7]
+00091a: RXP     0
+
+; -----------------------------------------------------------------------------
+; HIGH CONFIDENCE: write/update a login accounting record.
+; Searches the fixed-record file and appends/updates utmp/wtmp-style state.
+; -----------------------------------------------------------------------------
+00091c: ENTER   [R6,R7], 0
+00091f: MOVQD   0, TOS
+000921: MOVD    0xC(FP), R7
+000924: MOVQD   2, (SP)
+000927: ADDR    0x4B(SB), TOS
+00092b: CXP     0x18
+00092d: CMPQD   0, TOS
+00092f: MOVD    R0, R6
+000931: CMPQD   0, R0
+000933: BGT     0x999
+000936: BR      0x97D
+000939: ADDR    @0x8, (SP)
+00093d: MOVD    R7, TOS
+00093f: ADDR    EXT(0x10), TOS
+000943: CXP     0x1C
+000945: CMPD    TOS, TOS
+000947: CMPQD   0, R0
+000949: BEQ     0x94D
+00094b: BR      0x97D
+00094d: MOVQD   1, (SP)
+000950: ADDR    @0xFFFFFFEC, TOS
+000953: MOVD    R6, TOS
+000955: CXP     0x3
+000957: CMPD    TOS, TOS
+000959: ADDR    @0x8, (SP)
+00095d: ADDR    0x22(SB), TOS
+000960: ADDR    EXT(0x10) + 0x8, TOS
+000964: CXP     0x12
+000966: CMPD    TOS, TOS
+000968: ADDR    EXT(0x10) + 0x10, (SP)
+00096d: CXP     0x15
+00096f: ADDR    @0x14, (SP)
+000973: ADDR    EXT(0x10), TOS
+000977: MOVD    R6, TOS
+000979: CXP     0x1A
+00097b: CMPD    TOS, TOS
+00097d: ADDR    @0x14, (SP)
+000981: ADDR    EXT(0x10), TOS
+000985: MOVD    R6, TOS
+000987: CXP     0x19
+000989: CMPD    TOS, TOS
+00098b: CMPD    0x14, R0
+000991: BEQ     0x939
+000994: MOVD    R6, (SP)
+000997: CXP     0x1E
+000999: MOVQD   1, (SP)
+00099c: ADDR    0x55(SB), TOS
+0009a0: CXP     0x18
+0009a2: CMPQD   0, TOS
+0009a4: MOVD    R0, R6
+0009a6: CMPQD   0, R0
+0009a8: BGT     0x9ED
+0009ab: ADDR    @0x8, (SP)
+0009af: MOVD    R7, TOS
+0009b1: ADDR    EXT(0x10), TOS
+0009b5: CXP     0x12
+0009b7: CMPD    TOS, TOS
+0009b9: ADDR    @0x8, (SP)
+0009bd: ADDR    0x23(SB), TOS
+0009c0: ADDR    EXT(0x10) + 0x8, TOS
+0009c4: CXP     0x12
+0009c6: CMPD    TOS, TOS
+0009c8: ADDR    EXT(0x10) + 0x10, (SP)
+0009cd: CXP     0x15
+0009cf: MOVQD   2, (SP)
+0009d2: MOVQD   0, TOS
+0009d4: MOVD    R6, TOS
+0009d6: CXP     0x3
+0009d8: CMPD    TOS, TOS
+0009da: ADDR    @0x14, (SP)
+0009de: ADDR    EXT(0x10), TOS
+0009e2: MOVD    R6, TOS
+0009e4: CXP     0x1A
+0009e6: CMPD    TOS, TOS
+0009e8: MOVD    R6, (SP)
+0009eb: CXP     0x1E
+0009ed: BR      0x9EF
+0009ef: CMPQD   0, TOS
+0009f1: EXIT    [R6,R7]
+0009f3: RXP     0
+
+; -----------------------------------------------------------------------------
+; PROBABLE: power-device/status helper involving /dev/pwr.
+; -----------------------------------------------------------------------------
+0009f5: ENTER   [], 0
+0009f8: MOVQD   0, TOS
+0009fa: MOVQD   1, (SP)
+0009fd: ADDR    EXT(0x17), TOS
+000a01: CXP     0x21
+000a03: CMPQD   0, TOS
+000a05: BR      0xA07
+000a07: CMPQD   0, TOS
+000a09: EXIT    []
+000a0b: RXP     0
+
+; -----------------------------------------------------------------------------
+; PROBABLE: controlled reboot/shutdown signal path.
+; Runs an internal cleanup step and invokes reboot(2).
+; -----------------------------------------------------------------------------
+000a0d: ENTER   [R7], 0x2
+000a10: MOVQD   0, TOS
+000a12: CXP     0x25
+000a14: ADDR    @0x18, (SP)
+000a18: CXP     0x9
+000a1a: MOVQD   1, R0
+000a1c: BR      0xA1E
+000a1e: CMPQD   0, TOS
+000a20: EXIT    [R7]
+000a22: RXP     0
+
+; -----------------------------------------------------------------------------
+; NON-CODE: constants/linkage/padding between init and runtime support.
+; -----------------------------------------------------------------------------
+000a24: ADDCB   R0, R1
+000a26: ADDB    R0, R0
+000a28: ANDB    R4, R4
+000a2a: ADDB    R0, R0
+000a2c: SUBB    R0, R1
+000a2e: RDVAL   (R6)
+000a32: CMPQB   0, R0
+000a34: ADDB    R0, R2
+000a36: CMPQB   0, R0
+000a38: SPRB    BPC, R4
+000a3a: ADDB    R0, R0
+000a3c: ADDCB   R0, R2
+000a3e: RDVAL   0x0
+000a42: CMPQB   0, R0
+000a44: SUBCB   R0, R2
+000a46: CMPQB   0, R0
+000a48: ADDB    R0, R3
+000a4a: CMPQW   0, R0
+000a4c: ADDCB   R0, R3
+000a4e: ORD     R0, R0
+000a50: SUBB    R0, R3
+000a52: CMPD    R0, R1
+000a54: SUBCB   R0, R3
+000a56: CMPQB   0, R0
+000a58: SUBCB   R4, R4
+000a5a: ADDB    R0, R0
+000a5c: ADDB    R0, R1
+000a5e: ORD     R0, R0
+000a60: ADDB    R0, R4
+000a62: CMPQW   0, R0
+000a64: TBITB   R4, R4
+000a66: ADDB    R0, R0
+000a68: BICB    R4, R5
+000a6a: ADDB    R0, R0
+000a6c: ADDCB   R0, R4
+000a6e: ADDB    R0, R0
+000a70: SUBB    R0, R4
+000a72: CMPQW   0, R0
+000a74: MOVB    R4, R5
+000a76: ADDB    R0, R0
+000a78: SUBCB   R0, R4
+000a7a: ORD     R0, R0
+000a7c: ADDB    R0, R5
+000a7e: CMPQB   0, R0
+000a80: ANDB    R4, R5
+000a82: ADDB    R0, R0
+000a84: ADDCB   R0, R5
+000a86: ORD     R0, R0
+000a88: SUBB    R0, R5
+000a8a: ORD     R0, R0
+000a8c: SUBCB   R0, R5
+000a8e: CMPQB   0, R0
+000a90: ADDB    R0, R6
+000a92: ORD     R0, R0
+000a94: ADDCB   R0, R6
+000a96: ADDB    R0, R0
+000a98: SUBB    R0, R6
+000a9a: ORD     R0, R0
+000a9c: SUBCB   R0, R6
+000a9e: CMPQB   0, R0
+000aa0: ADDB    R0, R7
+000aa2: RDVAL   (0x21(SB))
+000aa7: ADDB    R0, R0
+000aa9: ADDW    (R0), 0x27(0x8(FP))
+000aae: ADDB    R0, R0
+000ab0: ADDCB   R0, R7
+000ab2: ORD     R0, R0
+000ab4: SUBCB   R0, R0
+000ab6: ORW     R0, R6[R0:B]
+000ab9: ADDB    0x30(R0), R0[R0:B]
+000abd: ADDB    R0[R0:W], R4
+000ac0: SUBCB   R0, R0
+000ac2: 
+000ac3: ADDW    R6, R0
+000ac5: ADDB    0x30(0x4(FP)), (FP)
+000aca: EXIT    [R6]
+000acc: SUBCB   R0, R0
+000ace: XORW    R0, 0x30(R4)
+000ad1: ADDB    0x3(R4), R4
+000ad4: SUBCB   R0, R0
+000ad6: SUBCW   R0, R6[R0:B]
+000ad9: ADDB    0x2(R3), R0
+000adc: SUBCB   R0, R0
+000ade: ADDB    R0, 0x30(SP)
+000ae1: ADDB    0x30(0x5(SP)), -0x2B((FP))
+000ae7: CMPB    R6, R0
+000ae9: ADDB    @0x3, -0x14(R4)
+000aed: CMPQW   0, R0
+000aef: ADDB    0x28(R0), R0
+000af2: SUBD    R5, R4
+000af4: ADDR    -0x17(R7), R1
+000af7: TBITB   R5, -0xD(SP)
+000afa: BICW    R6, 0x2E(R0)
+000afd: SUBCD   R4, R0
+000aff: LPRD    CFG, 0x20(R4)
+000b02: XORB    R6, 0x2F
+000b05: SUBCB   R7, R0
+000b07: SPRD    BPC, R6
+000b09: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: exit(2) wrapper / process termination path.
+; -----------------------------------------------------------------------------
+000b0b: CXP     0
+000b0d: MOVQD   1, R0
+000b0f: ADDR    0x8(SP), R1
+000b12: SVC
+000b13: BPT
+000b14: SUBCB   R0, R7
+000b16: BLO     0xB17
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: overlapping-string copy/concatenation helper.
+; -----------------------------------------------------------------------------
+000b18: ENTER   [R4,R5,R6,R7], 0
+000b1b: MOVQD   0, TOS
+000b1d: MOVD    0xC(FP), R7
+000b20: MOVD    0x10(FP), R6
+000b23: MOVD    0x14(FP), R5
+000b26: MOVD    R7, R4
+000b28: BR      0xB2A
+000b2a: ADDQD   1, R7
+000b2c: CMPQB   0, -0x1(R7)
+000b2f: BNE     0xB2A
+000b31: ADDQD   -1, R7
+000b33: BR      0xB42
+000b35: ADDQD   -1, R5
+000b37: CMPQD   0, R5
+000b39: BLE     0xB42
+000b3b: ADDQD   -1, R7
+000b3d: MOVQB   0, (R7)
+000b40: BR      0xB50
+000b42: ADDQD   1, R7
+000b44: ADDQD   1, R6
+000b46: MOVB    -0x1(R6), R0
+000b49: MOVB    R0, -0x1(R7)
+000b4c: CMPQB   0, R0
+000b4e: BNE     0xB35
+000b50: MOVD    R4, R0
+000b52: BR      0xB54
+000b54: CMPQD   0, TOS
+000b56: EXIT    [R4,R5,R6,R7]
+000b58: RXP     0
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: second overlapping-string copy/concatenation helper.
+; -----------------------------------------------------------------------------
+000b5a: ENTER   [R4,R5,R6,R7], 0
+000b5d: MOVQD   0, TOS
+000b5f: MOVD    0xC(FP), R7
+000b62: MOVD    0x10(FP), R6
+000b65: MOVD    0x14(FP), R5
+000b68: MOVD    R7, R4
+000b6a: BR      0xB6C
+000b6c: ADDQD   1, R7
+000b6e: CMPQB   0, -0x1(R7)
+000b71: BNE     0xB6C
+000b73: ADDQD   -1, R7
+000b75: BR      0xB84
+000b77: ADDQD   -1, R5
+000b79: CMPQD   0, R5
+000b7b: BLE     0xB84
+000b7d: ADDQD   -1, R7
+000b7f: MOVQB   0, (R7)
+000b82: BR      0xB92
+000b84: ADDQD   1, R7
+000b86: ADDQD   1, R6
+000b88: MOVB    -0x1(R6), R0
+000b8b: MOVB    R0, -0x1(R7)
+000b8e: CMPQB   0, R0
+000b90: BNE     0xB77
+000b92: MOVD    R4, R0
+000b94: BR      0xB96
+000b96: CMPQD   0, TOS
+000b98: EXIT    [R4,R5,R6,R7]
+000b9a: RXP     0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: setpgrp.s follows.
+; -----------------------------------------------------------------------------
+000b9c: ADDB    R5, R1
+000b9e: SUBD    R5, R4
+000ba0: SUBCD   -0xC(R4), @0xFFFFFFF0
+000ba4: ADDR    -0x10(R6), 0x2E(R1)
+000ba8: SUBCD   R1, R5
+000baa: SUBCW   R5, 0x32(FP)
+000bad: SUBB    0x20(R5), 0x38(R4)[R6:B]
+000bb2: TBITW   R5, R6[R0:B]
+000bb5: XORW    R5, R6[R1:B]
+000bb8: XORW    R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: setpgrp-family syscall wrapper.
+; -----------------------------------------------------------------------------
+000bba: MOVQD   1, TOS
+000bbc: ADDR    @0x27, R0
+000bbf: ADDR    (SP), R1
+000bc2: SVC
+000bc3: ADJSPB  0xFC
+000bc6: RXP     0
+000bc8: MOVQD   0, TOS
+000bca: ADDR    @0x27, R0
+000bcd: ADDR    (SP), R1
+000bd0: SVC
+000bd1: ADJSPB  0xFC
+000bd4: RXP     0
+000bd6: ADDB    R0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: lseek.s follows.
+; -----------------------------------------------------------------------------
+000bd8: ADDB    R5, R1
+000bda: SUBD    R5, R4
+000bdc: LPRB    , -0x1B(R6)
+000bdf: ADDR    0x2E(R5), -0xD(R5)
+000be3: BICW    R6, 0x2E(R0)
+000be6: SUBCD   R4, R0
+000be8: LPRD    CFG, 0x20(R4)
+000beb: XORB    R6, 0x2F
+000bee: SUBCB   R7, R0
+000bf0: SPRD    BPC, R6
+000bf2: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: lseek(2) wrapper.
+; -----------------------------------------------------------------------------
+000bf4: ADDR    @0x13, R0
+000bf7: ADDR    0x8(SP), R1
+000bfa: SVC
+000bfb: BFC     0xBFF
+000bfd: CXP     0
+000bff: RXP     0
+000c01: ADDB    R0, R0
+000c03: ADDB    R0[R1:B], R0
+000c06: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: chown.s follows.
+; -----------------------------------------------------------------------------
+000c08: ADDB    R5, R1
+000c0a: SUBD    R5, R4
+000c0c: SUBD    -0x11(R5), R1
+000c0f: TBITD   0x2E(R5), -0xD(SP)
+000c13: BICW    R6, 0x2E(R0)
+000c16: SUBCD   R4, R0
+000c18: LPRD    CFG, 0x20(R4)
+000c1b: XORB    R6, 0x2F
+000c1e: SUBCB   R7, R0
+000c20: SPRD    BPC, R6
+000c22: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: chown(2) wrapper.
+; -----------------------------------------------------------------------------
+000c24: ADDR    @0x10, R0
+000c27: ADDR    0x8(SP), R1
+000c2a: SVC
+000c2b: BFC     0xC31
+000c2d: CXP     0
+000c2f: RXP     0
+000c31: MOVQD   0, R0
+000c33: RXP     0
+000c35: ADDB    R0, R0
+000c37: ADDB    R0[R1:B], R0
+000c3a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: dup.s follows.
+; -----------------------------------------------------------------------------
+000c3c: ADDB    R5, R1
+000c3e: SUBD    R5, R4
+000c40: ADDR    -0x10(R6), @0x2E
+000c44: SUBCD   R1, R5
+000c46: RXP     0x2E
+000c48: SUBCD   R4, R0
+000c4a: LPRD    CFG, 0x20(R4)
+000c4d: XORB    R6, 0x2F
+000c50: SUBCB   R7, R0
+000c52: SPRD    BPC, R6
+000c54: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: dup(2) wrapper.
+; -----------------------------------------------------------------------------
+000c56: ORB     0x40, 0x8(SP)
+000c5a: ADDR    @0x29, R0
+000c5d: ADDR    0x8(SP), R1
+000c60: SVC
+000c61: BFC     0xC65
+000c63: CXP     0
+000c65: RXP     0
+000c67: ADDB    R0[R1:B], R0
+000c6a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: chmod.s follows.
+; -----------------------------------------------------------------------------
+000c6c: ADDB    R5, R1
+000c6e: SUBD    R5, R4
+000c70: SUBD    -0x13(R5), R1
+000c73: LPRD    FP, 0x2E(R4)
+000c76: SUBCD   R1, R5
+000c78: RXP     0x2E
+000c7a: SUBCD   R4, R0
+000c7c: LPRD    CFG, 0x20(R4)
+000c7f: XORB    R6, 0x2F
+000c82: SUBCB   R7, R0
+000c84: SPRD    BPC, R6
+000c86: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: chmod(2) wrapper.
+; -----------------------------------------------------------------------------
+000c88: ADDR    @0xF, R0
+000c8b: ADDR    0x8(SP), R1
+000c8e: SVC
+000c8f: BFC     0xC93
+000c91: CXP     0
+000c93: RXP     0
+000c95: ADDB    R0, R0
+000c97: ADDB    R0[R1:B], R0
+000c9a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: execl.s follows.
+; -----------------------------------------------------------------------------
+000c9c: ADDB    R5, R1
+000c9e: SUBD    R5, R4
+000ca0: ADDR    -0x1B(R7), R1
+000ca3: SUBD    0x2E(R5), 0x9(-0xD(SP))
+000ca8: RXP     0x2E
+000caa: SUBCD   R4, R0
+000cac: LPRD    CFG, 0x20(R4)
+000caf: XORB    R6, 0x2F
+000cb2: SUBCB   R7, R0
+000cb4: SPRD    BPC, R6
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: execl() argument-vector builder.
+; -----------------------------------------------------------------------------
+000cb6: SUBCD   R0, R0
+000cb8: ADDR    0xC(SP), TOS
+000cbb: MOVD    0xC(SP), TOS
+000cbe: CXP     0
+000cc0: ADJSPB  0xF8
+000cc3: RXP     0
+000cc5: ADDB    R0, R0
+000cc7: ADDB    R0, R0
+000cc9: BSR     0xCE5
+000ccb: ADDB    0x28(R0), R0
+000cce: SUBD    R5, R4
+000cd0: RESTORE [R1,R2,R5,R7]
+000cd2: SAVE    [R0,R1,R2,R3,R5,R6]
+000cd4: LPRD    FP, 0x2E(R6)
+000cd7: SUBCD   R1, R5
+000cd9: SUBCW   R5, 0x32(FP)
+000cdc: SUBB    0x20(R5), 0x38(R4)[R6:B]
+000ce1: 
+000ce2: SPRD    UPSR, R6
+000ce4: RXP     0x2F
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: reboot(2) wrapper.
+; -----------------------------------------------------------------------------
+000ce6: SUBCW   R6, (R4)
+000ce9: ADDR    @0x37, R0
+000cec: ADDR    0x8(SP), R1
+000cef: SVC
+000cf0: BFS     0xCF4
+000cf2: RXP     0
+000cf4: CXP     0
+000cf6: RXP     0
+000cf8: SUBB    R0, R7
+000cfa: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: sync.s follows.
+; -----------------------------------------------------------------------------
+000cfc: ADDB    R5, R1
+000cfe: SUBD    R5, R4
+000d00: SUBCD   -0x12(R7), R5
+000d03: SUBD    R5, -0xD(SP)
+000d06: BICW    R6, 0x2E(R0)
+000d09: SUBCD   R4, R0
+000d0b: LPRD    CFG, 0x20(R4)
+000d0e: XORB    R6, 0x2F
+000d11: SUBCB   R7, R0
+000d13: SPRD    BPC, R6
+000d15: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: sync(2) wrapper.
+; -----------------------------------------------------------------------------
+000d17: ADDR    @0x24, R0
+000d1a: SVC
+000d1b: RXP     0
+000d1d: ADDB    R0, R0
+000d1f: ADDB    0x28(R0), R0
+000d22: SUBD    R5, R4
+000d24: SUBCD   -0x19(R5), R5
+000d27: CVTP    R4, 0x2E(R5), 0x9(-0xD(SP))
+000d2d: RXP     0x2E
+000d2f: TBITW   R4, R0
+000d31: LPRD    CFG, 0x20(R4)
+000d34: XORB    R6, 0x2F
+000d37: SUBCB   R7, R0
+000d39: SPRD    BPC, R6
+000d3b: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: signal trampoline/dispatcher support.
+; -----------------------------------------------------------------------------
+000d3d: MOVD    R1, TOS
+000d3f: MOVD    R2, TOS
+000d41: MOVD    0x8(SP), R1
+000d44: MOVD    R0, 0x8(SP)
+000d47: MOVD    R3, TOS
+000d49: SPRD    UPSR, R3
+000d4b: ADDR    0xE11, R0
+000d4f: SUBD    R1, R0
+000d51: DIVD    0x3, R0
+000d58: MOVD    R0, TOS
+000d5a: CXPD    (SB)[R0:D]
+000d5e: ADJSPB  0xFC
+000d61: LPRD    UPSR, R3
+000d63: RESTORE [R0,R1,R2,R3]
+000d65: RXP     0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: signal(2) wrapper and user-handler table maintenance.
+; -----------------------------------------------------------------------------
+000d67: MOVD    0x8(SP), R0
+000d6a: CMPQD   0, R0
+000d6c: BGE     0xDAA
+000d6e: CMPD    0x20, R0
+000d74: BLT     0xDAA
+000d76: MOVD    0xC(SP), R2
+000d79: CMPQD   3, R2
+000d7b: BLT     0xD81
+000d7d: CMPQD   0, R2
+000d7f: BLE     0xD90
+000d81: MULD    0x3, R0
+000d88: ADDR    EXT(0), 0xC(SP)
+000d8d: SUBW    R0, 0xE(SP)
+000d90: ADDR    @0x30, R0
+000d93: ADDR    0x8(SP), R1
+000d96: SVC
+000d97: BFS     0xDAA
+000d99: MOVD    0x8(SP), R1
+000d9c: CMPQD   1, R0
+000d9e: BEQ     0xDA4
+000da0: MOVD    (SB)[R1:D], R0
+000da4: MOVD    R2, (SB)[R1:D]
+000da8: RXP     0
+000daa: CXP     0x1
+000dac: RXP     0
+000dae: BSR     0xD3D
+000db1: BSR     0xD3D
+000db4: BSR     0xD3D
+000db7: BSR     0xD3D
+000dba: BSR     0xD3D
+000dbd: BSR     0xD3D
+000dc0: BSR     0xD3D
+000dc3: BSR     0xD3D
+000dc6: BSR     0xD3D
+000dc9: BSR     0xD3D
+000dcc: BSR     0xD3D
+000dcf: BSR     0xD3D
+000dd2: BSR     0xD3D
+000dd5: BSR     0xD3D
+000dd8: BSR     0xD3D
+000ddb: BSR     0xD3D
+000dde: BSR     0xD3D
+000de1: BSR     0xD3D
+000de4: BSR     0xD3D
+000de7: BSR     0xD3D
+000dea: BSR     0xD3D
+000ded: BSR     0xD3D
+000df0: BSR     0xD3D
+000df3: BSR     0xD3D
+000df6: BSR     0xD3D
+000df9: BSR     0xD3D
+000dfc: BSR     0xD3D
+000dff: BSR     0xD3D
+000e02: BSR     0xD3D
+000e05: BSR     0xD3D
+000e08: BSR     0xD3D
+000e0b: BSR     0xD3D
+000e0e: BSR     0xD3D
+000e11: ADDB    R0, R0
+000e13: ADDB    R0[R0:B], R0
+000e16: CHECKB  R0, R0[R1:B], R0
+000e1a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: creat.s follows.
+; -----------------------------------------------------------------------------
+000e1c: ADDB    R5, R1
+000e1e: SUBD    R5, R4
+000e20: SUBD    -0x1B(R6), -0x1F(R1)
+000e24: TBITB   R5, -0xD(SP)
+000e27: BICW    R6, 0x2E(R0)
+000e2a: SUBCD   R4, R0
+000e2c: LPRD    CFG, 0x20(R4)
+000e2f: XORB    R6, 0x2F
+000e32: SUBCB   R7, R0
+000e34: SPRD    BPC, R6
+000e36: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: creat(2) wrapper.
+; -----------------------------------------------------------------------------
+000e38: ADDR    @0x8, R0
+000e3b: ADDR    0x8(SP), R1
+000e3e: SVC
+000e3f: BFC     0xE43
+000e41: CXP     0
+000e43: RXP     0
+000e45: ADDB    R0, R0
+000e47: ADDB    R0[R1:B], R0
+000e4a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: setjmp.s follows.
+; -----------------------------------------------------------------------------
+000e4c: ADDB    R5, R1
+000e4e: SUBD    R5, R4
+000e50: SUBCD   -0xC(R4), @0xFFFFFFEA
+000e54: LPRW    UPSR, 0x2E(R6)
+000e57: SUBCD   R1, R5
+000e59: RXP     0x2E
+000e5b: SUBCD   R4, R0
+000e5d: LPRD    CFG, 0x20(R4)
+000e60: XORB    R6, 0x2F
+000e63: SUBCB   R7, R0
+000e65: SPRD    BPC, R6
+000e67: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: setjmp() context save.
+; -----------------------------------------------------------------------------
+000e69: MOVD    0x8(SP), R0
+000e6c: MOVD    R3, (R0)
+000e6f: MOVD    R4, 0x4(R0)
+000e72: MOVD    R5, 0x8(R0)
+000e75: MOVD    R6, 0xC(R0)
+000e78: MOVD    R7, 0x10(R0)
+000e7b: SPRD    FP, 0x14(R0)
+000e7e: SPRD    SP, 0x18(R0)
+000e81: SPRW    UPSR, 0x1C(R0)
+000e84: MOVW    0x4(SP), 0x1E(R0)
+000e88: MOVD    (SP), 0x20(R0)
+000e8c: MOVQD   0, R0
+000e8e: RXP     0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: longjmp() context restore.
+; -----------------------------------------------------------------------------
+000e90: MOVD    0xC(SP), R0
+000e93: MOVD    0x8(SP), R1
+000e96: MOVD    (R1), R3
+000e99: MOVD    0x4(R1), R4
+000e9c: MOVD    0x8(R1), R5
+000e9f: MOVD    0xC(R1), R6
+000ea2: MOVD    0x10(R1), R7
+000ea5: LPRD    FP, 0x14(R1)
+000ea8: LPRD    SP, 0x18(R1)
+000eab: LPRW    UPSR, 0x1C(R1)
+000eae: MOVW    0x1E(R1), 0x4(SP)
+000eb2: MOVD    0x20(R1), (SP)
+000eb6: CMPQD   0, R0
+000eb8: BNE     0xEBC
+000eba: MOVQD   1, R0
+000ebc: RXP     0
+000ebe: ADDB    R0, R0
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: bounded string concatenation/copy helper.
+; -----------------------------------------------------------------------------
+000ec0: ENTER   [R4,R5,R6,R7], 0
+000ec3: MOVQD   0, TOS
+000ec5: MOVD    0xC(FP), R7
+000ec8: MOVD    0x10(FP), R6
+000ecb: MOVD    R7, R4
+000ecd: MOVQD   0, R5
+000ecf: BR      0xEF3
+000ed1: ADDQD   1, R7
+000ed3: ADDQD   1, R6
+000ed5: MOVB    -0x1(R6), R0
+000ed8: MOVB    R0, -0x1(R7)
+000edb: CMPQB   0, R0
+000edd: BNE     0xEF1
+000edf: BR      0xEE6
+000ee1: ADDQD   1, R7
+000ee3: MOVQB   0, -0x1(R7)
+000ee6: ADDQD   1, R5
+000ee8: CMPD    R5, 0x14(FP)
+000eeb: BLT     0xEE1
+000eed: MOVD    R4, R0
+000eef: BR      0xEFC
+000ef1: ADDQD   1, R5
+000ef3: CMPD    R5, 0x14(FP)
+000ef6: BLT     0xED1
+000ef8: MOVD    R4, R0
+000efa: BR      0xEFC
+000efc: CMPQD   0, TOS
+000efe: EXIT    [R4,R5,R6,R7]
+000f00: RXP     0
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: companion bounded string helper.
+; -----------------------------------------------------------------------------
+000f02: ENTER   [R4,R5,R6,R7], 0
+000f05: MOVQD   0, TOS
+000f07: MOVD    0xC(FP), R7
+000f0a: MOVD    0x10(FP), R6
+000f0d: MOVD    R7, R4
+000f0f: MOVQD   0, R5
+000f11: BR      0xF35
+000f13: ADDQD   1, R7
+000f15: ADDQD   1, R6
+000f17: MOVB    -0x1(R6), R0
+000f1a: MOVB    R0, -0x1(R7)
+000f1d: CMPQB   0, R0
+000f1f: BNE     0xF33
+000f21: BR      0xF28
+000f23: ADDQD   1, R7
+000f25: MOVQB   0, -0x1(R7)
+000f28: ADDQD   1, R5
+000f2a: CMPD    R5, 0x14(FP)
+000f2d: BLT     0xF23
+000f2f: MOVD    R4, R0
+000f31: BR      0xF3E
+000f33: ADDQD   1, R5
+000f35: CMPD    R5, 0x14(FP)
+000f38: BLT     0xF13
+000f3a: MOVD    R4, R0
+000f3c: BR      0xF3E
+000f3e: CMPQD   0, TOS
+000f40: EXIT    [R4,R5,R6,R7]
+000f42: RXP     0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: access.s follows.
+; -----------------------------------------------------------------------------
+000f44: ADDB    R5, R1
+000f46: SUBD    R5, R4
+000f48: SUBW    -0x1D(R4), -0x1B(R5)
+000f4c: SUBCD   0x2E(R6), -0xD(R5)
+000f50: BICW    R6, 0x2E(R0)
+000f53: SUBCD   R4, R0
+000f55: LPRD    CFG, 0x20(R4)
+000f58: XORB    R6, 0x2F
+000f5b: SUBCB   R7, R0
+000f5d: SPRD    BPC, R6
+000f5f: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: access(2) wrapper.
+; -----------------------------------------------------------------------------
+000f61: ADDR    @0x21, R0
+000f64: ADDR    0x8(SP), R1
+000f67: SVC
+000f68: BFC     0xF6C
+000f6a: CXP     0
+000f6c: RXP     0
+000f6e: ADDB    R0, R0
+000f70: SUBB    R0, R7
+000f72: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: time.s follows.
+; -----------------------------------------------------------------------------
+000f74: ADDB    R5, R1
+000f76: SUBD    R5, R4
+000f78: TBITB   -0x13(R5), R5
+000f7b: ADDR    R5, -0xD(SP)
+000f7e: BICW    R6, 0x2E(R0)
+000f81: TBITW   R4, R0
+000f83: LPRD    CFG, 0x20(R4)
+000f86: XORB    R6, 0x2F
+000f89: SUBCB   R7, R0
+000f8b: SPRD    BPC, R6
+000f8d: 
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: time-family syscall wrapper.
+; -----------------------------------------------------------------------------
+000f8e: ADDB    R4, @0xD[R0:B]
+000f92: ADDR    0x8(SP), R1
+000f95: SVC
+000f96: CMPQD   0, 0x8(SP)
+000f99: BEQ     0xF9F
+000f9b: MOVD    R0, (0x8(SP))
+000f9f: RXP     0
+000fa1: ADDR    @0x23, R0
+000fa4: ADDR    0x8(SP), R1
+000fa7: SVC
+000fa8: RXP     0
+000faa: ADDR    @0x19, R0
+000fad: ADDR    (0x8(SP)), R1
+000fb1: SVC
+000fb2: BFC     0xFB6
+000fb4: CXP     0
+000fb6: RXP     0
+000fb8: SUBB    R0, R7
+000fba: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: alarm.s follows.
+; -----------------------------------------------------------------------------
+000fbc: ADDB    R5, R1
+000fbe: SUBD    R5, R4
+000fc0: SUBW    -0x1F(R5), -0x13(-0xE(SP))
+000fc5: EXTD    R6, R1, R5, 50
+000fc9: EXTD    R6, R4, R0, -17
+000fcd: 
+000fce: SUBB    R7, R0
+000fd0: TBITW   R5, R6[R0:B]
+000fd3: XORB    R5, R6[R1:B]
+000fd6: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: alarm(2) wrapper.
+; -----------------------------------------------------------------------------
+000fd8: ADDR    @0x1B, R0
+000fdb: ADDR    0x8(SP), R1
+000fde: SVC
+000fdf: BFC     0xFE3
+000fe1: CXP     0
+000fe3: RXP     0
+000fe5: ADDB    R0, R0
+000fe7: ADDB    R0[R1:B], R0
+000fea: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: open.s follows.
+; -----------------------------------------------------------------------------
+000fec: ADDB    R5, R1
+000fee: SUBD    R5, R4
+000ff0: LPRD    UPSR, -0x1B(R6)
+000ff3: FFS     0x9(R6), 0x32(R4)
+000ff8: EXTD    R6, R4, R0, -17
+000ffc: 
+000ffd: SUBB    R7, R0
+000fff: TBITW   R5, R6[R0:B]
+001002: XORB    R5, R6[R1:B]
+001005: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: open(2) wrapper.
+; -----------------------------------------------------------------------------
+001007: MOVQD   5, R0
+001009: ADDR    0x8(SP), R1
+00100c: SVC
+00100d: BFC     0x1011
+00100f: CXP     0
+001011: RXP     0
+001013: ADDB    R0[R1:B], R0
+001016: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: read.s follows.
+; -----------------------------------------------------------------------------
+001018: ADDB    R5, R1
+00101a: SUBD    R5, R4
+00101c: RESTORE [R1,R2,R5,R7]
+00101e: SUBW    0x2E(R4), 0x9(-0xD(SP))
+001023: RXP     0x2E
+001025: SUBCD   R4, R0
+001027: LPRD    CFG, 0x20(R4)
+00102a: XORB    R6, 0x2F
+00102d: SUBCB   R7, R0
+00102f: SPRD    BPC, R6
+001031: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: read(2) wrapper.
+; -----------------------------------------------------------------------------
+001033: MOVQD   3, R0
+001035: ADDR    0x8(SP), R1
+001038: SVC
+001039: BFC     0x103D
+00103b: CXP     0
+00103d: RXP     0
+00103f: ADDB    R0[R1:B], R0
+001042: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: write.s follows.
+; -----------------------------------------------------------------------------
+001044: ADDB    R5, R1
+001046: SUBD    R5, R4
+001048: TBITD   -0x17(R6), -0xC(R1)
+00104c: ADDR    R5, -0xD(SP)
+00104f: BICW    R6, 0x2E(R0)
+001052: SUBCD   R4, R0
+001054: LPRD    CFG, 0x20(R4)
+001057: XORB    R6, 0x2F
+00105a: SUBCB   R7, R0
+00105c: SPRD    BPC, R6
+00105e: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: write(2) wrapper.
+; -----------------------------------------------------------------------------
+001060: MOVQD   4, R0
+001062: ADDR    0x8(SP), R1
+001065: SVC
+001066: BFC     0x106A
+001068: CXP     0
+00106a: RXP     0
+00106c: SUBB    R0, R7
+00106e: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: kill.s follows.
+; -----------------------------------------------------------------------------
+001070: ADDB    R5, R1
+001072: SUBD    R5, R4
+001074: ANDD    -0x14(R5), R5
+001077: LPRB    CFG, R5
+001079: SUBCD   R1, R5
+00107b: RXP     0x2E
+00107d: SUBCD   R4, R0
+00107f: LPRD    CFG, 0x20(R4)
+001082: XORB    R6, 0x2F
+001085: SUBCB   R7, R0
+001087: SPRD    BPC, R6
+001089: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: kill(2) wrapper.
+; -----------------------------------------------------------------------------
+00108b: ADDR    @0x25, R0
+00108e: ADDR    0x8(SP), R1
+001091: SVC
+001092: BFC     0x1096
+001094: CXP     0
+001096: RXP     0
+001098: SUBB    R0, R7
+00109a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: string comparison routine.
+; -----------------------------------------------------------------------------
+00109c: ENTER   [R5,R6,R7], 0
+00109f: MOVQD   0, TOS
+0010a1: MOVD    0xC(FP), R7
+0010a4: MOVD    0x10(FP), R6
+0010a7: MOVD    0x14(FP), R5
+0010aa: BR      0x10B7
+0010ac: ADDQD   1, R7
+0010ae: CMPQB   0, -0x1(R7)
+0010b1: BNE     0x10B7
+0010b3: MOVQD   0, R0
+0010b5: BR      0x10DB
+0010b7: ADDQD   -1, R5
+0010b9: CMPQD   0, R5
+0010bb: BGT     0x10C5
+0010bd: ADDQD   1, R6
+0010bf: CMPB    (R7), -0x1(R6)
+0010c3: BEQ     0x10AC
+0010c5: CMPQD   0, R5
+0010c7: BLE     0x10CD
+0010c9: MOVQD   0, R0
+0010cb: BR      0x10D9
+0010cd: MOVXBD  (R7), R0
+0010d1: ADDQD   -1, R6
+0010d3: MOVXBD  (R6), R1
+0010d7: SUBD    R1, R0
+0010d9: BR      0x10DB
+0010db: CMPQD   0, TOS
+0010dd: EXIT    [R5,R6,R7]
+0010df: RXP     0
+
+; -----------------------------------------------------------------------------
+; RUNTIME SUPPORT: companion string comparison routine.
+; -----------------------------------------------------------------------------
+0010e1: ENTER   [R5,R6,R7], 0
+0010e4: MOVQD   0, TOS
+0010e6: MOVD    0xC(FP), R7
+0010e9: MOVD    0x10(FP), R6
+0010ec: MOVD    0x14(FP), R5
+0010ef: BR      0x10FC
+0010f1: ADDQD   1, R7
+0010f3: CMPQB   0, -0x1(R7)
+0010f6: BNE     0x10FC
+0010f8: MOVQD   0, R0
+0010fa: BR      0x1120
+0010fc: ADDQD   -1, R5
+0010fe: CMPQD   0, R5
+001100: BGT     0x110A
+001102: ADDQD   1, R6
+001104: CMPB    (R7), -0x1(R6)
+001108: BEQ     0x10F1
+00110a: CMPQD   0, R5
+00110c: BLE     0x1112
+00110e: MOVQD   0, R0
+001110: BR      0x111E
+001112: MOVXBD  (R7), R0
+001116: ADDQD   -1, R6
+001118: MOVXBD  (R6), R1
+00111c: SUBD    R1, R0
+00111e: BR      0x1120
+001120: CMPQD   0, TOS
+001122: EXIT    [R5,R6,R7]
+001124: RXP     0
+001126: ADDB    R0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: wait.s follows.
+; -----------------------------------------------------------------------------
+001128: ADDB    R5, R1
+00112a: SUBD    R5, R4
+00112c: TBITD   -0x17(R4), R5
+00112f: TBITB   R5, -0xD(SP)
+001132: BICW    R6, 0x2E(R0)
+001135: SUBCD   R4, R0
+001137: LPRD    CFG, 0x20(R4)
+00113a: XORB    R6, 0x2F
+00113d: SUBCB   R7, R0
+00113f: SPRD    BPC, R6
+001141: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: wait(2) wrapper.
+; -----------------------------------------------------------------------------
+001143: MOVQD   7, R0
+001145: ADDR    0x8(SP), R1
+001148: SVC
+001149: BFC     0x114F
+00114b: CXP     0
+00114d: MOVQD   -1, R1
+00114f: CMPQD   0, 0x8(SP)
+001152: BEQ     0x1158
+001154: MOVD    R1, (0x8(SP))
+001158: RXP     0
+00115a: ADDB    R0, R0
+00115c: SUBB    R0, R7
+00115e: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: close.s follows.
+; -----------------------------------------------------------------------------
+001160: ADDB    R5, R1
+001162: SUBD    R5, R4
+001164: SUBD    -0x11(R5), -0x1B(-0xD(SP))
+001169: EXTD    R6, R1, R5, 50
+00116d: EXTD    R6, R4, R0, -17
+001171: 
+001172: SUBB    R7, R0
+001174: TBITW   R5, R6[R0:B]
+001177: XORB    R5, R6[R1:B]
+00117a: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: close(2) wrapper.
+; -----------------------------------------------------------------------------
+00117c: MOVQD   6, R0
+00117e: ADDR    0x8(SP), R1
+001181: SVC
+001182: BFC     0x1186
+001184: CXP     0
+001186: RXP     0
+001188: SUBB    R0, R7
+00118a: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: fstrcpy.s follows.
+; -----------------------------------------------------------------------------
+00118c: ADDB    R5, R1
+00118e: SUBD    R5, R4
+001190: 
+001191: SUBCD   -0xE(R6), -0x10(-0x1D(SP))
+001196: XORW    R5, -0xD(SP)
+001199: BICW    R6, 0x2E(R0)
+00119c: RXP     0x20
+00119e: LPRD    CFG, 0x20(R4)
+0011a1: XORB    R6, 0x2F
+0011a4: SUBCB   R7, R0
+0011a6: SPRD    BPC, R6
+0011a8: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: fstrcpy/string-copy helper.
+; -----------------------------------------------------------------------------
+0011aa: MOVD    R4, TOS
+0011ac: MOVQD   -1, R0
+0011ae: MOVD    0x10(SP), R1
+0011b1: MOVD    0xC(SP), R2
+0011b4: MOVQD   0, R4
+0011b6: MOVSB   U
+0011b9: MOVQB   0, (R2)
+0011bc: MOVD    0xC(SP), R0
+0011bf: MOVD    TOS, R4
+0011c1: RXP     0
+0011c3: ADDB    0x28(R0), R0
+0011c6: SUBD    R5, R4
+0011c8: 
+0011c9: LPRD    CAR, -0x15(R6)
+0011cc: EXTD    R6, R1, R5, 50
+0011d0: EXTD    R6, R4, R0, -17
+0011d4: 
+0011d5: SUBB    R7, R0
+0011d7: TBITW   R5, R6[R0:B]
+0011da: XORB    R5, R6[R1:B]
+0011dd: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: fork(2) wrapper.
+; -----------------------------------------------------------------------------
+0011df: MOVQD   2, R0
+0011e1: ADDR    0x8(SP), R1
+0011e4: SVC
+0011e5: BFC     0x11EB
+0011e7: CXP     0
+0011e9: RXP     0
+0011eb: CMPQD   0, R1
+0011ed: BEQ     0x11F1
+0011ef: MOVQD   0, R0
+0011f1: RXP     0
+0011f3: ADDB    R0[R1:B], R0
+0011f6: CMPQW   0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: cerror.s follows.
+; -----------------------------------------------------------------------------
+0011f8: ADDB    R5, R1
+0011fa: SUBD    R5, R4
+0011fc: SUBD    -0xE(R4), @0xFFFFFFF2
+001200: LPRD    CAR, 0x2E(R6)
+001203: SUBCD   R1, R5
+001205: RXP     0x2E
+001207: SUBCD   R4, R0
+001209: LPRD    CFG, 0x20(R4)
+00120c: XORB    R6, 0x2F
+00120f: SUBCB   R7, R0
+001211: SPRD    BPC, R6
+001213: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: common syscall error path; stores errno and returns -1.
+; -----------------------------------------------------------------------------
+001215: MOVD    R0, (SB)
+001218: MOVQD   -1, R0
+00121a: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: stdio formatter/output core begins.
+; -----------------------------------------------------------------------------
+00121c: ENTER   [R3,R5,R6,R7], 0x6
+00121f: MOVQD   0, TOS
+001221: MOVD    0x10(FP), R7
+001224: MOVXWD  0x10(R7), R0
+001228: TBITB   0x8, R0
+00122b: BFC     0x1237
+00122d: SBITB   0x1, 0x10(R7)
+001232: ANDW    0xFFEE, 0x10(R7)
+001237: MOVXWD  0x10(R7), R0
+00123b: TBITB   0x1, R0
+00123e: BFS     0x124A
+001240: ORW     0x30, 0x10(R7)
+001245: MOVQD   -1, R0
+001247: BR      0x135E
+00124a: MOVXWD  0x10(R7), R0
+00124e: TBITB   0x7, R0
+001251: BFC     0x1299
+001254: MOVD    0x8(R7), R6
+001257: ADDQD   1, 0x4(R7)
+00125a: MOVD    0x4(R7), R0
+00125d: MOVB    0xC(FP), -0x1(R0)
+001261: MOVD    R6, R0
+001263: ADDD    0xC(R7), R0
+001266: CMPD    R0, 0x4(R7)
+001269: BLS     0x1274
+00126b: CMPD    0xA, 0xC(FP)
+001272: BNE     0x128F
+001274: MOVD    0x4(R7), R0
+001277: SUBD    R6, R0
+001279: MOVD    R0, R3
+00127b: MOVD    R0, (SP)
+00127e: MOVD    R6, TOS
+001280: MOVXBD  0x12(R7), TOS
+001284: CXP     0x2
+001286: CMPD    TOS, TOS
+001288: MOVD    R0, R5
+00128a: MOVD    R6, 0x4(R7)
+00128d: BR      0x1293
+00128f: MOVQD   0, R5
+001291: MOVQD   0, R3
+001293: MOVQD   0, (R7)
+001296: BR      0x134C
+001299: MOVXWD  0x10(R7), R0
+00129d: TBITB   0x2, R0
+0012a0: BFC     0x12BE
+0012a2: MOVB    0xC(FP), -0x1(FP)
+0012a6: MOVQD   1, R3
+0012a8: MOVD    R3, (SP)
+0012ab: ADDR    -0x1(FP), TOS
+0012ae: MOVXBD  0x12(R7), TOS
+0012b2: CXP     0x2
+0012b4: CMPD    TOS, TOS
+0012b6: MOVD    R0, R5
+0012b8: MOVQD   0, (R7)
+0012bb: BR      0x134C
+0012be: MOVD    0x8(R7), R6
+0012c1: CMPQD   0, R6
+0012c3: BNE     0x131D
+0012c6: ADDR    @0x2000, -0x6(FP)
+0012cd: ADDR    EXT(0x7) + 0x13, R0
+0012d1: CMPD    R7, R0
+0012d3: BNE     0x12F7
+0012d5: MOVXBD  EXT(0x7) + 0x25, (SP)
+0012db: CXP     0x3
+0012dd: CMPQD   0, R0
+0012df: BEQ     0x12E6
+0012e1: SBITB   0x2, 0x10(R7)
+0012e6: ADDR    EXT(0x8), 0x8(R7)
+0012eb: ADDR    EXT(0x8), 0x4(R7)
+0012f0: MOVD    -0x6(FP), 0xC(R7)
+0012f4: BR      0x124A
+0012f7: MOVD    -0x6(FP), (SP)
+0012fb: CXP     0x4
+0012fd: MOVD    R0, R6
+0012ff: MOVD    R0, 0x8(R7)
+001302: CMPQD   0, R0
+001304: BNE     0x130E
+001306: SBITB   0x2, 0x10(R7)
+00130b: BR      0x124A
+00130e: SBITB   0x3, 0x10(R7)
+001313: MOVD    -0x6(FP), 0xC(R7)
+001317: MOVQD   0, R5
+001319: MOVQD   0, R3
+00131b: BR      0x133C
+00131d: MOVD    0x4(R7), R0
+001320: SUBD    R6, R0
+001322: MOVD    R0, R5
+001324: MOVD    R0, R3
+001326: CMPQD   0, R0
+001328: BGE     0x133C
+00132a: MOVD    R6, 0x4(R7)
+00132d: MOVD    R5, (SP)
+001330: MOVD    R6, TOS
+001332: MOVXBD  0x12(R7), TOS
+001336: CXP     0x2
+001338: CMPD    TOS, TOS
+00133a: MOVD    R0, R5
+00133c: MOVD    0xC(R7), R0
+00133f: ADDR    -0x1(R0), (R7)
+001343: ADDQD   1, R6
+001345: MOVB    0xC(FP), -0x1(R6)
+001349: MOVD    R6, 0x4(R7)
+00134c: CMPD    R3, R5
+00134e: BEQ     0x1359
+001350: SBITB   0x5, 0x10(R7)
+001355: MOVQD   -1, R0
+001357: BR      0x135E
+001359: MOVD    0xC(FP), R0
+00135c: BR      0x135E
+00135e: CMPQD   0, TOS
+001360: EXIT    [R3,R5,R6,R7]
+001362: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: string/memory helper.
+; -----------------------------------------------------------------------------
+001364: ENTER   [R5,R6,R7], 0
+001367: MOVQD   0, TOS
+001369: MOVD    0xC(FP), R7
+00136c: MOVQB   6, R0
+00136e: ANDB    0x10(R7), R0
+001371: MOVZBD  R0, R0
+001374: CMPQD   2, R0
+001376: BNE     0x13BC
+001379: MOVD    0x8(R7), R6
+00137c: CMPQD   0, R6
+00137e: BEQ     0x13BC
+001380: MOVD    0x4(R7), R0
+001383: SUBD    R6, R0
+001385: MOVD    R0, R5
+001387: CMPQD   0, R0
+001389: BGE     0x13BC
+00138b: MOVD    R6, 0x4(R7)
+00138e: ADDR    @0x84, R0
+001392: ANDB    0x10(R7), R0
+001395: CMPQB   0, R0
+001397: BEQ     0x139E
+001399: MOVQD   0, (R7)
+00139c: BR      0x13A2
+00139e: MOVD    0xC(R7), (R7)
+0013a2: MOVD    R5, (SP)
+0013a5: MOVD    R6, TOS
+0013a7: MOVXBD  0x12(R7), TOS
+0013ab: CXP     0x2
+0013ad: CMPD    TOS, TOS
+0013af: CMPD    R0, R5
+0013b1: BEQ     0x13BC
+0013b3: SBITB   0x5, 0x10(R7)
+0013b8: MOVQD   -1, R0
+0013ba: BR      0x13C0
+0013bc: MOVQD   0, R0
+0013be: BR      0x13C0
+0013c0: CMPQD   0, TOS
+0013c2: EXIT    [R5,R6,R7]
+0013c4: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: stdio allocation/flush helper.
+; -----------------------------------------------------------------------------
+0013c6: ENTER   [R7], 0
+0013c9: MOVQD   0, TOS
+0013cb: ADDR    EXT(0x7), R7
+0013cf: BR      0x13DC
+0013d1: MOVD    R7, (SP)
+0013d4: CXP     0x5
+0013d6: ADDD    0x13, R7
+0013dc: CMPD    R7, EXT(0x9)
+0013e0: BLO     0x13D1
+0013e2: BR      0x13E4
+0013e4: CMPQD   0, TOS
+0013e6: EXIT    [R7]
+0013e8: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: buffered stream setup/output helper.
+; -----------------------------------------------------------------------------
+0013ea: ENTER   [R6,R7], 0
+0013ed: MOVQD   0, TOS
+0013ef: MOVD    0xC(FP), R7
+0013f2: MOVQD   -1, R6
+0013f4: ADDR    @0x103, R0
+0013f8: ANDW    0x10(R7), R0
+0013fb: CMPQW   0, R0
+0013fd: BEQ     0x142B
+0013ff: MOVXWD  0x10(R7), R0
+001403: TBITB   0x6, R0
+001406: BFS     0x142B
+001408: MOVD    R7, (SP)
+00140b: CXP     0x6
+00140d: MOVD    R0, R6
+00140f: MOVXBD  0x12(R7), (SP)
+001414: CXP     0
+001416: CMPQD   0, R0
+001418: BLE     0x141C
+00141a: MOVQD   -1, R6
+00141c: MOVXWD  0x10(R7), R0
+001420: TBITB   0x3, R0
+001423: BFC     0x142B
+001425: MOVD    0x8(R7), (SP)
+001429: CXP     0x1
+00142b: MOVQD   0, (R7)
+00142e: MOVQD   0, 0x8(R7)
+001431: MOVQD   0, 0x4(R7)
+001434: MOVQD   0, 0xC(R7)
+001437: MOVQW   0, 0x10(R7)
+00143a: MOVQB   0, 0x12(R7)
+00143d: MOVD    R6, R0
+00143f: BR      0x1441
+001441: CMPQD   0, TOS
+001443: EXIT    [R6,R7]
+001445: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: descriptor/terminal test helper.
+; -----------------------------------------------------------------------------
+001447: ENTER   [R7], 0
+00144a: MOVQD   0, TOS
+00144c: MOVD    0xC(FP), R7
+00144f: ADDR    EXT(0x7) + 0x13, R0
+001453: CMPD    R7, R0
+001455: BNE     0x148E
+001457: CMPQD   0, 0x8(R7)
+00145a: BNE     0x148E
+00145c: MOVXWD  0x10(R7), R0
+001460: TBITB   0x2, R0
+001463: BFS     0x1471
+001465: MOVXBD  EXT(0x7) + 0x25, (SP)
+00146b: CXP     0x3
+00146d: CMPQD   0, R0
+00146f: BEQ     0x148E
+001471: CBITB   0x2, 0x10(R7)
+001476: ADDR    EXT(0x8), R0
+00147a: MOVD    R0, 0x4(R7)
+00147d: MOVD    R0, 0x8(R7)
+001480: MOVQD   0, (R7)
+001483: ADDR    @0x2000, 0xC(R7)
+00148a: MOVQD   1, R0
+00148c: BR      0x1492
+00148e: MOVQD   0, R0
+001490: BR      0x1492
+001492: CMPQD   0, TOS
+001494: EXIT    [R7]
+001496: RXP     0
+
+; -----------------------------------------------------------------------------
+; LIBC: small stream/status helper.
+; -----------------------------------------------------------------------------
+001498: ENTER   [R7], 0
+00149b: MOVQD   0, TOS
+00149d: MOVD    0xC(FP), R7
+0014a0: CMPQD   0, 0x10(FP)
+0014a3: BEQ     0x14BB
+0014a5: MOVD    R7, (SP)
+0014a8: CXP     0x6
+0014aa: SBITB   0x2, 0x10(R7)
+0014af: MOVQD   0, 0x4(R7)
+0014b2: MOVQD   0, 0x8(R7)
+0014b5: MOVQD   0, (R7)
+0014b8: MOVQD   0, 0xC(R7)
+0014bb: BR      0x14BD
+0014bd: CMPQD   0, TOS
+0014bf: EXIT    [R7]
+0014c1: RXP     0
+0014c3: ADDB    EXT(0x1) + 0x1C, R0
+0014c7: ADDB    R2, R0
+0014c9: BSR     0xFE0084CA
+0014ce: CMPQB   0, R0
+0014d0: SUBB    R0, (R0)
+0014d3: ADDB    R2, R0
+0014d5: BSR     0x14D5
+0014d7: ADDB    R0[R1:D], R0
+0014da: MOVMW   R0[R1:D], R0, 2147483621
+0014df: ADDW    0x1E(R5), R0
+0014e2: ADDB    R0, R0
+0014e4: ADDQB   -2, (R0)
+0014e7: ADDB    R0, 0x21(R0)
+0014ea: ADDB    R0, R0
+
+; -----------------------------------------------------------------------------
+; SCCS MARKER/DATA: execv.s follows.
+; -----------------------------------------------------------------------------
+0014ec: ADDB    R5, R1
+0014ee: SUBD    R5, R4
+0014f0: ADDR    -0x1B(R7), R1
+0014f3: SUBD    0x2E(R6), -0xD(SP)
+0014f7: BICW    R6, 0x2E(R0)
+0014fa: SUBCD   R4, R0
+0014fc: LPRD    CFG, 0x20(R4)
+0014ff: XORB    R6, 0x2F
+001502: SUBCB   R7, R0
+001504: SPRD    BPC, R6
+001506: SUBCD   R0, R0
+001508: MOVD    EXT(0x1), TOS
+00150c: MOVD    0x10(SP), TOS
+00150f: MOVD    0x10(SP), TOS
+001512: ADDR    @0x3B, R0
+001515: ADDR    (SP), R1
+001518: SVC
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: execv(2) wrapper.
+; -----------------------------------------------------------------------------
+001519: CXP     0
+00151b: ADJSPB  0xF4
+00151e: RXP     0
+001520: SUBB    R0, R7
+001522: CMPQW   0, R0
+001524: ADDB    R3, ((FP))
+
+; -----------------------------------------------------------------------------
+; LIBC: heap allocator family begins (malloc/free/realloc support).
+; -----------------------------------------------------------------------------
+001528: ENTER   [R3,R5,R6,R7], 0
+00152b: MOVQD   0, TOS
+00152d: MOVD    0xC(FP), R7
+001530: MOVQD   0, R5
+001532: ADDQD   4, R7
+001534: ADDR    0x3(R7), R0
+001537: ANDD    0xFFFFFFFC, R0
+00153d: MOVD    R0, R7
+00153f: ADDR    -0x1(R7), R3
+001542: LSHD    0xFE, R3
+001546: ANDD    0x3FFFFFFF, R3
+00154c: BR      0x1550
+00154e: ADDQD   1, R5
+001550: LSHD    0xFF, R3
+001554: CMPQD   0, R3
+001556: BNE     0x154E
+001558: CMPQD   0, 0x22(SB)[R5:D]
+00155c: BNE     0x1563
+00155e: MOVD    R5, (SP)
+001561: CXP     0x2
+001563: MOVD    0x22(SB)[R5:D], R6
+001567: CMPQD   0, R6
+001569: BNE     0x1573
+00156b: MOVQD   0, R0
+00156d: CMPQD   0, TOS
+00156f: EXIT    [R3,R5,R6,R7]
+001571: RXP     0
+001573: MOVD    0x22(SB)[R5:D], R0
+001577: MOVD    (R0), 0x22(SB)[R5:D]
+00157c: MOVB    0xFF, (R6)
+001580: MOVB    R5, 0x1(R6)
+001583: ADDR    0x4(R6), R0
+001586: BR      0x156D
+001588: ENTER   [R3,R4,R5,R6,R7], 0
+00158b: MOVQD   0, TOS
+00158d: MOVD    0xC(FP), R7
+001590: CMPQD   0, 0x22(SB)[R7:D]
+001594: BEQ     0x159C
+001596: CMPQD   0, TOS
+001598: EXIT    [R3,R4,R5,R6,R7]
+00159a: RXP     0
+00159c: MOVQD   0, (SP)
+00159f: CXP     0
+0015a1: MOVD    R0, R6
+0015a3: EXTSD   R6, R1, 0, 10
+0015a7: CMPQD   0, R1
+0015a9: BEQ     0x15B6
+0015ab: ADDR    @0x400, R2
+0015af: SUBD    R1, R2
+0015b1: MOVD    R2, (SP)
+0015b4: CXP     0
+0015b6: CMPD    0x8, R7
+0015bc: BLT     0x15C3
+0015be: ADDR    @0xB, R5
+0015c1: BR      0x15C6
+0015c3: ADDR    0x3(R7), R5
+0015c6: MOVB    R5, R0
+0015c8: MOVB    R7, R1
+0015ca: ADDQB   3, R1
+0015cc: SUBB    R1, R0
+0015ce: MOVQD   1, R3
+0015d0: ASHD    R0, R3
+0015d3: CMPD    R5, R7
+0015d5: BGE     0x15D9
+0015d7: MOVD    R7, R5
+0015d9: MOVQD   1, R0
+0015db: ASHD    R5, R0
+0015de: MOVD    R0, (SP)
+0015e1: CXP     0
+0015e3: MOVD    R0, R6
+0015e5: CMPQD   -1, R6
+0015e7: BEQ     0x1596
+0015ea: EXTSD   R6, R0, 0, 3
+0015ee: CMPQD   0, R0
+0015f0: BEQ     0x1601
+0015f2: ADDR    @0x8, R0
+0015f5: ADDD    R6, R0
+0015f7: ANDD    0xFFFFFFF8, R0
+0015fd: MOVD    R0, R6
+0015ff: ADDQD   -1, R3
+001601: MOVD    R6, 0x22(SB)[R7:D]
+001605: MOVQD   1, R4
+001607: MOVB    R7, R0
+001609: ADDQB   3, R0
+00160b: ASHD    R0, R4
+00160e: BR      0x161D
+001610: MOVD    R6, R0
+001612: ADDD    R4, R0
+001614: MOVD    R0, (R6)
+001617: MOVD    R6, R0
+001619: ADDD    R4, R0
+00161b: MOVD    R0, R6
+00161d: ADDQD   -1, R3
+00161f: CMPQD   0, R3
+001621: BLT     0x1610
+001623: BR      0x1596
+
+; -----------------------------------------------------------------------------
+; LIBC: compact allocation-list helper.
+; -----------------------------------------------------------------------------
+001626: ENTER   [R6,R7], 0
+001629: MOVQD   0, TOS
+00162b: CMPQD   0, 0xC(FP)
+00162e: BNE     0x1636
+001630: CMPQD   0, TOS
+001632: EXIT    [R6,R7]
+001634: RXP     0
+001636: ADDR    -0x4(0xC(FP)), R6
+00163a: CMPB    0xFF, (R6)
+00163e: BNE     0x1630
+001640: MOVZBD  0x1(R6), R7
+001644: MOVD    0x22(SB)[R7:D], (R6)
+001649: MOVD    R6, 0x22(SB)[R7:D]
+00164d: BR      0x1630
+
+; -----------------------------------------------------------------------------
+; LIBC: allocator block-management routine.
+; -----------------------------------------------------------------------------
+00164f: ENTER   [R6,R7], 0x10
+001652: MOVQD   0, TOS
+001654: MOVQD   0, -0xC(FP)
+001657: CMPQD   0, 0xC(FP)
+00165a: BNE     0x1668
+00165c: MOVD    0x10(FP), (SP)
+001660: CXP     0x3
+001662: CMPQD   0, TOS
+001664: EXIT    [R6,R7]
+001666: RXP     0
+001668: ADDR    -0x4(0xC(FP)), -0x4(FP)
+00166d: CMPB    0xFF, (-0x4(FP))
+001672: BNE     0x167E
+001674: ADDQD   1, -0xC(FP)
+001677: MOVZBD  0x1(-0x4(FP)), R6
+00167c: BR      0x16A1
+00167e: MOVQD   1, (SP)
+001681: MOVD    -0x4(FP), TOS
+001684: CXP     0x4
+001686: CMPQD   0, TOS
+001688: MOVD    R0, R6
+00168a: CMPQD   0, R0
+00168c: BLE     0x16A1
+00168e: MOVD    0x4(SB), (SP)
+001692: MOVD    -0x4(FP), TOS
+001695: CXP     0x4
+001697: CMPQD   0, TOS
+001699: MOVD    R0, R6
+00169b: CMPQD   0, R0
+00169d: BLE     0x16A1
+00169f: MOVQD   0, R6
+0016a1: MOVQD   1, R7
+0016a3: MOVB    R6, R0
+0016a5: ADDQB   3, R0
+0016a7: ASHD    R0, R7
+0016aa: ADDQD   -4, R7
+0016ac: CMPQD   0, -0xC(FP)
+0016af: BEQ     0x16C8
+0016b1: CMPD    0x10(FP), R7
+0016b4: BHI     0x16C8
+0016b6: EXTSD   R7, R0, 1, 31
+0016ba: ADDR    -0x4(R0), R0
+0016bd: CMPD    R0, 0x10(FP)
+0016c0: BHS     0x16C8
+0016c2: MOVD    0xC(FP), R0
+0016c5: BR      0x1662
+0016c8: MOVD    0x10(FP), (SP)
+0016cc: CXP     0x3
+0016ce: MOVD    R0, -0x8(FP)
+0016d1: CMPQD   0, R0
+0016d3: BNE     0x16DA
+0016d5: MOVQD   0, R0
+0016d7: BR      0x1662
+0016da: CMPD    0xC(FP), -0x8(FP)
+0016de: BEQ     0x16FC
+0016e0: CMPD    0x10(FP), R7
+0016e3: BHS     0x16EB
+0016e5: MOVD    0x10(FP), -0x10(FP)
+0016e9: BR      0x16EE
+0016eb: MOVD    R7, -0x10(FP)
+0016ee: MOVD    -0x10(FP), (SP)
+0016f2: MOVD    -0x8(FP), TOS
+0016f5: MOVD    0xC(FP), TOS
+0016f8: CXP     0x1
+0016fa: CMPD    TOS, TOS
+0016fc: CMPQD   0, -0xC(FP)
+0016ff: BEQ     0x1707
+001701: MOVD    0xC(FP), (SP)
+001705: CXP     0x5
+001707: MOVD    -0x8(FP), R0
+00170a: BR      0x1662
+
+; -----------------------------------------------------------------------------
+; LIBC: terminal/stdio support routine.
+; -----------------------------------------------------------------------------
+00170d: ENTER   [R5,R6,R7], 0
+001710: MOVQD   0, TOS
+001712: MOVQD   0, R6
+001714: MOVQD   0, R5
+001716: MOVD    0x22(SB)[R6:D], R7
+00171a: BR      0x172E
+00171c: CMPD    R7, 0xC(FP)
+00171f: BNE     0x1729
+001721: MOVD    R6, R0
+001723: CMPQD   0, TOS
+001725: EXIT    [R5,R6,R7]
+001727: RXP     0
+001729: ADDQD   1, R5
+00172b: MOVD    (R7), R7
+00172e: CMPQD   0, R7
+001730: BEQ     0x1737
+001732: CMPD    R5, 0x10(FP)
+001735: BNE     0x171C
+001737: ADDQD   1, R6
+001739: CMPD    0x1E, R6
+00173f: BGT     0x1714
+001741: MOVQD   -1, R0
+001743: BR      0x1723
+001745: ADDB    R0, R0
+001747: ADDB    0x2(R0), R0
+00174a: ORD     R0, R0
+00174c: ADDCB   R0, 0x1C(R1)
+00174f: ADDB    R2, R0
+001751: BSR     0x1731
+001753: ADDB    R2, R0
+001755: BSR     0x1755
+001757: ADDB    R2, R0
+001759: BSR     0xE501275B
+00175e: 
+00175f: ADDB    0x8((FP)), -0x21(R0)
+001764: XORB    -0x8(R4), (FP)[R6:D]
+001769: MOVD    0xC(FP), TOS
+00176c: CXP     0
+00176e: CMPQD   0, TOS
+001770: CMPQD   0, R0
+001772: BLE     0x1778
+001774: MOVQD   0, R0
+001776: BR      0x177C
+001778: MOVQD   1, R0
+00177a: BR      0x177C
+00177c: CMPQD   0, TOS
+00177e: EXIT    []
+001780: RXP     0
+001782: ADDB    R0, R0
+001784: SUBB    R0, 0x1E(R1)
+001787: ADDB    R1, (0x27(FP))
+00178b: ADDB    R1, (-0x39(FP))
+00178f: ADDB    0x28(R0), R0
+001792: SUBD    R5, R4
+001794: SUBCD   -0xE(R4), -0x15(R1)
+001798: EXTD    R6, R1, R5, 50
+00179c: EXTD    R6, R4, R0, -17
+0017a0: 
+0017a1: SUBB    R7, R0
+0017a3: TBITW   R5, R6[R0:B]
+0017a6: XORB    R5, R6[R1:B]
+0017a9: SUBCD   R0, R0
+0017ab: CMPQD   0, (SB)
+0017ae: BNE     0x17B5
+0017b0: ADDR    EXT(0x1), (SB)
+0017b5: ADDD    (SB), 0x8(SP)
+0017b9: ADDR    @0x11, R0
+0017bc: ADDR    0x8(SP), R1
+0017bf: SVC
+0017c0: BFS     0x17DA
+0017c2: MOVD    (SB), R0
+0017c5: MOVD    0x8(SP), (SB)
+0017c9: RXP     0
+0017cb: ADDR    @0x11, R0
+0017ce: ADDR    0x8(SP), R1
+0017d1: SVC
+0017d2: BFS     0x17DA
+0017d4: MOVD    0x8(SP), (SB)
+0017d8: RXP     0
+0017da: CXP     0
+0017dc: RXP     0
+0017de: ADDB    R0, R0
+0017e0: SUBB    R0, R7
+0017e2: CMPQW   0, R0
+0017e4: ADDQB   -2, (R4)
+0017e7: ADDB    0x28(R0), R0
+0017ea: SUBD    R5, R4
+0017ec: SAVE    [R0,R1,R5,R6]
+0017ee: LPRD    UPSR, -0x7(R6)
+0017f1: EXTD    R6, R1, R5, 49
+0017f5: EXT     R6, R4, R0, -17
+0017f9: 
+0017fa: SUBB    R7, R0
+0017fc: TBITW   R5, R6[R0:B]
+0017ff: XORB    R5, R6[R1:B]
+001802: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: bcopy() byte-copy helper.
+; -----------------------------------------------------------------------------
+001804: ENTER   [], 0
+001807: MOVD    0x14(FP), R0
+00180a: MOVD    0xC(FP), R1
+00180d: MOVD    0x10(FP), R2
+001810: MOVSB   
+001813: EXIT    []
+001815: RXP     0
+001817: ADDB    ((FP)), -0x21(R0)
+00181c: XORB    0x10(R2), (FP)[R6:D]
+001821: ADDR    @0x7409, TOS
+001827: MOVD    0xC(FP), TOS
+00182a: CXP     0
+00182c: CMPD    TOS, TOS
+00182e: BR      0x1830
+001830: CMPQD   0, TOS
+001832: EXIT    []
+001834: RXP     0
+001836: ENTER   [], 0
+001839: MOVQD   0, TOS
+00183b: MOVD    0x10(FP), (SP)
+00183f: ADDR    @0x7408, TOS
+001845: MOVD    0xC(FP), TOS
+001848: CXP     0
+00184a: CMPD    TOS, TOS
+00184c: BR      0x184E
+00184e: CMPQD   0, TOS
+001850: EXIT    []
+001852: RXP     0
+001854: SUBCB   R0, 0x1C(R1)
+001857: ADDB    0x28(R0), R0
+00185a: SUBD    R5, R4
+00185c: ANDW    -0xC(R5), -0x14(R4)[R3:W]
+001861: EXTD    R6, R1, R5, 50
+001865: EXTD    R6, R4, R0, -17
+001869: 
+00186a: SUBB    R7, R0
+00186c: TBITW   R5, R6[R0:B]
+00186f: XORB    R5, R6[R1:B]
+001872: SUBCD   R0, R0
+
+; -----------------------------------------------------------------------------
+; CONFIRMED: ioctl(2) wrapper.
+; -----------------------------------------------------------------------------
+001874: ADDR    @0x36, R0
+001877: ADDR    0x8(SP), R1
+00187a: SVC
+00187b: BFC     0x187F
+00187d: CXP     0
+00187f: RXP     0
+001881: ADDB    R0, R0
+001883: ADDB    R0[R1:B], R0
+001886: CMPQW   0, R0
+001888: RXP     0
+
+; -----------------------------------------------------------------------------
+; NON-CODE: zero-filled tail through 0x1bff.
+; -----------------------------------------------------------------------------
+00188a: ADDB    R0, R0
+00188c: ADDB    R0, R0
+00188e: ADDB    R0, R0
+001890: ADDB    R0, R0
+001892: ADDB    R0, R0
+001894: ADDB    R0, R0
+001896: ADDB    R0, R0
+001898: ADDB    R0, R0
+00189a: ADDB    R0, R0
+00189c: ADDB    R0, R0
+00189e: ADDB    R0, R0
+0018a0: ADDB    R0, R0
+0018a2: ADDB    R0, R0
+0018a4: ADDB    R0, R0
+0018a6: ADDB    R0, R0
+0018a8: ADDB    R0, R0
+0018aa: ADDB    R0, R0
+0018ac: ADDB    R0, R0
+0018ae: ADDB    R0, R0
+0018b0: ADDB    R0, R0
+0018b2: ADDB    R0, R0
+0018b4: ADDB    R0, R0
+0018b6: ADDB    R0, R0
+0018b8: ADDB    R0, R0
+0018ba: ADDB    R0, R0
+0018bc: ADDB    R0, R0
+0018be: ADDB    R0, R0
+0018c0: ADDB    R0, R0
+0018c2: ADDB    R0, R0
+0018c4: ADDB    R0, R0
+0018c6: ADDB    R0, R0
+0018c8: ADDB    R0, R0
+0018ca: ADDB    R0, R0
+0018cc: ADDB    R0, R0
+0018ce: ADDB    R0, R0
+0018d0: ADDB    R0, R0
+0018d2: ADDB    R0, R0
+0018d4: ADDB    R0, R0
+0018d6: ADDB    R0, R0
+0018d8: ADDB    R0, R0
+0018da: ADDB    R0, R0
+0018dc: ADDB    R0, R0
+0018de: ADDB    R0, R0
+0018e0: ADDB    R0, R0
+0018e2: ADDB    R0, R0
+0018e4: ADDB    R0, R0
+0018e6: ADDB    R0, R0
+0018e8: ADDB    R0, R0
+0018ea: ADDB    R0, R0
+0018ec: ADDB    R0, R0
+0018ee: ADDB    R0, R0
+0018f0: ADDB    R0, R0
+0018f2: ADDB    R0, R0
+0018f4: ADDB    R0, R0
+0018f6: ADDB    R0, R0
+0018f8: ADDB    R0, R0
+0018fa: ADDB    R0, R0
+0018fc: ADDB    R0, R0
+0018fe: ADDB    R0, R0
+001900: ADDB    R0, R0
+001902: ADDB    R0, R0
+001904: ADDB    R0, R0
+001906: ADDB    R0, R0
+001908: ADDB    R0, R0
+00190a: ADDB    R0, R0
+00190c: ADDB    R0, R0
+00190e: ADDB    R0, R0
+001910: ADDB    R0, R0
+001912: ADDB    R0, R0
+001914: ADDB    R0, R0
+001916: ADDB    R0, R0
+001918: ADDB    R0, R0
+00191a: ADDB    R0, R0
+00191c: ADDB    R0, R0
+00191e: ADDB    R0, R0
+001920: ADDB    R0, R0
+001922: ADDB    R0, R0
+001924: ADDB    R0, R0
+001926: ADDB    R0, R0
+001928: ADDB    R0, R0
+00192a: ADDB    R0, R0
+00192c: ADDB    R0, R0
+00192e: ADDB    R0, R0
+001930: ADDB    R0, R0
+001932: ADDB    R0, R0
+001934: ADDB    R0, R0
+001936: ADDB    R0, R0
+001938: ADDB    R0, R0
+00193a: ADDB    R0, R0
+00193c: ADDB    R0, R0
+00193e: ADDB    R0, R0
+001940: ADDB    R0, R0
+001942: ADDB    R0, R0
+001944: ADDB    R0, R0
+001946: ADDB    R0, R0
+001948: ADDB    R0, R0
+00194a: ADDB    R0, R0
+00194c: ADDB    R0, R0
+00194e: ADDB    R0, R0
+001950: ADDB    R0, R0
+001952: ADDB    R0, R0
+001954: ADDB    R0, R0
+001956: ADDB    R0, R0
+001958: ADDB    R0, R0
+00195a: ADDB    R0, R0
+00195c: ADDB    R0, R0
+00195e: ADDB    R0, R0
+001960: ADDB    R0, R0
+001962: ADDB    R0, R0
+001964: ADDB    R0, R0
+001966: ADDB    R0, R0
+001968: ADDB    R0, R0
+00196a: ADDB    R0, R0
+00196c: ADDB    R0, R0
+00196e: ADDB    R0, R0
+001970: ADDB    R0, R0
+001972: ADDB    R0, R0
+001974: ADDB    R0, R0
+001976: ADDB    R0, R0
+001978: ADDB    R0, R0
+00197a: ADDB    R0, R0
+00197c: ADDB    R0, R0
+00197e: ADDB    R0, R0
+001980: ADDB    R0, R0
+001982: ADDB    R0, R0
+001984: ADDB    R0, R0
+001986: ADDB    R0, R0
+001988: ADDB    R0, R0
+00198a: ADDB    R0, R0
+00198c: ADDB    R0, R0
+00198e: ADDB    R0, R0
+001990: ADDB    R0, R0
+001992: ADDB    R0, R0
+001994: ADDB    R0, R0
+001996: ADDB    R0, R0
+001998: ADDB    R0, R0
+00199a: ADDB    R0, R0
+00199c: ADDB    R0, R0
+00199e: ADDB    R0, R0
+0019a0: ADDB    R0, R0
+0019a2: ADDB    R0, R0
+0019a4: ADDB    R0, R0
+0019a6: ADDB    R0, R0
+0019a8: ADDB    R0, R0
+0019aa: ADDB    R0, R0
+0019ac: ADDB    R0, R0
+0019ae: ADDB    R0, R0
+0019b0: ADDB    R0, R0
+0019b2: ADDB    R0, R0
+0019b4: ADDB    R0, R0
+0019b6: ADDB    R0, R0
+0019b8: ADDB    R0, R0
+0019ba: ADDB    R0, R0
+0019bc: ADDB    R0, R0
+0019be: ADDB    R0, R0
+0019c0: ADDB    R0, R0
+0019c2: ADDB    R0, R0
+0019c4: ADDB    R0, R0
+0019c6: ADDB    R0, R0
+0019c8: ADDB    R0, R0
+0019ca: ADDB    R0, R0
+0019cc: ADDB    R0, R0
+0019ce: ADDB    R0, R0
+0019d0: ADDB    R0, R0
+0019d2: ADDB    R0, R0
+0019d4: ADDB    R0, R0
+0019d6: ADDB    R0, R0
+0019d8: ADDB    R0, R0
+0019da: ADDB    R0, R0
+0019dc: ADDB    R0, R0
+0019de: ADDB    R0, R0
+0019e0: ADDB    R0, R0
+0019e2: ADDB    R0, R0
+0019e4: ADDB    R0, R0
+0019e6: ADDB    R0, R0
+0019e8: ADDB    R0, R0
+0019ea: ADDB    R0, R0
+0019ec: ADDB    R0, R0
+0019ee: ADDB    R0, R0
+0019f0: ADDB    R0, R0
+0019f2: ADDB    R0, R0
+0019f4: ADDB    R0, R0
+0019f6: ADDB    R0, R0
+0019f8: ADDB    R0, R0
+0019fa: ADDB    R0, R0
+0019fc: ADDB    R0, R0
+0019fe: ADDB    R0, R0
+001a00: ADDB    R0, R0
+001a02: ADDB    R0, R0
+001a04: ADDB    R0, R0
+001a06: ADDB    R0, R0
+001a08: ADDB    R0, R0
+001a0a: ADDB    R0, R0
+001a0c: ADDB    R0, R0
+001a0e: ADDB    R0, R0
+001a10: ADDB    R0, R0
+001a12: ADDB    R0, R0
+001a14: ADDB    R0, R0
+001a16: ADDB    R0, R0
+001a18: ADDB    R0, R0
+001a1a: ADDB    R0, R0
+001a1c: ADDB    R0, R0
+001a1e: ADDB    R0, R0
+001a20: ADDB    R0, R0
+001a22: ADDB    R0, R0
+001a24: ADDB    R0, R0
+001a26: ADDB    R0, R0
+001a28: ADDB    R0, R0
+001a2a: ADDB    R0, R0
+001a2c: ADDB    R0, R0
+001a2e: ADDB    R0, R0
+001a30: ADDB    R0, R0
+001a32: ADDB    R0, R0
+001a34: ADDB    R0, R0
+001a36: ADDB    R0, R0
+001a38: ADDB    R0, R0
+001a3a: ADDB    R0, R0
+001a3c: ADDB    R0, R0
+001a3e: ADDB    R0, R0
+001a40: ADDB    R0, R0
+001a42: ADDB    R0, R0
+001a44: ADDB    R0, R0
+001a46: ADDB    R0, R0
+001a48: ADDB    R0, R0
+001a4a: ADDB    R0, R0
+001a4c: ADDB    R0, R0
+001a4e: ADDB    R0, R0
+001a50: ADDB    R0, R0
+001a52: ADDB    R0, R0
+001a54: ADDB    R0, R0
+001a56: ADDB    R0, R0
+001a58: ADDB    R0, R0
+001a5a: ADDB    R0, R0
+001a5c: ADDB    R0, R0
+001a5e: ADDB    R0, R0
+001a60: ADDB    R0, R0
+001a62: ADDB    R0, R0
+001a64: ADDB    R0, R0
+001a66: ADDB    R0, R0
+001a68: ADDB    R0, R0
+001a6a: ADDB    R0, R0
+001a6c: ADDB    R0, R0
+001a6e: ADDB    R0, R0
+001a70: ADDB    R0, R0
+001a72: ADDB    R0, R0
+001a74: ADDB    R0, R0
+001a76: ADDB    R0, R0
+001a78: ADDB    R0, R0
+001a7a: ADDB    R0, R0
+001a7c: ADDB    R0, R0
+001a7e: ADDB    R0, R0
+001a80: ADDB    R0, R0
+001a82: ADDB    R0, R0
+001a84: ADDB    R0, R0
+001a86: ADDB    R0, R0
+001a88: ADDB    R0, R0
+001a8a: ADDB    R0, R0
+001a8c: ADDB    R0, R0
+001a8e: ADDB    R0, R0
+001a90: ADDB    R0, R0
+001a92: ADDB    R0, R0
+001a94: ADDB    R0, R0
+001a96: ADDB    R0, R0
+001a98: ADDB    R0, R0
+001a9a: ADDB    R0, R0
+001a9c: ADDB    R0, R0
+001a9e: ADDB    R0, R0
+001aa0: ADDB    R0, R0
+001aa2: ADDB    R0, R0
+001aa4: ADDB    R0, R0
+001aa6: ADDB    R0, R0
+001aa8: ADDB    R0, R0
+001aaa: ADDB    R0, R0
+001aac: ADDB    R0, R0
+001aae: ADDB    R0, R0
+001ab0: ADDB    R0, R0
+001ab2: ADDB    R0, R0
+001ab4: ADDB    R0, R0
+001ab6: ADDB    R0, R0
+001ab8: ADDB    R0, R0
+001aba: ADDB    R0, R0
+001abc: ADDB    R0, R0
+001abe: ADDB    R0, R0
+001ac0: ADDB    R0, R0
+001ac2: ADDB    R0, R0
+001ac4: ADDB    R0, R0
+001ac6: ADDB    R0, R0
+001ac8: ADDB    R0, R0
+001aca: ADDB    R0, R0
+001acc: ADDB    R0, R0
+001ace: ADDB    R0, R0
+001ad0: ADDB    R0, R0
+001ad2: ADDB    R0, R0
+001ad4: ADDB    R0, R0
+001ad6: ADDB    R0, R0
+001ad8: ADDB    R0, R0
+001ada: ADDB    R0, R0
+001adc: ADDB    R0, R0
+001ade: ADDB    R0, R0
+001ae0: ADDB    R0, R0
+001ae2: ADDB    R0, R0
+001ae4: ADDB    R0, R0
+001ae6: ADDB    R0, R0
+001ae8: ADDB    R0, R0
+001aea: ADDB    R0, R0
+001aec: ADDB    R0, R0
+001aee: ADDB    R0, R0
+001af0: ADDB    R0, R0
+001af2: ADDB    R0, R0
+001af4: ADDB    R0, R0
+001af6: ADDB    R0, R0
+001af8: ADDB    R0, R0
+001afa: ADDB    R0, R0
+001afc: ADDB    R0, R0
+001afe: ADDB    R0, R0
+001b00: ADDB    R0, R0
+001b02: ADDB    R0, R0
+001b04: ADDB    R0, R0
+001b06: ADDB    R0, R0
+001b08: ADDB    R0, R0
+001b0a: ADDB    R0, R0
+001b0c: ADDB    R0, R0
+001b0e: ADDB    R0, R0
+001b10: ADDB    R0, R0
+001b12: ADDB    R0, R0
+001b14: ADDB    R0, R0
+001b16: ADDB    R0, R0
+001b18: ADDB    R0, R0
+001b1a: ADDB    R0, R0
+001b1c: ADDB    R0, R0
+001b1e: ADDB    R0, R0
+001b20: ADDB    R0, R0
+001b22: ADDB    R0, R0
+001b24: ADDB    R0, R0
+001b26: ADDB    R0, R0
+001b28: ADDB    R0, R0
+001b2a: ADDB    R0, R0
+001b2c: ADDB    R0, R0
+001b2e: ADDB    R0, R0
+001b30: ADDB    R0, R0
+001b32: ADDB    R0, R0
+001b34: ADDB    R0, R0
+001b36: ADDB    R0, R0
+001b38: ADDB    R0, R0
+001b3a: ADDB    R0, R0
+001b3c: ADDB    R0, R0
+001b3e: ADDB    R0, R0
+001b40: ADDB    R0, R0
+001b42: ADDB    R0, R0
+001b44: ADDB    R0, R0
+001b46: ADDB    R0, R0
+001b48: ADDB    R0, R0
+001b4a: ADDB    R0, R0
+001b4c: ADDB    R0, R0
+001b4e: ADDB    R0, R0
+001b50: ADDB    R0, R0
+001b52: ADDB    R0, R0
+001b54: ADDB    R0, R0
+001b56: ADDB    R0, R0
+001b58: ADDB    R0, R0
+001b5a: ADDB    R0, R0
+001b5c: ADDB    R0, R0
+001b5e: ADDB    R0, R0
+001b60: ADDB    R0, R0
+001b62: ADDB    R0, R0
+001b64: ADDB    R0, R0
+001b66: ADDB    R0, R0
+001b68: ADDB    R0, R0
+001b6a: ADDB    R0, R0
+001b6c: ADDB    R0, R0
+001b6e: ADDB    R0, R0
+001b70: ADDB    R0, R0
+001b72: ADDB    R0, R0
+001b74: ADDB    R0, R0
+001b76: ADDB    R0, R0
+001b78: ADDB    R0, R0
+001b7a: ADDB    R0, R0
+001b7c: ADDB    R0, R0
+001b7e: ADDB    R0, R0
+001b80: ADDB    R0, R0
+001b82: ADDB    R0, R0
+001b84: ADDB    R0, R0
+001b86: ADDB    R0, R0
+001b88: ADDB    R0, R0
+001b8a: ADDB    R0, R0
+001b8c: ADDB    R0, R0
+001b8e: ADDB    R0, R0
+001b90: ADDB    R0, R0
+001b92: ADDB    R0, R0
+001b94: ADDB    R0, R0
+001b96: ADDB    R0, R0
+001b98: ADDB    R0, R0
+001b9a: ADDB    R0, R0
+001b9c: ADDB    R0, R0
+001b9e: ADDB    R0, R0
+001ba0: ADDB    R0, R0
+001ba2: ADDB    R0, R0
+001ba4: ADDB    R0, R0
+001ba6: ADDB    R0, R0
+001ba8: ADDB    R0, R0
+001baa: ADDB    R0, R0
+001bac: ADDB    R0, R0
+001bae: ADDB    R0, R0
+001bb0: ADDB    R0, R0
+001bb2: ADDB    R0, R0
+001bb4: ADDB    R0, R0
+001bb6: ADDB    R0, R0
+001bb8: ADDB    R0, R0
+001bba: ADDB    R0, R0
+001bbc: ADDB    R0, R0
+001bbe: ADDB    R0, R0
+001bc0: ADDB    R0, R0
+001bc2: ADDB    R0, R0
+001bc4: ADDB    R0, R0
+001bc6: ADDB    R0, R0
+001bc8: ADDB    R0, R0
+001bca: ADDB    R0, R0
+001bcc: ADDB    R0, R0
+001bce: ADDB    R0, R0
+001bd0: ADDB    R0, R0
+001bd2: ADDB    R0, R0
+001bd4: ADDB    R0, R0
+001bd6: ADDB    R0, R0
+001bd8: ADDB    R0, R0
+001bda: ADDB    R0, R0
+001bdc: ADDB    R0, R0
+001bde: ADDB    R0, R0
+001be0: ADDB    R0, R0
+001be2: ADDB    R0, R0
+001be4: ADDB    R0, R0
+001be6: ADDB    R0, R0
+001be8: ADDB    R0, R0
+001bea: ADDB    R0, R0
+001bec: ADDB    R0, R0
+001bee: ADDB    R0, R0
+001bf0: ADDB    R0, R0
+001bf2: ADDB    R0, R0
+001bf4: ADDB    R0, R0
+001bf6: ADDB    R0, R0
+001bf8: ADDB    R0, R0
+001bfa: ADDB    R0, R0
+001bfc: ADDB    R0, R0
+001bfe: ADDB    R0, R0

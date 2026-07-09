@@ -1,0 +1,1743 @@
+SIEMENS
+
+
+
+
+SIDA
+PC-MX2
+
+
+
+
+Installationsanleitung
+  SID A
+  PC-M X2
+
+  Installationsanleitung
+
+
+
+
+Ausgabe März 1986 (SINIX V2.0)
+I N H A L T S V E R Z E I C H N I S
+****##**#*#***##*##****####*#******
+                                                               Seite
+
+         Vorwort                                                 2
+         Aufbauablauf des PC-MX2                                 3
+
+ 1       Lieferumfang                                            4
+
+ 2       Transport                                               5
+ 2.1     Bedieneinheit                                           5
+ 2.2     Systemeinheit                                           5
+
+ 3       Der PC-MX2 - Aufstellen und Bedienen                    6
+ 3.1     Bedieneinheit                                           6
+ 3.2     Systemeinheit                                          10
+
+ 4       Standardanschluß von Bedieneinheiten und Druckern      12
+
+ 5       Fernanschluß (AFP) von Bedieneinheiten und Druckern    14
+
+ 6       Vorbereitungen zur Software-Installation               17
+ 6.1     Disketten                                              17
+ 6.2     Tastaturbedienung und Zeichenerklärung                 19
+
+ 7       Einlesen des SINIX-Betriebssystems                     21
+
+ 8       Einlesen zusätzlicher Software                         24
+
+ 9       Administratoraufgaben                                  26
+ 9.1     Festlegen von Kennworten für "root” und ”admin”        27
+ 9.2     Konfigurierung des lokalen Systems                     28
+ 9.3     Formatieren von Magnetband-Kassetten und Disketten     31
+ 9.4     Datum und Uhrzeit ändern                               32
+
+10       Einstellempfehlungen für Drucker                       33
+10.1     Drucker 9001                                           33
+10.2     Drucker 9004                                           33
+10.3     Drucker 9013                                           34
+
+11       Der Magnetband-Streamer                                35
+11.1     Anschluß                                               35
+11.2     Bedienung                                              36
+
+12       Fehlersuche                                            38
+12.1     Fehler beim Einschalten des PC-MX2                     38
+12.1.1   Bedieneinheit überprüfen                               38
+12.1.3   Systemeinheit überprüfen                               40
+
+12.2     Fehler beim Selbsttest                                 41
+12.3     Fehler beim Laden von Diskette                         43
+12.4     Fehler beim Laden von Festplatte                       44
+
+14       Expertenmodus                                          45
+
+13       Reinigung, Pflege                                      47
+13.1     Systemeinheit                                          47
+15.2     Bildschirmarbeitsplatz                                 47
+15.3     Drucker                                                48
+                                FTZ-Bescheinigung
+
+
+                  Hiermit wird bescheinigt, daß vorliegendes Gerät
+                  in Übereinstimmung mit der Amtsblattverfügung
+                  Nr. 1046/84 funk-entstört ist. Der Deutschen
+                  Bundespost wurde das Inverkehrbringen dieses
+                  Gerätes angezeigt und die Berechtigung zur Über-
+                  püfung der Serie auf Einhaltung der Bestimmungen
+                  eingeräumt.
+
+
+
+
+                                   A C H T U N G    !
+
+
+
+                       Wichtige Änderungen gegenüber PC-MX !
+
+
+
+
+1.     Der Wippschalter an der Vorderseite der Systemeinheit (Bild 3.6) hat
+       folgende Funktion:
+
+        - oben gedrückt :    Betriebsstellung (Netzversorgung ein)
+        - unten gedrückt:    Netzversorgung aus ( NOT-AUS !!!)
+                             In dieser Stellung wird die Spannungsversorgung
+                             der Systemeinheit sofort abgeschaltet !
+
+
+ Zum Ausschalten deshalb immer den Bedienschalter der Konsole verwenden, da
+ sonst das Dateisystem beim Wiederanlauf des Systems in einem Undefinierten
+ Zustand vorgefunden wird. Datenverlust könnte die Folge sein!!
+
+
+
+
+2.     Disketten mit Filesystem (siehe mount-Kommando SINIX Buch 1) sind
+       zwischen PC-MX und PC-MX2 nicht kompatibel.
+       Außerdem ergeben sich durch verschiedene Formatierungsarten auf PC-MX
+       und PC-MX2 beim Austausch von Disketten erhebliche Unterschiede in den
+       Zugriffszeiten. Beachten Sie bitte dazu Kapitel 9.3.
+Vorwort
+*******
+
+
+
+In dieser SIDA-Anweisung sind die zur Installation des Arbeitsplatz-Computers
+PC-MX2 notwendigen Arbeiten beschrieben.
+
+Eine schnelle Installation setzt voraus, daß die Vorarbeiten entsprechend
+der TRANSDATA Systeminstallation (Best.-Nr U1215-J-Z76-2) Punkte 2, 3 und A
+ausgeführt wurden:
+
+- der Aufstellungsort ist entsprechend vorbereitet
+
+- geeignete Möbel zum Aufstellen der Geräte sind vorhanden
+
+- Leitungen für Datenübertragung und Netzanschluß sind installiert
+
+- die Umweltbedingungen sind überprüft (Klima, Störstrahlung)
+
+
+Nachdem Sie Ihren Arbeitsplatz-Computer PC-MX2 in Betrieb genommen haben,
+schicken Sie bitte die Produktbegleitkarte an die Siemens-Niederlassung,
+die Sie betreut.
+Unsere Wartungsabteilung wird dann Ihren Arbeitsplatz-Computer für den
+Service-Fall registrieren.
+ Aufbauablauf
+**************
+
+
+Führen Sie nur die für Ihren PC notwendigen Schritte aus.
+
+
+- Auspacken der gelieferten Teile. (Verpackung möglichst aufbewahren)
+
+
+- Aufstellen der Bedieneinheiten (siehe Kapitel 3.1, 4, 5)
+
+
+- Aufstellen der Systemeinheit (siehe Kapitel 3.2)
+
+
+- Anschluß der Konsole an die Systemeinheit (siehe Kapitel 4)
+
+
+- Falls Sie weitere Bedieneinheiten haben:
+                Schließen Sie die Bedieneinheiten an (siehe Kapitel 4, 5)
+
+
+- Falls Sie Drucker haben:
+                Schließen Sie die Drucker an (siehe Kapitel 4, 5 und 10)
+
+
+- Falls Sie einen Magnetband-Streamer haben:
+                Schließen Sie ihn jetzt an (siehe Kapitel 11)
+
+
+- Falls Sie einen DUE-Anschluß haben:
+                Schließen Sie ihn an (siehe Zusatzhandbuch)
+
+
+- Laden Sie die Systemsoftware
+
+
+- Falls Sie zusätzliche Software haben:
+                Laden Sie sie jetzt (siehe Kapitel 8)
+
+
+- Falls Sie TRANSIN-Software haben:
+                Stellen Sie die Leitungsparameter ein (siehe Zusatzhandbuch)
+
+
+- Konfigurieren Sie Ihr System
+1 Lieferumfang
+■a**#*#*##******
+
+Der Ihnen gelieferte PC wurde entsprechend der von Ihnen bestellten
+Lieferkombination zusammengestellt, auf Vollständigkeit überprüft und
+systemgetestet.
+
+Der   PC   besteht aus:
+
+- Einer Systemeinheit, ausgerüstet mit den bestellten Zusätzen und
+        der Netzleitung
+
+- Einer bis sechs Bildschirmeinheit(en), bestehend aus:
+        Bildschirmsteuerung, Monitor, Netzleitung und Datenleitung 5m
+
+- Einer bis sechs Tastaturen
+
+- Den eventuell bestellten Anschlußeinheiten für Entfernungen größer als 5m
+  zwischen Systemeinheit und Peripherie
+
+- Den eventuell bestellten Zusatzprodukten
+
+- Der bestellten Software mit den Manualen und eventuell zugehörigen
+  Tastaturmasken
+2        Transport des PC-MX2
+■it*****#**####*#######*####**
+
+Alle Teile einzeln transportieren. Außerdem sollte eine zweite Person hel­
+fen. (Türen, Treppen)
+
+
+
+
+2.1     Bildschirm
+
+
+Den Bildschirm nur in der Originalverpackung transportieren. Er ist wegen
+der Implosionsgefahr der Bildröhre gegen mechanische Einwirkungen zu
+schützen.
+
+
+
+
+2.2     Systemeinheit
+
+
+Die Systemeinheit darf auf keinen Fall an der hinteren Abdeckung festgehalten
+werden, da diese nach hinten wegklappt (Schnappverschlüsse). Am besten tragen
+Sie die Systemeinheit mit der Vorderseite zu Ihnen gerichtet (vorne ist das
+Gerät schwerer).
+
+
+
+
+Hinweis:
+Bewahren Sie bitte die Verpackung auf, wenn Sie die einzelnen Teile auspacken.
+Sie benötigen sie für einen späteren Standortwechsel.
+- Montieren Sie zunächst den Monitor:
+
+        - Setzen Sie den Monitor auf die Halterung der Steuereinheit,
+        - Drehen Sie ihn nach links oder rechts, bis er hörbar einrastet.
+
+
+
+
+Bild 3.2
+
+
+
+
+Der Monitor ist richtig montiert, wenn               sich nach beiden Seiten um etwa
+60 Grad drehen läßt.
+
+
+- Legen Sie die Tastatur vor die Bildschirmeinheit.
+
+- Stecken Sie jetzt das Monitor-Kabel in die mit ’Monitor’ bezeichnete Buchse
+  auf der Rückseite der Steuereinheit.
+
+
+
+
+    z  | SS97 1      I   RS232    [   [ AFP 1
+                                                               o
+           jSystem| 0 |Tastaturj I [Monitor]
+           --------- ö ---------- 1
+                                                       jNetz
+             l _ ..J
+                                  :----1        \n
+                                                               J
+                Regler halbhell
+
+
+
+Bild 3.3
+3   Der PC-MX2 - Aufstellen und Bedienen
+*##********##**#*****#*##*##**####******
+
+Haben Sie die Vorschriften der Installationsanweisung beachtet?
+
+
+3.1 Bedieneinheit
+
+
+                                                                                      Aufstellen
+
+Sie können sich die Arbeit mit Ihrem PC erleichtern, wenn Sie von Anfang an
+einen ergonomisch günstigen Standplatz auswählen.
+
+Bitte beachten Sie dabei folgendes:
+
+
+
+
+    Direktblendung und                                                    Reflexionsblendung durch                 •Richtige Sitzhaltung
+    Reflexionsblendung vermeiden                                          Lichtquellen vermeiden                    einnehmen
+
+
+
+
+                                   \ X
+                                                       \                                             zulässiger
+
+                                           Tischpl«    Le\                                           Sehraum
+
+
+                                     \\                  \
+                                                          1
+                                    z u li ssig er Gi e ifb e re ic h
+
+       600                   0
+                                                                        •Bildschirm im                            »Entlüftungsflachen
+  » Optimaler Greifbereich                                                bevorzugten Sehraum                      freihalten
+
+ Weitere Hinweise können folgenden Schriften entnommen werden:
+„Ergonomie am Arbeitsplatz" Bestell-Nr. D90/113 und
+„Gestaltung von Bildschirmarbeitsplätzen" Bestell-Nr. D90/123-01
+
+
+
+(Bild 3.1)
+- Stecken Sie das Kabel der Tastatur ebenfalls in den dafür vorgesehenen
+  Steckplatz.
+
+- Schalten Sie die Bedieneinheit aus. Kippen Sie dazu den Netzschalter an
+  der linken Gehäuseseite nach hinten (auf 0).
+
+- Stecken Sie jetzt das Netzkabel erst an der Bedieneinheit und dann am Netz ein.
+  Wichtig:
+     Systemeinheit, Konsole und Magnetband-Streamer müssen in derselben
+     Mehrfachsteckdose des Netzes angesteckt werden.
+
+
+
+
+ Um den Monitor wieder zu demontieren gehen Sie folgendermaßen vor:
+
+        - Schalten Sie die Bedieneinheit aus und lösen Sie die Sicherungs­
+          schraube des Steckers. Jetzt können Sie die Verbindung abstecken.
+
+        - Kippen Sie den Monitor so weit wie möglich nach vorne.
+
+        - Drücken Sie an der Unterseite des Monitors die Lasche am Drehgelenk
+          ein und drehen Sie ihn, bis er quer zu Ihnen steht.
+
+        - In dieser Position läßt er sich abnehmen.
+Die Funktion der Tastatur ist im Abschnitt 6.2 erklärt.
+Sie finden an der Bedieneinheit einen Netzschalter, einen Helligkeitsregler
+(siehe Bild 3.4) sowie einen Regler für Halbhell an der Rückseite (Bild 3.3).
+
+
+
+
+Die Bedieneinheit ist eingeschaltet, wenn der Netzschalter nach vorne gekippt
+ist (Stellung I). Mit dem Netzschalter des ersten Sinix-Arbeitsplatzes (der Kon­
+sole) wird auch die Systemeinheit eingeschaltet und das Betriebssystem geladen.
+
+Um die Helligkeit des Monitors zu erhöhen, drehen Sie bitte den Regler nach
+vorne. Beachten Sie aber, daß der Monitor automatisch dunkelgesteuert wird,
+wenn mehr als 10 Minuten keine Ein- oder Ausgabe erfolgt. In diesem Fall
+brauchen Sie nur irgendeine Taste zu betätigen, um den Monitor wieder einzu­
+schalten. Dieses Zeichen wird nicht als Eingabe gewertet.
+
+Einige Ausgaben erscheinen am Monitor halbhell. Die Helligkeit solcher Ausgaben
+kann gesondert eingestellt werden. Dazu dient der Regler an der Rückseite der
+Bedieneinheit, der mit einem kleinen Schraubendreher verstellt werden kann.
+Sinnvollerweise beschaffen Sie sich zunächst eine Ausgabe, die halbhelle Zeichen
+enthält. Dazu können Sie z.B. das ’service’-Menue aufrufen (siehe auch Kapitel
+12.7) und mit <s> <b> <CR> den Bildschirmtest wählen.
+Jetzt können Sie die halbhellen Zeichen gesondert in ihrer Helligkeit ver­
+stellen.
+3.2 Systemeinheit
+
+
+                                    Aufstellen
+
+
+Stellen Sie die Systemeinheit in Griffnähe der ersten Bedieneinheit (Konsole)
+auf. Nur von dieser Konsole aus ist das Ein- und Ausschalten der Systemeinheit
+möglich.
+
+Beachten Sie außerdem folgende Punkte:
+
+        - Der Lufteintritt an der Vorderseite darf nicht verdeckt sein.
+
+        - Die Warmluft muß an der Rückseite ungehindert austreten können.
+
+        - Das Diskettenlaufwerk muß zugänglich sein.
+
+        - Falls Sie die Systemeinheit in Büromöbel einbauen wollen, muß sie
+          von oben und hinten zugänglich sein (siehe Installationsdatenblatt).
+
+        - Stellen Sie die Systemeinheit nicht auf den Boden.
+
+Jetzt können Sie die Transportsicherung aus dem Diskettenlaufwerk entnehmen.
+Bewahren Sie sie auf; bei einem späteren Transport der Systemeinheit wird sie
+benötigt (Bild 3.5).
+Nun können Sie das Netzkabel zuerst an der Systemeinheit und dann am Netz
+anstecken. Denken Sie daran, daß Systemeinheit, Konsole und Magnetband-Streamer
+an derselben Mehrfachsteckdose angeschlossen werden müssen.
+
+
+
+
+                                     Bedienung
+
+
+An der Systemeinheit befinden sich folgende Bedienelemente (Bild 3.6):
+
+- Der Netzschalter, der während des normalen Betriebes grundsätzlich eingeschal­
+  tet (d.h. nach oben gekippt) ist.
+
+- Der Rücksetzknopf, der nur bei Fehlerfällen (siehe Kapitel 12) mit einem
+  kleinen Schraubenzieher o.ä. gedrückt wird.
+
+- Der Monitorknopf, den Sie grundsätzlich nicht betätigen sollten, da er nur für
+  Servicezwecke vorgesehen ist.
+  Falls Sie ihn aus Versehen doch einmal drücken, schalten Sie das System am
+  besten ganz ab und nach dreißig Sekunden wieder ein.
+
+- Das Diskettenlaufwerk mit dem Verriegelungshebel, es ist im Kapitel 6.1 aus­
+  führlich beschrieben.
+
+
+
+
+                                           Plattenzugriffsanzeige
+
+                                         Diskettenzugriffsanzeige
+
+
+
+
+                                                     Netzschalter
+
+
+
+                                               Netzkontroll-
+                                               anzeige
+                                       Selbsttest­
+                                       anzeige
+     Leuchtkette
+
+                   Monitorknopf      Rücksetzknopf
+4   Standard-Anschluß von Bedieneinheiten und Druckern
+    über Schnittstelle 97 bis 60 Meter
+fc#******************##*#*****#**##*##**###*##*#**#***#
+
+
+Verlegen Sie die Verbindungsleitungen so, daß bei jedem Gerät eine Schleife
+von ca. 50 cm bleibt. Dadurch kann eine Belastung der Steckanschlüsse vermie­
+den werden.
+
+- Öffnen Sie zunächst die Abdeckplatte an der Rückseite der Systemeinheit.
+  Drücken Sie dazu die Verschlußfedern hinter der Unterkante der Abdeckplatte
+  nach oben. Ziehdn Sie jetzt die Abdeckplatte von der Systemeinheit weg.
+  Nun können Sie die Abdeckplatte nach oben abheben.
+
+
+
+
+- Sie können jetzt mit dem Herstellen der Anschlüsse beginnen
+
+- Grundsätzlich gilt: Die erste Bedieneinheit (Konsole) muß immer über ein
+                      5m-Kabel an die im Bild 5.1 bezeichnete Schnittstelle 97
+                      angeschlossen werden.
+                      Außerdem muß die Konsole in derselben Mehrfachsteckdose wie
+                      die Systemeinheit und der Magnetband-streamer angesteckt
+                      werden. Alle Komponenten, die über die Schnittstelle 97
+                      (geschirmte Leitungen) angeschlossen sind, müssen an dem­
+                      selben Netzverteiler angeschlossen werden.
+
+
+- Gehen Sie nun für alle Bedieneinheiten und Drucker wie folgt vor:
+
+        - Die Systemeinheit muß abgeschaltet sein; ebenso die Bedieneinheiten
+          und die Drucker.
+           - Stecken Sie die Verbindungsleitung an der Bedieneinheit(siehe Bild 4.2)
+             bzw. am Drucker (siehe Betriebsanleitung des jeweiligen Druckers) ein
+             und sichern Sie den Stecker mit der Rändelschraube.
+
+
+
+
+Bild 4.2
+
+
+
+
+           - Jetzt müssen Sie das Kabel noch an der Systemeinheit anstecken.
+             Dabei ist es Ihnen (außer bei der Konsole; siehe oben) freigestellt,
+             welche der vorhandenen Schnittstellen 97 Sie verwenden.
+             Achtung: Falls Sie Fernanschlüsse (AFP-) verwenden wollen, bleiben die
+                      entsprechenden Schnittstelle 97-Anschlüsse frei.
+                      (siehe Kapitel 5)
+
+
+Beachten Sie bitte auch die Einstellempfehlungen für die verschiedenen Drucker
+im Kapitel 10 !
+
+Die angeschlossenen Geräte werden dann - mit Ausnahme der Tastaturbelegung
+der Konsole, die während der Installation des Betriebssystems festgelegt wird -
+unter der Kennung ’admin’ konfiguriert. Diese Arbeiten sind unter Punkt 7
+und 9.2 ausführlich beschrieben.
+
+Wenn Sie keine Fernanschlüsse einrichten wollen, schließen Sie bitte die
+Abdeckung an der Rückseite der Systemeinheit. Hängen Sie sie dazu oben ein
+und drücken Sie unten dagegen, bis die Verschlußfedern einrasten (Bild 4.3).
+
+
+
+
+                                                               Bild   4.3
+
+Ansonsten gehen Sie zum Kapitel 5.
+Nun zum eigentlichen Anschluß:
+
+-Sowohl Systemeinheit als auch Bedieneinheit und Drucker müssen ausgeschaltet
+ sein.
+
+-Jetzt können Sie die Verbindungsleitungen einstecken.
+ Denken Sie auch daran, die Stecker zu sichern.
+
+Beachten Sie bitte auch die Einsteil-Empfehlungen für die verschiedenen Drucker
+im Kapitel 10.
+
+Schließen Sie nun die Abdeckung an der Rückseite der Systemeinheit. Hängen Sie
+sie dazu oben ein und drücken Sie unten dagegen, bis die Verschlußfedern
+einrasten.
+
+Lesen Sie unbedingt das Kapitel 6 Vorbereitungen zur Software-Installation!
+Danach können Sie mit der Installation des SINIX-Betriebssystems beginnen (Ka­
+pitel 7).
+6   Vorbereitungen zur Software-Installation
+********************************************
+
+
+
+
+6.1 Disketten
+
+
+Die Disketten werden zum Einrichten des Systems und zur Datensicherung benutzt.
+
+
+
+
+Behandlung von Disketten:
+
+
+
+
+ •   Nur an den Ecken anfassen.
+ •   Ungeschützte Oberfläche nicht berühren.
+ •   Immer in der Schutzhülle aufbewahren.
+ •   Niemals biegen oder falten.
+
+
+
+
+ •   Nicht Sonnen- oder Wärmeeinwirkung aussetzen.
+ •   Lagertemperatur einhalten: min. + 10C, max. 50C.
+ •   Von magnetischen Gegenständen fernhalten.
+ •   Keine Reinigungsmittel verwenden.
+
+
+
+
+ •   Nur mit weichem Filzstift auf einem Etikett beschriften.
+ •   Niemals bei aufgeklebtem Etikett mit spitzem Bleistift
+     oder Kugelschreiber beschriften.
+ •   Nicht auf der Diskette radieren.
+ •   Keine Büroklammern verwenden.
+
+
+
+
+Bild 6.1
+Mechanischer Schreibschutz
+
+Eine Diskette ist schreibgeschützt, wenn die Schreibkerbe überklebt ist.
+Mit Ausnahme von SINIXO sind alle mitgelieferten Disketten gegen Überschreiben
+geschützt.
+
+
+
+
+           Nicht                   Schreibgeschützt
+           schreibgeschützt
+
+
+
+Bild 6.2
+
+
+
+
+Disketten einlegen
+
+- Diskette (Etikett links oben, d.h. zum Verriegelungshebel hin gerichtet) bis
+  zum Anschlag in das Diskettenlaufwerk einschieben.
+- Laufwerk mit Verriegelungshebel schließen.
+
+
+
+
+ACHTUNG
+Die Diskette darf nicht entnommen werden, solange die Zugriffsanzeige am
+Diskettenlaufwerk leuchtet (Bild 6.3).
+Hinweis:
+
+Grundsätzlich sind Disketten, die mit dem tar-Kommando (siehe dazu SINIX Buch 1)
+erstellt wurden, zwischen PC-MX und PC-MX2 kompatibel; d.h. sie
+können sowohl auf dem PC-MX als auch auf dem PC-MX2 verwendet werden.
+Disketten, die ein Filesystem enthalten ( mount-Kommando; SINIX Buch 1) können
+jedoch nicht ausgetauscht werden.
+Wenn Sie neue Disketten beschreiben wollen, so ist es ratsam, sie auf dem PC
+zu formatieren, auf dem sie am häufigsten benutzt werden. Da die Anordnung der
+Sektoren in beiden Systemen verschieden ist, benötigen beide Systeme für Zu­
+griffe auf fremdformatierten Disketten erheblich länger.
+
+
+
+
+6.2 Tastaturbedienung und Zeichenerklärung
+
+
+
+
+Die Tastatur ist in 3
+Felder unterteilt:
+Schriftzeichen, Ziffern-
+und Funktionstasten
+
+
+Schriftzeichen
+
+- Tasten für alphanumerische Zeichen, Interpunktionszeichen und Sonderzeichen
+- Zwischenraumtaste (Langtaste SPACE, unterhalb der Zeichentasten)
+- SHIFT- und LOCK-Taste
+  SHIFT: Umschalttaste für die obere Ebene der doppelt belegten Tasten.
+  LOCK: Umschalt-Feststelltaste (lösen mit SHIFT-Taste)
+
+Hinweis
+Die Tastatur arbeitet wie die einer elektrischen Schreibmaschine. Bei ein­
+maliger Betätigung wird das Zeichen einmal erzeugt, bei Dauerbetätigung wird
+das Zeichen wiederholt geschrieben. Diese Wiederholfunktion kann vom Anwender­
+programm gesperrt werden.
+
+
+
+Funktionstasten
+
+Funktionstasten können, abhängig vom Anwenderprogramm, unterschiedliche Funk­
+tionen haben. Diese sind der jeweiligen Programmbeschreibung zu entnehmen.
+Den beschriebenen Tasten sind feste Funktionen zugeordnet:
+CAPS   Bei nicht aktiver SHIFT- bzw. LOCK-Taste werden Buchstaben als Groß­
+       buchstaben erzeugt. Die Anzeige in der Taste leuchtet.
+
+E5C    Mit einer oder mehreren Folgetasten wird ein Steuerzeichen bzw. eine
+       Steuerzeichenfolge abgesetzt. Die Auswertung dieser Steuerzeichen ist
+       anwendungsabhängig.
+
+CTRL   Die Folgetaste bekommt eine Steuerzeichenfunktion. Die Auswertung
+       ist anwendungsabhängig.
+
+ x     Das letzte eingegebene Zeichen wird gelöscht. (In bestimmten System­
+       zuständen wird diese Funktion nicht unterstützt).
+       Die Eingabe wird beendet. (Es gibt jedoch Anwendungen, die diesen
+       Eingabeabschluß nicht benötigen).
+
+ CH    Umschalten zwischen nationalem und internationalem Zeichenvorrat.
+
+CODE   INT-Anzeige leuchtet bei eingeschaltetem internationalen Zeichenvor­
+       rat. Wird zwischen internationalem und deutschem Zeichenvorrat um­
+       geschaltet, werden die zwischen diesen Zeichenvorräten unterschied­
+       lichen Zeichen aktualisiert.
+       Achtung: Die Umschaltfunktion der Taste kann auch per Anwenderprogramm
+       erfolgen, bzw. gesperrt werden. Das Anwenderprogramm kann aber auch
+       beliebige andere Zeichenvorräte laden, so daß diese Taste lokal nur
+       eingeschränkt verwendbar ist.
+
+ .,     Die Taste ist abhängig von der CH-Code-Taste. Im internationalen
+        Zeichenvorrat (Anzeige leuchtet) ist der Punkt wirksam. Bei nationalem
+        Zeichenvorrat wirkt das Komma.
+
+
+
+
+                                 Zeichenerklärung
+
+In dieser Anleitung wird eine Taste durch <> gekennzeichnet,
+z.B.: <A>, <END>, < > (Leertaste),...
+
+Eine Zeichenkette wird in Hochkomma dargestellt, z.B. ’Großmutter'. Tipp­
+fehler bei der Eingabe werden mit der < x > Taste korrigiert, und eine Ein­
+gabewiederholung wird durch Drücken der <DEL> Taste möglich. Bei Eingabe­
+wiederholungen muß die gesamte Eingabe wiederholt werden. Eine Eingabe muß
+grundsätzlich mit der Taste <-*-*> = <CR> abgeschlossen werden.
+
+
+Für den Fall, daß Sie länger als 10 Minuten nichts auf der Tastatur eingeben
+oder nichts vom System ausgegeben wird, wird der Bildschirm dunkelgesteuert.
+Durch Drücken irgendeiner Taste wird der Bildschirm wieder hell.
+
+
+Die Standardausgabe erfolgt auf dem Bildschirm. Wurden die eingegebenen Zeichen
+erfolgreich bearbeitet und sind weitere Zeicheneingaben vom System zugelassen,
+gibt das System ein Bereitschaftszeichen (z.B. $ in einer Benutzerkennung oder
+ff in root) aus.
+Eine Ausgabe am Bildschirm wird wie folgt dargestellt:
+
+                                   Viel Erfolg!
+7  Einlesen des SINIX-Betriebssystems
+y-+-*-****#■***#********##**##*****##*#*
+
+
+Sie erhalten das SINIX-Betriebssystem auf 8 Disketten:
+  SINIXO, SINIX1, SINIX2, SINIX3, SINIX4, SINIX5, SINIX6 und SINIX7
+
+
+    1. )   Der Netzschalter an der Vorderseite der Systemeinheit muß eingeschaltet
+            sein, d.h. nach oben gedrückt.
+
+    2. )   Drehen Sie den Helligkeitsregler am Monitor nach vorne und damit auf
+            volle Helligkeit.
+
+    3. )   Schalten Sie den ersten Bildschirmarbeitsplatz (Konsole) ein und
+            schieben Sie dann sofort die Diskette SINIXO (Etikett links oben, beim
+            Verriegelungshebel) bis zum Anschlag in das Laufwerk. Schließen Sie
+            die Verriegelung (Bild 6.3).
+
+
+
+
+           In der Systemeinheit läuft nun ein Selbsttest ab. Der positive Ab­
+           schluß des Selbsttests wird am Bildschirm wie folgt gemeldet:
+
+
+                   testend
+
+
+
+           Als nächstes wird die Information von der Diskette in den Speicher
+           geladen.
+
+    4.)    Es erscheint die Meldung:
+
+                   load text + data
+
+                   SINIX-M-C V2.0 (Rev. 249)
+         Dann erscheint der Begrüßungsbildschirm:
+
+                 INSTALLATION EINES SINIX-SYSTEMS
+
+                 Herzlich willkommen zur Selbstinstallation Ihres
+                         SINIX-Systems
+
+                 Wird auf diesem Rechner zum ersten Mal ein
+                 SINIX-Betriebssystem installiert?
+
+                 Antworten Sie mit (j/n): -
+                 (j=ja; n=nein)
+
+
+         Mit der Eingabe <j> <CR> wird die Installation   begonnen. Fahren Sie
+         in diesem Fall fort bei 5.
+
+         Mit der Eingabe <n> <CR> wird Ihnen Gelegenheit gegeben, vorhandene
+         Systemdateien von der Festplatte zu retten. Dabei werden Restoredis-
+         ketten erzeugt, (siehe SINIX Buch 1 und 2)
+
+
+  5.)    Sie erhalten nun folgende Ausgabe:
+
+                 **Etikett & Ladeprogramm eingerichtet
+
+         In den folgenden Minuten wird das SINIX-System auf Festplatte über­
+         tragen. Dabei wird eine Reihe von 15 Sternchen ausgegeben, die über
+         den Arbeitsfortschritt Auskunft geben.
+         Wenn alles richtig übertragen ist, wird ein Hinweisbildschirm
+         ausgegeben, er endet mit :
+
+                 *# Normal System Shutdown **
+                 Halt the processor
+
+
+
+Sollten bei der Installation Störungen auftreten, oder die beschriebenen Mel­
+dungen nicht erscheinen, so lesen Sie bitte im Kapitel 12 ’Fehlersuche’ nach.
+
+
+  6. )   Schalten Sie nun bitte den Bedienschalter an der Konsole aus; der
+         PC-MX2 wird abgeschaltet.
+
+  7. )   Die Diskette SINIXO muß jetzt entnommen werden, sonst beginnt das
+         System nach dem Einschalten wieder mit der Installation.
+
+  8. )   Ca. 30 Sekunden nachdem die Systemeinheit vollständig abgeschaltet
+          ist (Netzkontrollampe erlischt), Bedienschalter der Konsole wieder
+          einschalten.
+        Das Laden erfolgt jetzt von der Festplatte. An der Konsole erscheint
+        die Meldung:
+
+                testend
+
+                going to harddisk
+
+        und weitere System-Meldungen. Wenn dies nicht der Fall ist, dann
+        schauen Sie nach im Kapitel 12.4.
+
+ 9.)    Weiteres Einlesen des SINIX-Betriebssystems; mit den Disketten
+        Sinix 1 bis Sinix 5:
+        Folgen Sie den Anweisungen auf dem Bildschirm.
+
+
+
+
+        ACHTUNG: Entnehmen Sie eine Diskette erst dann aus dem Laufwerk,
+                 wenn Sie dazu aufgefordert werden und wenn die rote
+                 Zugriffsanzeige am Laufwerk erloschen ist.
+
+
+
+
+10.)    Nachdem SINIX5 eingelesen wurde, erscheint am Monitor eine Aufforderung,
+        den Tastaturtyp der Konsole anzugeben. Wählen Sie aus den vorhandenen
+        Tastaturbelegungen durch Betätigen der Leertaste < > die gewünschte aus.
+        Schließen Sie die Eingabe durch <CR> ab.
+
+11.)    Befolgen Sie nun die Anweisungen, die auf dem Bildschirm erscheinen,
+        um die Disketten SINIX6 und SINIX7 einzulesen.
+
+12. )   Danach erscheint folgende Meldung am Bildschirm:
+
+
+                Einrichten des Menuesystems...
+
+
+
+        Entnehmen Sie die Diskette Sinix 7, sobald die Floppyzugriffsanzeige
+        erloschen ist.
+
+
+
+                Wenn Sie vor der Installation des neuen Grundsystems die
+                RESTORE-Diskette angelegt, haben, müssen Sie sie jetzt einiesen.
+
+                Soll diese Diskette jetzt eingelesen werden (j/n) ?
+
+        Falls nötig, geben Sie bitte <j> und <CR> ein und folgen den Anweisun­
+        gen am Bildschirm.
+
+        Ansonsten antworten Sie bitte mit <n> <CR>.
+
+        Nun erscheinen noch einige System-Meldungen und schließlich der
+        Eröffnungsbildschirm. Damit ist die Installation des SINIX-Betriebs-
+        systems abgeschlossen.
+Alle zusätzlichen Softwareliefereinheiten können jederzeit eingelesen werden.
+Bitte beachten Sie die jeweilige Produktbeschreibung vor dem Einlesen genau.
+In den Menues können auch nicht installierte Software berücksichtigt sein !
+
+
+- Ausgangspunkt ist in jedem Fall der Eröffnungsbildschirm.
+
+- Auf die Frage nach der Benutzerkennung geben Sie bitte ’admin’ und <CR> ein.
+
+- Nun müssen Sie noch das Kennwort (’siemens’ falls noch nicht geändert), abge­
+  schlossen mit <CR>, eingeben.
+
+- Jetzt erscheint das Hauptmenue:
+
+
+                (main) SIEMENS PERSONAL-COMPUTER
+                       SINIX VERSION 2.0
+
+                          b - Bürofunktionen
+                          k - Kommunikationsfunktionen
+                          a - Archivfunktionen
+                          d - Dienstprogramme
+                          e - Entwicklungssysteme
+                          s - Systemverwaltung
+
+                Für jedes Menue gilt:
+                .<HELP>     gibt eine Bedienungsanleitung
+                <HELP> <CR> gibt Menueinformation
+
+                Terminal: console         aktuelles Datum und Uhrzeit
+
+                Bitte wählen!>
+
+
+- Geben Sie <s> und <CR> für Systemverwaltung ein.
+
+- Folgendes Menue erscheint:
+
+
+                (admin)           SYSTEMVERWALTUNG
+
+                          1 - Login-Administration
+                          s - Spool-Administration
+                          i - Installation von Softwareprodukten
+                          k - Konfigurierung des lokalen Systems
+                          p - Parametrisierung der Kommunikationsfunktionen
+                          m - Systemsicherung auf Magnetband-Kassette
+
+                Bitte wählen!>
+- Bitte geben Sie nun <i> und <CR> für Installation von Softwareprodukten ein.
+
+- Folgen Sie nun bitte den Anweisungen am Monitor und lesen Sie Ihre Software-
+  Einheiten ein.
+
+- Durch Drücken der Taste <CR> erscheint wieder das Systemverwaltungsmenue.
+
+
+
+
+Hinweis: Falls eine Software-Liefereinheit aus mehreren Disketten besteht, er­
+         folgt eine weitere Aufforderung am Monitor, wenn die nächste Diskette
+         eingelegt werden muß.
+         Entnehmen Sie eine Diskette erst dann, wenn die rote Zugriffsanzeige
+         am Laufwerk erloschen ist.
+
+
+
+- Wird versehentlich eine falsche Diskette eingelegt, so wird Ihnen das
+  gemeldet:
+
+
+                Falsche Diskette eingelegt
+
+
+- Mit der Taste <START> gelangen Sie wieder zum ersten Menuebildschirm in der
+  Benutzerkennung 'admin’, mit der Taste <END> kommen Sie wieder zum Eröffnungs­
+  bildschirm.
+Für die Systemverwaltung werden dem Administrator besondere Rechte einge­
+räumt. Er legt z.B. alle Benutzer der Anlage fest und vergibt an sie bestimmte
+Zugriffsrechte. Ferner sichert er die Anlage mit Hilfe von Kennworten gegen
+unerlaubten Zugriff.
+
+Alle Administrator-Aufgaben können menuegesteuert durchgeführt werden.
+
+
+
+Grundlegendes zu den Menues:
+
+- Nach der Eingabe der Benutzerkennung ’admin’ und des Kennwortes (siehe
+  Kapitel 9.1) erscheint der erste Menuebildschirm.
+
+- Mit verschiedenen Kommandos können Sie in andere Menues gelangen:
+
+
+       <•> und <HELP> Beschreibung der Menuehandhabung
+       <HELP>         Beschreibung der ausgewählten Funktion
+       <START>        erster Menuebildschirm
+       <END>          Beenden, Ausgang zum Eröffnungsbildschirm
+       <CR>           Ausführen der gewählten Funktion
+       <DEL> <CR>     voriges Menue
+
+
+- Es ist zu empfehlen, daß Sie sich mit .<HELP> zunächst die Bedienungsanleitung
+  auf den Bildschirm ausgeben lassen. Hierin finden Sie alle Kommandos, die zum
+  bedienen des Menues notwendig sind.
+
+- Sie können immer ein Menue nach dem anderen auswählen, d.h., Auswahlbuchstabe
+  und <CR> eingeben. Auch mehrere Auswahlbuchstaben von aufeinanderfolgenden
+  Menues, mit < > getrennt und mit <CR> abgeschlossen, können eingegeben werden.
+  Das ist insbesondere für geübte Bediener gedacht, die dadurch Zeit sparen.
+Das System ist vor unerlaubtem Zugriff durch Kennworte werksseitig geschützt.
+Sie lauten für ’root’ und ’admin’ jeweils: ’siemens’.
+Da mit Hilfe dieses Kennwortes das Betriebssystem und alle Benutzerdateien zer
+stört werden können, ist das Kennwort sofort zu ändern. Das Kennwort sollte
+notiert und an einem nicht für jedermann zugänglichen Ort deponiert werden.
+
+Kennwort ändern:
+
+- Geben Sie die Benutzerkennung ’admin’ und <CR> ein. Nach Aufforderung geben
+  Sie dann bitte auch das Kennwort ’siemens’ und <CR> ein.
+
+- Wählen Sie mit <d> und <CR> die Funktion Dienstprogramme aus.
+
+- Es erscheint nun ein neues Menue. Um ein Kennwort zu ändern, müssen Sie nun
+  <k> und <CR> eingeben.
+
+- Sie erhalten daraufhin folgende Ausgabe:
+
+
+                   Welchem Benutzer möchten Sie ein neues Kennwort geben?
+
+- Geben Sie nun ’admin’ oder ’root’, abgeschlossen durch <CR>, ein. Das System
+  fragt nun das neue Kennwort ab:
+
+
+                   Neues Kennwort:
+
+- Geben Sie das neue Kennwort ein und schließen Sie es mit <CR> ab.
+
+
+                   Neues Kennwort wiederholen:
+
+- Geben Sie jetzt das Kennwort nochmals ein und beenden Sie mit <CR> die
+  Eingabe.
+
+- Um wieder zum Eröffnungsbildschirm zu kommen, drücken Sie bitte die Taste
+  <END>.
+
+
+Hinweis:   Weitere Bedienungshinweise entnehmen Sie bitte dem Manual
+           SINIX BUCH 2.
+9.2 Konfigurierung des lokalen Systems
+
+
+Ausführlichere Informationen über die Konfigurierung finden Sie im
+SINIX Buch 2 V2.0 Kapitel 5 ’Menüs für den Systemverwalter’.
+
+Die Konfigurierung des Systems im Grundausbau kann vollständig unter Menue-
+führung ’admin’ erfolgen. Konsole und Streamer sind fest konfiguriert.
+
+- Gehen Sie vom Eröffnungsbildschirm aus ( drücken Sie dazu falls nötig <END> ).
+
+- Geben Sie ’admin’ <CR> und das Kennwort ein. Sie befinden sich jetzt im
+  Hauptmenue.
+
+- Durch <s> <CR> wählen Sie die Systemverwaltung.
+
+- Im folgenden Menue wählen Sie <k> <CR> für Konfigurierung.
+
+- Für die lokale Konfigurierung betätigen Sie nochmals <k> <CR>.
+
+- Bestätigen Sie die anschließende Frage mit <j>.
+
+1 - Vergleichen Sie nun die Rückansicht Ihrer Systemeinheit mit den Abbildungen
+    in Bild 9.1. Kreuzen Sie die entsprechende Abbildung an.
+
+2 - Bringen Sie nun die angekreuzte Abbildung auf den Bildschirm, indem Sie
+    < > <CR> eigeben, bis diese erscheint. Bestätigen Sie mit <CR>.
+
+3 - Auf dem nun erschienenen Formular können Sie, wenn gewünscht, AFP-Anschlüsse
+    konfigurieren.
+
+    Kein AFP-Anschluß gewünscht: Gehen Sie mit <CR> weiter zum nächsten Formular.
+
+    AFP-Anschluß gewünscht:   -   Bewegen Sie die Schreibmarke auf das (die) ent­
+                                  sprechende^) Anschlußfeld(er) und betätigen
+                                  Sie die Leertaste. Wenn Sie gewählt haben, be­
+                                  stätigen Sie mit <CR>.
+                              -   Das nun erscheinende Formular fragt ab, welche
+                                  Geräte Sie zusätzlich zum Terminal an den je­
+                                  weiligen AFP-Anschluß anschließen möchten.Ge­
+                                  hen Sie vor, wie unter Punkt 4 beschrieben.
+                              -   Auf dem folgenden Formular werden Druckertyp
+                                  und Tastaturtyp erfragt. Gehen Sie vor wie
+                                  unter Punkt 5 beschrieben.
+
+4 - In diesem Formula erfolgt die Belegung der restlichen Anschlüsse.
+    Setzen Sie die Schreibmarke auf die Anfangsposition des Anschlusses, dessen
+    Belegung Sie verändern möchten. Durch Betätigung der Leertaste können Sie
+    wählen zwischen TERMINal, PRINTeR und = r = = = (frei).
+    Dies gilt nur für Anschlüsse über Schnittstelle 97 (und AFP).
+  - Bestätigen Sie mit <CR>.
+   Der nächste Bildschirm gibt die Möglichkeit, die Druckertypen und die Tasta­
+   turtypen, gemäß den angeschlossenen Geräten festzulegen.
+   Mit Hilfe der Tabulatortasten bewegen Sie die Schreibmarke von einem Anschluß-
+
+       Druckertyp: 9001            Tastaturtyp: inter    (International)
+                   9001-b                       deut     (Deutsch)
+                   9004                         belgaz   (Belgisch-azerty)
+                   9013                         belgqw   (Belgisch-qwerty)
+                                                daen     (Dänisch)
+                                                franz    (Französisch)
+                                                ital     (Italienisch)
+                                                schwed   (Schwedisch)
+                                                schwz    (Schweizerisch)
+                                                span     (Spanisch)
+                  Wahl bestätigen Sie bitte mit <CR>.
+
+ - Es erscheint jetzt ein Informationsbildschirm zum Thema Drucker.
+
+6 - Der nächste Bildschirm zeigt die von Ihnen vorgenommene Konfiguration. Be­
+    stätigen Sie diese mit <j>, dann tritt sie in Kraft, dementieren Sie mit
+    <n>, dann bleibt die alte Konfiguration bestehen.
+
+7 - Der nun erscheinende Bildschirm gibt Ihnen die Möglichkeit, die Art der
+    ersten Druckseite zu bestimmen (mit oder ohne Kopfseite). Geben Sie <1>
+    oder <2> oder <3>, abgeschlossen mit <CR> ein. Dies wird für jeden an­
+    geschlossenen Drucker abgefragt.
+
+8 - Die neue Gesamtkonfiguration wird ausgegeben und tritt in Kraft.
+
+
+
+
+Hinweis: Die Belegung eines Feldes können sie nur ändern, wenn sich der Cursor
+         an der ersten Schreibstelle befindet. Verwenden Sie daher nur die
+         Tabulatortasten.
+
+Die Konfigurierung der RS-232-Schnittstellen ist nur im Expertenmodus möglich
+(siehe Kapitel 14 ’Expertenmodus’).
+Die zur Auswahl stehenden Rückansichten der Systemeinheit
+Sowohl Disketten als auch Magnetband-Kassetten für den Streamer müssen vor der
+ersten Verwendung formatiert werden. Dies kann unter Menue-Führung erfolgen.
+
+- Ausgangspunkt ist der Eröffnungsbildschirm.
+
+- Geben Sie 'admin' <CR> und das Kennwort ein. Jetzt wird das unter 9
+  beschriebene Hauptmenue ausgegeben.
+
+- Geben Sie <d> <CR> für Dienstprogramme ein. Das nun erscheinende Menue ist
+  ebenfalls unter 9 beschrieben.
+
+- Mit <f> <CR> wählen Sie jetzt 'Formatieren'. Am Bildschirm erscheint folgende
+  Abfrage:
+
+
+                Möchten Sie eine Diskette formatieren (j/n) ?
+
+
+- Um eine oder mehrere Disketten zu formatieren geben Sie <j> <CR> ein und
+  führen die nun am Bildschirm erscheinenden Anweisungen aus.
+
+- Um Magnetbandkassetten zu formatieren beantworten Sie diese Frage bitte
+  mit <n> <CR> und folgen den Anweisungen am Bildschirm.
+
+  Eine Formatierung dauert ungefähr 3 Minuten.
+
+
+
+
+Hinweise
+
+- Die Magnetband-Kasette muß vor der Benutzung ca. 4 Stunden aklimatisiert
+  werden. Anderenfalls ist damit zu rechnen, daß Sie die Formatierung mehr­
+  mals starten müssen.
+
+- falls Sie sowohl PC-MX als auch PC-MX2 verwenden:
+
+  Sie können Disketten zwischen dem PC-MX und PC-MX2 beliebig austauschen, wenn
+  diese mit dem tar- oder far-Kommando beschrieben wurden.
+  Disketten, die ein Filesystem enthalten (siehe mount-Kommando SINIX Buch 1),
+  können jedoch nicht ausgetauscht werden.
+
+  Beachten Sie jedoch, daß die Disketten auf dem System, auf dem sie formatiert
+  wurden, eine wesentlich kürzere Zugriffszeit haben.
+  Sie sollten daher die Disketten soweit möglich auf dem System formatieren,
+  auf dem Sie sie hauptsächlich verwenden.
+9.4 Datum und Uhrzeit ändern
+
+
+
+- Ausgangspunkt ist der Eröffnungsbildschirm.
+
+- Geben Sie ’admin’ <CR> und das Kennwort ein. Damit kommen Sie in das
+  Hauptmenue.
+
+- Wählen Sie <s> und <CR> für Systemverwaltung. Damit erscheint ein weiteres
+  Menue, aus dem Sie mit <k> <CR> das Konfigurierungs-Menue wählen.
+
+- Nun können Sie mit <u> <CR> die Funktion ’Systemuhr stellen’ wählen.
+
+- Geben Sie nun die betreffenden Werte ein. Die zulässigen Bereiche sind ange­
+  geben; die Schreibmarke springt automatisch zur nächsten Position.
+
+- Schließen Sie die gesamte Eingabe mit <CR> ab. Damit ist die Uhr gestellt.
+10   Einstellempfehlungen für Drucker
+####■****#***#*****#*#****#***#**#*#*#
+
+
+
+Wenn Sie Drucker in Betrieb nehmen wollen, dann gehen Sie bitte nach den
+Anweisungen in dessen Betriebsanleitung vor.
+
+Die im folgenden genannten Einstellungen sind Standardwerte, wie sie für die
+übliche Betriebsart erforderlich sind.
+Sollten Sie jedoch abweichende Funktionen oder Betriebsarten benötigen, so
+entnehmen Sie die dafür nötigen Einstellungen bitte der Betriebsanleitung des
+jeweiligen Druckers.
+
+
+
+
+10.1 Drucker 9001
+
+
+        SCHALTER          1   2   3  4   5   6   7  8         9     0
+        STELLUNG          Ein Ein Ein Ein Ein Aus Aus       Aus    Ein   X
+
+Bei Gerät 9001 80-spaltig:        X = Ein
+Bei Gerät 9001 132-spaltig:       X = Aus
+
+Eingestellt sind damit folgende Parameter:
+
+        ASCII-Zeichensatz
+        Papierbewegung: CR = CR; LF = LF
+        ungerade Parität
+        Formularlänge 12 Zoll
+        Zeilenvorschub 1/6 Zoll
+
+
+
+
+10.2 Drucker 9004
+
+
+Schalter auf der Rückseite:
+
+TEST:           Aus           (nicht gedrückt)
+BAUDRATE:       1200
+                                     SCHALTER    1   2  3  4
+                                     STELLUNG    Ein Ein Aus     Aus
+
+PROTOKOLL:      ETX/ACK
+                DC1/DC3
+                 1 Stopbit
+                7 Bit
+                 ungerade Parität
+
+                   SCHALTER      1   2  3   4   5  6   7    8
+                   STELLUNG      Aus Aus Ein Aus Aus Ein   Aus    Aus
+Schalter an der Vorderseite:
+
+
+Zeichenvorrat: ASCII                    SCHALTER         1      2      3      4
+                                        STELLUNG         Ein    Aus    Aus    Aus
+
+
+Typenrad:          Standard             SCHALTER         1      2      3      4
+                                        STELLUNG         Ein    Aus    Aus    Aus
+
+
+Formularlänge:     12 Zoll              SCHALTER         1      2      3      4
+                                        STELLUNG         Aus    Ein    Aus    Aus
+
+
+
+
+10.3 Drucker 9013
+
+
+Drehschalter links:
+
+        -Zeilenabstand:                 3         Vorschub 1/6 Zoll
+        -Formularhöhe:                  7         12 Zoll
+        -Zeichenteilung:                1         10 Zeichen/Zoll
+        -Zeichenvorrat:                 1         Datenqualität
+
+
+Konfigurationsschalter:
+
+-Druck Parameter             SCHALTER       1      2      3      4      5      6     7     8
+                             STELLUNG       Aus    Ein    Aus    Aus    Aus    Aus   Ein   Aus
+
+
+-Schnittstellenpar. 1        SCHALTER       1      2      3      4      5      6     7     8
+                             STELLUNG       Ein    Aus    Ein    Ein    Aus    Aus   Aus   Aus
+
+
+-Schnittstellenpar. 2        SCHALTER       1      2      3      4      5      6     7     8
+                             STELLUNG       Aus    Aus    Aus    Aus    Aus    Aus   Aus   Aus
+
+
+-Geräteparameter 1           SCHALTER       1      2      3      4      5      6     7     8
+                             STELLUNG       Aus    Aus    Aus    Aus    Ein    Aus   Aus   Aus
+
+
+-Geräteparameter 2           SCHALTER       1      2      3      4      5      6     7     8
+                             STELLUNG       U      U      U      U      Aus    Aus   Ein   Ein
+
+                             U: unterschiedliche Werkseinstellung; bitte nicht
+                                verändern !
+11   Der Magnetband-Streamer
+a*#*##****#*##*******#******
+
+
+11.1 Anschluß
+
+
+Dieses Gerät    benötigt zwei Anschlüsse: Den Netzanschluß und die Verbindung
+                                          zur Systemeinheit.
+
+- Stellen Sie zunächst den Magnetband-Streamer so auf, daß Sie die Rückseite
+  leicht einsehen und erreichen können.
+
+- Schalten Sie zunächst den Streamer aus, indem Sie den Netzschalter nach
+  links drücken (siehe unten).
+
+
+
+
+Bild 11.1
+
+- Stecken Sie nun das Verbindungskabel zur Systemeinheit am Streamer ein (siehe
+  oben) und sichern Sie den Stecker mit den beiden Schrauben.
+
+- Stecken Sie die Verbindungsleitung auch an der Systemeinheit ein (siehe Bild
+  5.1) und sichern Sie den Stecker mit den beiden Schrauben.
+
+- Stecken Sie jetzt das Netzkabel erst am Streamer (Bild oben) und dann am Netz
+  an.
+
+  WICHTIG: Magnetband-Streamer, Systemeinheit und Konsole müssen in dieselbe
+           Mehrfachsteckdose eingesteckt werden.
+
+- Sie können den MB-Streamer jetzt an seinen vorgesehenen Platz stellen; der
+  Anschluß des Gerätes ist abgeschlossen.
+11.2 Bedienung
+
+
+Schalten Sie als erstes das Gerät ein. Dadurch wird ein Selbsttest gestartet,
+dessen positiver Ausgang durch eine grün leuchtende LED an der Vorderseite
+(Bild 11.2) angezeigt wird. Ist eine Kassette eingelegt, so wird das Band
+zunächst gespannt. Dazu wird es vor- und zurückgespult. Schließlich positio­
+niert das Gerät den Magnetkopf, wobei es ebenfalls noch einigemale vor- und
+zurückspult. Jetzt ist der Magnetband-Streamer bereit. In der Regel wird er
+eingesetzt, um Dateien von der Festplatte zu sichern (siehe SINIX-Buch 2).
+
+Wichtig: Neue Magnetbandkassetten müssen vor der ersten Verwendung formatiert
+         werden. Dies ist im Kapitel 9.3 beschrieben.
+
+
+Noch einige kurze Bemerkungen zur Behandlung der Magnetband-Kassetten:
+
+         Berühren Sie das Band niemals !
+
+         Bewahren Sie die Kassetten nur in den dafür vorgesehenen Hüllen auf !
+
+         Schützen Sie die Magnetband-Kassetten vor zu hohen und zu niedrigen
+         Temperaturen sowie vor jeder Einwirkung von Magnetfeldern.
+
+         Wird ein Band neu eingelegt, muß es vorher gespannt werden.
+         Dies erfolgt ausgehend vom Hauptmenue über:
+                               (main) s = Systemverwaltung
+                                       m = Systemsicherung auf Magnetband-Kasette
+                                       t = Magnetbandstraffung
+
+
+
+
+Einlegen einer Kassette
+
+- Öffnen Sie den Verschlußdeckel des Kassettenschachtes indem Sie die Ver­
+  schlußtaste am Deckel betätigen (siehe unten). Drücken Sie nun die Klappe
+  nach unten, bis sie horizontal steht.
+
+
+
+
+             Bild 11.2
+- Nehmen Sie die Kassette mit der Metallplatte nach unten und mit der Band­
+  öffnung nach rechts in die Hand. Schieben Sie sie bis zum Anschlag in den
+  Schacht ein. Die Kassette sollte jetzt noch etwa 5 Millimeter über das
+  Gehäuse vorstehen.
+
+
+
+
+Bild 11.3
+
+
+- Schließen Sie nun das Fach. Dabei wird die Kassette vollständig eingefahren.
+  Der Verschluß muß einrasten.
+
+- Das weitere Vorgehen zur Datensicherung entnehmen Sie bitte SINIX Buch 1 und
+  SINIX Buch 2.
+
+
+
+
+Entnehmen einer Kassette
+
+- Warten Sie auf jeden Fall, bis das Band gestoppt hat.
+
+- Drücken Sie auf die Verschlußtaste und öffnen Sie den Deckel.
+
+- Entnehmen Sie die Kassette und schließen Sie das Fach wieder.
+12   Fehlersuche
+****************
+
+
+
+12.1 Fehler beim Einschalten des PC-MX2
+
+
+
+12.1.1 Bedieneinheit überprüfen
+
+
+Jede Bedieneinheit kann ohne Anschluß an die Systemeinheit getestet werden.
+
+
+
+- Schalten Sie den PC am Bedienschalter der Konsole aus.
+- Ziehen Sie das Verbindungskabel zwischen Systemeinheit und der zu testenden
+  Bedieneinheit heraus.
+- Schalten Sie das Terminal am Bedienschalter ein.
+
+Leuchtet die grüne Netzkontrollanzeige an der Vorderseite?
+
+   Grüne Netzkontrollanzeige leuchtet nicht:
+      Ist das Netzkabel eingesteckt?
+
+         Netzkabel ist nicht eingesteckt:
+          - Bedieneinheit ausschalten; Netzkabel einstecken
+          - Bedieneinheit einschalten.
+
+         Netzkabel ist eingesteckt:
+            Ist die Steckdose in Ordnung?
+
+               Steckdose ist in Ordnung:
+                  Ihre Bedieneinheit ist defekt;
+                  benachrichtigen Sie Ihre Service-Stelle.
+
+               Steckdose ist defekt:
+                  - Bedieneinheit ausschalten; Fehler beheben
+                  - Bedieneinheit einschalten.
+
+   Grüne Netzkontrollanzeige leuchtet:
+      Ist eine Fehlermeldung in der 25. Zeile (unten) erschienen?
+
+         Keine Fehlermeldung in der letzten Bildschirmzeile:
+            Bedieneinheit ist in Ordnung.
+            - Schalten Sie die Bedieneinheit ab und schließen
+              Sie sie wieder an die Systemeinheit an.
+         Fehlermeldung in der letzten Bildschirmzeile:
+            Notieren Sie sich die Meldung, die in der letzten Zeile des
+               Bildschirms erschienen ist.
+            - Schalten Sie die Bedieneinheit ab.
+            Steht die Meldung ’ERROR 7’ in der letzten Bildschirmzeile?
+Meldung ’ERROR 7’ in der letzten Bildschirmzeile:
+   Ist die Tastatur richtig angeschlossen und der Stecker
+      mit der Sicherungsfeder gesichert?
+
+      Tastatur nicht richtig angeschlossen:
+         - Schalten Sie die Bedieneinheit aus.
+         - Schließen Sie die Tastatur richtig an .
+         - Sichern Sie den Stecker.
+         - Schalten Sie Ihre Bedieneinheit wieder ein.
+         Ist wieder eine Fehlermeldung erschienen?
+
+            Erneute Fehlermeldung:
+               Ihre Bedieneinheit ist defekt;
+               benachrichtigen Sie Ihre Service-Stelle.
+
+           Keine neue Fehlermeldung:
+              Bedieneinheit ist in Ordnung.
+              - Schalten Sie die Bedieneinheit aus und
+                schließen Sie sie an die Systemeinheit an.
+              - Schalten Sie die Bedieneinheit wieder ein.
+
+      Tastatur richtig angeschlossen und Stecker gesichert:
+         Ihre Bedieneinheit ist defekt;
+         benachrichtigen Sie Ihre Service-Stelle.
+
+Alle anderen Fehlermeldungen außer ’ERROR 7’:
+   Ihre Bedieneinheit ist defekt;
+   benachrichtigen Sie Ihre Service-Stelle.
+12.1.3 Systemeinheit überprüfen
+
+
+
+- Schließen Sie die Konsole an (ohne Konsole läßt sich die Systemeinheit nicht
+  einschalten).
+- Stellen Sie sicher, daß der Wippschalter an der Vorderseite der Systemeinheit
+  nach oben gekippt ist (Stellung EIN).
+- Schalten Sie nun die Konsole ein.
+Leuchtet die grüne Netzkontrollanzeige an der Systemeinheit?
+
+   Grüne Netzkontrollanzeige leuchtet nicht:
+      Ist die Konsole richtig angeschlossen und das Netzkabel gesteckt?
+
+      Netzkabel ist nicht gesteckt:
+         - Schalten Sie Konsole und Systemeinheit mit den Wippschaltern aus.
+         - Stecken Sie das Netzkabel ein.
+         - Schalten Sie jetzt Systemeinheit und Konsole wieder ein;
+           die Systemeinheit sollte mit dem Selbsttest beginnen.
+
+      Netzkabel ist gesteckt:
+         Ist die Steckdose in Ordnung?
+
+            Steckdose ist in Ordnung:
+               Ist die Konsole richtig angeschlossen?
+
+                 Die Konsole ist richtig angeschlossen:
+                    Die Systemeinheit ist defekt;
+                    benachrichtigen Sie Ihre Service-Stelle.
+
+                 Die Konsole ist nicht richtig angeschlossen:
+                    - Schalten Sie Konsole und Systemeinheit aus.
+                    - Schließen Sie die Konsole richtig an.
+                    - Schalten Sie jetzt Systemeinheit und Konsole wieder ein;
+                      die Systemeinheit sollte mit dem Selbsttest beginnen.
+
+           Steckdose ist defekt:
+              - Schalten Sie die Konsole aus.
+              - Bringen Sie die Steckdose in Ordnung.
+              - Schalten Sie jetzt Systemeinheit und Konsole wieder ein;
+                die Systemeinheit sollte mit dem Selbsttest beginnen.
+
+  Grüne Netzkontrollanzeige leuchtet:
+     Leuchtet die rote Selbsttestlampe an der Systemeinheit? (Bild 12.1)
+
+        Rote Fehlerlampe leuchtet:
+           Schwerwiegender Fehler an der Systemeinheit;
+           - Notieren Sie die leuchtenden und nicht leuchtenden LED'   der
+             Leuchtkette (Zählweise von unten nach oben).
+           Benachrichtigen Sie Ihre Service-Stelle.
+
+        Rote Fehlerlampe leuchtet nicht:
+           Keine schwerwiegenden Fehler,
+           weitere Meldungen erfolgen in Klarschriftanzeige auf dem
+              Bildschirm der Konsole.
+12.2 Fehler beim Selbsttest
+
+
+
+Die Systemeinheit führt nach jedem Einschalten einen Selbsttest durch.
+Wenn während dieser Phase ein Fehler festgestellt wird, leuchtet an der
+Systemeinheit die rote Anzeige neben dem Netzschalter.
+Der Selbsttest dauert im Normalfall höchstens 30 Sekunden.
+
+Sie können nun nochmals den Selbsttest starten, indem Sie die Konsole aus­
+schalten und nach vollständigem Abschalten der Systemeinheit wieder einschalten,
+oder indem Sie den Rücksetzknopf drücken.
+
+
+
+Folgende Meldungen sind beim Selbsttest möglich:
+
+        testend                                    Selbsttest positiv beendet
+
+
+        no sys-floppy, going to harddisk           es wird von Platte geladen -
+                                                   die eingelegte Diskette ist
+                                                   aber keine Systemdiskette
+
+        sasiopen device 0 not ready                Platte 0 noch nicht bereit,
+        waiting for harddisk ready                 es wird versucht alle 4
+                                                   Sekunden von Platte zu laden
+
+        sasicmd: timeout occured opc=0             Platten/Floppy Kontroller
+                                                   (OMTI 5400) nicht bereit
+                                                   oder defekt
+12.4 Fehler beim Laden von Festplatte
+
+
+
+Die Anzeige ’SINIX 2.0   wird von Festplatte geladen’ erscheint nicht.
+
+- Schalten Sie den PC-MX2 an der Konsole aus, und schalten Sie ihn nach dem
+  vollständigen Abschalten wieder ein.
+  Sie können auch den Rücksetzknopf betätigen (’Laden durch Rücksetzknopf’).
+
+Wenn nach mehreren Versuchen noch nicht von Platte geladen werden kann, rufen
+Sie bitte bei der für Sie zuständigen Siemens-Niederlassung an.
+
+Erscheint am Monitor die Ausgabe ’sinix not found’, so wurde das Dateiverzeich­
+nis ’sinix’ auf der Festplatte gelöscht oder verändert.
+Verständigen Sie in diesem Fall den Systemverwalter oder den Siemens-Kunden­
+dienst, um das Dateiverzeichnis zu restaurieren.
+14. Expertenmodus
+a-*******####**###
+
+
+
+Die Konfigurierung des Systems im Grundausbau kann vollständig unter dem
+Admin Menue erfolgen (siehe SINIX Buch 2).
+Lediglich die Schnittstellen RS 232 und das DFü-Board müssen im Expertenmodus
+konfiguriert werden.
+
+
+
+
+Hier einige Stichpunkte für Experten:
+
+  Eintrag in /dev          Kommando   /etc/mknod   name   c   major minor
+
+  name :   frei wählbar
+
+  c    : Steht für zeichenorientiertes Gerät (im Gegensatz zu b für block­
+         orientiert) bei Schnittstellen RS 232 immer c.
+
+  major:   Major-Nummer; sie bezeichnet die Ein/Ausgabeprozessoren      und
+           ist beim PC-MX2 immer 6.
+
+  minor:   Minor-Nummer; sie bezeichnet einen Anschluß im Anschlußfeld.
+           Ist die Nummer ein oder zweistellig, so sind einige tty Parameter
+           festgelegt.     (minor 0-5 10-15)
+                           38 000 bit/sec    7 Bit ungerade Parität
+           Wird die minor Nummer mit einem Offset von 100 eingerichtet, so
+           können die tty Parameter verändert werden (siehe SINIX Buch 1 tty)
+                         (minor 100-105 110-115)
+
+
+
+
+Die Bilder 14.1 und 14.2 auf der nächsten Seite geben einen üüberblick über
+die Minor Nr.. Bild 14.2 zeigt eine Sonderausführung mit 2 SERAD D279.
+Bild 14.1
+
+
+
+
+Bild 14.2
+
+
+Drucker = Minor + 100   (z.B. 6,115)
+xx wird fortlaufend durchnummeriert
+15      Pflegeanleitung
+#*##**#**■**#*******#**#
+
+
+
+Die Pflege ist regelmäßig vom Benutzer durchzuführen. Vor der Durchführung von
+Reinigungsarbeiten ist der Netzstecker zu ziehen.
+
+
+
+15.1       Pflege der Systemeinheit
+
+
+Zur Reinigung der Gehäuseteile ist das Abwischen mit einem trockenen Tuch
+ausreichend. Bei stark verschmutzter Oberfläche kann ein feuchtes Tuch
+verwendet werden, das in lauwarmes Wasser mit mildem Spülmittel getaucht
+und gut ausgewrungen wurde. Außerdem muß der Luftfilter des Kühlgebläses
+regelmäßig mit Hilfe eines Staubsaugers gereinigt werden (siehe Bild unten).
+
+
+
+
+15.2       Pflege der Bedieneinheit
+
+
+Für die Reinigung der Gehäuse gilt das unter 13.1 für die Systemeinheit gesagte.
+
+Außerdem können zur Reinigung der Tastatur Desinfektionstücher (z.B. SAGROSEPT-
+Tücher, die in jeder Apotheke erhältlich sind) verwendet werden.
+Die Einwirkzeit darf jedoch 5 Minuten nicht überschreiten.
+
+ACHTUNG:              Lassen Sie diese Tücher nach Gebrauch
+                      auf keinen Fall auf dem Gehäuse liegen.
+
+Die Bildschirmfläche sollte ebenfalls in regelmäßigen Abständen gereinigt wer­
+den. Verwenden Sie dafür ein weiches, angefeuchtetes, nicht fuselndes Tuch und
+reiben Sie die Bildschirmfläche mit einem trockenen weichen Tuch nach.
+15.3    Pflege der Drucker
+
+
+Da Drucker eine aufwendige Mechanik enthalten und sich durch das Papier größere
+Mengen Staub im Inneren absetzen, ist eine regelmäßige Säuberung der Drucker
+unbedingt nötig.
+
+Einzelheiten entnehmen Sie bitte der jeweiligen Betriebsanleitung Ihres
+Druckers.
+
+
+15.4 Pflege des Magnetband-Streamers
+
+
+Bei diesem Gerät ist es nötig, den Magnetkopf in regelmäßigen Abständen zu
+reinigen. Die Abstände, in denen eine Reinigung nötig wird, richten sich nach
+        -der Betriebsdauer
+        -der Qualität der Magnetbänder
+        -den Umweltbedingungen.
+
+Als Richtlinie kann folgendes angegeben werden:
+
+        BETRIEB                         REINIGUNG
+        (8 Stunden täglich              täglich)
+        tägliche Sicherung              wöchentlich
+        wöchentliche Sicherung          monatlich
+
+Anmerkung: Reinigen Sie den Magnetkopf immer nach Verwenden eines neuen Bandes.
+           Grundsätzlich gilt: Lieber zu oft als zu selten!
+
+
+Zum Reinigen (Bild 15.2) benötigen Sie Isopropyl-Alkohol und Baumwoll-Stäbchen.
+Dies ist als Reinigungs-Set erhältlich.
+Wichtig: Verwenden Sie auf keinen Fall scharfe Gegenstände zum Magnetkopf­
+         reinigen. Dadurch könnte der Kopf beschädigt werden.
+
+
+
+
+                                                            (Bild 15.2)
+                                             J.'V            fG/Od
+& <%
+
+
+
+
+       l—
+ c\ '>
+       cl      /   u    ^   /    / v> * ^
+
+
+                                    3         -t        6
+
+
+
+                       /u J V / U / » ^ , ^
+
+
+
+
+                                ‘yv c 1 ^       VC
+                                                                     /e f c
+       L A *
+                                                            VC
+                                 ^*- ( f W          *
+                                                        s
+                        £   ‘k
+                                         Vervielfältigung dieser Unterlage
+                                         sowie Verwertung ihres Inhalts unzulässig,
+                                         soweit nicht ausdrücklich zugestanden.
+                                         Im Laufe der Entwicklung des Produktes
+                                         können aus technischen oder wirtschaftlichen
+                                         Gründen Leistungsmerkmale hinzugefügt bzw
+                                         geändert werden oder entfallen. Entspre­
+Herausgegeben vom Bereich Datentechnik   chendes gilt für andere Angaben in dieser
+Postfach 83 09 51, D-8000 München 83     Druckschrift.
+
+
+
+                                         Bestell-Nr. U2606-J-Z96-1
+Siemens Aktiengesellschaft               Printed in the Federal Republic of Germany
+                                         670 AG 6860.5 (840)
+

@@ -26,6 +26,7 @@ archive — not here.
 | [`ICM-3216/`](ICM-3216/) | National Semiconductor ICM-3216 (NS32016 UNIX System V; Z80 IOP + NCR5385 SCSI) | [mamedev/mame#15531](https://github.com/mamedev/mame/pull/15531) |
 | [`Opus-PM/`](Opus-PM/) | Opus Systems PM (108PM NS32016 / 110PM NS32032 coprocessor ISA cards; Opus5 UNIX System V) | [mamedev/mame#15542](https://github.com/mamedev/mame/pull/15542) |
 | [`PC532/`](PC532/) | PC532 (NS32532 UNIX workstation, Scolaro/Rand; boots NetBSD 1.5.3) | in mamedev (`pc532`) |
+| [`Siemens-PC-MX2/`](Siemens-PC-MX2/) | Siemens PC-MX2 (NS32016 Multibus SINIX multi-user system, 1985; boots SINIX V2.0) | in mamedev (`pcmx2`) + device work in progress |
 
 More machines will be added as their drivers land.
 
