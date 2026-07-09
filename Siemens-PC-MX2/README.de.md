@@ -88,8 +88,10 @@ Die Konsole des PC-MX2 ist nicht mit einem gewöhnlichen RS-232-Terminal
 kompatibel: SINIX steuert die Siemens 97801 mit einem proprietären Protokoll
 an, einschließlich vom Rechner heruntergeladener Tastaturtabellen.
 `terminal-97801/` enthält die 97801-ROM-Auslesungen (Programm,
-Zeichengenerator und K111-Tastaturcontroller), auf denen die in Arbeit
-befindliche MAME-Terminalemulation aufbaut. Siehe
+Zeichengenerator und K111-Tastaturcontroller) hinter dem MAME-Gerät `s97801`,
+einer voll funktionsfähigen Low-Level-Emulation, die die eigene Firmware des
+Terminals ausführt und als SINIX-Systemkonsole dient (der Anmelde- und der
+Installationsbildschirm oben werden über sie dargestellt). Siehe
 [`terminal-97801/README.md`](terminal-97801/README.md) (englisch).
 
 ## Handbücher (`docs/manuals/`)

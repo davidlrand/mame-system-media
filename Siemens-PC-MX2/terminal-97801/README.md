@@ -11,8 +11,9 @@ console.
 The terminal is a computer in its own right: a **SAB8031** microcontroller
 (Siemens' MCS-51, ROM-less, 12 MHz from a 24 MHz crystal) executing the D21/D26
 firmware EPROMs, an **SCN2672B** AVDC with an SCB2673-class attribute plane and
-the D23 character generator (512 glyphs), and a detached serial keyboard on the
-8031's on-chip UART; the fourth CPU architecture in a full PC-MX2 emulation.
+the D23 character generator (512 glyphs), an **SCN2661B** EPCI for the host
+serial link, and a detached serial keyboard on the 8031's on-chip UART; the
+fourth CPU architecture in a full PC-MX2 emulation.
 
 Board photos: [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_12.jpg),
 [`../docs/images/97801_board_DSCN4117.jpg`](../docs/images/97801_board_DSCN4117.jpg).
@@ -28,9 +29,21 @@ Board photos: [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_1
 
 ## MAME status
 
-A low-level 97801 terminal device (`s97801`) is in progress in the MAME dev
-tree, driven by these ROMs: CRT controller, character generation (including
-the D23 glyph-index remapping verified against SINIX's keyboard-swap
-sequences), and the K111 keyboard path. Until it lands, the PC-MX2 driver's
-serial console can be bridged to a host terminal for bring-up work, with the
-protocol caveats above.
+The `s97801` device is a **fully working low-level emulation** and is the
+SINIX system console: the SAB8031 runs its original D21/D26 firmware
+unmodified, driving the SCN2672B AVDC, the SCB2673-class attribute plane and
+the D23 character generator, with the SCN2661B EPCI carrying the host link (the
+SINIX `SS97` setting: 38400 baud, 7O1, XON/XOFF). SINIX boots to the
+installation dialog and on to the login screen through it (see the screenshots
+in the top-level [README](../README.md)), with the proprietary block-terminal
+protocol, the SGR attribute handling, the D23 glyph-index remapping, and the
+host-downloaded keyboard tables all reproduced.
+
+Input is MAME's natural keyboard. The detached keyboard's MCU is modelled
+behaviourally (it resolves shift, emits the 7-bit "Platz" codes, answers the
+status/identify commands, and rings the bell), so the K111 controller ROM
+(`p26361_k111_v1_3.d3`) is preserved here for reference and possible future
+full LLE rather than executed.
+
+Packaged as a generic RS-232 terminal, `s97801` can serve as the console for
+any MAME host, but its reason for being is the PC-MX2's SERAD port.

@@ -93,8 +93,11 @@ Storager/SERAD firmware dumps. Provenance notes in
 The PC-MX2's console is not RS-232-dumb-terminal compatible: SINIX drives the
 Siemens 97801 with a proprietary protocol including host-downloaded keyboard
 tables. `terminal-97801/` holds the 97801 ROM dumps (program, character
-generator, and K111 keyboard-controller) feeding the in-progress MAME LLE
-terminal device. See [`terminal-97801/README.md`](terminal-97801/README.md).
+generator, and K111 keyboard-controller) behind the MAME `s97801` device, a
+fully working low-level emulation that runs the terminal's own firmware and
+serves as the SINIX system console (the login and install screenshots above
+are rendered through it). See
+[`terminal-97801/README.md`](terminal-97801/README.md).
 
 ## Manuals (`docs/manuals/`)
 
