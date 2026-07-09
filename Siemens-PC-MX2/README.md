@@ -134,6 +134,24 @@ Boot proceeds: CPUAP self-test → NSC boot loader from floppy
 reports `System 734k User 3362k / using 143 buffers`, matching the real
 hardware figures.
 
+### Logging in
+
+Once an installed system is up, log in with one of the two administrative
+accounts:
+
+| Login | Role |
+|---|---|
+| `root` | superuser |
+| `admin` | menu-driven system administration |
+
+The manuals (Betriebsanleitung and Installationsanleitung) give the default
+password as **`siemens`** (lowercase). The shipped system's `/etc/passwd`,
+however, tells a different story: the password hash `jj3vHL1rEcKG6` is a
+standard DES `crypt` of **`murphy`** (salt `jj`), verifiable with
+`crypt("murphy", "jj")`. So on the preserved media the working password is
+`murphy`, not the documented `siemens`, a small preservation curiosity worth
+knowing before you are locked out of a forty-year-old UNIX box.
+
 ## Credits
 
 - **Patrick Mackinlay**, the MAME `pcmx2` driver and NS32000 CPU/MMU emulation.

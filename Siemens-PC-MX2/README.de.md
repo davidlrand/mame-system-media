@@ -131,6 +131,25 @@ Dialog `INSTALLATION EINES SINIX-SYSTEMS`. Die Speichermeldung einer
 4-MB-Maschine lautet `System 734k User 3362k / using 143 buffers`, in
 Übereinstimmung mit der realen Hardware.
 
+### Anmeldung
+
+Ist ein installiertes System hochgefahren, meldet man sich mit einer der beiden
+Verwaltungskennungen an:
+
+| Benutzerkennung | Rolle |
+|---|---|
+| `root` | Superuser |
+| `admin` | menügeführte Systemverwaltung |
+
+Die Handbücher (Betriebsanleitung und Installationsanleitung) nennen als
+Standardkennwort **`siemens`** (in Kleinbuchstaben). Das `/etc/passwd` des
+ausgelieferten Systems sagt jedoch etwas anderes: Der Kennworthash
+`jj3vHL1rEcKG6` ist ein gewöhnlicher DES-`crypt` von **`murphy`** (Salt `jj`),
+nachprüfbar mit `crypt("murphy", "jj")`. Auf den erhaltenen Datenträgern lautet
+das gültige Kennwort also `murphy`, nicht das dokumentierte `siemens`; eine
+kleine Kuriosität der Überlieferung, gut zu wissen, bevor man sich aus einem
+vierzig Jahre alten UNIX-System aussperrt.
+
 ## Danksagung
 
 - **Patrick Mackinlay**, der MAME-Treiber `pcmx2` und die
