@@ -10,12 +10,12 @@ companion chips on an Intel **Multibus** backplane, running Siemens'
 sold with Siemens' own 97801 terminals, Siemens-built hard disks, and German
 documentation end to end.
 
-![SINIX installation welcome screen on the emulated 97801 terminal](docs/images/sinix-install-97801.png)
+![SINIX login screen on the emulated 97801 terminal](docs/images/sinix-login-97801.png)
 
-*"Herzlich Willkommen zur Selbstinstallation Ihres SINIX-Systems", the SINIX
-V2.0 installation dialog booted from the original 1986 install floppy,
-rendered on the emulated Siemens 97801 terminal (MAME 0.288, 2026): the first
-PC-MX2 to reach this screen in decades.*
+*A fully installed SINIX system at the login prompt (`Benutzerkennung:`),
+hostname `sie001`, rendered on the emulated Siemens 97801 terminal with its
+distinctive large outline-font banner (MAME 0.288, 2026): the first PC-MX2 to
+log in anywhere in decades.*
 
 ![PC-MX2 interior, Multibus card cage](docs/images/MX2_inside.jpg)
 
@@ -133,6 +133,12 @@ Boot proceeds: CPUAP self-test → NSC boot loader from floppy
 `INSTALLATION EINES SINIX-SYSTEMS` dialog. Memory sizing on a 4 MB machine
 reports `System 734k User 3362k / using 143 buffers`, matching the real
 hardware figures.
+
+![SINIX installation welcome dialog on the emulated 97801 terminal](docs/images/sinix-install-97801.png)
+
+*The SINIX V2.0 self-installation dialog ("Herzlich Willkommen zur
+Selbstinstallation Ihres SINIX-Systems"), booted from the original 1986
+install floppy.*
 
 ### Logging in
 

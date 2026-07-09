@@ -11,12 +11,12 @@ erfolgreichsten europäischen UNIX-Systeme machten; verkauft mit
 Siemens-eigenen 97801-Datensichtstationen, Siemens-Festplatten und
 durchgehend deutscher Dokumentation.
 
-![SINIX-Installationsbildschirm auf dem emulierten 97801-Terminal](docs/images/sinix-install-97801.png)
+![SINIX-Anmeldebildschirm auf dem emulierten 97801-Terminal](docs/images/sinix-login-97801.png)
 
-*„Herzlich Willkommen zur Selbstinstallation Ihres SINIX-Systems", der
-SINIX-V2.0-Installationsdialog, gebootet von der Original-Installationsdiskette
-von 1986, dargestellt auf dem emulierten Siemens-Terminal 97801 (MAME 0.288,
-2026): der erste PC-MX2 seit Jahrzehnten, der diesen Bildschirm erreicht.*
+*Ein fertig installiertes SINIX-System am Anmeldeprompt (`Benutzerkennung:`),
+Rechnername `sie001`, dargestellt auf dem emulierten Siemens-Terminal 97801 mit
+seiner charakteristischen großen Umriss-Schrift (MAME 0.288, 2026): der erste
+PC-MX2 seit Jahrzehnten, der sich anmeldet.*
 
 MAME-System: **`pcmx2`** (`src/mame/siemens/pcmx2.cpp`, von Patrick
 Mackinlay), erweitert um die in diesem Archiv dokumentierte Gerätearbeit
@@ -130,6 +130,12 @@ Der Startablauf: CPUAP-Selbsttest → NSC-Bootlader von Diskette
 Dialog `INSTALLATION EINES SINIX-SYSTEMS`. Die Speichermeldung einer
 4-MB-Maschine lautet `System 734k User 3362k / using 143 buffers`, in
 Übereinstimmung mit der realen Hardware.
+
+![SINIX-Installationsdialog auf dem emulierten 97801-Terminal](docs/images/sinix-install-97801.png)
+
+*Der SINIX-V2.0-Selbstinstallationsdialog („Herzlich Willkommen zur
+Selbstinstallation Ihres SINIX-Systems"), gebootet von der
+Original-Installationsdiskette von 1986.*
 
 ### Anmeldung
 
