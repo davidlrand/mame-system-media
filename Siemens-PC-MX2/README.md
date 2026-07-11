@@ -74,7 +74,7 @@ family (NS32332, later NS32532) succeeded it.
 ## ROMs (`roms/`)
 
 CPUAP boot monitor, both preserved revisions; `cpuap.zip` is the
-CRC-verified MAME romset (`-bios rev9` / `-bios rev3`):
+CRC-verified MAME romset (`-slot6 cpuap,bios=rev9` / `rev3`):
 
 | File | Version | CRC32 | SHA1 |
 |---|---|---|---|
@@ -83,10 +83,11 @@ CRC-verified MAME romset (`-bios rev9` / `-bios rev3`):
 | `d333__d55_g53__hb.d55` | D333 Monitor Rev 3 (09.12.1985), high byte | `821e1e41` | `0800249eab8db490c1fb6fea6d65bc7e874c9a0c` |
 | `d333__d56_g53__lb.d56` | D333 Monitor Rev 3 (09.12.1985), low byte | `0892ff90` | `e84ceb8eb3c13de3692297c46632dbfafaad675f` |
 
-Also staged in `roms/` (future driver work): OMTI 5400 SASI controller
-firmware, ExeLAN Ethernet board ROMs, the SERAG D279 serial-board ROM, and the
-Storager/SERAD firmware dumps. Provenance notes in
-[`roms/README.txt`](roms/README.txt).
+Also here as CRC-verified MAME romsets: `serad.zip` (SERAD serial-I/O board,
+S26361-D279) and `storager.zip` (Interphase 3030 Storager, four BIOS revisions,
+three dumped). Still staged for future driver work: the OMTI 5400 SASI
+controller firmware and the ExeLAN Ethernet board ROMs. Provenance and
+BIOS-selection notes in [`roms/README.txt`](roms/README.txt).
 
 ## The 97801 terminal (`terminal-97801/`)
 

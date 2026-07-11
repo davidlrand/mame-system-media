@@ -68,7 +68,7 @@ MX300/MX500-Familie (NS32332, später NS32532) folgte nach.
 ## ROMs (`roms/`)
 
 CPUAP-Bootmonitor, beide erhaltenen Stände; `cpuap.zip` ist der
-CRC-geprüfte MAME-Romsatz (`-bios rev9` / `-bios rev3`):
+CRC-geprüfte MAME-Romsatz (`-slot6 cpuap,bios=rev9` / `rev3`):
 
 | Datei | Version | CRC32 | SHA1 |
 |---|---|---|---|
@@ -77,10 +77,12 @@ CRC-geprüfte MAME-Romsatz (`-bios rev9` / `-bios rev3`):
 | `d333__d55_g53__hb.d55` | D333-Monitor Rev 3 (09.12.1985), High-Byte | `821e1e41` | `0800249eab8db490c1fb6fea6d65bc7e874c9a0c` |
 | `d333__d56_g53__lb.d56` | D333-Monitor Rev 3 (09.12.1985), Low-Byte | `0892ff90` | `e84ceb8eb3c13de3692297c46632dbfafaad675f` |
 
-Ebenfalls in `roms/` abgelegt (für künftige Treiberarbeit): die Firmware des
-OMTI-5400-SASI-Controllers, die ROMs der ExeLAN-Ethernet-Baugruppe, das ROM
-der seriellen Baugruppe SERAG D279 sowie die Firmwarestände von Storager und
-SERAD. Herkunftsvermerke in [`roms/README.txt`](roms/README.txt).
+Ebenfalls als CRC-geprüfte MAME-Romsätze vorhanden: `serad.zip` (serielle
+E/A-Baugruppe SERAD, S26361-D279) und `storager.zip` (Interphase 3030 Storager,
+vier BIOS-Stände, drei davon ausgelesen). Weiterhin für künftige Treiberarbeit
+abgelegt: die Firmware des OMTI-5400-SASI-Controllers und die ROMs der
+ExeLAN-Ethernet-Baugruppe. Herkunfts- und BIOS-Auswahlhinweise in
+[`roms/README.txt`](roms/README.txt).
 
 ## Das Terminal 97801 (`terminal-97801/`)
 
@@ -124,7 +126,7 @@ Die MAME-Wiederbelebung bootet die unveränderte SINIX0-Diskette
 Mit den ROMs im Rompfad und dem SINIX0-Diskettenabbild:
 
 ```sh
-mame pcmx2 -bios rev3 <Disketten-/Terminal-Optionen gemäß Treiber>
+mame pcmx2 -slot6 cpuap,bios=rev3 <Disketten-/Terminal-Optionen gemäß Treiber>
 ```
 
 Der Startablauf: CPUAP-Selbsttest → NSC-Bootlader von Diskette

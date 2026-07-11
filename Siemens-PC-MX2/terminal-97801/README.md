@@ -27,6 +27,10 @@ Board photos: [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_1
 | `010_d26__0118_04.d26` | SAB8031 firmware EPROM (D26) | `fcf045d7` | `4a98e7d2d98272970d627ce5c10e9572b87293d1` |
 | `p26361_k111_v1_3.d3` | K111 keyboard controller v1.3 | `aba8f4b7` | `970a45b509081603e25319e1bbf0f7941f91a056` |
 
+These four files are packaged as the MAME `s97801` romset in
+[`roms/s97801.zip`](roms/s97801.zip); place it in the rompath for `mame s97801`
+(standalone terminal) or `mame pcmx2` (as the console).
+
 ## MAME status
 
 The `s97801` device is a **fully working low-level emulation** and is the
