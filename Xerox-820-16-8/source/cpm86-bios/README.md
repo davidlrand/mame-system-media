@@ -1,22 +1,38 @@
-# Xerox 820-II / 16-8 — "820+" CP/M BIOS source
+# Xerox 820+ CP/M-80 BIOS Source
 
-Source for the Balcones **"XEROX 820+" ROM-resident BIOS** (the Z80/CP/M-80 side),
-extracted from Don Maslin developer disk **B16D39** (`820ii_images` set) with the
-head-grouped DS diskdef — see [`../README.md`](../README.md).
+This directory contains Balcones XEROX 820+ ROM-resident BIOS source for the Z80
+CP/M-80 side of the Xerox 820-II / 16/8 family. It was extracted from Don
+Maslin developer disk B16D39 in the `820ii_images` set.
 
 | File | What it is |
 |---|---|
-| `xbios.mac` | "XEROX 820+ BIOS Jump Table" (ROM-resident BIOS entry table). `Copyright 1981, Balcones Computer Corporation`. |
-| `deblkr.mac` / `deblkr1.mac` | Sector **deblocker** (128↔physical sector blocking). |
-| `chario.mac` | Console / character I/O. |
-| `cwboot.mac` | Cold / warm boot. |
+| `xbios.mac` | XEROX 820+ BIOS jump table. |
+| `deblkr.mac`, `deblkr1.mac` | Sector deblocker code for 128-byte CP/M records and physical disk sectors. |
+| `chario.mac` | Console and character I/O. |
+| `cwboot.mac` | Cold and warm boot code. |
 | `qfs.mac` | File-system helper. |
-| `bios0/1.hex`, `cpsys0/1.hex`, `boot0/1.hex` | Assembled BIOS / CP/M-system / boot images (Intel HEX). |
-| `makebios.sub`, `bildbios.sub` | M80/L80 assemble+link build scripts. |
-| `*.rel` | M80 relocatable objects; `*.bak` editor backups. |
+| `bios0.hex`, `bios1.hex` | Assembled BIOS images. |
+| `cpsys0.hex`, `cpsys1.hex` | Assembled CP/M system images. |
+| `boot0.hex`, `boot1.hex` | Assembled boot images. |
+| `makebios.sub`, `bildbios.sub` | M80/L80 build scripts. |
+| `*.rel` | M80 relocatable objects. |
 
-**Note on scope:** this is the **Z80 CP/M-80** BIOS. It contains no 8086 /
-doorbell / mailbox code — on the 16/8 the CP/M-86 (8086) BIOS forwards I/O to the
-Z80, and that inter-processor handoff lives in the loader (`load86`/`86con`/
-`swap`) and the monitor's bank-switch/`$F033` + port-A0/A1 path, not here. See
+## Scope
+
+This is Z80 CP/M-80 BIOS source. CP/M-86 operation on the 16/8 uses the 8086
+card together with the Z80 monitor and loader path. In normal use, start CP/M-86
+from CP/M-80 with:
+
+```text
+LOAD86
+86CON
+```
+
+Return to CP/M-80 with:
+
+```text
+GOBACK
+```
+
+Architecture notes for that path are in
 [`../../docs/16-8-architecture.md`](../../docs/16-8-architecture.md).

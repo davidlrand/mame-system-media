@@ -1,92 +1,308 @@
 # Xerox 820-II 16/8
 
-![Xerox 16/8 (8" floppy, x168) booting CP/M-80 in MAME — the directory shows the Xerox menu system (XERMAIN, SOFTKEYS, TERMINAL) alongside the CP/M-86 tools (CPM86, LOAD86, 86CON)](xerox-16-8-cpm-mame.png)
+![Xerox 16/8 running CP/M in MAME](xerox-16-8-cpm-mame.png)
 
-Everything in one place for emulating and understanding the **Xerox 16/8** — a
-Xerox 820-II (Z80, CP/M-80) with the **"816 PC"** 8086 coprocessor board
-(CP/M-86 or MS-DOS) bolted on, the two processors linked by a shared-RAM doorbell
-mailbox.
+This directory is the operating media and reference set for the **Xerox 16/8**:
+a Xerox 820-II Z80 CP/M-80 system with the optional **"816 PC"** 8086
+coprocessor card for CP/M-86 or MS-DOS. It also covers the related 820-II disk
+subsystems used by the 16/8: 8" floppy, 5.25" floppy, SASI rigid disk, and the
+Expansion Module II WD1002-05 ST-506 rigid/floppy unit.
 
-This folder is deliberately broader than the rest of this repo. The 16/8 had so
-many missing or scattered pieces — a bad u35 dump, undumped ROMs, no extracted
-firmware source, no documented disk format, no keyboard spec — that the point
-here is to **collect all of it in one place with provenance**, so the next person
-(or the next bring-up session) doesn't have to rediscover it. Documents will be
-corrected as the bring-up continues; the goal is to stop duplicative effort.
+This README is an operating guide: which MAME machine to run, which disk image
+to mount, which monitor command to type, and how to move between CP/M-80 and
+CP/M-86.
 
-## Layout
+## Directory Layout
 
 | Folder | Contents |
 |---|---|
-| [`roms/`](roms/) | All boot/firmware ROMs (Z80 monitor v5.0 + v4.04, 8086 "816 PC", character generators, keyboard 8748), with CRC/SHA1 and provenance. |
-| [`disks/`](disks/) | TeleDisk `.td0` software set (5.25"/8") + the Don Maslin source/dev `.IMD` disks. |
-| [`source/`](source/) | The complete **Balcones OS v5.0 ("RX") ROM source**, extracted from disk B23D13, plus the 8086 boot-ROM disassembly and the `imd2flat.py` tool. |
-| [`docs/`](docs/) | The **X928 ASCII keyboard** interface spec, the **Z80↔8086 architecture / mailbox** reference, the **RX024 5.25" disk-controller** reconstruction, the **solved 5.25" boot-disk format**, and the **SASI rigid-disk system** (adapter, controller, partitions, install flow). |
-| [`boot-disk/`](boot-disk/) | The **reconstructed, booting** 5.25" CP/M-80 disk for `x1685` (+ the base-820-II variant), with the full byte-provenance recipe. |
+| [`roms/`](roms/) | Z80 monitor ROMs, 8086 board ROM, character generators, and keyboard ROMs, with CRC/SHA1 provenance. |
+| [`disks/`](disks/) | Original TeleDisk and ImageDisk media sets. Use these as source media; work on copies. |
+| [`boot-disk/`](boot-disk/) | Reconstructed and repaired bootable IMD/CHD images for MAME. Start here for normal use. |
+| [`source/`](source/) | Extracted Balcones OS v5.0 ROM source, CP/M-86 BIOS material, 8086 ROM disassembly, and tools. |
+| [`docs/`](docs/) | Architecture and disk subsystem references: keyboard, 8086 mailbox, RX024 5.25" controller, boot-disk layout, and SASI rigid system. |
 
-## Machines in MAME
+## Before Running
 
-All of these are in mainline MAME and marked working — merged in
-[mamedev/mame#15485](https://github.com/mamedev/mame/pull/15485).
+Use a copy of any writable disk image. MAME writes floppy and hard-disk changes
+back to mounted images on exit. The CHD examples in `boot-disk/` are stored as
+`.chd.gz`; decompress a working copy before mounting it with MAME.
 
-| MAME system | Media | Status |
+Examples below assume you are running MAME from `/Users/dlr/src/mame` and this
+media tree is at:
+
+```sh
+/Users/dlr/src/github-davidlrand/mame-system-media/Xerox-820-16-8
+```
+
+Set a shell variable if you want shorter commands:
+
+```sh
+MEDIA=/Users/dlr/src/github-davidlrand/mame-system-media/Xerox-820-16-8
+```
+
+At the Xerox monitor prompt, the usual boot commands are:
+
+| Monitor command | Meaning |
+|---|---|
+| `L` | Boot the default floppy device. |
+| `LA` | Boot floppy drive/partition A. Used by the EM-II floppy path. |
+| `LE` | Boot rigid partition E as CP/M drive A:. |
+
+## Quick Start
+
+### Xerox 16/8, 8" floppy (`x168`)
+
+Boot the repaired 8" system disk:
+
+```sh
+./mame x168 -flop1 "$MEDIA/boot-disk/16-8sys8-boot.imd"
+```
+
+At the monitor prompt:
+
+```text
+L
+```
+
+This boots CP/M-80 to `A>`.
+
+To start CP/M-86 on the 8086 card:
+
+```text
+LOAD86
+86CON
+```
+
+The prompt changes to the CP/M-86 `a>` prompt. To return to CP/M-80:
+
+```text
+GOBACK
+```
+
+### Xerox 16/8, 5.25" floppy (`x1685`)
+
+Boot the reconstructed 5.25" CP/M-80 disk:
+
+```sh
+./mame x1685 -flop1 "$MEDIA/boot-disk/x1685-cpm22-boot.imd"
+```
+
+At the monitor prompt:
+
+```text
+L
+```
+
+To use the CP/M-86-capable 5.25" boot disk instead:
+
+```sh
+./mame x1685 -flop1 "$MEDIA/boot-disk/x1685-cpm86-boot.imd"
+```
+
+Then boot with `L`, and at `A>` use:
+
+```text
+LOAD86
+86CON
+```
+
+Use `GOBACK` at the CP/M-86 prompt to return to CP/M-80.
+
+### Xerox 16/8, SASI rigid disk (`x168s`)
+
+Prepare and boot the CP/M-86-capable rigid-disk CHD:
+
+```sh
+gunzip -k "$MEDIA/boot-disk/x1685s-cpm86.chd.gz"
+./mame x168s -hard "$MEDIA/boot-disk/x1685s-cpm86.chd"
+```
+
+At the monitor prompt:
+
+```text
+LE
+```
+
+This boots rigid partition E as CP/M drive A:. To start CP/M-86:
+
+```text
+LOAD86
+86CON
+```
+
+Use `GOBACK` to return to CP/M-80.
+
+You can also mount a floppy in `-flop1` for file transfer while booting the rigid
+disk:
+
+```sh
+./mame x168s \
+  -hard "$MEDIA/boot-disk/x1685s-cpm86.chd" \
+  -flop1 "$MEDIA/boot-disk/16-8sys8-boot.imd"
+```
+
+### Xerox 820-II, SASI rigid disk (`x820iis`)
+
+`x820iis` is the 820-II SASI rigid-disk system without the 8086 coprocessor. Use
+it for CP/M-80 SASI testing and disk maintenance.
+
+```sh
+./mame x820iis -hard <sasi-rigid.chd> -flop1 "$MEDIA/boot-disk/16-8sys8-boot.imd"
+```
+
+Use `L` to boot the floppy or `LE` to boot rigid partition E, depending on the
+image you are testing. See [`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md)
+for the SASI partitioning and install flow.
+
+### Xerox 16/8 Expansion Module II (`x168em`)
+
+`x168em` is the 16/8 with the Expansion Module II: the 8086 card plus a WD1002-05
+5.25" ST-506 rigid/floppy controller and the 537P3682 box ROM.
+
+Boot the reconstructed EM-II CP/M-80 floppy:
+
+```sh
+./mame x168em -flop1 "$MEDIA/boot-disk/x820ii5-cpm22-rebuilt.imd"
+```
+
+At the monitor prompt:
+
+```text
+LA
+```
+
+To boot the example ST-506 rigid image, decompress a working copy, mount it with
+`-hard`, and use `LE` at the monitor prompt:
+
+```sh
+gunzip -k "$MEDIA/boot-disk/x168em_cpm86_clean.chd.gz"
+./mame x168em \
+  -hard "$MEDIA/boot-disk/x168em_cpm86_clean.chd" \
+  -flop1 "$MEDIA/boot-disk/x820ii5-cpm22-rebuilt.imd"
+```
+
+```text
+LE
+```
+
+The original EM-II floppy image is also preserved at
+[`disks/emiidia5.td0`](disks/emiidia5.td0). Use the reconstructed image in
+[`boot-disk/`](boot-disk/) for ordinary booting and maintenance work.
+
+`LOAD86`, `86CON`, and `GOBACK` are the CP/M-86 control commands when the mounted
+system disk contains the required 8086-side files and BIOS support.
+
+## Media Reference
+
+### Bootable Images
+
+| File | Use with | Boot command | Result |
+|---|---|---|---|
+| [`boot-disk/16-8sys8-boot.imd`](boot-disk/16-8sys8-boot.imd) | `x168` | `L` | CP/M-80 from 8" floppy; includes the working `LOAD86`/`86CON` path for CP/M-86. |
+| [`boot-disk/x1685-cpm22-boot.imd`](boot-disk/x1685-cpm22-boot.imd) | `x1685` | `L` | CP/M-80 from reconstructed 5.25" floppy. |
+| [`boot-disk/x1685-cpm86-boot.imd`](boot-disk/x1685-cpm86-boot.imd) | `x1685` | `L` | CP/M-80 from 5.25" floppy with CP/M-86 tools installed. |
+| [`boot-disk/x1685s-cpm86.chd.gz`](boot-disk/x1685s-cpm86.chd.gz) | `x168s` | `LE` | Compressed SASI rigid image; decompress to `x1685s-cpm86.chd` before mounting. |
+| [`boot-disk/x820ii5-cpm22-rebuilt.imd`](boot-disk/x820ii5-cpm22-rebuilt.imd) | `x168em` | `LA` | CP/M-80 from reconstructed EM-II 5.25" floppy. |
+| [`boot-disk/x168em_cpm86_clean.chd.gz`](boot-disk/x168em_cpm86_clean.chd.gz) | `x168em` | `LE` | Compressed EM-II ST-506 rigid image with CP/M-86 support; decompress before mounting. |
+| [`disks/emiidia5.td0`](disks/emiidia5.td0) | `x168em` | `LA` | Original EM-II 5.25" floppy source image. |
+
+### Original TeleDisk Set
+
+The `disks/*.td0` files are the original TeleDisk software set. MAME can mount
+`.td0` directly for these machines.
+
+| File | Media | Contents |
 |---|---|---|
-| `x168` | 8" floppy | Boots Balcones CP/M-80 to `A>` **and boots CP/M-86 1.1F on the 8086** (`LOAD86` → `86CON`), interactive (`a>`, `DIR`). Boot media: `16-8sys8` (the v5.0 monitor is the default BIOS). |
-| 8086 "816 PC" board | — | POSTs to "816 PC Ok", and the Z80↔8086 mailbox is worked out far enough to **load and run CP/M-86 with full console + disk I/O**. See [`docs/16-8-architecture.md`](docs/16-8-architecture.md). |
-| `x1685` | 5.25" floppy | **Boots Balcones CP/M 2.2 to an interactive `A>`** from the reconstructed boot disk in [`boot-disk/`](boot-disk/). Controller ROM reconstructed from recovered driver source ([`docs/16-8-rx024-controller.md`](docs/16-8-rx024-controller.md)). See [`docs/16-8-boot-disk-format.md`](docs/16-8-boot-disk-format.md). |
-| `x820iis` | 8" SASI (floppies + rigid over SASI) | **Boots CP/M 2.2 over SASI**; floppy read/write/format proven (INIT works); rigid serves an 8 MB SA1004-class CHD. See [`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md). |
-| `x168s` | 5.25" SASI rigid unit | **Boots CP/M 2.2 from a rigid partition** (`LE`; partition E becomes A:) through the reconstructed `sdvr` driver. Floppy *cold boot* needs the undumped rgd5 boot media. See [`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md). |
-| `x168em` | Expansion Module II (5.25" ST-506 rigid + floppy) | The historically-correct 5.25" rigid box: a slot-connected **WD1002-05** controller with the genuine **537P3682** box ROM. **Boots CP/M 2.2 from the EM-II 5.25" floppy** ([`disks/emiidia5.td0`](disks/)); the ST-506 rigid is served by the same WD1002-05 model. |
+| [`disks/16-8sys8.td0`](disks/16-8sys8.td0) | 8" | 16/8 CP/M-80 system disk. |
+| [`disks/16-8dev8.td0`](disks/16-8dev8.td0) | 8" | Development tools. |
+| [`disks/16-8dos8.td0`](disks/16-8dos8.td0) | 8" | 8086-side DOS media. |
+| [`disks/16-8utl8.td0`](disks/16-8utl8.td0) | 8" | Utilities. |
+| [`disks/16-8cpm5.td0`](disks/16-8cpm5.td0) | 5.25" | 16/8 CP/M-80 system disk. |
+| [`disks/16-8dev5.td0`](disks/16-8dev5.td0) | 5.25" | Development tools. |
+| [`disks/16-8dos5.td0`](disks/16-8dos5.td0) | 5.25" | 8086-side DOS media. |
+| [`disks/16-8utl5.td0`](disks/16-8utl5.td0) | 5.25" | Utilities. |
+| [`disks/emiidia5.td0`](disks/emiidia5.td0) | 5.25" | Expansion Module II CP/M-80 boot floppy. |
 
-## Highlights / what was recovered here
+### Maslin ImageDisk Set
 
-- **A clean `u35` boot ROM.** The widely-circulated `l5.u35` dump has data bit 7
-  stuck high; the correct part (`278fa75f`) is in [`roms/z80-monitor/v50/`](roms/z80-monitor/v50/),
-  confirmed against the assembled copy on the source disk.
-- **The v5.0 firmware source**, never (to my knowledge) previously extracted —
-  including the disk drivers, the SASI rigid-disk driver, and the DPB tables.
-  Reading the double-sided 8" disks needed a non-obvious head-grouped track
-  order; the verified `imd2flat.py` + cpmtools diskdef are documented in
-  [`source/README.md`](source/README.md).
-- **The X928 ASCII keyboard fully specified** — strobe protocol, the `0x9E`
-  power-on hello, both selectable layouts — reverse-engineered from the Tech Ref
-  BIOS and the 8748 ROM. On its own this is enough to recreate a compatible
-  keyboard: [`docs/x928-keyboard.md`](docs/x928-keyboard.md).  (The position-encoded
-  **G25** Low Profile Keyboard is a separate keyboard — see the
-  `Xerox-820-line-roms` README.)
-- **The 5.25" boot disk reconstructed and booting** — the shipping warm-boot
-  walk disassembled, the CCP/BDOS relocation recovered as a byte-diff bitmap of
-  the two linked images, every byte of the disk provenance-tracked:
-  [`docs/16-8-boot-disk-format.md`](docs/16-8-boot-disk-format.md).
-- **The SASI rigid system worked out end-to-end** — host adapter, controller
-  command set, partitioning, the install flow, and a rigid-partition boot on
-  the 5.25" machine via the rebuilt `sdvr` driver:
-  [`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md).
-- **The real 5.25" rigid box identified and modeled.** The 16/8's 5.25"
-  rigid unit is the **Expansion Module II** — a slot-connected WD1002-05
-  Winchester controller, not the 8" SA1403D/SASI chain — and its genuine
-  **537P3682** box ROM was located, so `x168em` runs the real firmware
-  against a WD1002-05 device model.
-- **CP/M-86 boots on the 8086** — bank window, POST, doorbell mailbox, and the
-  8086 run-control (`IN 0A0h`/`0A1h` = reset/release) all worked out far enough
-  to load and run **CP/M-86 1.1F** interactively, console and disk I/O routed
-  through the mailbox: [`docs/16-8-architecture.md`](docs/16-8-architecture.md).
+The `disks/maslin/*.IMD` files are source and development disks from the Don
+Maslin Xerox 820-II archive. They are most useful for extracting source and
+system components rather than as day-to-day boot media.
 
-## Provenance summary
+| File | Contents |
+|---|---|
+| [`disks/maslin/B23D13.IMD`](disks/maslin/B23D13.IMD) | Balcones OS v5.0 ROM source and assembled boot ROMs. |
+| [`disks/maslin/B16D38.IMD`](disks/maslin/B16D38.IMD) | 816 PC system disk. |
+| [`disks/maslin/B16D39.IMD`](disks/maslin/B16D39.IMD) | EM-II BIOS and boot source material. |
+| [`disks/maslin/B17D11.IMD`](disks/maslin/B17D11.IMD) | ROM source disk. |
 
-- ROMs: the MAME `x168`/`x820ii`/`x820kb` ROM sets (CRC/SHA1 in `roms/README.md`).
-- TeleDisk `.td0` disks: Don Maslin's archive, Sydex/TeleDisk collection
+## CP/M-86 Command Sequence
+
+On a CP/M-80 system disk with CP/M-86 support installed:
+
+1. Boot CP/M-80 to `A>`.
+2. Run `LOAD86` to load the 8086-side CP/M-86 system.
+3. Run `86CON` to transfer the console to CP/M-86.
+4. At the CP/M-86 `a>` prompt, run `GOBACK` to return to CP/M-80.
+
+The sequence is:
+
+```text
+A>LOAD86
+A>86CON
+a>GOBACK
+```
+
+## System Notes
+
+### Keyboards
+
+The 16/8 uses the Xerox low-profile keyboard. In MAME, natural keyboard input is
+mapped so normal host keys produce the expected typewriter-paired characters,
+including Ctrl-letter combinations.
+
+The X928 ASCII keyboard used by other 820-II configurations is documented in
+[`docs/x928-keyboard.md`](docs/x928-keyboard.md).
+
+### 5.25" Reconstructed Boot Disk
+
+The reconstructed `x1685` and `x168em` 5.25" boot disks are documented in
+[`boot-disk/README.md`](boot-disk/README.md) and
+[`docs/16-8-boot-disk-format.md`](docs/16-8-boot-disk-format.md). Use the
+reconstructed images in [`boot-disk/`](boot-disk/) for ordinary MAME booting.
+
+### SASI Rigid Disk
+
+The SASI rigid system, partition layout, and install flow are documented in
+[`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md). The important monitor
+command for a rigid partition boot is `LE`.
+
+### Expansion Module II
+
+The EM-II path uses MAME system `x168em`, floppy media on `-flop1`, and an
+optional ST-506 CHD on `-hard`. Boot the reconstructed EM-II floppy with `LA`;
+boot the rigid partition with `LE`.
+
+## Provenance
+
+- ROMs: MAME `x168`, `x820ii`, and `x820kb` ROM sets; hashes are recorded in
+  [`roms/README.md`](roms/README.md).
+- TeleDisk media: Don Maslin archive, Sydex/TeleDisk collection
   (`ddrive/sydex/xerox` in `don_maslin_archive` on archive.org).
-- `.IMD` disks: the Don Maslin Xerox 820-II images (`820ii_images`, mirrored on
-  bitsavers).
-- v5.0 firmware source: extracted here from Maslin disk B23D13.
-- Keyboard & 8086 docs: original reverse-engineering for this project.
+- ImageDisk media: Don Maslin Xerox 820-II images, mirrored on bitsavers.
+- Balcones OS v5.0 firmware source: extracted from Maslin disk B23D13.
+- Keyboard, 8086 mailbox, RX024, SASI, and EM-II notes: recovered and documented
+  as part of this project.
 
-The firmware source carries `Copyright (C) 1981 by Balcones Computer Corporation`
-(Balcones wrote the 820-II / 16-8 firmware for Xerox). Material is preserved here
-for emulation and historical/technical reference.
+The firmware source carries `Copyright (C) 1981 by Balcones Computer Corporation`.
+The material here is preserved for emulation and historical/technical reference.
 
----
+## References
 
-**Work on a copy.** MAME persists writes back to mounted floppy images on exit
-and can corrupt them. Copy or `chmod -w` any disk before mounting it.
+- [`docs/16-8-architecture.md`](docs/16-8-architecture.md) - 8086 card, shared RAM, and CP/M-86 handoff.
+- [`docs/16-8-boot-disk-format.md`](docs/16-8-boot-disk-format.md) - reconstructed 5.25" boot disk format.
+- [`docs/16-8-rx024-controller.md`](docs/16-8-rx024-controller.md) - RX024 5.25" controller reconstruction.
+- [`docs/sasi-rigid-system.md`](docs/sasi-rigid-system.md) - SASI rigid-disk adapter, partitions, and install flow.
+- [`docs/x928-keyboard.md`](docs/x928-keyboard.md) - X928 ASCII keyboard interface.
+- [`source/README.md`](source/README.md) - extracted source disks and tools.

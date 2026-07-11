@@ -1,55 +1,46 @@
-# Xerox 16/8 — disk images
+# Xerox 820-II 16/8 Source Disk Images
 
-Two sets, from two different archives.
+This directory preserves original source media. For normal MAME booting, use the
+ready-to-run images in [`../boot-disk/`](../boot-disk/).
 
-## `*.td0` — TeleDisk images (5.25" and 8")
+## TeleDisk Images
 
-The standard 16/8 software set, as Sydex **TeleDisk** `.td0` images.
+The `.td0` files are Don Maslin archive images from the Sydex/TeleDisk Xerox
+set. MAME can mount `.td0` images for these systems; the repaired or
+reconstructed images in `../boot-disk/` are preferred when a MAME-ready boot disk
+is available.
 
-| File | Side | Contents |
+| File | Format | Use |
 |---|---|---|
-| `16-8cpm5.td0` | 5.25" | CP/M-80 boot (the `x1685` 5.25" machine) |
-| `16-8dev5.td0` | 5.25" | development tools |
-| `16-8dos5.td0` | 5.25" | MS-DOS (the 8086 side of the 16/8 runs **MS-DOS**, not CP/M-86) |
-| `16-8utl5.td0` | 5.25" | utilities |
-| `16-8sys8.td0` | 8" | system / CP/M-80 boot (the `x168` 8" machine) |
-| `16-8dev8.td0` | 8" | development tools |
-| `16-8dos8.td0` | 8" | MS-DOS |
-| `16-8utl8.td0` | 8" | utilities |
+| `16-8sys8.td0` | 8-inch | Original system disk source for `../boot-disk/16-8sys8-boot.imd`. |
+| `16-8dev8.td0` | 8-inch | Development tools. |
+| `16-8dos8.td0` | 8-inch | MS-DOS-side software for the 8086 card. |
+| `16-8utl8.td0` | 8-inch | Utilities. |
+| `16-8cpm5.td0` | 5.25-inch | Original CP/M-80 source media for the 5.25-inch 16/8 path. |
+| `16-8dev5.td0` | 5.25-inch | Development tools. |
+| `16-8dos5.td0` | 5.25-inch | MS-DOS-side software for the 8086 card. |
+| `16-8utl5.td0` | 5.25-inch | Utilities. |
+| `emiidia5.td0` | 5.25-inch | Original EM-II source disk; use `../boot-disk/x820ii5-cpm22-rebuilt.imd` for MAME booting. |
 
-**Provenance:** Don Maslin's archive, in the Sydex/TeleDisk collection under
-`ddrive/sydex/xerox`:
-<https://ia801903.us.archive.org/view_archive.php?archive=/9/items/don_maslin_archive/maslin_archive.zip>
-(`maslin_archive.zip` at `archive.org/details/don_maslin_archive`). TeleDisk
-images with internal volume dates of 1991-11-27.
+Provenance: Don Maslin's archive, Sydex/TeleDisk collection,
+`ddrive/sydex/xerox`, with internal volume dates of 1991-11-27.
 
-**Note:** MAME does not mount `.td0` directly — convert to `.imd` or `.mfi`
-first, e.g. with Dave Dunfield's `TD02IMD`, or `samdisk`/`HxC`. On the 8" `x168`
-the `16-8sys8` disk boots Balcones CP/M-80 to `A>` with `-bios v50`. The 5.25"
-`x1685` does not yet boot in MAME (its CP/M boot reads the MFM track 0 of
-`16-8cpm5` in FM and loops — an open driver issue, not a media problem).
+## Maslin ImageDisk Set
 
-## `maslin/*.IMD` — Don Maslin archive (ImageDisk)
-
-Development/source disks from the **Don Maslin Xerox 820-II archive** mirrored on
-bitsavers (`bitsavers/.../820ii_images`, spreadsheet index `820ii_images.xls`).
-ImageDisk `.IMD` format. These are the disks that made the bring-up possible.
+The `maslin/*.IMD` files are development and source disks from the Don Maslin
+Xerox 820-II archive mirrored on bitsavers in `820ii_images`.
 
 | File | Contents |
 |---|---|
-| `B23D13.IMD` | **v5.0 ROM source work disk** — the full Balcones OS v5.0 source + the four assembled boot ROMs. Extracted to [`../source/rom-v50/`](../source/rom-v50/). |
-| `B16D38.IMD` | "816 PC" system disk (8086 / CP/M-86 era) |
-| `B16D39.IMD` | EM-II BIOS + boot source (`DEBLKR1.MAC`, `CHARIO.MAC`, `CWBOOT.MAC`, `BIOS0-1.HEX`, `CPSYS0-1.HEX`) |
-| `B17D11.IMD` | ROM source (DUCC) |
+| `maslin/B23D13.IMD` | Balcones OS v5.0 ROM source work disk; extracted under `../source/rom-v50/`. |
+| `maslin/B16D38.IMD` | 816 PC system disk. |
+| `maslin/B16D39.IMD` | EM-II BIOS and CP/M-80 boot source. |
+| `maslin/B17D11.IMD` | ROM source disk. |
 
-**Reading them:** these are double-sided 8" disks with a head-grouped track
-layout; see [`../source/README.md`](../source/README.md) for the `imd2flat.py`
-tool and the verified cpmtools `x88grp` diskdef. Some Maslin 8" images have 78
-cylinders, one past MAME's 77-track 8" maximum; MAME tolerates the extra track
-(it is ignored on load).
+These 8-inch disks use a head-grouped double-sided layout. The extraction method
+and cpmtools disk definition are documented in [`../source/README.md`](../source/README.md).
 
----
+## Handling Notes
 
-**Work on a copy.** MAME persists writes back to mounted floppy images on exit
-and can alter or corrupt them. Copy or `chmod -w` an image before mounting if you
-want to keep the original bits.
+Work on a copy before mounting a writable image. MAME persists floppy writes to
+mounted images when it exits.
