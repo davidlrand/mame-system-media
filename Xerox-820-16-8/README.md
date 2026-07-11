@@ -204,6 +204,7 @@ system disk contains the required 8086-side files and BIOS support.
 | [`boot-disk/x1685-cpm86-boot.imd`](boot-disk/x1685-cpm86-boot.imd) | `x1685` | `L` | CP/M-80 from 5.25" floppy with CP/M-86 tools installed. |
 | [`boot-disk/x1685s-cpm86.chd.gz`](boot-disk/x1685s-cpm86.chd.gz) | `x168s` | `LE` | Compressed SASI rigid image; decompress to `x1685s-cpm86.chd` before mounting. |
 | [`boot-disk/x820ii5-cpm22-rebuilt.imd`](boot-disk/x820ii5-cpm22-rebuilt.imd) | `x168em` | `LA` | CP/M-80 from reconstructed EM-II 5.25" floppy. |
+| [`boot-disk/x168em_floppy_build.imd`](boot-disk/x168em_floppy_build.imd) | `x168em` | `LA` | Correct-and-proper EM-II CP/M-80 boot floppy; not in the Maslin archive. |
 | [`boot-disk/x168em_cpm86_clean.chd.gz`](boot-disk/x168em_cpm86_clean.chd.gz) | `x168em` | `LE` | Compressed EM-II ST-506 rigid image with CP/M-86 support; decompress before mounting. |
 | [`disks/emiidia5.td0`](disks/emiidia5.td0) | `x168em` | `LA` | Original EM-II 5.25" floppy source image. |
 

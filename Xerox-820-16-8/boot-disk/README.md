@@ -22,6 +22,7 @@ mounting a CHD with MAME.
 | `x1685-cpm86-boot.imd` | `x1685` | `-flop1` | `L` | 5.25-inch CP/M-80 boot disk with the CP/M-86 loader set added. |
 | `x1685s-cpm86.chd.gz` | `x168s` | `-hard` after decompression | `LE` | Compressed SASI rigid-disk image with CP/M-86 tools installed. |
 | `x820ii5-cpm22-rebuilt.imd` | `x168em` | `-flop1` | `LA` | Reconstructed EM-II/base 820-II-compatible CP/M-80 boot disk. |
+| `x168em_floppy_build.imd` | `x168em` | `-flop1` | `LA` | Correct-and-proper EM-II CP/M-80 boot floppy; not present in the Maslin archive. |
 | `x168em_cpm86_clean.chd.gz` | `x168em` | `-hard` after decompression | `LE` | Compressed EM-II ST-506 rigid-disk image with CP/M-86 support. |
 
 ## Run Commands
@@ -137,6 +138,10 @@ CP/M-86 loader set. Decompress it to `x1685s-cpm86.chd` before mounting it.
 `x820ii5-cpm22-rebuilt.imd` is the reconstructed floppy boot image to use with
 `x168em`. The original EM-II source disk is preserved as `../disks/emiidia5.td0`;
 this rebuilt image is the convenient floppy boot form for MAME.
+
+`x168em_floppy_build.imd` is a correct-and-proper EM-II boot floppy for
+`x168em`. Unlike the other floppy images here, it does not derive from the
+Maslin TeleDisk archive; it was built for MAME.
 
 `x168em_cpm86_clean.chd.gz` is the compressed distribution copy of an EM-II
 ST-506 rigid-disk image with CP/M-86 support installed. Decompress it to
