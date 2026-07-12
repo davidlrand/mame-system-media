@@ -137,6 +137,8 @@ emulation, **removable on request by a rights holder**:
 
 > https://archive.org/details/siemens-pc-mx2-sinix-s3510
 
+The SINIX-S3510 disk images are courtesy of **Plamen Mihaylov**.
+
 ## Running it
 
 With the ROMs in your rompath and the SINIX0 floppy image staged:
@@ -183,7 +185,7 @@ knowing before you are locked out of a forty-year-old UNIX box.
 - **Udo Möller / cpu-ns32k.net**, Series 32000 preservation, board
   documentation and the Rev 9.0 monitor dump.
 - **Plamen Mihaylov** (MAME developer), direct photographs of the PC-MX2
-  boards and systems in his collection.
+  boards and systems in his collection, and the SINIX-S3510 V2.1 floppy images.
 - **Dave Rand**, device emulation (SERAD, Storager, 97801), the SINIX
   bring-up, and the NS32000 RETT/RETI fix that let init live.
 
