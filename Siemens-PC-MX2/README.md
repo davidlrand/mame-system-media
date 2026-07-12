@@ -124,6 +124,19 @@ They are preserved at:
 The MAME bring-up boots the unmodified `mx2-001.imd` SINIX0 floppy from that
 set.
 
+The **SINIX-S3510 V2.1** service/data-communications suite (18-disk ImageDisk
+set, media dated 16.01.1989, Best-Nr. P30357-A3001-S21) is a Siemens application
+layer that installs *on top of* a base SINIX V2.0 system — `SERV01–14` service
+packages (terminal-session management, server↔terminal file transfer, BS2000
+emulation, LPR spooling), `TERM1` (97801 terminal firmware load + chipcard),
+`STYPTA` (9750 and 3270/3278 terminal emulation, TRANSIT datacomm), and `ZTRUP`
+(telephone-register update). Its boot disk carries the same `SINIX 2.0 Series
+32000` (NS32000) kernel base. No other public source for this media is known, so
+it is preserved on the Internet Archive — in good faith, for historical
+emulation, **removable on request by a rights holder**:
+
+> https://archive.org/details/siemens-pc-mx2-sinix-s3510
+
 ## Running it
 
 With the ROMs in your rompath and the SINIX0 floppy image staged:
