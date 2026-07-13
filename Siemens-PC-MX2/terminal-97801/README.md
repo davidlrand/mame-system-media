@@ -17,6 +17,11 @@ fourth CPU architecture in a full PC-MX2 emulation.
 
 Board photos: [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_12.jpg),
 [`../docs/images/97801_board_DSCN4117.jpg`](../docs/images/97801_board_DSCN4117.jpg).
+The detached keyboard's own controller board, an MCS-48 family 8039
+microcontroller (a Philips `MAB 8039HL`) running the K111 EPROM (an Intel
+`D2732A` at position D3, matching the ROM filename) off a 5.760 MHz crystal, is
+shown in
+[`../docs/images/97801_keyboard.webp`](../docs/images/97801_keyboard.webp).
 
 ## ROMs (`roms/`)
 
@@ -47,7 +52,9 @@ Input is MAME's natural keyboard. The detached keyboard's MCU is modelled
 behaviourally (it resolves shift, emits the 7-bit "Platz" codes, answers the
 status/identify commands, and rings the bell), so the K111 controller ROM
 (`p26361_k111_v1_3.d3`) is preserved here for reference and possible future
-full LLE rather than executed.
+full LLE rather than executed; the code disassembles as MCS-48, matching the
+8039 on the board. An independent re-dump of the EPROM confirms it
+byte-for-byte (CRC32 `aba8f4b7`) against the archived copy.
 
 Packaged as a generic RS-232 terminal, `s97801` can serve as the console for
 any MAME host, but its reason for being is the PC-MX2's SERAD port.

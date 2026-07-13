@@ -17,6 +17,7 @@ The photographs in this folder come from three sources:
 | `serad.webp`, `serad_board.webp` | SERAD serial I/O board | Plamen Mihaylov / web (TBC) |
 | `97801_board_DSCN4117.jpg` | 97801 terminal logic board (camera original) | cpu-ns32k.net |
 | `97801_board_12.jpg` | 97801 terminal logic board | Plamen Mihaylov / web (TBC) |
+| `97801_keyboard.webp` | 97801 detached keyboard controller PCB (8039 + K111 EPROM) | TBC |
 | `pc-mx2_cpu_ap_w26361-d333-z6-02-5.jpg` | CPUAP EPROM board | OldComputers (with ROM dumps) |
 | `pc-mx2_exelan_a_1.jpg` | ExeLAN Ethernet board | OldComputers (with ROM dumps) |
 | `pc-mx2_serag_w2631-d279_z2-02-5..jpg` | SERAG D279 serial board | OldComputers (with ROM dumps) |
