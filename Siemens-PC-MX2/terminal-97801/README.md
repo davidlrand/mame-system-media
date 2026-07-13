@@ -76,7 +76,13 @@ International layout variant of the 1985-generation keyboard `97801-111` —
 the layout lives in the keyboard firmware, so y/z and some punctuation follow
 the International caps against the terminal's German power-on default table,
 exactly as the real pairing would; the national variants V2-V10 are different
-K111-Vn EPROMs, dumps wanted.)
+K111-Vn EPROMs, dumps wanted.) A German-caps unit of the same keyboard is
+pictured in
+[`../docs/images/97801_keyboard_german.webp`](../docs/images/97801_keyboard_german.webp):
+QWERTZ with Ü/Ö/Ä/ß, whose umlaut keys carry `]`/`\`/`[` as secondary legends,
+the same alternate characters the terminal's power-on recode table reaches
+through its base-entry-0xFF fallthrough; the physical caps confirm the
+dual-table firmware design.
 
 ## Board revisions and the emulated pairing
 
