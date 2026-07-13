@@ -9,16 +9,22 @@ bring-up); a VT100 on the serial port will not produce a working system
 console.
 
 The terminal is a computer in its own right — two, counting its keyboard: a
-**SAB8031** microcontroller (Siemens' MCS-51, ROM-less, 12 MHz from the 24 MHz
-clock module) executing the D21/D26 firmware EPROMs, an **SCN2672B** AVDC with
+**SAB8031** microcontroller (Siemens' MCS-51, ROM-less, 11.0592 MHz from the
+22.1184 MHz clock module) executing the D21/D26 firmware EPROMs, an **SCN2672B** AVDC with
 an SCB2673-class attribute plane and the D23 character generator (512 glyphs),
 an **SCN2661B** EPCI for the host serial link, and a detached keyboard whose
 own **MAB 8035HL** (MCS-48) runs the K111 firmware and talks to the 8031's
 on-chip UART over a serial pair; the fourth and fifth CPU architectures in a
 full PC-MX2 emulation.
 
-Board photos: [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_12.jpg),
-[`../docs/images/97801_board_DSCN4117.jpg`](../docs/images/97801_board_DSCN4117.jpg).
+Board photos: [`../docs/images/97801_board_d253.jpg`](../docs/images/97801_board_d253.jpg)
+(**the ROM-dump source**: Plamen Mihaylov's W26361-D253 second-revision board, whose
+`010/0118`-labelled D26/D21/D23 EPROMs are the images below, with its 22.1184 MHz
+clock module), [`../docs/images/97801_board_DSCN4117.jpg`](../docs/images/97801_board_DSCN4117.jpg)
+(Udo Möller's earlier W26361-D311 revision, 24.000 MHz), and
+[`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_12.jpg) (the still-later
+D238 gate-array generation). The complete unit is
+[`../docs/images/97801_terminal_with_keyboard.webp`](../docs/images/97801_terminal_with_keyboard.webp).
 The detached keyboard's own controller board, an MCS-48 family 8035
 microcontroller (a Philips `MAB 8035HL`) running the K111 EPROM (an Intel
 `D2732A` at position D3, matching the ROM filename) off a 5.760 MHz crystal, is
@@ -72,11 +78,13 @@ exactly as the real pairing would; the national variants V2-V10 are different
 K111-Vn EPROMs, dumps wanted.) A neat
 finding from the link analysis: terminal and keyboard crystals pair at a fixed
 1.92 ratio (terminal baud = f_cpu/18432 via `TH1=D0h`, keyboard baud =
-f_kbd/9600), and both photographed generations satisfy it exactly — the D311
-board's 24 MHz (CPU 12 MHz) pairs with a 6.25 MHz keyboard at 651 baud, while
-this keyboard's photographed 5.760 MHz pairs at 600 baud with the 11.0592 MHz
-of the later D238 board (its 44.2368 MHz module / 4). MAME emulates the
-matched D311 pair.
+f_kbd/9600), and every photographed revision satisfies it exactly — the
+ROM-source D253 board's 22.1184 MHz (CPU 11.0592 MHz) pairs with this
+keyboard's photographed 5.760 MHz at exactly 600.0 baud (both dumps come from
+the same owner's matched set), the earlier D311's 24 MHz (CPU 12 MHz) pairs
+with a 6.25 MHz keyboard at 651 baud, and the later D238's 44.2368 MHz module
+(/4 = 11.0592) pairs at 600 again. MAME emulates the matched D253 pair the
+ROMs came from.
 
 Packaged as a generic RS-232 terminal, `s97801` can serve as the console for
 any MAME host, but its reason for being is the PC-MX2's SERAD port.

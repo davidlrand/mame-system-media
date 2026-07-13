@@ -63,10 +63,10 @@ three in the main system and two more in the terminal on your desk:
    and NS32081 FPU slave processors;
 2. **Intel 8085** (SERAD), running the serial I/O firmware;
 3. **Motorola 68000** (Storager), running the disk-controller firmware;
-4. **SAB8031** (MCS-51, 12 MHz) in the 97801 terminal, driving an SCN2672B
-   video controller, the host link, and the keyboard link;
+4. **SAB8031** (MCS-51, 11.0592 MHz) in the 97801 terminal, driving an
+   SCN2672B video controller, the host link, and the keyboard link;
 5. **MAB 8035HL** (MCS-48) in the terminal's detached keyboard, scanning the
-   key matrix, resolving the shift levels, and speaking the 651-baud serial
+   key matrix, resolving the shift levels, and speaking the 600-baud serial
    link to the terminal.
 
 Every one of them executes its original 1980s firmware, unmodified.

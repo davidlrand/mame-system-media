@@ -57,12 +57,12 @@ auf dem Schreibtisch:
    NS32081-FPU als Slave-Prozessoren;
 2. **Intel 8085** (SERAD), mit der Firmware der seriellen E/A;
 3. **Motorola 68000** (Storager), mit der Firmware des Plattencontrollers;
-4. **SAB8031** (MCS-51, 12 MHz) im Terminal 97801, das den
+4. **SAB8031** (MCS-51, 11,0592 MHz) im Terminal 97801, das den
    SCN2672B-Videocontroller, die Host-Schnittstelle und die
    Tastaturschnittstelle bedient;
 5. **MAB 8035HL** (MCS-48) in der abgesetzten Tastatur des Terminals, der die
    Tastenmatrix abtastet, die Umschaltebenen auflöst und die serielle
-   Verbindung zum Terminal (651 Baud) bedient.
+   Verbindung zum Terminal (600 Baud) bedient.
 
 Jeder von ihnen führt seine originale, unveränderte Firmware der
 1980er-Jahre aus.
