@@ -21,7 +21,8 @@ Board photos: [`../docs/images/97801_board_d253.jpg`](../docs/images/97801_board
 (**the ROM-dump source**: Plamen Mihaylov's W26361-D253 second-revision board, whose
 `010/0118`-labelled D26/D21/D23 EPROMs are the images below, with its 22.1184 MHz
 clock module), [`../docs/images/97801_board_DSCN4117.jpg`](../docs/images/97801_board_DSCN4117.jpg)
-(Udo Möller's earlier W26361-D311 revision, 24.000 MHz), and
+(Udo Möller's earlier W26361-D311 revision, 24.000 MHz; his complete terminal
+is Siemens unit `S26361-K142 V3`), and
 [`../docs/images/97801_board_12.jpg`](../docs/images/97801_board_12.jpg) (the still-later
 D238 gate-array generation). The complete unit is
 [`../docs/images/97801_terminal_with_keyboard.webp`](../docs/images/97801_terminal_with_keyboard.webp).
@@ -87,9 +88,14 @@ Every photographed board revision satisfies it:
 
 | Logic board | Clock modules | CPU clock | Matching keyboard crystal | Link | Unit |
 |---|---|---|---|---|---|
-| W26361-**D311** (1st rev.) | 24.000 + 4.9152 MHz | 12.000 MHz (÷2) | 6.25 MHz (inferred) | 651.04 Bd | Udo Möller's board |
+| W26361-**D311** (1st rev.) | 24.000 + 4.9152 MHz | 12.000 MHz (÷2) | 6.25 MHz (inferred) | 651.04 Bd | Udo Möller's `S26361-K142 V3` |
 | W26361-**D253** (2nd rev.) | **22.1184** + 4.9152 MHz | **11.0592 MHz** (÷2) | **5.760 MHz** (photographed) | **600.0 Bd** | **Plamen Mihaylov's — the ROM-dump source** |
 | W26361-**D238** (gate-array gen.) | 44.2368 + 3.6864 MHz | 11.0592 MHz (80C31, ÷4) | 5.760 MHz | 600.0 Bd | Plamen Mihaylov's later unit |
+
+The complete terminal carries a unit-level part number in the same `S26361`
+scheme as the keyboard firmware (`S26361-K111-V1`): Udo Möller's 24 MHz unit is
+**`S26361-K142 V3`** (cpu-ns32k.net), its assembled D311 board silkscreened
+`S26361-D311-V2 GS` on the bare `W26361-D311` PCB.
 
 **MAME emulates the D253 pairing**, because that is where both dumps
 physically come from: the `010/0118`-labelled D26/D21/D23 EPROMs sit in

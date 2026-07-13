@@ -15,7 +15,7 @@ The photographs in this folder come from three sources:
 | `MX2_inside.jpg` | PC-MX2 interior, Multibus card cage | cpu-ns32k.net |
 | `cpuap.webp`, `cpuap_board.webp` | CPUAP D333 CPU board | Plamen Mihaylov / web (TBC) |
 | `serad.webp`, `serad_board.webp` | SERAD serial I/O board | Plamen Mihaylov / web (TBC) |
-| `97801_board_DSCN4117.jpg` | 97801 terminal logic board (camera original) | cpu-ns32k.net |
+| `97801_board_DSCN4117.jpg` | 97801 terminal logic board W26361-D311 (camera original; from Udo Möller's terminal, unit S26361-K142 V3; 24.000 MHz) | cpu-ns32k.net |
 | `97801_board_12.jpg` | 97801 terminal logic board | Plamen Mihaylov / web (TBC) |
 | `97801_keyboard.webp` | 97801 detached keyboard controller PCB (MAB 8035HL + K111 EPROM) | Plamen Mihaylov |
 | `97801_board_d253.jpg` | 97801 terminal logic board W26361-D253 (2nd revision; the D26/D21/D23 ROM-dump source; 22.1184 MHz module) | Plamen Mihaylov |
