@@ -45,19 +45,24 @@ Mackinlay), erweitert um die in diesem Archiv dokumentierte Gerätearbeit
 | Rückwandbus | Intel Multibus (die MEMAD bezieht daraus nur die Versorgung; Daten laufen über den 50-poligen Bus) |
 | Serielle E/A | **SERAD**-E/A-Prozessor: Intel 8085 + SCN2681-DUARTs, Host-Postfach bei Multibus `0xEF7000`; bedient die 97801-Terminals |
 | Platten | **Storager**-Controller: intelligenter Disketten- und Festplattencontroller mit Motorola 68000 (Kommandoprotokoll nach Interphase-Art); 5¼"-Disketten + ESDI-Winchester |
-| Terminals | Siemens-Datensichtstationen **97801** (proprietäres Protokoll; ein VT100 funktioniert nicht) |
+| Terminals | Siemens-Datensichtstationen **97801** (proprietäres Protokoll; ein VT100 funktioniert nicht), jede mit abgesetzter serieller Tastatur mit eigenem MCS-48-Mikrocontroller |
 | Betriebssystem | **SINIX** V2.0/V2.1, das Siemens-UNIX, ab V2 mit den „Universen" (mehrere UNIX-Dialekte wählbar) |
 
-Ein lehrreiches Detail: Die Emulation eines PC-MX2-Arbeitsplatzes bedeutet
-**vier verschiedene, gleichzeitig laufende Prozessorarchitekturen**, drei im
-Hauptsystem und eine im Terminal:
+Ein lehrreiches Detail: Das Hochfahren eines PC-MX2-Arbeitsplatzes bedeutet
+**fünf gleichzeitig laufende Prozessoren — fünf verschiedene
+Prozessorarchitekturen**, drei im Hauptsystem und zwei weitere im Terminal
+auf dem Schreibtisch:
 
 1. **NS32016** (CPUAP), der Series-32000-Hauptprozessor, mit NS32082-MMU und
    NS32081-FPU als Slave-Prozessoren;
 2. **Intel 8085** (SERAD), mit der Firmware der seriellen E/A;
 3. **Motorola 68000** (Storager), mit der Firmware des Plattencontrollers;
-4. **SAB8031** (MCS-51, 12 MHz) im Terminal 97801, das einen
-   SCN2672B-Videocontroller und die abgesetzte serielle Tastatur bedient.
+4. **SAB8031** (MCS-51, 12 MHz) im Terminal 97801, das den
+   SCN2672B-Videocontroller, die Host-Schnittstelle und die
+   Tastaturschnittstelle bedient;
+5. **MAB 8035HL** (MCS-48) in der abgesetzten Tastatur des Terminals, der die
+   Tastenmatrix abtastet, die Umschaltebenen auflöst und die serielle
+   Verbindung zum Terminal (651 Baud) bedient.
 
 Jeder von ihnen führt seine originale, unveränderte Firmware der
 1980er-Jahre aus.
@@ -90,10 +95,15 @@ Die Konsole des PC-MX2 ist nicht mit einem gewöhnlichen RS-232-Terminal
 kompatibel: SINIX steuert die Siemens 97801 mit einem proprietären Protokoll
 an, einschließlich vom Rechner heruntergeladener Tastaturtabellen.
 `terminal-97801/` enthält die 97801-ROM-Auslesungen (Programm,
-Zeichengenerator und K111-Tastaturcontroller) hinter dem MAME-Gerät `s97801`,
-einer voll funktionsfähigen Low-Level-Emulation, die die eigene Firmware des
-Terminals ausführt und als SINIX-Systemkonsole dient (der Anmelde- und der
-Installationsbildschirm oben werden über sie dargestellt). Siehe
+Zeichengenerator und der K111-V1-Tastaturcontroller) hinter den MAME-Geräten
+`s97801` und `s97801_kbd` — Low-Level-Emulation bis ganz nach unten: der
+SAB8031 des Terminals führt seine eigene Firmware aus, und selbst die
+abgesetzte Tastatur ist ein echter emulierter MAB 8035HL, der die
+K111-Firmware (internationale Variante) ausführt und sich beim Einschalten
+über die emulierte serielle Verbindung gegenüber dem Terminal selbst testet
+und identifiziert, genau wie das echte Gerätepaar. Das Terminal dient als
+SINIX-Systemkonsole (der Anmelde- und der Installationsbildschirm oben werden
+über sie dargestellt). Siehe
 [`terminal-97801/README.md`](terminal-97801/README.md) (englisch).
 
 ## Handbücher (`docs/manuals/`)

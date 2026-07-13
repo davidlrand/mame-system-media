@@ -52,19 +52,22 @@ anywhere since the early 1990s. The bring-up story is in
 | Backplane | Intel Multibus (MEMAD draws only power from it; data goes over the 50-pin bus) |
 | Serial I/O | **SERAD** I/O processor: Intel 8085 + SCN2681 DUARTs, host mailbox at Multibus `0xEF7000`; drives the 97801 terminals |
 | Disk | **Storager** controller: Motorola 68000-based intelligent floppy + hard-disk controller (Interphase-style command protocol); 5¼" floppies + ESDI Winchester |
-| Terminals | Siemens **97801** block terminals (proprietary protocol; a VT100 will not work) |
+| Terminals | Siemens **97801** block terminals (proprietary protocol; a VT100 will not work), each with a detached serial keyboard driven by its own MCS-48 microcontroller |
 | OS | **SINIX** V2.0/V2.1, Siemens UNIX with the V2 "universes" (multiple UNIX dialect personalities) |
 
-Instructive detail: emulating one PC-MX2 seat means emulating **four
-different CPU architectures running concurrently**, three in the main system
-and one in the terminal:
+Instructive detail: booting one PC-MX2 seat means emulating **five
+processors — five different CPU architectures — running concurrently**,
+three in the main system and two more in the terminal on your desk:
 
 1. **NS32016** (CPUAP), the Series 32000 main processor, with its NS32082 MMU
    and NS32081 FPU slave processors;
 2. **Intel 8085** (SERAD), running the serial I/O firmware;
 3. **Motorola 68000** (Storager), running the disk-controller firmware;
 4. **SAB8031** (MCS-51, 12 MHz) in the 97801 terminal, driving an SCN2672B
-   video controller and the detached serial keyboard.
+   video controller, the host link, and the keyboard link;
+5. **MAB 8035HL** (MCS-48) in the terminal's detached keyboard, scanning the
+   key matrix, resolving the shift levels, and speaking the 651-baud serial
+   link to the terminal.
 
 Every one of them executes its original 1980s firmware, unmodified.
 
@@ -94,10 +97,14 @@ BIOS-selection notes in [`roms/README.txt`](roms/README.txt).
 The PC-MX2's console is not RS-232-dumb-terminal compatible: SINIX drives the
 Siemens 97801 with a proprietary protocol including host-downloaded keyboard
 tables. `terminal-97801/` holds the 97801 ROM dumps (program, character
-generator, and K111 keyboard-controller) behind the MAME `s97801` device, a
-fully working low-level emulation that runs the terminal's own firmware and
-serves as the SINIX system console (the login and install screenshots above
-are rendered through it). See
+generator, and the K111-V1 keyboard controller) behind the MAME `s97801` and
+`s97801_kbd` devices — low-level emulation all the way down: the terminal's
+SAB8031 runs its own firmware, and even the detached keyboard is a real
+emulated MAB 8035HL executing the K111 International-variant firmware,
+self-testing and identifying itself to the terminal over the emulated serial
+link at power-up, exactly as the hardware pair did. The terminal serves as
+the SINIX system console (the login and install screenshots above are
+rendered through it). See
 [`terminal-97801/README.md`](terminal-97801/README.md).
 
 ## Manuals (`docs/manuals/`)
