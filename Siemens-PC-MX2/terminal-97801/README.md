@@ -123,5 +123,14 @@ mid-frame. Matched, the full handshake (`$2D`/`$2E` self-tests → `$AA`,
 power-on, and the terminal firmware sets its keyboard-OK flag — verified in
 emulation against the terminal firmware's own acceptance test.
 
+The standalone `s97801` machine also ships a clickable **on-screen keyboard**
+(the "Terminal and Keyboard" view): all 127 keys drawn per the unit photos and
+bound to the real matrix, so the terminal-local keys (START, CH CODE, MENU,
+PRINT, CE, the jump-word and thick-arrow keys, `00`/`000`) are one mouse click
+away, and the CAPS/LOCK/INT indicators are driven by the actual firmware --
+the INT lamp lights at power-up exactly as the K111 init sequence commands.
+
+![MAME on-screen keyboard view](../docs/images/mame-s97801-keyboard-view.png)
+
 Packaged as a generic RS-232 terminal, `s97801` can serve as the console for
 any MAME host, but its reason for being is the PC-MX2's SERAD port.
