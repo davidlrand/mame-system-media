@@ -5,7 +5,8 @@
 *The MAME `s97801` machine (0.288) with the on-screen keyboard view: the
 banner is drawn by the terminal's original firmware from an SS97 byte
 stream (reverse-video blocks), and the lit INT lamp is the keyboard
-firmware's own power-up state.*
+firmware's own power-up state. Reproduce it with
+[`97801_banner.bin`](97801_banner.bin) ([recipe](97801_banner_README.txt)).*
 
 The 97801 is the Siemens block terminal the PC-MX2 (and the wider
 Transdata/9780 family) was sold with. It is **not** a generic RS-232 glass
