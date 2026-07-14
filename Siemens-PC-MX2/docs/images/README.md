@@ -21,6 +21,7 @@ The photographs in this folder come from three sources:
 | `97801_keyboard_german.webp` | 97801 detached keyboard, complete unit with German QWERTZ caps | u/nerdbude ([Reddit r/VintageComputers, 2020](https://www.reddit.com/r/VintageComputers/comments/jkip3h/found_this_nice_siemens_mx2_terminal_keyboard/)) |
 | `97801_board_d253.jpg` | 97801 terminal logic board W26361-D253 (2nd revision; the D26/D21/D23 ROM-dump source; 22.1184 MHz module) | Plamen Mihaylov |
 | `97801_terminal_with_keyboard.webp` | complete 97801 terminal with detached keyboard | Plamen Mihaylov |
+| `97801_keyboard_unit.webp` | the ROM-source keyboard, high resolution: keycaps, unfitted blanking panels, INT lamp panel, keylock with key | Plamen Mihaylov |
 | `pc-mx2_cpu_ap_w26361-d333-z6-02-5.jpg` | CPUAP EPROM board | OldComputers (with ROM dumps) |
 | `pc-mx2_exelan_a_1.jpg` | ExeLAN Ethernet board | OldComputers (with ROM dumps) |
 | `pc-mx2_serag_w2631-d279_z2-02-5..jpg` | SERAG D279 serial board | OldComputers (with ROM dumps) |
