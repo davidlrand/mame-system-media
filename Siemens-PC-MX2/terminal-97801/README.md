@@ -127,8 +127,16 @@ The standalone `s97801` machine also ships a clickable **on-screen keyboard**
 (the "Terminal and Keyboard" view): all 127 keys drawn per the unit photos and
 bound to the real matrix, so the terminal-local keys (START, CH CODE, MENU,
 PRINT, CE, the jump-word and thick-arrow keys, `00`/`000`) are one mouse click
-away, and the CAPS/LOCK/INT indicators are driven by the actual firmware --
-the INT lamp lights at power-up exactly as the K111 init sequence commands.
+away; the CAPS/LOCK/INT indicators are driven by the actual firmware (the INT
+lamp lights at power-up exactly as the K111 init sequence commands), and the
+four-position keylock renders beside PRINT, following the Machine
+Configuration setting. **The keyboard view is off by default**: enable it in
+the running machine under **Tab → Video Options → "Terminal and Keyboard"**
+(the choice persists per machine), or start with
+`mame s97801 -view "Terminal and Keyboard"`. "Screen Only" switches back.
+Since the keys are bound to matrix positions (not characters), clicking works
+identically under any keyboard-layout variant or host-downloaded table --
+like fingers on the physical caps.
 
 ![MAME on-screen keyboard view](../docs/images/mame-s97801-keyboard-view.png)
 
