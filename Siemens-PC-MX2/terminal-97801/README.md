@@ -41,11 +41,14 @@ shown in
 | `010_d26__0118_04.d26` | SAB8031 firmware EPROM (D26) | `fcf045d7` | `4a98e7d2d98272970d627ce5c10e9572b87293d1` |
 | `p26361_k111_v1_3.d3` | K111-V1 keyboard firmware (International variant, keyboard 97801-111) | `aba8f4b7` | `970a45b509081603e25319e1bbf0f7941f91a056` |
 
-These files are packaged as the MAME `s97801` romset in
-[`roms/s97801.zip`](roms/s97801.zip), plus the keyboard device romset
-[`roms/s97801_kbd.zip`](roms/s97801_kbd.zip) (the K111 dump, which the
-`s97801_kbd` LLE device loads); place both in the rompath for `mame s97801`
+These files are packaged as the MAME device romsets
+[`roms/s97801_device.zip`](roms/s97801_device.zip) (the terminal's three
+EPROMs, loaded by the `s97801_device` core device) and
+[`roms/s97801_kbd.zip`](roms/s97801_kbd.zip) (the K111 dump, loaded by the
+`s97801_kbd` keyboard device); place both in the rompath for `mame s97801`
 (standalone terminal) or `mame pcmx2` (as the console).
+[`roms/s97801.zip`](roms/s97801.zip) is the same terminal set under the
+pre-rename name, kept for older builds.
 
 ## MAME status
 
