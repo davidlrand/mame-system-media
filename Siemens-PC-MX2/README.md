@@ -56,7 +56,7 @@ anywhere since the early 1990s. The bring-up story is in
 | OS | **SINIX** V2.0/V2.1, Siemens UNIX with the V2 "universes" (multiple UNIX dialect personalities) |
 
 Instructive detail: booting one PC-MX2 seat means emulating **five
-processors — five different CPU architectures — running concurrently**,
+processors (five different CPU architectures) running concurrently**,
 three in the main system and two more in the terminal on your desk:
 
 1. **NS32016** (CPUAP), the Series 32000 main processor, with its NS32082 MMU
@@ -98,7 +98,7 @@ The PC-MX2's console is not RS-232-dumb-terminal compatible: SINIX drives the
 Siemens 97801 with a proprietary protocol including host-downloaded keyboard
 tables. `terminal-97801/` holds the 97801 ROM dumps (program, character
 generator, and the K111-V1 keyboard controller) behind the MAME `s97801` and
-`s97801_kbd` devices — low-level emulation all the way down: the terminal's
+`s97801_kbd` devices. It is low-level emulation all the way down: the terminal's
 SAB8031 runs its own firmware, and even the detached keyboard is a real
 emulated MAB 8035HL executing the K111 International-variant firmware,
 self-testing and identifying itself to the terminal over the emulated serial
@@ -133,13 +133,13 @@ set.
 
 The **SINIX-S3510 V2.1** service/data-communications suite (18-disk ImageDisk
 set, media dated 16.01.1989, Best-Nr. P30357-A3001-S21) is a Siemens application
-layer that installs *on top of* a base SINIX V2.0 system — `SERV01–14` service
+layer that installs *on top of* a base SINIX V2.0 system: `SERV01–14` service
 packages (terminal-session management, server↔terminal file transfer, BS2000
 emulation, LPR spooling), `TERM1` (97801 terminal firmware load + chipcard),
 `STYPTA` (9750 and 3270/3278 terminal emulation, TRANSIT datacomm), and `ZTRUP`
 (telephone-register update). Its boot disk carries the same `SINIX 2.0 Series
 32000` (NS32000) kernel base. No other public source for this media is known, so
-it is preserved on the Internet Archive — in good faith, for historical
+it is preserved on the Internet Archive, in good faith, for historical
 emulation, **removable on request by a rights holder**:
 
 > https://archive.org/details/siemens-pc-mx2-sinix-s3510

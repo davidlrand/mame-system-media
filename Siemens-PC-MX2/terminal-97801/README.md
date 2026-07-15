@@ -16,7 +16,7 @@ the OS sends at login, recovered from the SINIX floppies during the MAME
 bring-up); a VT100 on the serial port will not produce a working system
 console.
 
-The terminal is a computer in its own right — two, counting its keyboard: a
+The terminal is a computer in its own right (two, counting its keyboard): a
 **SAB8031** microcontroller (Siemens' MCS-51, ROM-less, 11.0592 MHz from the
 22.1184 MHz clock module) executing the D21/D26 firmware EPROMs, an **SCN2672B** AVDC with
 an SCB2673-class attribute plane and the D23 character generator (512 glyphs),
@@ -77,13 +77,13 @@ controller ROM (`p26361_k111_v1_3.d3`) unmodified, scanning the recovered
 self-test/status/identify handshake, the "800105" ident string, the bell, and
 the shift/control resolution are all the real firmware's behaviour. (For
 natural-keyboard typing, the input ports advertise the host-effective
-characters — each key's firmware code as the terminal's power-on table
-recodes it — so what you type is what SINIX receives; the physical
+characters, each key's firmware code as the terminal's power-on table
+recodes it, so what you type is what SINIX receives; the physical
 International cap legends are kept in the key names.) (The K111
-code is MCS-48, matching the 8035 on the board — its init loop clears exactly
+code is MCS-48, matching the 8035 on the board: its init loop clears exactly
 the 8035's 64 bytes of internal RAM; an independent re-dump confirms the EPROM
 byte-for-byte, CRC32 `aba8f4b7`. This dump is **S26361-K111-V1**, the
-International layout variant of the 1985-generation keyboard `97801-111` —
+International layout variant of the 1985-generation keyboard `97801-111`:
 the layout lives in the keyboard firmware, so y/z and some punctuation follow
 the International caps against the terminal's German power-on default table,
 exactly as the real pairing would; the national variants V2-V10 are different
@@ -99,14 +99,14 @@ dual-table firmware design.
 
 The terminal firmware times its keyboard UART at f_CPU/18432 (`TMOD=21h`,
 `TH1=D0h`, the only reload it ever programs), and the K111 keyboard firmware
-times its bit clock at f_KBD/9600 — so a terminal and keyboard interoperate
+times its bit clock at f_KBD/9600, so a terminal and keyboard interoperate
 exactly when their crystals sit at the fixed ratio **f_CPU = 1.92 × f_KBD**.
 Every photographed board revision satisfies it:
 
 | Logic board | Clock modules | CPU clock | Matching keyboard crystal | Link | Unit |
 |---|---|---|---|---|---|
 | W26361-**D311** (1st rev.) | 24.000 + 4.9152 MHz | 12.000 MHz (÷2) | 6.25 MHz (inferred) | 651.04 Bd | Udo Möller's `S26361-K142 V3` |
-| W26361-**D253** (2nd rev.) | **22.1184** + 4.9152 MHz | **11.0592 MHz** (÷2) | **5.760 MHz** (photographed) | **600.0 Bd** | **Plamen Mihaylov's — the ROM-dump source** |
+| W26361-**D253** (2nd rev.) | **22.1184** + 4.9152 MHz | **11.0592 MHz** (÷2) | **5.760 MHz** (photographed) | **600.0 Bd** | **Plamen Mihaylov's (the ROM-dump source)** |
 | W26361-**D238** (gate-array gen.) | 44.2368 + 3.6864 MHz | 11.0592 MHz (80C31, ÷4) | 5.760 MHz | 600.0 Bd | Plamen Mihaylov's later unit |
 
 The complete terminal carries a unit-level part number in the same `S26361`
@@ -116,19 +116,19 @@ scheme as the keyboard firmware (`S26361-K111-V1`): Udo Möller's 24 MHz unit is
 
 **MAME emulates the D253 pairing**, because that is where both dumps
 physically come from: the `010/0118`-labelled D26/D21/D23 EPROMs sit in
-Plamen's D253 board (see `97801_board_d253.jpg` — 8031 at 22.1184/2 =
+Plamen's D253 board (see `97801_board_d253.jpg`: 8031 at 22.1184/2 =
 11.0592 MHz, video dot clock 22.1184 MHz, ≈57 Hz frame), and the K111-V1
 keyboard EPROM comes from that unit's companion keyboard with its 5.760 MHz
-crystal — one owner's matched, consistent set, linked at exactly 600 baud.
+crystal: one owner's matched, consistent set, linked at exactly 600 baud.
 
 The pairing is not just numerology, and it is not covered by ordinary baud
 tolerance: cross-clocking the two generations in the emulator (651-baud
 terminal against the 600-baud keyboard, both ends running their original
-firmware) makes the power-up handshake fail outright — the ≈8.5% rate gap
+firmware) makes the power-up handshake fail outright: the ≈8.5% rate gap
 accumulates to ~0.7 bit periods by data bit 7, and neither receiver resyncs
 mid-frame. Matched, the full handshake (`$2D`/`$2E` self-tests → `$AA`,
 `$2F` ident → `"800105"`, `$2A` status → `$DC`) completes about 1.7 s after
-power-on, and the terminal firmware sets its keyboard-OK flag — verified in
+power-on, and the terminal firmware sets its keyboard-OK flag, verified in
 emulation against the terminal firmware's own acceptance test.
 
 The standalone `s97801` machine also ships a clickable **on-screen keyboard**

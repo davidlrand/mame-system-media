@@ -49,8 +49,8 @@ Mackinlay), erweitert um die in diesem Archiv dokumentierte Gerätearbeit
 | Betriebssystem | **SINIX** V2.0/V2.1, das Siemens-UNIX, ab V2 mit den „Universen" (mehrere UNIX-Dialekte wählbar) |
 
 Ein lehrreiches Detail: Das Hochfahren eines PC-MX2-Arbeitsplatzes bedeutet
-**fünf gleichzeitig laufende Prozessoren — fünf verschiedene
-Prozessorarchitekturen**, drei im Hauptsystem und zwei weitere im Terminal
+**fünf gleichzeitig laufende Prozessoren (fünf verschiedene
+Prozessorarchitekturen)**, drei im Hauptsystem und zwei weitere im Terminal
 auf dem Schreibtisch:
 
 1. **NS32016** (CPUAP), der Series-32000-Hauptprozessor, mit NS32082-MMU und
@@ -96,7 +96,7 @@ kompatibel: SINIX steuert die Siemens 97801 mit einem proprietären Protokoll
 an, einschließlich vom Rechner heruntergeladener Tastaturtabellen.
 `terminal-97801/` enthält die 97801-ROM-Auslesungen (Programm,
 Zeichengenerator und der K111-V1-Tastaturcontroller) hinter den MAME-Geräten
-`s97801` und `s97801_kbd` — Low-Level-Emulation bis ganz nach unten: der
+`s97801` und `s97801_kbd`. Low-Level-Emulation bis ganz nach unten: der
 SAB8031 des Terminals führt seine eigene Firmware aus, und selbst die
 abgesetzte Tastatur ist ein echter emulierter MAB 8035HL, der die
 K111-Firmware (internationale Variante) ausführt und sich beim Einschalten
